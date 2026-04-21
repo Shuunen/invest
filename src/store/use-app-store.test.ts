@@ -42,6 +42,12 @@ describe("useAppStore - settings mutations", () => {
     expect(useAppStore.getState().data.settings.columnVisibility).toStrictEqual({ name: false });
   });
 
+  it("setColumnOrder updates settings.columnOrder", () => {
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    useAppStore.getState().setColumnOrder(["score", "name", "fees"]);
+    expect(useAppStore.getState().data.settings.columnOrder).toStrictEqual(["score", "name", "fees"]);
+  });
+
   it("subscribeWithSelector fires subscriber on mutation", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const received: unknown[] = [];

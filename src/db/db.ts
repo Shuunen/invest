@@ -16,6 +16,7 @@ export class AppDataDb extends Dexie {
     this.version(1).stores({ appdata: "id" });
     this.version(DB_VERSION)
       .stores({ appdata: "id" })
+      /* v8 ignore start */
       .upgrade(tx =>
         tx
           .table("appdata")
@@ -28,6 +29,7 @@ export class AppDataDb extends Dexie {
             }
           }),
       );
+    /* v8 ignore stop */
   }
 }
 

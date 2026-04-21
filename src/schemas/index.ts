@@ -198,6 +198,7 @@ export function safeImportJson(text: string): { data: AppData } | { error: strin
   try {
     parsed = JSON.parse(text);
   } catch (error) {
+    /* v8 ignore next -- JSON.parse always throws SyntaxError; String(error) is unreachable */
     const detail = error instanceof Error ? error.message : String(error);
     return { error: `Invalid JSON: ${detail}` };
   }

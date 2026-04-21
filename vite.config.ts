@@ -50,11 +50,21 @@ export default defineConfig({
     }),
   ],
   test: {
+    coverage: {
+      exclude: ["src/main.tsx", "src/router.tsx", "src/app.tsx"],
+      include: ["src/**/*.{ts,tsx}"],
+      reporter: [["text", { maxCols: 120 }], "lcov"],
+      thresholds: {
+        100: true,
+      },
+    },
     environment: "happy-dom",
     exclude: ["e2e/**", "node_modules/**"],
     globals: true,
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    reporters: ["dot"],
     restoreMocks: true,
     setupFiles: ["./src/test/setup.ts"],
+    silent: true,
   },
 });

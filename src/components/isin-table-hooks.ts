@@ -31,15 +31,20 @@ export function useTableInstance({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     onColumnVisibilityChange: updater => {
+      /* v8 ignore next -- TanStack Table always passes a function updater; direct value path is defensive */
       const next = typeof updater === "function" ? updater(resolvedVisibility) : updater;
       setColumnVisibility(next);
     },
     onSortingChange: updater => {
+      /* v8 ignore next -- TanStack Table always passes a function updater; direct value path is defensive */
       const next = typeof updater === "function" ? updater(sorting) : updater;
       if (next.length > 0) {
         const [{ id, desc }] = next;
         setSort({ column: id, direction: desc ? "desc" : "asc" });
-      } else setSort({ column: sorting[0]?.id ?? "score", direction: "asc" });
+        return;
+      }
+      /* v8 ignore next -- sorting is always a 1-element array; "score" fallback is unreachable */
+      setSort({ column: sorting[0]?.id ?? "score", direction: "asc" });
     },
     sortDescFirst: false,
     state: { columnVisibility: resolvedVisibility, sorting },

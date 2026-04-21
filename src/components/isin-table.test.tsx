@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { invariant } from "es-toolkit";
+import { db } from "../db/db.ts";
 import { computeScore, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { quintileClass } from "./isin-table-utils.ts";
@@ -234,5 +235,231 @@ describe("IsinTable - column visibility guard", () => {
     ) as HTMLInputElement | undefined;
     invariant(scoreCheckbox, "Expected to find Score checkbox");
     expect(scoreCheckbox.disabled).toBe(true);
+  });
+});
+
+describe("IsinTable - filter", () => {
+  it("filter input change narrows displayed rows", async () => {
+    const assets = [
+      makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "ProviderA", tickers: ["ALP"] }),
+      makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "ProviderB", tickers: ["BET"] }),
+    ];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(<IsinTable />);
+    const input = screen.getByPlaceholderText(/search/i);
+    fireEvent.change(input, { target: { value: "Alpha" } });
+    await waitFor(() => {
+      expect(screen.getByText("Alpha ETF")).toBeInTheDocument();
+      expect(screen.queryByText("Beta ETF")).not.toBeInTheDocument();
+    });
+  });
+
+  it("filter matches by ISIN", async () => {
+    const assets = [
+      makeAsset({ isin: "LU1234567890", name: "Alpha ETF" }),
+      makeAsset({ isin: "FR0000000001", name: "Beta ETF" }),
+    ];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(<IsinTable />);
+    const input = screen.getByPlaceholderText(/search/i);
+    fireEvent.change(input, { target: { value: "LU1234" } });
+    await waitFor(() => {
+      expect(screen.queryByText("Beta ETF")).not.toBeInTheDocument();
+    });
+  });
+
+  it("filter matches by provider", async () => {
+    const assets = [
+      makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi" }),
+      makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "Lyxor" }),
+    ];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(<IsinTable />);
+    const input = screen.getByPlaceholderText(/search/i);
+    fireEvent.change(input, { target: { value: "Amundi" } });
+    await waitFor(() => {
+      expect(screen.queryByText("Beta ETF")).not.toBeInTheDocument();
+    });
+  });
+
+  it("filter matches by ticker", async () => {
+    const assets = [
+      makeAsset({ isin: "LU1234567890", name: "Alpha ETF", tickers: ["IWDA"] }),
+      makeAsset({ isin: "FR0000000001", name: "Beta ETF", tickers: ["VWRL"] }),
+    ];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(<IsinTable />);
+    const input = screen.getByPlaceholderText(/search/i);
+    fireEvent.change(input, { target: { value: "IWDA" } });
+    await waitFor(() => {
+      expect(screen.queryByText("Beta ETF")).not.toBeInTheDocument();
+    });
+  });
+});
+
+describe("IsinTable - boolean and hidden columns", () => {
+  it("renders Yes/No badges for boolean columns when made visible", () => {
+    const asset = makeAsset({ availableForPlan: true, availableOnBroker: false, isAccumulating: true });
+    useAppStore.setState({
+      data: {
+        ...makeTestData([asset]),
+        settings: {
+          ...defaultAppData.settings,
+          columnVisibility: { availableForPlan: true, availableOnBroker: true, isAccumulating: true },
+          sort: { column: "score", direction: "desc" },
+        },
+      },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<IsinTable />);
+    const yesBadges = screen.getAllByLabelText("Yes");
+    expect(yesBadges.length).toBeGreaterThanOrEqual(2);
+    const noBadge = screen.getByLabelText("No");
+    expect(noBadge).toBeInTheDocument();
+  });
+});
+
+describe("IsinTable - tickers column", () => {
+  it("renders tickers cell content when column is visible", () => {
+    const asset = makeAsset({ tickers: ["IWDA", "EUNL"] });
+    useAppStore.setState({
+      data: {
+        ...makeTestData([asset]),
+        settings: {
+          ...defaultAppData.settings,
+          columnVisibility: { tickers: true },
+          sort: { column: "score", direction: "desc" },
+        },
+      },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<IsinTable />);
+    expect(screen.getByText("IWDA, EUNL")).toBeInTheDocument();
+  });
+
+  it("sort by tickers column uses custom sortingFn", async () => {
+    const assets = [
+      makeAsset({ isin: "LU1234567890", name: "Zebra ETF", tickers: ["ZZZ"] }),
+      makeAsset({ isin: "FR0000000001", name: "Apple ETF", tickers: ["AAA"] }),
+    ];
+    useAppStore.setState({
+      data: {
+        ...makeTestData(assets),
+        settings: {
+          ...defaultAppData.settings,
+          columnVisibility: { tickers: true },
+          sort: { column: "score", direction: "desc" },
+        },
+      },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<IsinTable />);
+    fireEvent.click(screen.getByRole("button", { name: /tickers/i }));
+    await waitFor(() => {
+      expect(useAppStore.getState().data.settings.sort.column).toBe("tickers");
+    });
+  });
+});
+
+describe("IsinTable - hidden numeric columns", () => {
+  it("renders performance1y and riskReward1y cells when made visible", () => {
+    const asset = makeAsset({ performance1y: 12.5, riskReward1y: 0.9 });
+    useAppStore.setState({
+      data: {
+        ...makeTestData([asset]),
+        settings: {
+          ...defaultAppData.settings,
+          columnVisibility: { performance1y: true, riskReward1y: true },
+          sort: { column: "score", direction: "desc" },
+        },
+      },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<IsinTable />);
+    expect(screen.getByText("12.50")).toBeInTheDocument();
+    expect(screen.getByText("0.90")).toBeInTheDocument();
+  });
+});
+
+describe("IsinTable - sort clearing", () => {
+  it("clicking sorted column three times clears the sort and resets to asc", async () => {
+    const assets = [makeAsset({ isin: "LU1234567890" }), makeAsset({ isin: "FR0000000001" })];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(<IsinTable />);
+    const nameBtn = screen.getByRole("button", { name: /name/i });
+    fireEvent.click(nameBtn); // asc
+    await waitFor(() => expect(useAppStore.getState().data.settings.sort.column).toBe("name"));
+    fireEvent.click(nameBtn); // desc
+    await waitFor(() => expect(useAppStore.getState().data.settings.sort.direction).toBe("desc"));
+    fireEvent.click(nameBtn); // clear → resets to asc
+    await waitFor(() => expect(useAppStore.getState().data.settings.sort.direction).toBe("asc"));
+  });
+});
+
+describe("IsinTable - useHydration", () => {
+  it("loads data from DB when isLoading is true on mount", async () => {
+    await db.delete();
+    await db.open();
+    const seedAsset = makeAsset({ isin: "LU9999999990", name: "Seeded ETF" });
+    const appData: AppData = { ...defaultAppData, assets: [seedAsset] };
+    await db.appdata.put({ data: appData, id: 1 });
+
+    useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
+    render(<IsinTable />);
+
+    await waitFor(() => {
+      expect(useAppStore.getState().isLoading).toBe(false);
+    });
+    expect(useAppStore.getState().data.assets[0]?.name).toBe("Seeded ETF");
+  });
+
+  it("falls back to seedData when DB has no record", async () => {
+    await db.delete();
+    await db.open();
+
+    useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
+    render(<IsinTable />);
+
+    await waitFor(() => {
+      expect(useAppStore.getState().isLoading).toBe(false);
+    });
+  });
+
+  it("sets loadError when DB throws during load", async () => {
+    vi.spyOn(db.appdata, "get").mockRejectedValueOnce(new Error("DB read failed"));
+
+    useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
+    render(<IsinTable />);
+
+    await waitFor(() => {
+      expect(useAppStore.getState().loadError?.message).toBe("DB read failed");
+    });
+  });
+});
+
+describe("IsinTable - useDexieSync", () => {
+  it("writes data to DB after debounce when store changes", async () => {
+    await db.delete();
+    await db.open();
+
+    useAppStore.setState({ data: makeTestData([makeAsset()]), isLoading: false, loadError: undefined });
+    render(<IsinTable />);
+
+    act(() => {
+      useAppStore.getState().setSort({ column: "fees", direction: "asc" });
+    });
+
+    // Wait for the debounce (300ms) to fire and the async write to complete
+    await waitFor(
+      async () => {
+        const record = await db.appdata.get(1);
+        expect(record?.data.settings.sort.column).toBe("fees");
+      },
+      { timeout: 2000 },
+    );
   });
 });

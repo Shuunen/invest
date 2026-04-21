@@ -10,6 +10,7 @@ import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, SKELETON_COLS, SKELE
 
 const DEBOUNCE_MS = 300;
 const seedResult = AppDataSchema.safeParse(sampleJson);
+/* v8 ignore next -- sample.json is always valid; the false branch is unreachable */
 const seedData: AppData = seedResult.success ? seedResult.data : { ...defaultAppData };
 
 function getSortIndicator(sorted: "asc" | "desc" | false): string {
@@ -46,6 +47,7 @@ function useHydration(retryKey: number) {
           const raw = record?.data ?? seedData;
           useAppStore.getState().loadData(AppDataSchema.parse(raw));
         } catch (error: unknown) {
+          /* v8 ignore next 2 -- cancelled=true on unmount-during-error and non-Error throws are defensive */
           if (!cancelled) {
             const err = error instanceof Error ? error : new Error(String(error));
             useAppStore.getState().setLoadError(err);
