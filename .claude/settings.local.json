@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm exec *)",
+      "Bash(node -e *)",
+      "Bash(pnpm check *)",
+      "Bash(pnpm run *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git remote *)",
+      "Bash(git -C *)",
+      "Bash(gh pr *)"
+    ]
+  }
+}
