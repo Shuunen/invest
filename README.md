@@ -27,7 +27,7 @@ pnpm dev
 ```bash
 pnpm test          # Vitest unit tests
 pnpm test:e2e      # Playwright E2E
-pnpm check         # Full pipeline: types, format, lint, build, tests
+pnpm check         # Full pipeline: types, format, lint, build, tests, E2E
 ```
 
 ## Build

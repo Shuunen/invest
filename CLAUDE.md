@@ -21,6 +21,12 @@ Key routing rules:
 - Save progress, checkpoint, resume → invoke checkpoint
 - Code quality, health check → invoke health
 
+## Project docs
+
+- `CHANGELOG.md` — release history
+- `TODOS.md` — open work items and deferred decisions
+- `initial-specs.md` — superseded initial spec (kept for reference)
+
 ## Linting rules
 
 Never add a rule disable to `.oxlintrc.json` without asking.
