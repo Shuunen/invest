@@ -13,7 +13,7 @@ export function App() {
           <ul className="menu menu-horizontal gap-1 px-1">
             <li>
               <Link to="/" activeProps={{ className: "active" }}>
-                Table
+                Assets
               </Link>
             </li>
             <li>
