@@ -1,5 +1,12 @@
 # Portfolio Tracker PWA — Specification
 
+> **SUPERSEDED** — This document is the initial spec. The implementation source of truth is the design doc produced by `/office-hours` (stored in `~/.gstack/projects/Shuunen-invest/`). Key overrides:
+>
+> - Data model: N-portfolio architecture (not 2 hardcoded portfolios); field `availableOnShares` renamed to `availableOnBroker`; `score` is derived, not stored
+> - §3.6 conditional formatting: performance/risk-reward HIGH=green (not "lowest=best"); fees LOW=green; score HIGH=green
+> - Storage: Dexie.js (not localStorage); Zustand as runtime truth
+> - Stack decisions resolved: TanStack Router, Recharts, Zustand, Dexie.js
+
 ## 1. Overview
 
 A Progressive Web App for tracking and analyzing personal and professional investment portfolios (stocks and ETFs). Offline-first, local-persistence, with JSON import/export for portability.
@@ -16,25 +23,25 @@ The entire application state serializes to a single JSON file. Three logical "ta
 
 One entry per ISIN. Shared across both portfolios (normalized). No personal/portfolio-specific data lives here.
 
-| Field | Type | Notes |
-|---|---|---|
-| `score` | number | Aggregate score computed from the other fields |
-| `provider` | string | Issuer (e.g. iShares, Amundi, Vanguard) |
-| `isin` | string | Primary identifier (unique key) |
-| `tickers` | string[] | One ISIN can have multiple tickers across exchanges/currencies |
-| `name` | string | ETF or stock name |
-| `isAccumulating` | boolean | `true` = accumulating, `false` = distributing |
-| `availableOnShares` | boolean | Available on the Shares platform |
-| `availableForPlan` | boolean | Eligible for scheduled/planned investment |
-| `fees` | number | TER or equivalent, in % |
-| `performance1y` | number | % |
-| `performance3y` | number | % annualized |
-| `performance5y` | number | % annualized |
-| `riskReward1y` | number | |
-| `riskReward3y` | number | |
-| `riskReward5y` | number | |
-| `geoAllocation` | `Partial<Record<Country, number>>` | See §2.2 — country/region → % weight |
-| `sectorAllocation` | `Partial<Record<Sector, number>>` | See §2.2 — sector → % weight |
+| Field               | Type                               | Notes                                                          |
+| ------------------- | ---------------------------------- | -------------------------------------------------------------- |
+| `score`             | number                             | Aggregate score computed from the other fields                 |
+| `provider`          | string                             | Issuer (e.g. iShares, Amundi, Vanguard)                        |
+| `isin`              | string                             | Primary identifier (unique key)                                |
+| `tickers`           | string[]                           | One ISIN can have multiple tickers across exchanges/currencies |
+| `name`              | string                             | ETF or stock name                                              |
+| `isAccumulating`    | boolean                            | `true` = accumulating, `false` = distributing                  |
+| `availableOnShares` | boolean                            | Available on the Shares platform                               |
+| `availableForPlan`  | boolean                            | Eligible for scheduled/planned investment                      |
+| `fees`              | number                             | TER or equivalent, in %                                        |
+| `performance1y`     | number                             | %                                                              |
+| `performance3y`     | number                             | % annualized                                                   |
+| `performance5y`     | number                             | % annualized                                                   |
+| `riskReward1y`      | number                             |                                                                |
+| `riskReward3y`      | number                             |                                                                |
+| `riskReward5y`      | number                             |                                                                |
+| `geoAllocation`     | `Partial<Record<Country, number>>` | See §2.2 — country/region → % weight                           |
+| `sectorAllocation`  | `Partial<Record<Sector, number>>`  | See §2.2 — sector → % weight                                   |
 
 Notes on table rendering: `geoAllocation` and `sectorAllocation` are **not** shown as columns by default — they belong on the detail page.
 
@@ -44,25 +51,40 @@ Both allocations use **explicit string-literal unions** (not open `Record<string
 
 ```ts
 type CountryEurope =
-  | 'uk' | 'switzerland' | 'france' | 'germany' | 'netherlands'
-  | 'norway' | 'sweden' | 'austria' | 'finland' | 'italy'
-  | 'poland' | 'spain' | 'belgium' | 'ireland' | 'denmark';
+  | "uk"
+  | "switzerland"
+  | "france"
+  | "germany"
+  | "netherlands"
+  | "norway"
+  | "sweden"
+  | "austria"
+  | "finland"
+  | "italy"
+  | "poland"
+  | "spain"
+  | "belgium"
+  | "ireland"
+  | "denmark";
 
-type CountryAsia =
-  | 'china' | 'japan' | 'taiwan' | 'hongKong' | 'southKorea'
-  | 'malaysia' | 'indonesia' | 'thailand';
+type CountryAsia = "china" | "japan" | "taiwan" | "hongKong" | "southKorea" | "malaysia" | "indonesia" | "thailand";
 
 type Country =
   // Americas
-  | 'us' | 'canada' | 'brazil'
+  | "us"
+  | "canada"
+  | "brazil"
   // Europe — 'europe' is the aggregate; CountryEurope members roll up into it
-  | 'europe'
+  | "europe"
   | CountryEurope
   // Asia — 'asia' is the aggregate; CountryAsia members roll up into it
-  | 'asia'
+  | "asia"
   | CountryAsia
   // Standalone
-  | 'india' | 'saudiArabia' | 'australia' | 'africa';
+  | "india"
+  | "saudiArabia"
+  | "australia"
+  | "africa";
 ```
 
 Subtypes are defined only where there's a real semantic grouping (i.e. a roll-up). Americas and the standalone countries stay inline in `Country` — inventing `CountryAmericas` or `CountryStandalone` types would just add noise without giving the roll-up helper anything to iterate.
@@ -71,14 +93,32 @@ For the roll-up logic at render time, pair each subtype with an `as const` array
 
 ```ts
 const COUNTRIES_EUROPE = [
-  'uk', 'switzerland', 'france', 'germany', 'netherlands',
-  'norway', 'sweden', 'austria', 'finland', 'italy',
-  'poland', 'spain', 'belgium', 'ireland', 'denmark',
+  "uk",
+  "switzerland",
+  "france",
+  "germany",
+  "netherlands",
+  "norway",
+  "sweden",
+  "austria",
+  "finland",
+  "italy",
+  "poland",
+  "spain",
+  "belgium",
+  "ireland",
+  "denmark",
 ] as const satisfies readonly CountryEurope[];
 
 const COUNTRIES_ASIA = [
-  'china', 'japan', 'taiwan', 'hongKong', 'southKorea',
-  'malaysia', 'indonesia', 'thailand',
+  "china",
+  "japan",
+  "taiwan",
+  "hongKong",
+  "southKorea",
+  "malaysia",
+  "indonesia",
+  "thailand",
 ] as const satisfies readonly CountryAsia[];
 ```
 
@@ -86,10 +126,17 @@ const COUNTRIES_ASIA = [
 
 ```ts
 type Sector =
-  | 'technology' | 'financials' | 'healthcare'
-  | 'consumerDiscretionary' | 'consumerStaples'
-  | 'industrials' | 'energy' | 'utilities'
-  | 'materials' | 'realEstate' | 'communicationServices';
+  | "technology"
+  | "financials"
+  | "healthcare"
+  | "consumerDiscretionary"
+  | "consumerStaples"
+  | "industrials"
+  | "energy"
+  | "utilities"
+  | "materials"
+  | "realEstate"
+  | "communicationServices";
 ```
 
 **Storage vs. display — regional roll-up:**
@@ -110,13 +157,13 @@ The sector list mirrors GICS (11 sectors) and has no hierarchy — treat it as a
 
 Each entry references one ISIN and adds personal-portfolio-specific data.
 
-| Field | Type | Notes |
-|---|---|---|
-| `isin` | string | FK to `isins.isin` |
-| `positionValue` | number | Current value held, in portfolio currency |
-| `targetAmount` | number | Planning goal for this holding |
-| `notes` | string | Free-form personal notes (why invested / why not) |
-| `inPEA` | boolean | Whether this position sits inside a PEA |
+| Field           | Type    | Notes                                             |
+| --------------- | ------- | ------------------------------------------------- |
+| `isin`          | string  | FK to `isins.isin`                                |
+| `positionValue` | number  | Current value held, in portfolio currency         |
+| `targetAmount`  | number  | Planning goal for this holding                    |
+| `notes`         | string  | Free-form personal notes (why invested / why not) |
+| `inPEA`         | boolean | Whether this position sits inside a PEA           |
 
 ### 2.4 `professionalPortfolio` — HumaCode holdings
 
@@ -124,12 +171,12 @@ Same schema as `personalPortfolio`. Separate collection, separate data.
 
 ### 2.5 `settings` — User preferences
 
-| Field | Type | Notes |
-|---|---|---|
-| `theme` | `'light' \| 'dark'` | |
-| `columnVisibility` | `Record<string, boolean>` | Per-column show/hide |
-| `columnOrder` | `string[]` | Ordered list of column keys |
-| `sort` | `{ column: string; direction: 'asc' \| 'desc' }` | Persisted sort state |
+| Field              | Type                                             | Notes                       |
+| ------------------ | ------------------------------------------------ | --------------------------- |
+| `theme`            | `'light' \| 'dark'`                              |                             |
+| `columnVisibility` | `Record<string, boolean>`                        | Per-column show/hide        |
+| `columnOrder`      | `string[]`                                       | Ordered list of column keys |
+| `sort`             | `{ column: string; direction: 'asc' \| 'desc' }` | Persisted sort state        |
 
 ### 2.6 Top-level JSON shape
 
@@ -247,16 +294,16 @@ A subtle visual cue nudges the user to export a backup when meaningful unsaved w
 
 ## 4. Technical Stack
 
-| Concern | Choice |
-|---|---|
-| App type | Progressive Web App (installable, offline-capable) |
-| Language | TypeScript |
-| UI framework | React |
-| Styling | TailwindCSS |
-| Component library | DaisyUI (https://daisyui.com) |
-| Formatting | OxFmt (https://oxc.rs/docs/guide/usage/formatter.html) |
-| Linting | OxLint (https://oxc.rs/docs/guide/usage/linter.html) |
-| Validation | Zod | 
+| Concern           | Choice                                                 |
+| ----------------- | ------------------------------------------------------ |
+| App type          | Progressive Web App (installable, offline-capable)     |
+| Language          | TypeScript                                             |
+| UI framework      | React                                                  |
+| Styling           | TailwindCSS                                            |
+| Component library | DaisyUI (https://daisyui.com)                          |
+| Formatting        | OxFmt (https://oxc.rs/docs/guide/usage/formatter.html) |
+| Linting           | OxLint (https://oxc.rs/docs/guide/usage/linter.html)   |
+| Validation        | Zod                                                    |
 
 **Open technical points to decide :**
 
@@ -264,3 +311,16 @@ A subtle visual cue nudges the user to export a backup when meaningful unsaved w
 - Charting library (Recharts, Chart.js, or ECharts)
 - State management (React Context + reducer vs Zustand with persistence middleware vs Jotai)
 - Routing (React Router vs TanStack Router)
+
+## GSTACK REVIEW REPORT
+
+| Review        | Trigger               | Why                             | Runs | Status       | Findings                  |
+| ------------- | --------------------- | ------------------------------- | ---- | ------------ | ------------------------- |
+| CEO Review    | `/plan-ceo-review`    | Scope & strategy                | 0    | —            | —                         |
+| Codex Review  | `/codex review`       | Independent 2nd opinion         | 0    | —            | —                         |
+| Eng Review    | `/plan-eng-review`    | Architecture & tests (required) | 1    | CLEAR (PLAN) | 7 issues, 3 critical gaps |
+| Design Review | `/plan-design-review` | UI/UX gaps                      | 0    | —            | —                         |
+| DX Review     | `/plan-devex-review`  | Developer experience gaps       | 0    | —            | —                         |
+
+- **UNRESOLVED:** 0 decisions unresolved
+- **VERDICT:** ENG CLEARED — ready to implement. 3 critical gaps documented (score `undefined` handling, `JSON.parse` error boundary before Zod, `computeSimilarity` NaN guard).

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm exec *)",
+      "Bash(node -e \"const {randomUUID}=require\\('crypto'\\); console.log\\(randomUUID\\(\\)\\); console.log\\(randomUUID\\(\\)\\);\")",
+      "Bash(node -e \"import\\('es-toolkit'\\).then\\(\\(\\) => console.log\\('ok'\\)\\).catch\\(e => console.log\\('missing:', e.message\\)\\)\")",
+      "Bash(pnpm check *)",
+      "Bash(pnpm run *)"
+    ]
+  }
+}
