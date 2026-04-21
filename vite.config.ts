@@ -34,7 +34,7 @@ export default defineConfig({
     }),
   ],
   test: {
-    environment: "node",
+    environment: "happy-dom",
     exclude: ["e2e/**", "node_modules/**"],
     globals: true,
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],

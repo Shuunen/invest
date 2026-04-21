@@ -1,4 +1,3 @@
-import { invariant } from "es-toolkit";
 import { z } from "zod/v4";
 
 // --- Geography ---
@@ -117,9 +116,11 @@ export const COUNTRIES_EUROPE = [
 
 // --- ISIN ---
 
-const ISIN_LENGTH = 12;
-const SCORE_FEE_WEIGHT = 10;
-const SCORE_RISK_WEIGHT = 5;
+const ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
+const MAX_ISINS = 5000;
+const MAX_PORTFOLIOS = 50;
+export const SCORE_FEE_WEIGHT = 10;
+export const SCORE_RISK_WEIGHT = 5;
 const DEFAULT_SIMILARITY_THRESHOLD = 0.85;
 
 const nullableNumber = z
@@ -131,10 +132,14 @@ export const IsinSchema = z.object({
   availableForPlan: z.boolean(),
   availableOnBroker: z.boolean(),
   fees: z.number().nonnegative(),
-  // Partial<Record<...>> — only keys present in the ETF factsheet are stored
-  geoAllocation: z.record(z.string(), z.number()).default({}),
+  geoAllocation: z
+    .record(z.string(), z.number())
+    .refine(obj => Object.keys(obj).every(key => CountrySchema.options.includes(key as Country)), {
+      message: "geoAllocation contains unknown country keys",
+    })
+    .default({}),
   isAccumulating: z.boolean(),
-  isin: z.string().min(ISIN_LENGTH).max(ISIN_LENGTH),
+  isin: z.string().regex(ISIN_REGEX),
   name: z.string().min(1),
   performance1y: nullableNumber,
   performance3y: nullableNumber,
@@ -142,7 +147,12 @@ export const IsinSchema = z.object({
   riskReward1y: nullableNumber,
   riskReward3y: nullableNumber,
   riskReward5y: nullableNumber,
-  sectorAllocation: z.record(z.string(), z.number()).default({}),
+  sectorAllocation: z
+    .record(z.string(), z.number())
+    .refine(obj => Object.keys(obj).every(key => SectorSchema.options.includes(key as Sector)), {
+      message: "sectorAllocation contains unknown sector keys",
+    })
+    .default({}),
   tickers: z.array(z.string()).default([]),
 });
 
@@ -163,7 +173,7 @@ export function computeScore(isin: Isin): number | undefined {
 
 export const PortfolioEntrySchema = z.object({
   inPEA: z.boolean().default(false),
-  isin: z.string().min(ISIN_LENGTH).max(ISIN_LENGTH),
+  isin: z.string().regex(ISIN_REGEX),
   notes: z.string().default(""),
   positionValue: z.number().nonnegative(),
   targetAmount: z.number().nonnegative(),
@@ -186,8 +196,8 @@ export const SettingsSchema = z.object({
   columnOrder: z.array(z.string()).default([]),
   columnVisibility: z.record(z.string(), z.boolean()).default({}),
   editCount: z.number().int().nonnegative().default(0),
-  lastExportedAt: z
-    .string()
+  lastExportedAt: z.iso
+    .datetime()
     .nullish()
     .transform(str => str ?? undefined),
   similarityThreshold: z.number().min(0).max(1).default(DEFAULT_SIMILARITY_THRESHOLD),
@@ -206,8 +216,8 @@ export type Settings = z.infer<typeof SettingsSchema>;
 
 export const AppDataSchema = z
   .object({
-    isins: z.array(IsinSchema),
-    portfolios: z.array(PortfolioSchema),
+    isins: z.array(IsinSchema).max(MAX_ISINS),
+    portfolios: z.array(PortfolioSchema).max(MAX_PORTFOLIOS),
     settings: SettingsSchema,
   })
   .superRefine((data, ctx) => {
@@ -217,7 +227,7 @@ export const AppDataSchema = z
         if (!knownIsins.has(entry.isin))
           ctx.addIssue({
             code: "custom",
-            message: `Portfolio "${portfolio.name}" entry[${ei}] references unknown ISIN: ${entry.isin}`,
+            message: `Portfolio entry[${ei}] references unknown ISIN: ${entry.isin}`,
             path: ["portfolios", pi, "entries", ei, "isin"],
           });
   });
@@ -239,9 +249,8 @@ export function safeImportJson(text: string): { data: AppData } | { error: strin
   }
   const result = AppDataSchema.safeParse(parsed);
   if (!result.success) {
-    const [first] = result.error.issues;
-    invariant(first, "Zod error has no issues");
-    return { error: `Schema error at ${first.path.join(".")}: ${first.message}` };
+    const messages = result.error.issues.map(issue => `Schema error at ${issue.path.join(".")}: ${issue.message}`);
+    return { error: messages.join("\n") };
   }
   return { data: result.data };
 }
