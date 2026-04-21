@@ -36,30 +36,9 @@ const CountrySchema = z.enum([
   "canada",
   "brazil",
   "europe",
-  "uk",
-  "switzerland",
-  "france",
-  "germany",
-  "netherlands",
-  "norway",
-  "sweden",
-  "austria",
-  "finland",
-  "italy",
-  "poland",
-  "spain",
-  "belgium",
-  "ireland",
-  "denmark",
+  ...CountryEuropeSchema.options,
   "asia",
-  "china",
-  "japan",
-  "taiwan",
-  "hongKong",
-  "southKorea",
-  "malaysia",
-  "indonesia",
-  "thailand",
+  ...CountryAsiaSchema.options,
   "india",
   "saudiArabia",
   "australia",
@@ -85,34 +64,8 @@ export type CountryAsia = z.infer<typeof CountryAsiaSchema>;
 export type CountryEurope = z.infer<typeof CountryEuropeSchema>;
 export type Sector = z.infer<typeof SectorSchema>;
 
-export const COUNTRIES_ASIA = [
-  "china",
-  "japan",
-  "taiwan",
-  "hongKong",
-  "southKorea",
-  "malaysia",
-  "indonesia",
-  "thailand",
-] as const satisfies readonly CountryAsia[];
-
-export const COUNTRIES_EUROPE = [
-  "uk",
-  "switzerland",
-  "france",
-  "germany",
-  "netherlands",
-  "norway",
-  "sweden",
-  "austria",
-  "finland",
-  "italy",
-  "poland",
-  "spain",
-  "belgium",
-  "ireland",
-  "denmark",
-] as const satisfies readonly CountryEurope[];
+export const COUNTRIES_ASIA = CountryAsiaSchema.options satisfies readonly CountryAsia[];
+export const COUNTRIES_EUROPE = CountryEuropeSchema.options satisfies readonly CountryEurope[];
 
 // --- ISIN ---
 
@@ -137,7 +90,7 @@ export const IsinSchema = z.object({
   fees: z.number().nonnegative(),
   geoAllocation: z
     .record(z.string(), z.number())
-    .refine(obj => Object.keys(obj).every(key => KNOWN_COUNTRIES.has(key)), {
+    .refine((obj): obj is Partial<Record<Country, number>> => Object.keys(obj).every(key => KNOWN_COUNTRIES.has(key)), {
       message: "geoAllocation contains unknown country keys",
     })
     .default({}),
@@ -147,23 +100,20 @@ export const IsinSchema = z.object({
   performance1y: nullableNumber,
   performance3y: nullableNumber,
   performance5y: nullableNumber,
+  provider: z.string().default(""),
   riskReward1y: nullableNumber,
   riskReward3y: nullableNumber,
   riskReward5y: nullableNumber,
   sectorAllocation: z
     .record(z.string(), z.number())
-    .refine(obj => Object.keys(obj).every(key => KNOWN_SECTORS.has(key)), {
+    .refine((obj): obj is Partial<Record<Sector, number>> => Object.keys(obj).every(key => KNOWN_SECTORS.has(key)), {
       message: "sectorAllocation contains unknown sector keys",
     })
     .default({}),
   tickers: z.array(z.string()).default([]),
 });
 
-type IsinRaw = z.infer<typeof IsinSchema>;
-export type Isin = Omit<IsinRaw, "geoAllocation" | "sectorAllocation"> & {
-  geoAllocation: Partial<Record<Country, number>>;
-  sectorAllocation: Partial<Record<Sector, number>>;
-};
+export type Isin = z.infer<typeof IsinSchema>;
 
 // score is derived, never stored
 export function computeScore(isin: Isin): number | undefined {
