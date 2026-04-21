@@ -1,8 +1,9 @@
+import { RouterProvider } from "@tanstack/react-router";
 import { invariant } from "es-toolkit";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { App } from "./app.tsx";
+import { router } from "./router.tsx";
 
 const root = document.querySelector<HTMLElement>("#root");
 // oxlint-disable-next-line require-hook
@@ -10,7 +11,7 @@ invariant(root, "Root element #root not found");
 try {
   createRoot(root).render(
     <StrictMode>
-      <App />
+      <RouterProvider router={router} />
     </StrictMode>,
   );
 } catch (error) {

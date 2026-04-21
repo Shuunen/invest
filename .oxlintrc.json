@@ -51,6 +51,7 @@
     "TextEncoder": "readonly",
     "URL": "readonly",
     "window": "readonly",
+    "indexedDB": "readonly",
     "XMLSerializer": "readonly",
     "XPathEvaluator": "readonly",
     "XPathResult": "readonly"

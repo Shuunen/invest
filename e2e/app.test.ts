@@ -1,5 +1,10 @@
 import { test, expect } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => indexedDB.deleteDatabase("invest-app"));
+});
+
 test("page loads without uncaught errors", async ({ page }) => {
   const pageErrors: Error[] = [];
   page.on("pageerror", err => pageErrors.push(err));
