@@ -4,10 +4,15 @@
       "Bash(pnpm install *)",
       "Bash(pnpm add *)",
       "Bash(pnpm exec *)",
-      "Bash(node -e \"const {randomUUID}=require\\('crypto'\\); console.log\\(randomUUID\\(\\)\\); console.log\\(randomUUID\\(\\)\\);\")",
-      "Bash(node -e \"import\\('es-toolkit'\\).then\\(\\(\\) => console.log\\('ok'\\)\\).catch\\(e => console.log\\('missing:', e.message\\)\\)\")",
+      "Bash(node -e *)",
       "Bash(pnpm check *)",
-      "Bash(pnpm run *)"
+      "Bash(pnpm run *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git remote *)",
+      "Bash(git -C *)",
+      "Bash(gh pr *)"
     ]
   }
 }
