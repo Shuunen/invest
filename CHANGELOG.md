@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Full project scaffold: Vite + React + TypeScript with Tailwind CSS and PWA support
 - Zod v4 data model: `IsinSchema`, `PortfolioSchema`, `SettingsSchema`, and `AppDataSchema` with referential integrity validation
-- `computeScore` function deriving a comparable score from 3-year performance, risk/reward, and fees
+- `computeScore` — ranks instruments by combining 3-year performance, risk/reward ratio, and fees into a single comparable score
 - `safeImportJson` / `parseAppData` helpers for importing and validating JSON data files
 - ISIN format validation via regex (`^[A-Z]{2}[A-Z0-9]{9}[0-9]$`)
 - Geo and sector allocation key validation against known enum values
