@@ -1,18 +1,11 @@
-import {
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type Header,
-  type SortingState,
-  type Table,
-} from "@tanstack/react-table";
+import { flexRender, type Header, type SortingState, type Table } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
 import sampleJson from "../../data/sample.json";
 import { db } from "../db/db.ts";
 import { AppDataSchema, type AppData, type Isin } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
-import { columns, getAriaSortValue } from "./isin-table-columns.tsx";
+import { getAriaSortValue } from "./isin-table-columns.tsx";
+import { matchesFilter, useTableInstance } from "./isin-table-hooks.ts";
 import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, SKELETON_COLS, SKELETON_ROWS } from "./isin-table-utils.ts";
 
 const DEBOUNCE_MS = 300;
@@ -33,7 +26,7 @@ function renderThContent(header: Header<Isin, unknown>) {
   return (
     <button
       type="button"
-      className="flex min-h-[44px] cursor-pointer items-center gap-1"
+      className="flex min-h-11 cursor-pointer items-center gap-1"
       onClick={header.column.getToggleSortingHandler()}
     >
       {label}
@@ -100,6 +93,7 @@ function useIsinTableState() {
   const setSort = useAppStore(state => state.setSort);
   const setColumnVisibility = useAppStore(state => state.setColumnVisibility);
   const [retryKey, setRetryKey] = useState(0);
+  const [filterText, setFilterText] = useState("");
   const handleRetry = () => {
     useAppStore.setState({ isLoading: true, loadError: undefined });
     setRetryKey(prevKey => prevKey + 1);
@@ -114,30 +108,26 @@ function useIsinTableState() {
     () => [{ desc: data.settings.sort.direction === "desc", id: data.settings.sort.column }],
     [data.settings.sort],
   );
-  const table = useReactTable({
-    columns,
-    data: data.isins,
-    enableMultiSort: false,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    onColumnVisibilityChange: updater => {
-      const next = typeof updater === "function" ? updater(resolvedVisibility) : updater;
-      setColumnVisibility(next);
-    },
-    onSortingChange: updater => {
-      const next = typeof updater === "function" ? updater(sorting) : updater;
-      if (next.length > 0) {
-        const [{ id, desc }] = next;
-        setSort({ column: id, direction: desc ? "desc" : "asc" });
-      } else setSort({ column: sorting[0]?.id ?? "score", direction: "asc" });
-    },
-    sortDescFirst: false,
-    state: { columnVisibility: resolvedVisibility, sorting },
-  });
+  const filteredIsins = useMemo(() => {
+    const lower = filterText.trim().toLowerCase();
+    if (!lower) return data.isins;
+    return data.isins.filter(row => matchesFilter(row, lower));
+  }, [data.isins, filterText]);
+  const table = useTableInstance({ filteredIsins, resolvedVisibility, setColumnVisibility, setSort, sorting });
   const { rows } = table.getRowModel();
   const quintileClasses = useMemo(() => computeQuintileClasses(rows), [rows]);
   const visibleLeafCount = table.getVisibleLeafColumns().length;
-  return { data, handleRetry, isLoading, loadError, quintileClasses, table, visibleLeafCount };
+  return {
+    data,
+    filterText,
+    handleRetry,
+    isLoading,
+    loadError,
+    quintileClasses,
+    setFilterText,
+    table,
+    visibleLeafCount,
+  };
 }
 
 function renderSkeleton() {
@@ -195,7 +185,7 @@ function renderColumnVisibility(table: Table<Isin>, visibleLeafCount: number) {
         <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
           ☰ Columns
         </div>
-        <div tabIndex={0} className="dropdown-content menu z-[9999] w-52 rounded-box bg-base-100 p-2 shadow">
+        <div tabIndex={0} className="dropdown-content menu z-9999 w-52 rounded-box bg-base-100 p-2 shadow">
           {table.getAllLeafColumns().map(column => (
             <label key={column.id} className="label cursor-pointer gap-2">
               <input
@@ -258,14 +248,41 @@ function renderTableBody(table: Table<Isin>, quintileClasses: Map<string, Map<st
   );
 }
 
+function renderFilter(filterText: string, setFilterText: (value: string) => void) {
+  return (
+    <input
+      type="search"
+      className="input-bordered input input-sm mb-2 w-full max-w-sm"
+      placeholder="Search ISIN, name, tickers…"
+      value={filterText}
+      onChange={event => {
+        setFilterText(event.target.value);
+      }}
+    />
+  );
+}
+
 export function IsinTable() {
-  const { data, handleRetry, isLoading, loadError, quintileClasses, table, visibleLeafCount } = useIsinTableState();
+  const {
+    data,
+    filterText,
+    handleRetry,
+    isLoading,
+    loadError,
+    quintileClasses,
+    setFilterText,
+    table,
+    visibleLeafCount,
+  } = useIsinTableState();
   if (isLoading) return renderSkeleton();
   if (loadError) return renderError(loadError, handleRetry);
   if (data.isins.length === 0) return renderEmpty();
   return (
     <div className="p-4 text-left">
-      {renderColumnVisibility(table, visibleLeafCount)}
+      <div className="mb-2 flex items-center justify-between gap-2">
+        {renderFilter(filterText, setFilterText)}
+        {renderColumnVisibility(table, visibleLeafCount)}
+      </div>
       <div className="w-full overflow-x-auto">
         <table className="table-hover table w-full">
           <caption className="sr-only">ISINs reference data table</caption>
