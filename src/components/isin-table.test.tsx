@@ -1,11 +1,11 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { invariant } from "es-toolkit";
-import { computeScore, type AppData, type Isin } from "../schemas/index.ts";
+import { computeScore, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { quintileClass } from "./isin-table-utils.ts";
 import { IsinTable } from "./isin-table.tsx";
 
-function makeIsin(overrides: Partial<Isin> = {}): Isin {
+function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPlan: false,
     availableOnBroker: true,
@@ -27,10 +27,10 @@ function makeIsin(overrides: Partial<Isin> = {}): Isin {
   };
 }
 
-function makeTestData(isins: Isin[]): AppData {
+function makeTestData(assets: Asset[]): AppData {
   return {
     ...defaultAppData,
-    isins,
+    assets,
     settings: { ...defaultAppData.settings, columnVisibility: {}, sort: { column: "score", direction: "desc" } },
   };
 }
@@ -98,11 +98,11 @@ describe("IsinTable - data display", () => {
   });
 
   it("renders all ISIN rows", () => {
-    const isins = [
-      makeIsin({ isin: "LU1234567890", name: "ETF One" }),
-      makeIsin({ isin: "FR0000000001", name: "ETF Two" }),
+    const assets = [
+      makeAsset({ isin: "LU1234567890", name: "ETF One" }),
+      makeAsset({ isin: "FR0000000001", name: "ETF Two" }),
     ];
-    useAppStore.setState({ data: makeTestData(isins), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<IsinTable />);
     expect(screen.getByText("ETF One")).toBeInTheDocument();
     expect(screen.getByText("ETF Two")).toBeInTheDocument();
@@ -110,7 +110,7 @@ describe("IsinTable - data display", () => {
 
   it("renders undefined numeric cell as em dash", () => {
     useAppStore.setState({
-      data: makeTestData([makeIsin({ performance3y: undefined })]),
+      data: makeTestData([makeAsset({ performance3y: undefined })]),
       isLoading: false,
       loadError: undefined,
     });
@@ -123,20 +123,20 @@ describe("IsinTable - data display", () => {
 
 describe("IsinTable - score column", () => {
   it("score column matches computeScore output", () => {
-    const isin = makeIsin({ fees: 0.2, performance3y: 30, riskReward3y: 1.8 });
-    const expected = computeScore(isin);
+    const asset = makeAsset({ fees: 0.2, performance3y: 30, riskReward3y: 1.8 });
+    const expected = computeScore(asset);
     expect(expected).toBeDefined();
     invariant(expected !== undefined, "Expected score to be defined");
-    useAppStore.setState({ data: makeTestData([isin]), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
     render(<IsinTable />);
     expect(screen.getByText(expected.toFixed(2))).toBeInTheDocument();
   });
 
   it("score above warning threshold has text-warning class", () => {
-    const isin = makeIsin({ fees: 0, performance3y: 200, riskReward3y: 0 });
-    useAppStore.setState({ data: makeTestData([isin]), isLoading: false, loadError: undefined });
+    const asset = makeAsset({ fees: 0, performance3y: 200, riskReward3y: 0 });
+    useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
     render(<IsinTable />);
-    const score = computeScore(isin);
+    const score = computeScore(asset);
     invariant(score !== undefined, "Expected score to be defined");
     const scoreEl = document.querySelector(".text-warning");
     invariant(scoreEl, "Expected to find element with text-warning class");
@@ -146,11 +146,11 @@ describe("IsinTable - score column", () => {
 
 describe("IsinTable - sorting", () => {
   it("sort by name on header click updates store", async () => {
-    const isins = [
-      makeIsin({ isin: "LU1234567890", name: "Zebra ETF" }),
-      makeIsin({ isin: "FR0000000001", name: "Apple ETF" }),
+    const assets = [
+      makeAsset({ isin: "LU1234567890", name: "Zebra ETF" }),
+      makeAsset({ isin: "FR0000000001", name: "Apple ETF" }),
     ];
-    useAppStore.setState({ data: makeTestData(isins), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<IsinTable />);
     fireEvent.click(screen.getByRole("button", { name: /name/i }));
     await waitFor(() => {
@@ -160,8 +160,8 @@ describe("IsinTable - sorting", () => {
   });
 
   it("sort toggles direction on second click", async () => {
-    const isins = [makeIsin({ isin: "LU1234567890" }), makeIsin({ isin: "FR0000000001" })];
-    useAppStore.setState({ data: makeTestData(isins), isLoading: false, loadError: undefined });
+    const assets = [makeAsset({ isin: "LU1234567890" }), makeAsset({ isin: "FR0000000001" })];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<IsinTable />);
     const nameBtn = screen.getByRole("button", { name: /name/i });
     fireEvent.click(nameBtn);
@@ -179,7 +179,7 @@ describe("IsinTable - sorting", () => {
 
 describe("IsinTable - column hiding", () => {
   it("unchecking a column removes its header from DOM", async () => {
-    useAppStore.setState({ data: makeTestData([makeIsin()]), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData([makeAsset()]), isLoading: false, loadError: undefined });
     render(<IsinTable />);
     expect(screen.getAllByText("Provider").length).toBeGreaterThan(0);
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
@@ -217,7 +217,7 @@ describe("IsinTable - column visibility guard", () => {
     };
     useAppStore.setState({
       data: {
-        ...makeTestData([makeIsin()]),
+        ...makeTestData([makeAsset()]),
         settings: {
           ...defaultAppData.settings,
           columnVisibility: colsAllHidden,

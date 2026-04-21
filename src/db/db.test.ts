@@ -12,18 +12,18 @@ describe("AppDataDb", () => {
   it("stores and retrieves AppData", async () => {
     await db.delete();
     await db.open();
-    const result = AppDataSchema.safeParse({ isins: [], portfolios: [], settings: {} });
+    const result = AppDataSchema.safeParse({ assets: [], portfolios: [], settings: {} });
     expect(result.success).toBe(true);
     if (!result.success) return;
     await db.appdata.put({ data: result.data, id: 1 });
     const record = await db.appdata.get(1);
-    expect(record?.data.isins).toHaveLength(0);
+    expect(record?.data.assets).toHaveLength(0);
   });
 
   it("re-parsing through Zod catches corrupted data", async () => {
     await db.delete();
     await db.open();
-    const malformed = { data: { isins: "not-an-array" }, id: 1 };
+    const malformed = { data: { assets: "not-an-array" }, id: 1 };
     await db.appdata.put(malformed as unknown as AppDataRecord);
     const record = await db.appdata.get(1);
     expect(() => AppDataSchema.parse(record?.data)).toThrow("expected array, received string");

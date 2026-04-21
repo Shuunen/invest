@@ -5,7 +5,7 @@ describe("useAppStore - initial state and load", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
     const state = useAppStore.getState();
     expect(state.isLoading).toBe(true);
-    expect(state.data.isins).toHaveLength(0);
+    expect(state.data.assets).toHaveLength(0);
     expect(state.loadError).toBeUndefined();
   });
 

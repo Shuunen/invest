@@ -1,5 +1,5 @@
 import type { Row } from "@tanstack/react-table";
-import { computeScore, type Isin } from "../schemas/index.ts";
+import { computeScore, type Asset } from "../schemas/index.ts";
 
 export const DECIMAL_PLACES = 2;
 export const MIN_ROWS_FOR_FORMATTING = 10;
@@ -45,16 +45,16 @@ export function formatNumber(val: number | undefined): string {
   return val === undefined ? "—" : val.toFixed(DECIMAL_PLACES);
 }
 
-export function computeQuintileClasses(rows: Row<Isin>[]): Map<string, Map<string, string | undefined>> {
+export function computeQuintileClasses(rows: Row<Asset>[]): Map<string, Map<string, string | undefined>> {
   return new Map(
     NUMERIC_COL_IDS.map(colId => {
       const allValues = rows.map((row): number | undefined =>
-        colId === "score" ? computeScore(row.original) : (row.original[colId as keyof Isin] as number | undefined),
+        colId === "score" ? computeScore(row.original) : (row.original[colId as keyof Asset] as number | undefined),
       );
       const rowClassMap = new Map(
         rows.map(row => {
           const cellValue =
-            colId === "score" ? computeScore(row.original) : (row.original[colId as keyof Isin] as number | undefined);
+            colId === "score" ? computeScore(row.original) : (row.original[colId as keyof Asset] as number | undefined);
           return [row.id, quintileClass(cellValue, allValues)];
         }),
       );

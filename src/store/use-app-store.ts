@@ -5,7 +5,7 @@ import { type AppData, type Settings, SettingsSchema } from "../schemas/index.ts
 const defaultSettings: Settings = SettingsSchema.parse({});
 
 export const defaultAppData: AppData = {
-  isins: [],
+  assets: [],
   portfolios: [],
   settings: defaultSettings,
 };

@@ -1,16 +1,16 @@
 import { getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } from "@tanstack/react-table";
-import type { Isin } from "../schemas/index.ts";
+import type { Asset } from "../schemas/index.ts";
 import { columns } from "./isin-table-columns.tsx";
 
-export function matchesFilter(isin: Isin, lower: string): boolean {
-  if (isin.isin.toLowerCase().includes(lower)) return true;
-  if (isin.name.toLowerCase().includes(lower)) return true;
-  if (isin.provider.toLowerCase().includes(lower)) return true;
-  return isin.tickers.some(ticker => ticker.toLowerCase().includes(lower));
+export function matchesFilter(asset: Asset, lower: string): boolean {
+  if (asset.isin.toLowerCase().includes(lower)) return true;
+  if (asset.name.toLowerCase().includes(lower)) return true;
+  if (asset.provider.toLowerCase().includes(lower)) return true;
+  return asset.tickers.some(ticker => ticker.toLowerCase().includes(lower));
 }
 
 type UseTableInstanceOptions = {
-  filteredIsins: Isin[];
+  filteredAssets: Asset[];
   resolvedVisibility: Record<string, boolean>;
   setColumnVisibility: (vis: Record<string, boolean>) => void;
   setSort: (sort: { column: string; direction: "asc" | "desc" }) => void;
@@ -18,7 +18,7 @@ type UseTableInstanceOptions = {
 };
 
 export function useTableInstance({
-  filteredIsins,
+  filteredAssets,
   resolvedVisibility,
   setColumnVisibility,
   setSort,
@@ -26,7 +26,7 @@ export function useTableInstance({
 }: UseTableInstanceOptions) {
   return useReactTable({
     columns,
-    data: filteredIsins,
+    data: filteredAssets,
     enableMultiSort: false,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),

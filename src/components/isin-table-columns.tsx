@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { computeScore, type Isin } from "../schemas/index.ts";
+import { computeScore, type Asset } from "../schemas/index.ts";
 import { DECIMAL_PLACES, formatNumber, SCORE_MISSING_VALUE, SCORE_WARNING_THRESHOLD } from "./isin-table-utils.ts";
 
 function booleanCell(value: boolean) {
@@ -18,7 +18,7 @@ function getAriaSortValue(sorted: "asc" | "desc" | false): "ascending" | "descen
 
 export { getAriaSortValue };
 
-export const columns: ColumnDef<Isin>[] = [
+export const columns: ColumnDef<Asset>[] = [
   {
     accessorFn: row => computeScore(row) ?? SCORE_MISSING_VALUE,
     cell: ({ getValue }) => {

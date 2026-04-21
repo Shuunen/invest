@@ -2,7 +2,7 @@ import { flexRender, type Header, type SortingState, type Table } from "@tanstac
 import { useEffect, useMemo, useState } from "react";
 import sampleJson from "../../data/sample.json";
 import { db } from "../db/db.ts";
-import { AppDataSchema, type AppData, type Isin } from "../schemas/index.ts";
+import { AppDataSchema, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { getAriaSortValue } from "./isin-table-columns.tsx";
 import { matchesFilter, useTableInstance } from "./isin-table-hooks.ts";
@@ -18,7 +18,7 @@ function getSortIndicator(sorted: "asc" | "desc" | false): string {
   return "";
 }
 
-function renderThContent(header: Header<Isin, unknown>) {
+function renderThContent(header: Header<Asset, unknown>) {
   if (header.isPlaceholder) return undefined;
   const sorted = header.column.getIsSorted();
   const label = flexRender(header.column.columnDef.header, header.getContext());
@@ -108,12 +108,12 @@ function useIsinTableState() {
     () => [{ desc: data.settings.sort.direction === "desc", id: data.settings.sort.column }],
     [data.settings.sort],
   );
-  const filteredIsins = useMemo(() => {
+  const filteredAssets = useMemo(() => {
     const lower = filterText.trim().toLowerCase();
-    if (!lower) return data.isins;
-    return data.isins.filter(row => matchesFilter(row, lower));
-  }, [data.isins, filterText]);
-  const table = useTableInstance({ filteredIsins, resolvedVisibility, setColumnVisibility, setSort, sorting });
+    if (!lower) return data.assets;
+    return data.assets.filter(row => matchesFilter(row, lower));
+  }, [data.assets, filterText]);
+  const table = useTableInstance({ filteredAssets, resolvedVisibility, setColumnVisibility, setSort, sorting });
   const { rows } = table.getRowModel();
   const quintileClasses = useMemo(() => computeQuintileClasses(rows), [rows]);
   const visibleLeafCount = table.getVisibleLeafColumns().length;
@@ -178,7 +178,7 @@ function renderEmpty() {
   );
 }
 
-function renderColumnVisibility(table: Table<Isin>, visibleLeafCount: number) {
+function renderColumnVisibility(table: Table<Asset>, visibleLeafCount: number) {
   return (
     <div className="mb-2 flex justify-end">
       <div className="dropdown dropdown-end">
@@ -204,7 +204,7 @@ function renderColumnVisibility(table: Table<Isin>, visibleLeafCount: number) {
   );
 }
 
-function renderTableHeader(table: Table<Isin>) {
+function renderTableHeader(table: Table<Asset>) {
   return (
     <thead className="sticky top-0 z-10 bg-base-100">
       {table.getHeaderGroups().map(headerGroup => (
@@ -226,7 +226,7 @@ function renderTableHeader(table: Table<Isin>) {
   );
 }
 
-function renderTableBody(table: Table<Isin>, quintileClasses: Map<string, Map<string, string | undefined>>) {
+function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<string, string | undefined>>) {
   return (
     <tbody>
       {table.getRowModel().rows.map(row => (
@@ -276,7 +276,7 @@ export function IsinTable() {
   } = useIsinTableState();
   if (isLoading) return renderSkeleton();
   if (loadError) return renderError(loadError, handleRetry);
-  if (data.isins.length === 0) return renderEmpty();
+  if (data.assets.length === 0) return renderEmpty();
   return (
     <div className="p-4 text-left">
       <div className="mb-2 flex items-center justify-between gap-2">
