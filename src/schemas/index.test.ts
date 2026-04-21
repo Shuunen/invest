@@ -1,16 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { invariant } from "es-toolkit";
-import {
-  safeImportJson,
-  parseAppData,
-  computeScore,
-  AppDataSchema,
-  SettingsSchema,
-  SCORE_FEE_WEIGHT,
-  SCORE_RISK_WEIGHT,
-  type AppData,
-} from "./index";
+import { safeImportJson, parseAppData, computeScore, AppDataSchema, SettingsSchema, type AppData } from "./index";
 
 const sampleRaw = readFileSync(join(process.cwd(), "data/sample.json"), "utf8");
 
@@ -22,6 +13,12 @@ describe("AppDataSchema", () => {
 
   it("rejects invalid JSON", () => {
     const result = safeImportJson("not json");
+    expect(result).toHaveProperty("error");
+    expect((result as { error: string }).error).toMatch(/Invalid JSON/);
+  });
+
+  it("rejects empty string", () => {
+    const result = safeImportJson("");
     expect(result).toHaveProperty("error");
     expect((result as { error: string }).error).toMatch(/Invalid JSON/);
   });
@@ -64,9 +61,10 @@ describe("safeImportJson", () => {
 describe("parseAppData", () => {
   it("returns parsed data for valid input", () => {
     const data = parseAppData(JSON.parse(sampleRaw));
-    expect(data).toHaveProperty("isins");
-    expect(data).toHaveProperty("portfolios");
-    expect(data).toHaveProperty("settings");
+    expect(Array.isArray(data.isins)).toBe(true);
+    expect(data.isins.length).toBeGreaterThan(0);
+    expect(Array.isArray(data.portfolios)).toBe(true);
+    expect(data.settings.theme).toBeTypeOf("string");
   });
 
   it("throws for invalid input", () => {
@@ -113,7 +111,7 @@ describe("computeScore", () => {
     invariant(isin, "Expected to find an ISIN with all required fields");
     invariant(isin.performance3y !== undefined, "Expected performance3y to be defined");
     invariant(isin.riskReward3y !== undefined, "Expected riskReward3y to be defined");
-    const expected = isin.performance3y + isin.riskReward3y * SCORE_RISK_WEIGHT - isin.fees * SCORE_FEE_WEIGHT;
+    const expected = isin.performance3y + isin.riskReward3y * 5 - isin.fees * 10;
     expect(computeScore(isin)).toBeCloseTo(expected, 10);
   });
 });

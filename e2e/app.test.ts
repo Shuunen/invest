@@ -14,9 +14,10 @@ test("page title is correct", async ({ page }) => {
   await expect(page).toHaveTitle("Invest — Portfolio Tracker");
 });
 
-test("root element mounts", async ({ page }) => {
+test("root element mounts and renders content", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("#root")).toBeAttached();
+  await expect(page.locator("#root")).not.toBeEmpty();
 });
 
 test("page has correct viewport meta", async ({ page }) => {

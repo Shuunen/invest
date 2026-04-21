@@ -117,8 +117,8 @@ export const COUNTRIES_EUROPE = [
 // --- ISIN ---
 
 const ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
-const MAX_ISINS = 5000;
-const MAX_PORTFOLIOS = 50;
+export const MAX_ISINS = 5000;
+export const MAX_PORTFOLIOS = 50;
 export const SCORE_FEE_WEIGHT = 10;
 export const SCORE_RISK_WEIGHT = 5;
 const DEFAULT_SIMILARITY_THRESHOLD = 0.85;
@@ -128,13 +128,16 @@ const nullableNumber = z
   .nullish()
   .transform(num => num ?? undefined);
 
+const KNOWN_COUNTRIES = new Set<string>(CountrySchema.options);
+const KNOWN_SECTORS = new Set<string>(SectorSchema.options);
+
 export const IsinSchema = z.object({
   availableForPlan: z.boolean(),
   availableOnBroker: z.boolean(),
   fees: z.number().nonnegative(),
   geoAllocation: z
     .record(z.string(), z.number())
-    .refine(obj => Object.keys(obj).every(key => CountrySchema.options.includes(key as Country)), {
+    .refine(obj => Object.keys(obj).every(key => KNOWN_COUNTRIES.has(key)), {
       message: "geoAllocation contains unknown country keys",
     })
     .default({}),
@@ -149,7 +152,7 @@ export const IsinSchema = z.object({
   riskReward5y: nullableNumber,
   sectorAllocation: z
     .record(z.string(), z.number())
-    .refine(obj => Object.keys(obj).every(key => SectorSchema.options.includes(key as Sector)), {
+    .refine(obj => Object.keys(obj).every(key => KNOWN_SECTORS.has(key)), {
       message: "sectorAllocation contains unknown sector keys",
     })
     .default({}),

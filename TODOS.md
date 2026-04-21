@@ -1,5 +1,13 @@
 # TODOS
 
+## Assets
+
+### Add PWA icons and favicon
+
+**What:** Create `public/icon-192.png`, `public/icon-512.png`, and `public/favicon.svg`.
+**Why:** `vite.config.ts` (VitePWA manifest) references these icons, and `index.html` references `favicon.svg`. Without them the app installs without an icon and browsers show a broken favicon.
+**Priority:** P1
+
 ## Pre-implementation (resolve before writing code)
 
 ### Confirm riskReward field unit

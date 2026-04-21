@@ -2,6 +2,8 @@ import { invariant } from "es-toolkit";
 import {
   AppDataSchema,
   IsinSchema,
+  MAX_ISINS,
+  MAX_PORTFOLIOS,
   PortfolioEntrySchema,
   PortfolioSchema,
   SettingsSchema,
@@ -204,13 +206,26 @@ describe("safeImportJson error message format", () => {
 // --- AppDataSchema: array length limits ---
 
 describe("AppDataSchema limits", () => {
-  it("rejects more than 50 portfolios", () => {
-    const tooManyPortfolios = Array.from({ length: 51 }, (_val, idx) => ({
+  it("rejects more than MAX_PORTFOLIOS portfolios", () => {
+    const tooManyPortfolios = Array.from({ length: MAX_PORTFOLIOS + 1 }, (_val, idx) => ({
       entries: [],
       id: `87b67f15-e6f2-480b-${String(idx).padStart(4, "0")}-5440cc1c7423`,
       name: `Portfolio ${idx}`,
     }));
     const result = AppDataSchema.safeParse({ isins: [], portfolios: tooManyPortfolios, settings: {} });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects more than MAX_ISINS ISINs", () => {
+    const tooManyIsins = Array.from({ length: MAX_ISINS + 1 }, (_val, idx) => ({
+      availableForPlan: false,
+      availableOnBroker: false,
+      fees: 0,
+      isAccumulating: false,
+      isin: `US${String(idx).padStart(9, "0")}${idx % 10}`,
+      name: `Fund ${idx}`,
+    }));
+    const result = AppDataSchema.safeParse({ isins: tooManyIsins, portfolios: [], settings: {} });
     expect(result.success).toBe(false);
   });
 });
