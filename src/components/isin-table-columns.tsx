@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { computeScore, type Isin } from "../schemas/index.ts";
-import { DECIMAL_PLACES, formatNumber, SCORE_WARNING_THRESHOLD } from "./isin-table-utils.ts";
+import { DECIMAL_PLACES, formatNumber, SCORE_MISSING_VALUE, SCORE_WARNING_THRESHOLD } from "./isin-table-utils.ts";
 
 function booleanCell(value: boolean) {
   return (
@@ -20,11 +20,11 @@ export { getAriaSortValue };
 
 export const columns: ColumnDef<Isin>[] = [
   {
-    accessorFn: row => computeScore(row),
+    accessorFn: row => computeScore(row) ?? SCORE_MISSING_VALUE,
     cell: ({ getValue }) => {
-      const score = getValue<number | undefined>();
-      if (score === undefined) return "—";
-      const cls = Math.abs(score) > SCORE_WARNING_THRESHOLD ? "text-error" : "";
+      const score = getValue<number>();
+      const isMissing = score === SCORE_MISSING_VALUE;
+      const cls = !isMissing && Math.abs(score) > SCORE_WARNING_THRESHOLD ? "text-warning" : "";
       return (
         <span className={cls} title="Score = 3y performance + (3y risk/reward × 5) − (fees × 10)">
           {score.toFixed(DECIMAL_PLACES)}
@@ -33,14 +33,6 @@ export const columns: ColumnDef<Isin>[] = [
     },
     header: "Score",
     id: "score",
-    sortingFn: (rowA, rowB) => {
-      const sa = computeScore(rowA.original);
-      const sb = computeScore(rowB.original);
-      if (sa === undefined && sb === undefined) return 0;
-      if (sa === undefined) return 1;
-      if (sb === undefined) return -1;
-      return sa - sb;
-    },
   },
   {
     accessorKey: "provider",
@@ -54,8 +46,12 @@ export const columns: ColumnDef<Isin>[] = [
   {
     accessorKey: "tickers",
     cell: ({ getValue }) => getValue<string[]>().join(", "),
-    enableSorting: false,
     header: "Tickers",
+    sortingFn: (rowA, rowB) => {
+      const tickersA = rowA.original.tickers.join(", ");
+      const tickersB = rowB.original.tickers.join(", ");
+      return tickersA.localeCompare(tickersB);
+    },
   },
   {
     accessorKey: "name",
@@ -69,19 +65,16 @@ export const columns: ColumnDef<Isin>[] = [
   {
     accessorKey: "isAccumulating",
     cell: ({ getValue }) => booleanCell(getValue<boolean>()),
-    enableSorting: false,
     header: "Acc",
   },
   {
     accessorKey: "availableOnBroker",
     cell: ({ getValue }) => booleanCell(getValue<boolean>()),
-    enableSorting: false,
     header: "Broker",
   },
   {
     accessorKey: "availableForPlan",
     cell: ({ getValue }) => booleanCell(getValue<boolean>()),
-    enableSorting: false,
     header: "Plan",
   },
   {

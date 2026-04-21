@@ -129,8 +129,9 @@ function useIsinTableState() {
       if (next.length > 0) {
         const [{ id, desc }] = next;
         setSort({ column: id, direction: desc ? "desc" : "asc" });
-      }
+      } else setSort({ column: sorting[0]?.id ?? "score", direction: "asc" });
     },
+    sortDescFirst: false,
     state: { columnVisibility: resolvedVisibility, sorting },
   });
   const { rows } = table.getRowModel();
@@ -194,7 +195,7 @@ function renderColumnVisibility(table: Table<Isin>, visibleLeafCount: number) {
         <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
           ☰ Columns
         </div>
-        <div tabIndex={0} className="dropdown-content menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
+        <div tabIndex={0} className="dropdown-content menu z-[9999] w-52 rounded-box bg-base-100 p-2 shadow">
           {table.getAllLeafColumns().map(column => (
             <label key={column.id} className="label cursor-pointer gap-2">
               <input
