@@ -33,7 +33,7 @@ function renderThContent(header: Header<Isin, unknown>) {
   return (
     <button
       type="button"
-      className="gap-1 flex min-h-[44px] cursor-pointer items-center"
+      className="flex min-h-[44px] cursor-pointer items-center gap-1"
       onClick={header.column.getToggleSortingHandler()}
     >
       {label}
@@ -149,7 +149,7 @@ function renderSkeleton() {
               <tr key={rowIdx}>
                 {Array.from({ length: SKELETON_COLS }, (_colEl, colIdx) => (
                   <td key={colIdx}>
-                    <div className="skeleton h-4 w-full" />
+                    <div className="h-4 w-full skeleton" />
                   </td>
                 ))}
               </tr>
@@ -194,9 +194,9 @@ function renderColumnVisibility(table: Table<Isin>, visibleLeafCount: number) {
         <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
           ☰ Columns
         </div>
-        <div tabIndex={0} className="dropdown-content menu w-52 rounded-box bg-base-100 p-2 shadow z-[1]">
+        <div tabIndex={0} className="dropdown-content menu z-[1] w-52 rounded-box bg-base-100 p-2 shadow">
           {table.getAllLeafColumns().map(column => (
-            <label key={column.id} className="label gap-2 cursor-pointer">
+            <label key={column.id} className="label cursor-pointer gap-2">
               <input
                 type="checkbox"
                 className="checkbox checkbox-sm"
@@ -215,7 +215,7 @@ function renderColumnVisibility(table: Table<Isin>, visibleLeafCount: number) {
 
 function renderTableHeader(table: Table<Isin>) {
   return (
-    <thead className="top-0 bg-base-100 sticky z-10">
+    <thead className="sticky top-0 z-10 bg-base-100">
       {table.getHeaderGroups().map(headerGroup => (
         <tr key={headerGroup.id}>
           {headerGroup.headers.map(header => (

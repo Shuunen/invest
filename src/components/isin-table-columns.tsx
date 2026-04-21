@@ -24,7 +24,7 @@ export const columns: ColumnDef<Isin>[] = [
     cell: ({ getValue }) => {
       const score = getValue<number | undefined>();
       if (score === undefined) return "—";
-      const cls = Math.abs(score) > SCORE_WARNING_THRESHOLD ? "text-warning" : "";
+      const cls = Math.abs(score) > SCORE_WARNING_THRESHOLD ? "text-error" : "";
       return (
         <span className={cls} title="Score = 3y performance + (3y risk/reward × 5) − (fees × 10)">
           {score.toFixed(DECIMAL_PLACES)}
@@ -60,7 +60,7 @@ export const columns: ColumnDef<Isin>[] = [
   {
     accessorKey: "name",
     cell: ({ getValue }) => (
-      <span className="max-w-xs block truncate" title={getValue<string>()}>
+      <span className="block max-w-xs truncate" title={getValue<string>()}>
         {getValue<string>()}
       </span>
     ),
