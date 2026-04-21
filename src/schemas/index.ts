@@ -197,8 +197,9 @@ export function safeImportJson(text: string): { data: AppData } | { error: strin
   let parsed: unknown = undefined;
   try {
     parsed = JSON.parse(text);
-  } catch {
-    return { error: "Invalid JSON: file could not be parsed" };
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    return { error: `Invalid JSON: ${detail}` };
   }
   const result = AppDataSchema.safeParse(parsed);
   if (!result.success) {

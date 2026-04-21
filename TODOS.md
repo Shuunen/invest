@@ -1,5 +1,19 @@
 # TODOS
 
+## Schema hardening
+
+### Enforce uniqueness on isins and portfolio IDs
+
+**What:** `AppDataSchema` currently allows two `IsinSchema` entries with the same ISIN code, or two portfolios with the same UUID. Add `superRefine` checks: duplicate ISIN codes → addIssue, duplicate portfolio IDs → addIssue.
+**Why:** The referential-integrity Set keeps the first duplicate, so the second copy's data is silently discarded. Downstream sort/score will use one copy while portfolio entries may reference the other.
+**Priority:** P1
+
+### Validate allocation value range
+
+**What:** `geoAllocation` and `sectorAllocation` values accept any number (including negative, > 1). Add `.refine()` checks that all values are in `[0, 1]` (if fractions) or `[0, 100]` (if percentages).
+**Why:** Charting code will produce silently broken charts for out-of-range values. Decide fraction vs. percentage convention first (see `riskReward` unit TODO).
+**Priority:** P2
+
 ## Assets
 
 ### Add PWA icons and favicon

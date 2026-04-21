@@ -7,9 +7,12 @@ import { App } from "./app.tsx";
 const root = document.querySelector<HTMLElement>("#root");
 // oxlint-disable-next-line require-hook
 invariant(root, "Root element #root not found");
-// oxlint-disable-next-line require-hook
-createRoot(root).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+try {
+  createRoot(root).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+} catch (error) {
+  root.textContent = `Failed to start: ${error instanceof Error ? error.message : String(error)}`;
+}
