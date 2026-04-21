@@ -5,6 +5,22 @@ import { defineConfig } from "vitest/config";
 
 // oxlint-disable-next-line import/no-default-export
 export default defineConfig({
+  build: {
+    chunkSizeWarningLimit: 500,
+    reportCompressedSize: false,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: "react",
+              test: /react/,
+            },
+          ],
+        },
+      },
+    },
+  },
   plugins: [
     tailwindcss(),
     react(),
