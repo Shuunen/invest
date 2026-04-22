@@ -7,6 +7,19 @@ export const QUINTILE_HIGH_THRESHOLD = 0.8;
 export const QUINTILE_LOW_THRESHOLD = 0.2;
 export const SCORE_HIGH_THRESHOLD = 4;
 export const SCORE_MISSING_VALUE = -100;
+export const SCORE_TITLE = "Score = 3y performance + (3y risk/reward × 5) − (fees × 10)";
+
+export function getAriaSortValue(sorted: "asc" | "desc" | false): "ascending" | "descending" | "none" {
+  if (sorted === "asc") return "ascending";
+  if (sorted === "desc") return "descending";
+  return "none";
+}
+
+export function getScoreDotClass(score: number): string {
+  if (score >= SCORE_HIGH_THRESHOLD) return "bg-success";
+  if (score < 0) return "bg-error";
+  return "bg-warning";
+}
 export const SKELETON_COLS = 9;
 export const SKELETON_ROWS = 5;
 

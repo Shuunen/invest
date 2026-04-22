@@ -1,3 +1,4 @@
+import type { Table } from "@tanstack/react-table";
 import { computeScore, type Asset } from "../schemas/index.ts";
 import { formatNumber } from "./isin-table-utils.ts";
 
@@ -71,11 +72,35 @@ export function renderPageHeader(assets: Asset[]) {
   );
 }
 
-export function renderFilter(filterText: string, setFilterText: (value: string) => void) {
+export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number) {
+  return (
+    <div className="dropdown dropdown-end">
+      <button type="button" tabIndex={0} className="btn btn-outline btn-secondary">
+        ☰ Columns
+      </button>
+      <div tabIndex={0} className="dropdown-content menu z-9999 w-52 rounded-box bg-base-100 p-2 shadow">
+        {table.getAllLeafColumns().map(column => (
+          <label key={column.id} className="label cursor-pointer gap-2 rounded px-2 py-1 hover:bg-secondary/30">
+            <input
+              type="checkbox"
+              className="checkbox checkbox-sm"
+              checked={column.getIsVisible()}
+              disabled={column.getIsVisible() && visibleLeafCount <= 1}
+              onChange={column.getToggleVisibilityHandler()}
+            />
+            <span className="label-text">{String(column.columnDef.header)}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function renderSearchFilter(filterText: string, setFilterText: (value: string) => void) {
   return (
     <input
       type="search"
-      className="input-bordered input input-sm mb-2 w-full max-w-sm"
+      className="input-bordered input w-full max-w-sm input-secondary"
       placeholder="Search ISIN, name, tickers…"
       value={filterText}
       onChange={event => {

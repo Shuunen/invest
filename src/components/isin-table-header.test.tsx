@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import type { Asset } from "../schemas/index.ts";
-import { renderFilter, renderPageHeader } from "./isin-table-header.tsx";
+import { renderSearchFilter, renderPageHeader } from "./isin-table-header.tsx";
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
@@ -75,12 +75,12 @@ function noop() {
 
 describe("renderFilter", () => {
   it("renders search input with placeholder", () => {
-    render(renderFilter("", noop));
+    render(renderSearchFilter("", noop));
     expect(screen.getByPlaceholderText("Search ISIN, name, tickers…")).toBeInTheDocument();
   });
 
   it("reflects current filter value", () => {
-    render(renderFilter("IWDA", noop));
+    render(renderSearchFilter("IWDA", noop));
     const input = screen.getByRole("searchbox") as HTMLInputElement;
     expect(input.value).toBe("IWDA");
   });

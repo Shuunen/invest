@@ -5,10 +5,18 @@ import { db } from "../db/db.ts";
 import { AppDataSchema, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { getAriaSortValue } from "./isin-table-columns.tsx";
-import { renderFilter, renderPageHeader } from "./isin-table-header.tsx";
+import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./isin-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./isin-table-hooks.ts";
-import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, SKELETON_COLS, SKELETON_ROWS } from "./isin-table-utils.ts";
+import {
+  computeQuintileClasses,
+  DECIMAL_PLACES,
+  DEFAULT_COLUMN_VISIBILITY,
+  getAriaSortValue,
+  SCORE_MISSING_VALUE,
+  SCORE_TITLE,
+  SKELETON_COLS,
+  SKELETON_ROWS,
+} from "./isin-table-utils.ts";
 
 const DEBOUNCE_MS = 300;
 const seedResult = AppDataSchema.safeParse(sampleJson);
@@ -178,32 +186,6 @@ function renderEmpty() {
   );
 }
 
-function renderColumnVisibility(table: Table<Asset>, visibleLeafCount: number) {
-  return (
-    <div className="mb-2 flex justify-end">
-      <div className="dropdown dropdown-end">
-        <div tabIndex={0} role="button" className="btn btn-ghost btn-sm">
-          ☰ Columns
-        </div>
-        <div tabIndex={0} className="dropdown-content menu z-9999 w-52 rounded-box bg-base-100 p-2 shadow">
-          {table.getAllLeafColumns().map(column => (
-            <label key={column.id} className="label cursor-pointer gap-2">
-              <input
-                type="checkbox"
-                className="checkbox checkbox-sm"
-                checked={column.getIsVisible()}
-                disabled={column.getIsVisible() && visibleLeafCount <= 1}
-                onChange={column.getToggleVisibilityHandler()}
-              />
-              <span className="label-text">{String(column.columnDef.header)}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function renderTableHeader(table: Table<Asset>) {
   return (
     <thead className="sticky top-0 z-10 bg-base-100">
@@ -236,9 +218,23 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
             const isScoreCol = cell.column.id === "score";
             const bgClass = qClass ?? (isScoreCol ? "bg-base-200" : undefined);
             const tdClass = [isScoreCol ? "font-semibold" : undefined, bgClass].filter(Boolean).join(" ") || undefined;
+            let cellNode = flexRender(cell.column.columnDef.cell, cell.getContext());
+            if (isScoreCol && qClass !== undefined) {
+              const score = cell.getValue<number>();
+              /* v8 ignore next -- SCORE_MISSING_VALUE is excluded from quintile computation; this branch is unreachable */
+              if (score !== SCORE_MISSING_VALUE) {
+                const dotClass = qClass.includes("success") ? "bg-success" : "bg-error";
+                cellNode = (
+                  <span className="flex items-center gap-1.5" title={SCORE_TITLE}>
+                    <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${dotClass}`} />
+                    {score.toFixed(DECIMAL_PLACES)}
+                  </span>
+                );
+              }
+            }
             return (
               <td key={cell.id} className={tdClass}>
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                {cellNode}
               </td>
             );
           })}
@@ -267,9 +263,9 @@ export function IsinTable() {
     <>
       {renderPageHeader(data.assets)}
       <div className="p-4 text-left">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          {renderFilter(filterText, setFilterText)}
-          {renderColumnVisibility(table, visibleLeafCount)}
+        <div className="mb-2 flex items-center justify-between gap-2 bg-base-200 p-4" data-testid="table-controls">
+          {renderSearchFilter(filterText, setFilterText)}
+          {renderColumnFilter(table, visibleLeafCount)}
         </div>
         <div className="w-full overflow-x-auto">
           <table className="table-hover table w-full">
