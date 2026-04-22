@@ -1,10 +1,11 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { computeScore, type Asset } from "../schemas/index.ts";
+import { cn } from "../utils/browser-styles.ts";
 import { DECIMAL_PLACES, formatNumber, SCORE_HIGH_THRESHOLD, SCORE_MISSING_VALUE } from "./isin-table-utils.ts";
 
 function booleanCell(value: boolean) {
   return (
-    <span aria-label={value ? "Yes" : "No"} className={`badge ${value ? "badge-success" : "badge-ghost"}`}>
+    <span aria-label={value ? "Yes" : "No"} className={`badge ${value ? cn("bg-success/40") : cn("badge-ghost")}`}>
       {value ? "Yes" : "No"}
     </span>
   );

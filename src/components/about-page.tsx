@@ -1,4 +1,4 @@
-const APP_VERSION = "0.1.0";
+import { version as APP_VERSION } from "../../package.json";
 
 export function AboutPage() {
   return (

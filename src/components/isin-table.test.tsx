@@ -3,6 +3,7 @@ import { invariant } from "es-toolkit";
 import { db } from "../db/db.ts";
 import { computeScore, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { matchesFilter } from "./isin-table-hooks.ts";
 import { quintileClass } from "./isin-table-utils.ts";
 import { IsinTable } from "./isin-table.tsx";
 
@@ -35,6 +36,35 @@ function makeTestData(assets: Asset[]): AppData {
     settings: { ...defaultAppData.settings, columnVisibility: {}, sort: { column: "score", direction: "desc" } },
   };
 }
+
+describe("matchesFilter", () => {
+  const asset = makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi", tickers: ["IWDA"] });
+
+  it("matches name case-insensitively", () => {
+    expect(matchesFilter(asset, "alpha etf")).toBe(true);
+  });
+
+  it("matches ISIN partially", () => {
+    expect(matchesFilter(asset, "lu1234")).toBe(true);
+  });
+
+  it("matches provider case-insensitively", () => {
+    expect(matchesFilter(asset, "amundi")).toBe(true);
+  });
+
+  it("matches ticker case-insensitively", () => {
+    expect(matchesFilter(asset, "iwda")).toBe(true);
+  });
+
+  it("returns false when tickers is empty and no other field matches", () => {
+    const noTickers = makeAsset({ isin: "FR0000000001", name: "Zeta", provider: "X", tickers: [] });
+    expect(matchesFilter(noTickers, "iwda")).toBe(false);
+  });
+
+  it("returns false when nothing matches", () => {
+    expect(matchesFilter(asset, "nomatch")).toBe(false);
+  });
+});
 
 describe("quintileClass", () => {
   it("returns undefined for undefined value", () => {

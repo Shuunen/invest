@@ -4,6 +4,7 @@ import sampleJson from "../../data/sample.json";
 import { db } from "../db/db.ts";
 import { AppDataSchema, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { cn } from "../utils/browser-styles.ts";
 import { getAriaSortValue } from "./isin-table-columns.tsx";
 import { renderFilter, renderPageHeader } from "./isin-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./isin-table-hooks.ts";
@@ -26,11 +27,7 @@ function renderThContent(header: Header<Asset, unknown>) {
   const label = flexRender(header.column.columnDef.header, header.getContext());
   if (!header.column.getCanSort()) return <span>{label}</span>;
   return (
-    <button
-      type="button"
-      className="flex min-h-11 cursor-pointer items-center gap-1"
-      onClick={header.column.getToggleSortingHandler()}
-    >
+    <button type="button" className="btn btn-ghost" onClick={header.column.getToggleSortingHandler()}>
       {label}
       {getSortIndicator(sorted)}
     </button>
@@ -216,7 +213,7 @@ function renderTableHeader(table: Table<Asset>) {
             <th
               key={header.id}
               aria-sort={header.column.getCanSort() ? getAriaSortValue(header.column.getIsSorted()) : undefined}
-              className={header.column.getIsSorted() ? "font-semibold" : undefined}
+              className={cn(header.column.getIsSorted() ? "font-semibold" : undefined, "pl-2")}
               colSpan={header.colSpan}
               scope="col"
             >

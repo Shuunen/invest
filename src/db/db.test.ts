@@ -1,3 +1,4 @@
+import { invariant } from "es-toolkit";
 import { AppDataSchema } from "../schemas/index.ts";
 import { type AppDataRecord, db } from "./db.ts";
 
@@ -14,7 +15,7 @@ describe("AppDataDb", () => {
     await db.open();
     const result = AppDataSchema.safeParse({ assets: [], portfolios: [], settings: {} });
     expect(result.success).toBe(true);
-    if (!result.success) return;
+    invariant(result.success, "Expected AppDataSchema.safeParse to succeed");
     await db.appdata.put({ data: result.data, id: 1 });
     const record = await db.appdata.get(1);
     expect(record?.data.assets).toHaveLength(0);
