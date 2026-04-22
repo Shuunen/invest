@@ -35,9 +35,13 @@ function renderThContent(header: Header<Asset, unknown>) {
   const label = flexRender(header.column.columnDef.header, header.getContext());
   if (!header.column.getCanSort()) return <span>{label}</span>;
   return (
-    <button type="button" className="btn btn-ghost" onClick={header.column.getToggleSortingHandler()}>
+    <button
+      type="button"
+      className={cn("btn", sorted ? "btn-soft btn-primary" : "btn-ghost")}
+      onClick={header.column.getToggleSortingHandler()}
+    >
       {label}
-      {getSortIndicator(sorted)}
+      <span className="scale-75">{getSortIndicator(sorted)}</span>
     </button>
   );
 }

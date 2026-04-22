@@ -2,3 +2,7 @@
 @plugin "daisyui/index.js" {
   themes: nord;
 }
+
+.btn-soft.btn-primary:hover {
+  @apply border-primary/30 bg-primary/10 text-primary;
+}

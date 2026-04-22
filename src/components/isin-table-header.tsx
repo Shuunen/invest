@@ -75,12 +75,12 @@ export function renderPageHeader(assets: Asset[]) {
 export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number) {
   return (
     <div className="dropdown dropdown-end">
-      <button type="button" tabIndex={0} className="btn btn-outline btn-secondary">
+      <button type="button" tabIndex={0} className="btn btn-soft btn-sm btn-primary">
         ☰ Columns
       </button>
       <div tabIndex={0} className="dropdown-content menu z-9999 w-52 rounded-box bg-base-100 p-2 shadow">
         {table.getAllLeafColumns().map(column => (
-          <label key={column.id} className="label cursor-pointer gap-2 rounded px-2 py-1 hover:bg-secondary/30">
+          <label key={column.id} className="label cursor-pointer gap-2 rounded px-2 py-1 hover:bg-primary/30">
             <input
               type="checkbox"
               className="checkbox checkbox-sm"
@@ -100,7 +100,7 @@ export function renderSearchFilter(filterText: string, setFilterText: (value: st
   return (
     <input
       type="search"
-      className="input-bordered input w-full max-w-sm input-secondary"
+      className="input-bordered input input-sm w-full max-w-sm input-primary"
       placeholder="Search ISIN, name, tickers…"
       value={filterText}
       onChange={event => {
