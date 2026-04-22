@@ -5,6 +5,7 @@ import { db } from "../db/db.ts";
 import { AppDataSchema, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { getAriaSortValue } from "./isin-table-columns.tsx";
+import { renderFilter, renderPageHeader } from "./isin-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./isin-table-hooks.ts";
 import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, SKELETON_COLS, SKELETON_ROWS } from "./isin-table-utils.ts";
 
@@ -250,20 +251,6 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
   );
 }
 
-function renderFilter(filterText: string, setFilterText: (value: string) => void) {
-  return (
-    <input
-      type="search"
-      className="input-bordered input input-sm mb-2 w-full max-w-sm"
-      placeholder="Search ISIN, name, tickers…"
-      value={filterText}
-      onChange={event => {
-        setFilterText(event.target.value);
-      }}
-    />
-  );
-}
-
 export function IsinTable() {
   const {
     data,
@@ -280,18 +267,21 @@ export function IsinTable() {
   if (loadError) return renderError(loadError, handleRetry);
   if (data.assets.length === 0) return renderEmpty();
   return (
-    <div className="p-4 text-left">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        {renderFilter(filterText, setFilterText)}
-        {renderColumnVisibility(table, visibleLeafCount)}
+    <>
+      {renderPageHeader(data.assets)}
+      <div className="p-4 text-left">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          {renderFilter(filterText, setFilterText)}
+          {renderColumnVisibility(table, visibleLeafCount)}
+        </div>
+        <div className="w-full overflow-x-auto">
+          <table className="table-hover table w-full">
+            <caption className="sr-only">ISINs reference data table</caption>
+            {renderTableHeader(table)}
+            {renderTableBody(table, quintileClasses)}
+          </table>
+        </div>
       </div>
-      <div className="w-full overflow-x-auto">
-        <table className="table-hover table w-full">
-          <caption className="sr-only">ISINs reference data table</caption>
-          {renderTableHeader(table)}
-          {renderTableBody(table, quintileClasses)}
-        </table>
-      </div>
-    </div>
+    </>
   );
 }

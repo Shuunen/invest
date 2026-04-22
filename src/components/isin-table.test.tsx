@@ -130,18 +130,40 @@ describe("IsinTable - score column", () => {
     invariant(expected !== undefined, "Expected score to be defined");
     useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
     render(<IsinTable />);
-    expect(screen.getByText(expected.toFixed(2))).toBeInTheDocument();
+    const scoreEls = screen.getAllByText(expected.toFixed(2));
+    expect(scoreEls.length).toBeGreaterThan(0);
   });
 
-  it("score above warning threshold has text-warning class", () => {
+  it("high score (>=4) renders with green dot indicator", () => {
     const asset = makeAsset({ fees: 0, performance3y: 200, riskReward3y: 0 });
     useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
     render(<IsinTable />);
     const score = computeScore(asset);
     invariant(score !== undefined, "Expected score to be defined");
-    const scoreEl = document.querySelector(".text-warning");
-    invariant(scoreEl, "Expected to find element with text-warning class");
-    expect(scoreEl.textContent).toBe(score.toFixed(2));
+    const dotEl = document.querySelector(".bg-success.rounded-full");
+    expect(dotEl).toBeInTheDocument();
+  });
+
+  it("negative score renders with red dot indicator", () => {
+    const asset = makeAsset({ fees: 100, performance3y: 0, riskReward3y: 0 });
+    useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
+    render(<IsinTable />);
+    const score = computeScore(asset);
+    invariant(score !== undefined, "Expected score to be defined");
+    invariant(score < 0, "Expected score to be negative for this test");
+    const dotEl = document.querySelector(".bg-error.rounded-full");
+    expect(dotEl).toBeInTheDocument();
+  });
+
+  it("low positive score (0-3) renders with warning dot indicator", () => {
+    const asset = makeAsset({ fees: 0, performance3y: 1, riskReward3y: 0 });
+    useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
+    render(<IsinTable />);
+    const score = computeScore(asset);
+    invariant(score !== undefined, "Expected score to be defined");
+    invariant(score >= 0 && score < 4, "Expected score to be in warning range for this test");
+    const dotEl = document.querySelector(".bg-warning.rounded-full");
+    expect(dotEl).toBeInTheDocument();
   });
 });
 

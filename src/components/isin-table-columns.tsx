@@ -1,6 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { computeScore, type Asset } from "../schemas/index.ts";
-import { DECIMAL_PLACES, formatNumber, SCORE_MISSING_VALUE, SCORE_WARNING_THRESHOLD } from "./isin-table-utils.ts";
+import { DECIMAL_PLACES, formatNumber, SCORE_HIGH_THRESHOLD, SCORE_MISSING_VALUE } from "./isin-table-utils.ts";
 
 function booleanCell(value: boolean) {
   return (
@@ -18,15 +18,23 @@ function getAriaSortValue(sorted: "asc" | "desc" | false): "ascending" | "descen
 
 export { getAriaSortValue };
 
+function getScoreDotClass(score: number): string {
+  if (score >= SCORE_HIGH_THRESHOLD) return "bg-success";
+  if (score < 0) return "bg-error";
+  return "bg-warning";
+}
+
 export const columns: ColumnDef<Asset>[] = [
   {
     accessorFn: row => computeScore(row) ?? SCORE_MISSING_VALUE,
     cell: ({ getValue }) => {
       const score = getValue<number>();
       const isMissing = score === SCORE_MISSING_VALUE;
-      const cls = !isMissing && Math.abs(score) > SCORE_WARNING_THRESHOLD ? "text-warning" : "";
+      if (isMissing) return <span className="text-base-content/40">—</span>;
+      const dotClass = getScoreDotClass(score);
       return (
-        <span className={cls} title="Score = 3y performance + (3y risk/reward × 5) − (fees × 10)">
+        <span className="flex items-center gap-1.5" title="Score = 3y performance + (3y risk/reward × 5) − (fees × 10)">
+          <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${dotClass}`} />
           {score.toFixed(DECIMAL_PLACES)}
         </span>
       );

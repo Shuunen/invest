@@ -5,6 +5,7 @@ export const DECIMAL_PLACES = 2;
 export const MIN_ROWS_FOR_FORMATTING = 10;
 export const QUINTILE_HIGH_THRESHOLD = 0.8;
 export const QUINTILE_LOW_THRESHOLD = 0.2;
+export const SCORE_HIGH_THRESHOLD = 4;
 export const SCORE_MISSING_VALUE = -100;
 export const SCORE_WARNING_THRESHOLD = 100;
 export const SKELETON_COLS = 9;
