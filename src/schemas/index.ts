@@ -84,7 +84,7 @@ const nullableNumber = z
 const KNOWN_COUNTRIES = new Set<string>(CountrySchema.options);
 const KNOWN_SECTORS = new Set<string>(SectorSchema.options);
 
-export const IsinSchema = z.object({
+export const AssetSchema = z.object({
   availableForPlan: z.boolean(),
   availableOnBroker: z.boolean(),
   fees: z.number().nonnegative(),
@@ -113,11 +113,11 @@ export const IsinSchema = z.object({
   tickers: z.array(z.string()).default([]),
 });
 
-export type Isin = z.infer<typeof IsinSchema>;
+export type Asset = z.infer<typeof AssetSchema>;
 
 // score is derived, never stored
-export function computeScore(isin: Isin): number | undefined {
-  const { performance3y, riskReward3y, fees } = isin;
+export function computeScore(asset: Asset): number | undefined {
+  const { performance3y, riskReward3y, fees } = asset;
   if (performance3y === undefined || riskReward3y === undefined) return undefined;
   return performance3y + riskReward3y * SCORE_RISK_WEIGHT - fees * SCORE_FEE_WEIGHT;
 }
@@ -169,12 +169,12 @@ export type Settings = z.infer<typeof SettingsSchema>;
 
 export const AppDataSchema = z
   .object({
-    isins: z.array(IsinSchema).max(MAX_ISINS),
+    assets: z.array(AssetSchema).max(MAX_ISINS),
     portfolios: z.array(PortfolioSchema).max(MAX_PORTFOLIOS),
     settings: SettingsSchema,
   })
   .superRefine((data, ctx) => {
-    const knownIsins = new Set(data.isins.map(item => item.isin));
+    const knownIsins = new Set(data.assets.map(item => item.isin));
     for (const [pi, portfolio] of data.portfolios.entries())
       for (const [ei, entry] of portfolio.entries.entries())
         if (!knownIsins.has(entry.isin))
@@ -198,6 +198,7 @@ export function safeImportJson(text: string): { data: AppData } | { error: strin
   try {
     parsed = JSON.parse(text);
   } catch (error) {
+    /* v8 ignore next -- JSON.parse always throws SyntaxError; String(error) is unreachable */
     const detail = error instanceof Error ? error.message : String(error);
     return { error: `Invalid JSON: ${detail}` };
   }

@@ -1,7 +1,7 @@
 import { invariant } from "es-toolkit";
 import {
   AppDataSchema,
-  IsinSchema,
+  AssetSchema,
   MAX_ISINS,
   MAX_PORTFOLIOS,
   PortfolioEntrySchema,
@@ -11,7 +11,7 @@ import {
 } from "./index";
 
 // Shared minimal ISIN fixture — all optional fields omitted (they have defaults or are nullable)
-const validIsin = {
+const validAsset = {
   availableForPlan: true,
   availableOnBroker: true,
   fees: 0.2,
@@ -20,26 +20,26 @@ const validIsin = {
   name: "Core MSCI World",
 };
 
-// --- IsinSchema: rejection paths ---
+// --- AssetSchema: rejection paths ---
 
-describe("IsinSchema rejections", () => {
+describe("AssetSchema rejections", () => {
   it("rejects an ISIN code with invalid format", () => {
-    const result = IsinSchema.safeParse({ ...validIsin, isin: "INVALID" });
+    const result = AssetSchema.safeParse({ ...validAsset, isin: "INVALID" });
     expect(result.success).toBe(false);
   });
 
   it("rejects negative fees", () => {
-    const result = IsinSchema.safeParse({ ...validIsin, fees: -0.1 });
+    const result = AssetSchema.safeParse({ ...validAsset, fees: -0.1 });
     expect(result.success).toBe(false);
   });
 
   it("rejects empty name", () => {
-    const result = IsinSchema.safeParse({ ...validIsin, name: "" });
+    const result = AssetSchema.safeParse({ ...validAsset, name: "" });
     expect(result.success).toBe(false);
   });
 
   it("rejects geoAllocation with unknown country key", () => {
-    const result = IsinSchema.safeParse({ ...validIsin, geoAllocation: { unknownCountry: 1 } });
+    const result = AssetSchema.safeParse({ ...validAsset, geoAllocation: { unknownCountry: 1 } });
     expect(result.success).toBe(false);
     invariant(result.error, "Expected validation to fail");
     const [firstIssue] = result.error.issues;
@@ -48,7 +48,7 @@ describe("IsinSchema rejections", () => {
   });
 
   it("rejects sectorAllocation with unknown sector key", () => {
-    const result = IsinSchema.safeParse({ ...validIsin, sectorAllocation: { unknownSector: 0.5 } });
+    const result = AssetSchema.safeParse({ ...validAsset, sectorAllocation: { unknownSector: 0.5 } });
     expect(result.success).toBe(false);
     invariant(result.error, "Expected validation to fail");
     const [firstIssue] = result.error.issues;
@@ -57,22 +57,22 @@ describe("IsinSchema rejections", () => {
   });
 });
 
-// --- IsinSchema: happy paths ---
+// --- AssetSchema: happy paths ---
 
-describe("IsinSchema happy paths", () => {
+describe("AssetSchema happy paths", () => {
   it("coerces absent nullable performance/risk fields to undefined", () => {
-    const result = IsinSchema.parse(validIsin);
+    const result = AssetSchema.parse(validAsset);
     expect(result.performance3y).toBeUndefined();
     expect(result.riskReward3y).toBeUndefined();
   });
 
   it("accepts valid geoAllocation with known country keys", () => {
-    const result = IsinSchema.safeParse({ ...validIsin, geoAllocation: { france: 0.4, us: 0.6 } });
+    const result = AssetSchema.safeParse({ ...validAsset, geoAllocation: { france: 0.4, us: 0.6 } });
     expect(result.success).toBe(true);
   });
 
   it("accepts valid sectorAllocation with known sector keys", () => {
-    const result = IsinSchema.safeParse({ ...validIsin, sectorAllocation: { financials: 0.5, technology: 0.5 } });
+    const result = AssetSchema.safeParse({ ...validAsset, sectorAllocation: { financials: 0.5, technology: 0.5 } });
     expect(result.success).toBe(true);
   });
 });
@@ -184,7 +184,7 @@ describe("safeImportJson error message format", () => {
   it("joins multiple schema errors with newlines", () => {
     // Two violations: invalid theme AND negative positionValue on a portfolio entry
     const bad = {
-      isins: [],
+      assets: [],
       portfolios: [
         {
           entries: [{ isin: "IE00B4L5Y983", positionValue: -1, targetAmount: 0 }],
@@ -212,7 +212,7 @@ describe("AppDataSchema limits", () => {
       id: `87b67f15-e6f2-480b-${String(idx).padStart(4, "0")}-5440cc1c7423`,
       name: `Portfolio ${idx}`,
     }));
-    const result = AppDataSchema.safeParse({ isins: [], portfolios: tooManyPortfolios, settings: {} });
+    const result = AppDataSchema.safeParse({ assets: [], portfolios: tooManyPortfolios, settings: {} });
     expect(result.success).toBe(false);
   });
 
@@ -225,7 +225,7 @@ describe("AppDataSchema limits", () => {
       isin: `US${String(idx).padStart(9, "0")}${idx % 10}`,
       name: `Fund ${idx}`,
     }));
-    const result = AppDataSchema.safeParse({ isins: tooManyIsins, portfolios: [], settings: {} });
+    const result = AppDataSchema.safeParse({ assets: tooManyIsins, portfolios: [], settings: {} });
     expect(result.success).toBe(false);
   });
 });

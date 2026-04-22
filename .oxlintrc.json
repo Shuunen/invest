@@ -51,6 +51,7 @@
     "TextEncoder": "readonly",
     "URL": "readonly",
     "window": "readonly",
+    "indexedDB": "readonly",
     "XMLSerializer": "readonly",
     "XPathEvaluator": "readonly",
     "XPathResult": "readonly"
@@ -87,6 +88,9 @@
       },
       "rules": {
         "max-nested-callbacks": "off",
+        "max-lines-per-function": "off",
+        "max-lines": "off",
+        "prefer-ending-with-an-expect": "off",
         "no-conditional-in-test": "off",
         "prefer-lowercase-title": "off",
         "prefer-importing-jest-globals": "off",
