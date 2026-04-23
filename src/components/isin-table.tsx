@@ -213,12 +213,14 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
   return (
     <tbody>
       {table.getRowModel().rows.map(row => (
-        <tr key={row.id} className="hover">
+        <tr
+          key={row.id}
+          className="rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary hover:backdrop-brightness-105"
+        >
           {row.getVisibleCells().map(cell => {
             const qClass = quintileClasses.get(cell.column.id)?.get(row.id);
             const isScoreCol = cell.column.id === "score";
-            const bgClass = qClass ?? (isScoreCol ? "bg-base-200" : undefined);
-            const tdClass = [isScoreCol ? "font-semibold" : undefined, bgClass].filter(Boolean).join(" ") || undefined;
+            const tdClass = cn({ "font-semibold": isScoreCol }, qClass);
             const cellNode = flexRender(cell.column.columnDef.cell, cell.getContext());
             return (
               <td key={cell.id} className={tdClass}>
