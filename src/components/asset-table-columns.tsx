@@ -7,7 +7,7 @@ import {
   getScoreDotClass,
   SCORE_MISSING_VALUE,
   SCORE_TITLE,
-} from "./isin-table-utils.ts";
+} from "./asset-table-utils.ts";
 
 function booleanCell(value: boolean) {
   return (

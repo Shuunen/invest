@@ -5,15 +5,15 @@ import { db } from "../db/db.ts";
 import { AppDataSchema, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./isin-table-header.tsx";
-import { matchesFilter, useTableInstance } from "./isin-table-hooks.ts";
+import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
+import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
 import {
   computeQuintileClasses,
   DEFAULT_COLUMN_VISIBILITY,
   getAriaSortValue,
   SKELETON_COLS,
   SKELETON_ROWS,
-} from "./isin-table-utils.ts";
+} from "./asset-table-utils.ts";
 
 const DEBOUNCE_MS = 300;
 const seedResult = AppDataSchema.safeParse(sampleJson);
@@ -95,7 +95,7 @@ function useDexieSync() {
   }, []);
 }
 
-function useIsinTableState() {
+function useAssetTableState() {
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
@@ -234,7 +234,7 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
   );
 }
 
-export function IsinTable() {
+export function AssetTable() {
   const {
     data,
     filterText,
@@ -245,7 +245,7 @@ export function IsinTable() {
     setFilterText,
     table,
     visibleLeafCount,
-  } = useIsinTableState();
+  } = useAssetTableState();
   if (isLoading) return renderSkeleton();
   if (loadError) return renderError(loadError, handleRetry);
   if (data.assets.length === 0) return renderEmpty();

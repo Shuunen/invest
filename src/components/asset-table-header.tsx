@@ -1,7 +1,7 @@
 import type { Table } from "@tanstack/react-table";
 import { EyeIcon } from "lucide-react";
 import { computeScore, type Asset } from "../schemas/index.ts";
-import { formatNumber } from "./isin-table-utils.ts";
+import { formatNumber } from "./asset-table-utils.ts";
 
 type HeaderStats = {
   accCount: number;
