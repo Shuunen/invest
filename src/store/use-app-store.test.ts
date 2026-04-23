@@ -67,3 +67,76 @@ describe("useAppStore - settings mutations", () => {
     expect(received.length).toBeGreaterThan(0);
   });
 });
+
+describe("useAppStore - portfolio mutations", () => {
+  const basePortfolio = {
+    broker: "Test Broker",
+    entries: [],
+    id: "00000000-0000-4000-8000-000000000001",
+    name: "My Portfolio",
+  };
+
+  it("addPortfolio appends a portfolio", () => {
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    useAppStore.getState().addPortfolio(basePortfolio);
+    expect(useAppStore.getState().data.portfolios).toHaveLength(1);
+    expect(useAppStore.getState().data.portfolios[0]?.name).toBe("My Portfolio");
+  });
+
+  it("deletePortfolio removes the portfolio by id", () => {
+    useAppStore.setState({
+      data: { ...defaultAppData, portfolios: [basePortfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    useAppStore.getState().deletePortfolio(basePortfolio.id);
+    expect(useAppStore.getState().data.portfolios).toHaveLength(0);
+  });
+
+  it("updatePortfolio patches name and broker", () => {
+    useAppStore.setState({
+      data: { ...defaultAppData, portfolios: [basePortfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    useAppStore.getState().updatePortfolio(basePortfolio.id, { broker: "New Broker", name: "Updated" });
+    const [updated] = useAppStore.getState().data.portfolios;
+    expect(updated?.name).toBe("Updated");
+    expect(updated?.broker).toBe("New Broker");
+  });
+
+  it("setPortfolioAssets replaces entries for the given portfolio", () => {
+    const entry = { inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    useAppStore.setState({
+      data: { ...defaultAppData, portfolios: [basePortfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    useAppStore.getState().setPortfolioAssets(basePortfolio.id, [entry]);
+    expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(1);
+    expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.isin).toBe("LU1234567890");
+  });
+
+  it("setPortfolioAssets does not affect other portfolios", () => {
+    const other = { ...basePortfolio, id: "00000000-0000-4000-8000-000000000002", name: "Other" };
+    const entry = { inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    useAppStore.setState({
+      data: { ...defaultAppData, portfolios: [basePortfolio, other] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    useAppStore.getState().setPortfolioAssets(basePortfolio.id, [entry]);
+    expect(useAppStore.getState().data.portfolios[1]?.entries).toHaveLength(0);
+  });
+
+  it("updatePortfolio does not affect other portfolios", () => {
+    const other = { ...basePortfolio, id: "00000000-0000-4000-8000-000000000002", name: "Other" };
+    useAppStore.setState({
+      data: { ...defaultAppData, portfolios: [basePortfolio, other] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    useAppStore.getState().updatePortfolio(basePortfolio.id, { name: "Updated" });
+    expect(useAppStore.getState().data.portfolios[1]?.name).toBe("Other");
+  });
+});

@@ -1,10 +1,11 @@
-import { flexRender, type Header, type SortingState, type Table } from "@tanstack/react-table";
-import { useEffect, useMemo, useState } from "react";
-import sampleJson from "../../data/sample.json";
-import { db } from "../db/db.ts";
-import { AppDataSchema, type AppData, type Asset } from "../schemas/index.ts";
-import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
+import { Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import type { Asset } from "../schemas/index.ts";
+import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
+import { columns } from "./asset-table-columns.tsx";
+import { useDexieSync, useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
 import {
@@ -15,10 +16,25 @@ import {
   SKELETON_ROWS,
 } from "./asset-table-utils.ts";
 
-const DEBOUNCE_MS = 300;
-const seedResult = AppDataSchema.safeParse(sampleJson);
-/* v8 ignore next -- sample.json is always valid; the false branch is unreachable */
-const seedData: AppData = seedResult.success ? seedResult.data : { ...defaultAppData };
+function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
+  return {
+    cell: ({ row }) => (
+      <button
+        type="button"
+        className="btn text-error btn-ghost btn-xs"
+        aria-label={`Remove ${row.original.name}`}
+        onClick={() => onRemove(row.original.isin)}
+      >
+        <Trash2 size={14} />
+      </button>
+    ),
+    enableSorting: false,
+    header: "",
+    id: "remove",
+  };
+}
+
+type Props = { assets?: Asset[]; onRemoveAsset?: (isin: string) => void };
 
 function getSortIndicator(sorted: "asc" | "desc" | false): string {
   if (sorted === "asc") return " ▲";
@@ -43,59 +59,7 @@ function renderThContent(header: Header<Asset, unknown>) {
   );
 }
 
-function useHydration(retryKey: number) {
-  useEffect(() => {
-    let cancelled = false;
-    if (useAppStore.getState().isLoading) {
-      const load = async () => {
-        try {
-          const record = await db.appdata.get(1);
-          if (cancelled) return;
-          const raw = record?.data ?? seedData;
-          useAppStore.getState().loadData(AppDataSchema.parse(raw));
-        } catch (error: unknown) {
-          /* v8 ignore next 2 -- cancelled=true on unmount-during-error and non-Error throws are defensive */
-          if (!cancelled) {
-            const err = error instanceof Error ? error : new Error(String(error));
-            useAppStore.getState().setLoadError(err);
-          }
-        }
-      };
-      void load();
-    }
-    return () => {
-      cancelled = true;
-    };
-  }, [retryKey]);
-}
-
-function useDexieSync() {
-  useEffect(() => {
-    let writeTimer: ReturnType<typeof setTimeout> | undefined = undefined;
-    const unsubscribe = useAppStore.subscribe(
-      state => state.data,
-      newData => {
-        clearTimeout(writeTimer);
-        writeTimer = setTimeout(() => {
-          const save = async () => {
-            try {
-              await db.appdata.put({ data: newData, id: 1 });
-            } catch {
-              // Silently ignore: write failure is non-critical (in-memory state stays correct)
-            }
-          };
-          void save();
-        }, DEBOUNCE_MS);
-      },
-    );
-    return () => {
-      unsubscribe();
-      clearTimeout(writeTimer);
-    };
-  }, []);
-}
-
-function useAssetTableState() {
+function useAssetTableState({ assets: propAssets, onRemoveAsset }: Props = {}) {
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
@@ -119,12 +83,18 @@ function useAssetTableState() {
   );
   const filteredAssets = useMemo(() => {
     const lower = filterText.trim().toLowerCase();
-    if (!lower) return data.assets;
-    return data.assets.filter(row => matchesFilter(row, lower));
-  }, [data.assets, filterText]);
-  const table = useTableInstance({ filteredAssets, resolvedVisibility, setColumnVisibility, setSort, sorting });
-  const { rows } = table.getRowModel();
-  const quintileClasses = useMemo(() => computeQuintileClasses(rows), [rows]);
+    if (!lower) return propAssets ?? data.assets;
+    return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
+  }, [data.assets, filterText, propAssets]);
+  const activeColumns = onRemoveAsset ? [...columns, makeRemoveColumn(onRemoveAsset)] : columns;
+  const table = useTableInstance({
+    columns: activeColumns,
+    filteredAssets,
+    resolvedVisibility,
+    setColumnVisibility,
+    setSort,
+    sorting,
+  });
   const visibleLeafCount = table.getVisibleLeafColumns().length;
   return {
     data,
@@ -132,7 +102,7 @@ function useAssetTableState() {
     handleRetry,
     isLoading,
     loadError,
-    quintileClasses,
+    quintileClasses: computeQuintileClasses(table.getRowModel().rows),
     setFilterText,
     table,
     visibleLeafCount,
@@ -234,7 +204,7 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
   );
 }
 
-export function AssetTable() {
+export function AssetTable({ assets: propAssets, onRemoveAsset }: Props = {}) {
   const {
     data,
     filterText,
@@ -245,13 +215,15 @@ export function AssetTable() {
     setFilterText,
     table,
     visibleLeafCount,
-  } = useAssetTableState();
-  if (isLoading) return renderSkeleton();
-  if (loadError) return renderError(loadError, handleRetry);
-  if (data.assets.length === 0) return renderEmpty();
+  } = useAssetTableState({ assets: propAssets, onRemoveAsset });
+  if (!propAssets) {
+    if (isLoading) return renderSkeleton();
+    if (loadError) return renderError(loadError, handleRetry);
+    if (data.assets.length === 0) return renderEmpty();
+  }
   return (
     <>
-      {renderPageHeader(data.assets)}
+      {!propAssets && renderPageHeader(data.assets)}
       <div className="relative p-4 text-left">
         <div className="absolute top-6 left-4 z-20 flex gap-4">
           {renderSearchFilter(filterText, setFilterText)}

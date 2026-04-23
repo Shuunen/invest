@@ -2,6 +2,7 @@ import { createRootRoute, createRoute, createRouter } from "@tanstack/react-rout
 import { App } from "./app.tsx";
 import { AboutPage } from "./components/about-page.tsx";
 import { IndexPage } from "./components/index-page.tsx";
+import { PortfolioPage } from "./components/portfolio-page.tsx";
 
 const rootRoute = createRootRoute({
   component: App,
@@ -19,6 +20,15 @@ const aboutRoute = createRoute({
   path: "/about",
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, aboutRoute]);
+const portfolioRoute = createRoute({
+  component: () => {
+    const { id } = portfolioRoute.useParams();
+    return <PortfolioPage portfolioId={id} />;
+  },
+  getParentRoute: () => rootRoute,
+  path: "/portfolios/$id",
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, aboutRoute, portfolioRoute]);
 
 export const router = createRouter({ routeTree });

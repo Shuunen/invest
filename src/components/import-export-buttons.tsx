@@ -80,7 +80,8 @@ export function ImportExportButtons() {
         <button
           type="button"
           className="btn btn-soft btn-sm btn-primary"
-          aria-label="Import"
+          aria-label="Import data"
+          title="Import data"
           onClick={handleImportClick}
         >
           <Upload size={16} />
@@ -88,7 +89,8 @@ export function ImportExportButtons() {
         <button
           type="button"
           className="btn btn-soft btn-sm btn-primary"
-          aria-label="Export"
+          aria-label="Export data"
+          title="Export data"
           disabled={data.assets.length === 0}
           onClick={handleExport}
         >

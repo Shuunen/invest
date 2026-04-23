@@ -1,6 +1,11 @@
-import { getCoreRowModel, getSortedRowModel, useReactTable, type SortingState } from "@tanstack/react-table";
+import {
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+  type ColumnDef,
+  type SortingState,
+} from "@tanstack/react-table";
 import type { Asset } from "../schemas/index.ts";
-import { columns } from "./asset-table-columns.tsx";
 
 export function matchesFilter(asset: Asset, lower: string): boolean {
   if (asset.isin.toLowerCase().includes(lower)) return true;
@@ -10,6 +15,7 @@ export function matchesFilter(asset: Asset, lower: string): boolean {
 }
 
 type UseTableInstanceOptions = {
+  columns: ColumnDef<Asset>[];
   filteredAssets: Asset[];
   resolvedVisibility: Record<string, boolean>;
   setColumnVisibility: (vis: Record<string, boolean>) => void;
@@ -18,6 +24,7 @@ type UseTableInstanceOptions = {
 };
 
 export function useTableInstance({
+  columns,
   filteredAssets,
   resolvedVisibility,
   setColumnVisibility,
