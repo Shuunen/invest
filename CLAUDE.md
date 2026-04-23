@@ -25,7 +25,7 @@ Key routing rules:
 
 - `CHANGELOG.md` — release history
 - `TODOS.md` — open work items and deferred decisions
-- `initial-specs.md` — superseded initial spec (kept for reference)
+- Design doc : `~/.gstack/projects/Shuunen-invest/` — produced by `/office-hours`
 
 ## Linting rules
 
