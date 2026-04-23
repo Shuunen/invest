@@ -1,6 +1,7 @@
 import type { Table } from "@tanstack/react-table";
+import { EyeIcon } from "lucide-react";
 import { computeScore, type Asset } from "../schemas/index.ts";
-import { formatNumber } from "./isin-table-utils.ts";
+import { formatNumber } from "./asset-table-utils.ts";
 
 type HeaderStats = {
   accCount: number;
@@ -44,7 +45,7 @@ export function renderPageHeader(assets: Asset[]) {
           <span className="text-lg font-bold tabular-nums">{count}</span>
           <span className="ml-1.5 text-xs tracking-wide text-base-content/50 uppercase">Instruments</span>
         </div>
-        <div className="h-5 w-px bg-base-200" />
+        <div className="h-5 w-px bg-primary" />
         <div>
           <span className="text-lg font-bold tabular-nums">
             {avgScore === undefined ? "—" : formatNumber(avgScore)}
@@ -53,14 +54,14 @@ export function renderPageHeader(assets: Asset[]) {
         </div>
         {topLabel !== undefined && (
           <>
-            <div className="h-5 w-px bg-base-200" />
+            <div className="h-5 w-px bg-primary" />
             <div>
               <span className="text-lg font-bold text-success tabular-nums">{topLabel}</span>
               <span className="ml-1.5 text-xs tracking-wide text-base-content/50 uppercase">Top Performer</span>
             </div>
           </>
         )}
-        <div className="h-5 w-px bg-base-200" />
+        <div className="h-5 w-px bg-primary" />
         <div>
           <span className="text-lg font-bold tabular-nums">
             {accCount} / {count}
@@ -75,12 +76,15 @@ export function renderPageHeader(assets: Asset[]) {
 export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number) {
   return (
     <div className="dropdown dropdown-end">
-      <button type="button" tabIndex={0} className="btn btn-soft btn-sm btn-primary">
-        ☰ Columns
+      <button type="button" tabIndex={0} className="btn text-gray-500 btn-ghost btn-sm">
+        Columns <EyeIcon size={16} />
       </button>
-      <div tabIndex={0} className="dropdown-content menu z-9999 w-52 rounded-box bg-base-100 p-2 shadow">
+      <div tabIndex={0} className="dropdown-content menu z-9999 w-52 rounded-box bg-base-100 p-2 shadow-2xl">
         {table.getAllLeafColumns().map(column => (
-          <label key={column.id} className="label cursor-pointer gap-2 rounded px-2 py-1 hover:bg-primary/30">
+          <label
+            key={column.id}
+            className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-primary/30"
+          >
             <input
               type="checkbox"
               className="checkbox checkbox-sm"
@@ -100,7 +104,7 @@ export function renderSearchFilter(filterText: string, setFilterText: (value: st
   return (
     <input
       type="search"
-      className="input-bordered input input-sm w-full max-w-sm input-primary"
+      className="input-bordered input input-sm w-full max-w-sm outline-gray-300"
       placeholder="Search ISIN, name, tickers…"
       value={filterText}
       onChange={event => {

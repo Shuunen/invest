@@ -1,4 +1,5 @@
 import { Link, Outlet } from "@tanstack/react-router";
+import { ImportExportButtons } from "./components/import-export-buttons.tsx";
 import { cn } from "./utils/browser-styles";
 
 const activeMenuClass = cn("bg-primary/10 font-bold text-primary", "hover:border-primary/50");
@@ -12,7 +13,7 @@ export function App() {
             📈 Invest
           </Link>
         </div>
-        <div className="navbar-end">
+        <div className="navbar-center">
           <ul className="menu menu-horizontal gap-1 px-1">
             <li>
               <Link to="/" activeProps={{ className: activeMenuClass }}>
@@ -25,6 +26,9 @@ export function App() {
               </Link>
             </li>
           </ul>
+        </div>
+        <div className="navbar-end">
+          <ImportExportButtons />
         </div>
       </nav>
       <main className="flex-1">

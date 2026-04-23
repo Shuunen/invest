@@ -48,6 +48,13 @@ describe("useAppStore - settings mutations", () => {
     expect(useAppStore.getState().data.settings.columnOrder).toStrictEqual(["score", "name", "fees"]);
   });
 
+  it("setLastExportedAt updates settings.lastExportedAt", () => {
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    const ts = "2026-04-23T12:00:00.000Z";
+    useAppStore.getState().setLastExportedAt(ts);
+    expect(useAppStore.getState().data.settings.lastExportedAt).toBe(ts);
+  });
+
   it("subscribeWithSelector fires subscriber on mutation", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const received: unknown[] = [];

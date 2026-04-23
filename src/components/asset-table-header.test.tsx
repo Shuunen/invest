@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import type { Asset } from "../schemas/index.ts";
-import { renderSearchFilter, renderPageHeader } from "./isin-table-header.tsx";
+import { renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {

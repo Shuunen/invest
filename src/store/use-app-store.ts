@@ -18,6 +18,7 @@ type AppStore = {
   setSort: (sort: Settings["sort"]) => void;
   setColumnVisibility: (cv: Record<string, boolean>) => void;
   setColumnOrder: (order: string[]) => void;
+  setLastExportedAt: (date: string) => void;
   setLoadError: (error: Error) => void;
 };
 
@@ -34,6 +35,10 @@ export const useAppStore = create<AppStore>()(
     setColumnVisibility: columnVisibility =>
       set(state => ({
         data: { ...state.data, settings: { ...state.data.settings, columnVisibility } },
+      })),
+    setLastExportedAt: lastExportedAt =>
+      set(state => ({
+        data: { ...state.data, settings: { ...state.data.settings, lastExportedAt } },
       })),
     setLoadError: loadError => set({ isLoading: false, loadError }),
     setSort: sort =>

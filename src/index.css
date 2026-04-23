@@ -3,6 +3,13 @@
   themes: nord;
 }
 
-.btn-soft.btn-primary:hover {
+:root {
+  --color-base-100: white;
+}
+
+.btn-primary:hover {
   @apply border-primary/30 bg-primary/10 text-primary;
+}
+.btn-ghost:hover {
+  @apply bg-base-100;
 }
