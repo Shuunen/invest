@@ -76,7 +76,7 @@ export function renderPageHeader(assets: Asset[]) {
 export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number) {
   return (
     <div className="dropdown dropdown-end">
-      <button type="button" tabIndex={0} className="btn btn-ghost btn-sm btn-primary">
+      <button type="button" tabIndex={0} className="btn text-gray-500 btn-ghost btn-sm">
         Columns <EyeIcon size={16} />
       </button>
       <div tabIndex={0} className="dropdown-content menu z-9999 w-52 rounded-box bg-base-100 p-2 shadow-2xl">
@@ -104,7 +104,7 @@ export function renderSearchFilter(filterText: string, setFilterText: (value: st
   return (
     <input
       type="search"
-      className="input-bordered input input-sm w-full max-w-sm input-primary"
+      className="input-bordered input input-sm w-full max-w-sm outline-gray-300"
       placeholder="Search ISIN, name, tickers…"
       value={filterText}
       onChange={event => {
