@@ -3,6 +3,6 @@
   themes: nord;
 }
 
-.btn-soft.btn-primary:hover {
+.btn-primary:hover {
   @apply border-primary/30 bg-primary/10 text-primary;
 }

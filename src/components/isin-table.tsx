@@ -9,11 +9,8 @@ import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./isin
 import { matchesFilter, useTableInstance } from "./isin-table-hooks.ts";
 import {
   computeQuintileClasses,
-  DECIMAL_PLACES,
   DEFAULT_COLUMN_VISIBILITY,
   getAriaSortValue,
-  SCORE_MISSING_VALUE,
-  SCORE_TITLE,
   SKELETON_COLS,
   SKELETON_ROWS,
 } from "./isin-table-utils.ts";
@@ -182,17 +179,14 @@ function renderEmpty() {
     <div className="p-8 text-center">
       <p className="mb-4 text-4xl">📊</p>
       <h2>No instruments added yet</h2>
-      <p className="mb-4 text-base-content/60">Import a JSON file to get started</p>
-      <button type="button" className="btn btn-disabled" disabled>
-        Import
-      </button>
+      <p className="mb-4 text-base-content/60">Use the Import button in the top bar to get started</p>
     </div>
   );
 }
 
 function renderTableHeader(table: Table<Asset>) {
   return (
-    <thead className="sticky top-0 z-10 bg-base-100">
+    <thead className="sticky top-6 z-10 bg-base-100">
       {table.getHeaderGroups().map(headerGroup => (
         <tr key={headerGroup.id}>
           {headerGroup.headers.map(header => (
@@ -208,6 +202,9 @@ function renderTableHeader(table: Table<Asset>) {
           ))}
         </tr>
       ))}
+      <tr>
+        <th colSpan={table.getVisibleLeafColumns().length} className="p-0 shadow" />
+      </tr>
     </thead>
   );
 }
@@ -222,20 +219,7 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
             const isScoreCol = cell.column.id === "score";
             const bgClass = qClass ?? (isScoreCol ? "bg-base-200" : undefined);
             const tdClass = [isScoreCol ? "font-semibold" : undefined, bgClass].filter(Boolean).join(" ") || undefined;
-            let cellNode = flexRender(cell.column.columnDef.cell, cell.getContext());
-            if (isScoreCol && qClass !== undefined) {
-              const score = cell.getValue<number>();
-              /* v8 ignore next -- SCORE_MISSING_VALUE is excluded from quintile computation; this branch is unreachable */
-              if (score !== SCORE_MISSING_VALUE) {
-                const dotClass = qClass.includes("success") ? "bg-success" : "bg-error";
-                cellNode = (
-                  <span className="flex items-center gap-1.5" title={SCORE_TITLE}>
-                    <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${dotClass}`} />
-                    {score.toFixed(DECIMAL_PLACES)}
-                  </span>
-                );
-              }
-            }
+            const cellNode = flexRender(cell.column.columnDef.cell, cell.getContext());
             return (
               <td key={cell.id} className={tdClass}>
                 {cellNode}
@@ -266,18 +250,16 @@ export function IsinTable() {
   return (
     <>
       {renderPageHeader(data.assets)}
-      <div className="p-4 text-left">
-        <div className="mb-2 flex items-center justify-between gap-2 bg-base-200 p-4" data-testid="table-controls">
+      <div className="relative p-4 text-left">
+        <div className="absolute top-6 left-4 z-20 flex gap-4">
           {renderSearchFilter(filterText, setFilterText)}
           {renderColumnFilter(table, visibleLeafCount)}
         </div>
-        <div className="w-full overflow-x-auto">
-          <table className="table-hover table w-full">
-            <caption className="sr-only">ISINs reference data table</caption>
-            {renderTableHeader(table)}
-            {renderTableBody(table, quintileClasses)}
-          </table>
-        </div>
+        <table className="table-hover table w-full">
+          <caption className="sr-only">ISINs reference data table</caption>
+          {renderTableHeader(table)}
+          {renderTableBody(table, quintileClasses)}
+        </table>
       </div>
     </>
   );
