@@ -50,7 +50,7 @@ function renderPickerContent({ assets, filtered, selected, toggle }: RenderConte
     return <p className="p-4 text-center text-base-content/60">No instruments match your search.</p>;
   return (
     <table className="table w-full table-sm">
-      <thead className="sticky top-0 bg-base-100">
+      <thead className="sticky top-0 z-10 bg-base-100">
         <tr>
           <th className="w-8" />
           <th>ISIN</th>
@@ -60,7 +60,11 @@ function renderPickerContent({ assets, filtered, selected, toggle }: RenderConte
       </thead>
       <tbody>
         {filtered.map(asset => (
-          <tr key={asset.isin} className="hover cursor-pointer" onClick={() => toggle(asset.isin)}>
+          <tr
+            key={asset.isin}
+            className="hover cursor-pointer select-none hover:bg-accent/20"
+            onClick={() => toggle(asset.isin)}
+          >
             <td>
               <input
                 type="checkbox"
