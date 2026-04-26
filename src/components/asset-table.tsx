@@ -8,23 +8,34 @@ import { columns } from "./asset-table-columns.tsx";
 import { useDexieSync, useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
-import {
-  computeQuintileClasses,
-  DEFAULT_COLUMN_VISIBILITY,
-  getAriaSortValue,
-  SKELETON_COLS,
-  SKELETON_ROWS,
-} from "./asset-table-utils.ts";
+import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, getAriaSortValue, SKELETON_COLS, SKELETON_ROWS } from "./asset-table-utils.ts";
+
+type AssetTableMeta = { onToggleSelect?: (isin: string) => void; selectedIsins?: Set<string> };
+
+function makeSelectColumn(): ColumnDef<Asset> {
+  return {
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      return (
+        <input
+          type="checkbox"
+          className="checkbox checkbox-sm checkbox-primary"
+          checked={meta?.selectedIsins?.has(row.original.isin) ?? false}
+          onChange={() => meta?.onToggleSelect?.(row.original.isin)}
+          onClick={event => event.stopPropagation()}
+        />
+      );
+    },
+    enableSorting: false,
+    header: "",
+    id: "select",
+  };
+}
 
 function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
   return {
     cell: ({ row }) => (
-      <button
-        type="button"
-        className="btn text-error btn-ghost btn-xs"
-        aria-label={`Remove ${row.original.name}`}
-        onClick={() => onRemove(row.original.isin)}
-      >
+      <button type="button" className="btn text-error btn-ghost btn-xs" aria-label={`Remove ${row.original.name}`} onClick={() => onRemove(row.original.isin)}>
         <Trash2 size={14} />
       </button>
     ),
@@ -34,7 +45,13 @@ function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
   };
 }
 
-type Props = { assets?: Asset[]; onRemoveAsset?: (isin: string) => void };
+type Props = {
+  assets?: Asset[];
+  hideFilters?: boolean;
+  onRemoveAsset?: (isin: string) => void;
+  onToggleSelect?: (isin: string) => void;
+  selectedIsins?: Set<string>;
+};
 
 function getSortIndicator(sorted: "asc" | "desc" | false): string {
   if (sorted === "asc") return " ▲";
@@ -48,18 +65,18 @@ function renderThContent(header: Header<Asset, unknown>) {
   const label = flexRender(header.column.columnDef.header, header.getContext());
   if (!header.column.getCanSort()) return <span>{label}</span>;
   return (
-    <button
-      type="button"
-      className={cn("btn", sorted ? "btn-soft btn-primary" : "btn-ghost")}
-      onClick={header.column.getToggleSortingHandler()}
-    >
+    <button type="button" className={cn("btn", sorted ? "btn-soft btn-primary" : "btn-ghost")} onClick={header.column.getToggleSortingHandler()}>
       {label}
       <span className="scale-75">{getSortIndicator(sorted)}</span>
     </button>
   );
 }
 
-function useAssetTableState({ assets: propAssets, onRemoveAsset }: Props = {}) {
+function buildActiveColumns(onToggleSelect: ((isin: string) => void) | undefined, onRemoveAsset: ((isin: string) => void) | undefined): ColumnDef<Asset>[] {
+  return [...(onToggleSelect ? [makeSelectColumn()] : []), ...columns, ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : [])];
+}
+
+function useAssetTableState({ assets: propAssets, onRemoveAsset, onToggleSelect, selectedIsins }: Props = {}) {
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
@@ -73,23 +90,18 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset }: Props = {}) {
   };
   useHydration(retryKey);
   useDexieSync();
-  const resolvedVisibility = useMemo(
-    () => ({ ...DEFAULT_COLUMN_VISIBILITY, ...data.settings.columnVisibility }),
-    [data.settings.columnVisibility],
-  );
-  const sorting: SortingState = useMemo(
-    () => [{ desc: data.settings.sort.direction === "desc", id: data.settings.sort.column }],
-    [data.settings.sort],
-  );
+  const resolvedVisibility = useMemo(() => ({ ...DEFAULT_COLUMN_VISIBILITY, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
+  const sorting: SortingState = useMemo(() => [{ desc: data.settings.sort.direction === "desc", id: data.settings.sort.column }], [data.settings.sort]);
   const filteredAssets = useMemo(() => {
     const lower = filterText.trim().toLowerCase();
     if (!lower) return propAssets ?? data.assets;
     return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
   }, [data.assets, filterText, propAssets]);
-  const activeColumns = onRemoveAsset ? [...columns, makeRemoveColumn(onRemoveAsset)] : columns;
+  const activeColumns = buildActiveColumns(onToggleSelect, onRemoveAsset);
   const table = useTableInstance({
     columns: activeColumns,
     filteredAssets,
+    meta: onToggleSelect ? { onToggleSelect, selectedIsins } : undefined,
     resolvedVisibility,
     setColumnVisibility,
     setSort,
@@ -156,7 +168,7 @@ function renderEmpty() {
 
 function renderTableHeader(table: Table<Asset>) {
   return (
-    <thead className="sticky top-6 z-10 bg-base-100">
+    <thead className="sticky top-0 z-10 bg-base-100">
       {table.getHeaderGroups().map(headerGroup => (
         <tr key={headerGroup.id}>
           {headerGroup.headers.map(header => (
@@ -179,13 +191,14 @@ function renderTableHeader(table: Table<Asset>) {
   );
 }
 
-function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<string, string | undefined>>) {
+function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<string, string | undefined>>, onRowClick?: (isin: string) => void) {
   return (
     <tbody>
       {table.getRowModel().rows.map(row => (
         <tr
           key={row.id}
-          className="rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary hover:backdrop-brightness-105"
+          className={cn("rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary hover:backdrop-brightness-105", onRowClick && "cursor-pointer select-none")}
+          onClick={onRowClick ? () => onRowClick(row.original.isin) : undefined}
         >
           {row.getVisibleCells().map(cell => {
             const qClass = quintileClasses.get(cell.column.id)?.get(row.id);
@@ -204,18 +217,8 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
   );
 }
 
-export function AssetTable({ assets: propAssets, onRemoveAsset }: Props = {}) {
-  const {
-    data,
-    filterText,
-    handleRetry,
-    isLoading,
-    loadError,
-    quintileClasses,
-    setFilterText,
-    table,
-    visibleLeafCount,
-  } = useAssetTableState({ assets: propAssets, onRemoveAsset });
+export function AssetTable({ assets: propAssets, onRemoveAsset, onToggleSelect, selectedIsins }: Props = {}) {
+  const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({ assets: propAssets, onRemoveAsset, onToggleSelect, selectedIsins });
   if (!propAssets) {
     if (isLoading) return renderSkeleton();
     if (loadError) return renderError(loadError, handleRetry);
@@ -225,14 +228,14 @@ export function AssetTable({ assets: propAssets, onRemoveAsset }: Props = {}) {
     <>
       {!propAssets && renderPageHeader(data.assets)}
       <div className="relative p-4 text-left">
-        <div className="absolute top-6 left-4 z-20 flex gap-4">
+        <div className="sticky top-5 z-20 -mb-9 ml-2 flex gap-4">
           {renderSearchFilter(filterText, setFilterText)}
           {renderColumnFilter(table, visibleLeafCount)}
         </div>
         <table className="table-hover table w-full">
           <caption className="sr-only">ISINs reference data table</caption>
           {renderTableHeader(table)}
-          {renderTableBody(table, quintileClasses)}
+          {renderTableBody(table, quintileClasses, onToggleSelect)}
         </table>
       </div>
     </>

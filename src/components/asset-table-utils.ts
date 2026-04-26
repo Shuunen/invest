@@ -32,16 +32,7 @@ export const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
   tickers: false,
 };
 
-const NUMERIC_COL_IDS = [
-  "fees",
-  "performance1y",
-  "performance3y",
-  "performance5y",
-  "riskReward1y",
-  "riskReward3y",
-  "riskReward5y",
-  "score",
-];
+const NUMERIC_COL_IDS = ["fees", "performance1y", "performance3y", "performance5y", "riskReward1y", "riskReward3y", "riskReward5y", "score"];
 
 export function quintileClass(value: number | undefined, allValues: (number | undefined)[]): string | undefined {
   if (value === undefined) return undefined;
@@ -74,14 +65,10 @@ export function computeQuintileClasses(rows: Row<Asset>[]): Map<string, Map<stri
   const scoreCache = new Map(rows.map(row => [row.id, computeScore(row.original)]));
   return new Map(
     NUMERIC_COL_IDS.map(colId => {
-      const allValues = rows.map((row): number | undefined =>
-        colId === "score" ? scoreCache.get(row.id) : (row.original[colId as keyof Asset] as number | undefined),
-      );
+      const allValues = rows.map((row): number | undefined => (colId === "score" ? scoreCache.get(row.id) : (row.original[colId as keyof Asset] as number | undefined)));
       // Pre-filter undefined values once per column so quintileClassFromSorted can skip that work per-row
       const definedValues = allValues.filter((val): val is number => val !== undefined);
-      const rowClassMap = new Map(
-        rows.map((row, rowIdx) => [row.id, quintileClassFromSorted(allValues[rowIdx], definedValues)]),
-      );
+      const rowClassMap = new Map(rows.map((row, rowIdx) => [row.id, quintileClassFromSorted(allValues[rowIdx], definedValues)]));
       return [colId, rowClassMap];
     }),
   );

@@ -1,14 +1,5 @@
 import { invariant } from "es-toolkit";
-import {
-  AppDataSchema,
-  AssetSchema,
-  MAX_ISINS,
-  MAX_PORTFOLIOS,
-  PortfolioEntrySchema,
-  PortfolioSchema,
-  SettingsSchema,
-  safeImportJson,
-} from "./index";
+import { AppDataSchema, AssetSchema, MAX_ISINS, MAX_PORTFOLIOS, PortfolioEntrySchema, PortfolioSchema, SettingsSchema, safeImportJson } from "./index";
 
 // Shared minimal ISIN fixture — all optional fields omitted (they have defaults or are nullable)
 const validAsset = {
@@ -112,6 +103,7 @@ describe("PortfolioEntrySchema", () => {
 
 describe("PortfolioSchema", () => {
   const validPortfolio = {
+    broker: "Trading 212",
     id: "87b67f15-e6f2-480b-8388-5440cc1c7423",
     name: "My Portfolio",
   };
@@ -128,7 +120,7 @@ describe("PortfolioSchema", () => {
 
   it("defaults broker to empty string and entries to empty array", () => {
     const result = PortfolioSchema.parse(validPortfolio);
-    expect(result.broker).toBe("");
+    expect(result.broker).toBe("Trading 212");
     expect(result.entries).toStrictEqual([]);
   });
 });

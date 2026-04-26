@@ -57,9 +57,7 @@ export const useAppStore = create<AppStore>()(
       set(state => ({
         data: {
           ...state.data,
-          portfolios: state.data.portfolios.map(portfolio =>
-            portfolio.id === portfolioId ? { ...portfolio, entries } : portfolio,
-          ),
+          portfolios: state.data.portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries } : portfolio)),
         },
       })),
     setSort: sort =>
@@ -70,9 +68,7 @@ export const useAppStore = create<AppStore>()(
       set(state => ({
         data: {
           ...state.data,
-          portfolios: state.data.portfolios.map(portfolio =>
-            portfolio.id === id ? { ...portfolio, ...patch } : portfolio,
-          ),
+          portfolios: state.data.portfolios.map(portfolio => (portfolio.id === id ? { ...portfolio, ...patch } : portfolio)),
         },
       })),
   })),

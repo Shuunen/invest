@@ -1,10 +1,4 @@
-import {
-  getCoreRowModel,
-  getSortedRowModel,
-  useReactTable,
-  type ColumnDef,
-  type SortingState,
-} from "@tanstack/react-table";
+import { getCoreRowModel, getSortedRowModel, useReactTable, type ColumnDef, type SortingState } from "@tanstack/react-table";
 import type { Asset } from "../schemas/index.ts";
 
 export function matchesFilter(asset: Asset, lower: string): boolean {
@@ -17,26 +11,21 @@ export function matchesFilter(asset: Asset, lower: string): boolean {
 type UseTableInstanceOptions = {
   columns: ColumnDef<Asset>[];
   filteredAssets: Asset[];
+  meta?: { onToggleSelect?: (isin: string) => void; selectedIsins?: Set<string> };
   resolvedVisibility: Record<string, boolean>;
   setColumnVisibility: (vis: Record<string, boolean>) => void;
   setSort: (sort: { column: string; direction: "asc" | "desc" }) => void;
   sorting: SortingState;
 };
 
-export function useTableInstance({
-  columns,
-  filteredAssets,
-  resolvedVisibility,
-  setColumnVisibility,
-  setSort,
-  sorting,
-}: UseTableInstanceOptions) {
+export function useTableInstance({ columns, filteredAssets, meta, resolvedVisibility, setColumnVisibility, setSort, sorting }: UseTableInstanceOptions) {
   return useReactTable({
     columns,
     data: filteredAssets,
     enableMultiSort: false,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    meta,
     onColumnVisibilityChange: updater => {
       /* v8 ignore next -- TanStack Table always passes a function updater; direct value path is defensive */
       const next = typeof updater === "function" ? updater(resolvedVisibility) : updater;

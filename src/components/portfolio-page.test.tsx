@@ -187,9 +187,9 @@ describe("PortfolioPage - asset picker modal", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.queryByRole("heading", { hidden: true, name: /select assets/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { hidden: true, name: /portfolio assets/i })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /edit assets/i }));
-    expect(screen.getByRole("heading", { hidden: true, name: /select assets/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { hidden: true, name: /portfolio assets/i })).toBeInTheDocument();
   });
 
   it("closes the picker on cancel", () => {
@@ -202,7 +202,7 @@ describe("PortfolioPage - asset picker modal", () => {
     render(<PortfolioPage portfolioId={portfolio.id} />);
     fireEvent.click(screen.getByRole("button", { name: /edit assets/i }));
     fireEvent.click(screen.getByRole("button", { hidden: true, name: /cancel/i }));
-    expect(screen.queryByRole("heading", { hidden: true, name: /select assets/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { hidden: true, name: /portfolio assets/i })).not.toBeInTheDocument();
   });
 
   it("confirm updates the portfolio assets via buildEntries preserving existing entries", () => {

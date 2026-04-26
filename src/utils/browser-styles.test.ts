@@ -19,8 +19,6 @@ describe("browser-styles", () => {
   });
 
   it("cn E merge classes", () => {
-    expect(cn("bg-blue bg-blue bg-blue text-black", "text-red font-bold")).toMatchInlineSnapshot(
-      `"bg-blue text-red font-bold"`,
-    );
+    expect(cn("bg-blue bg-blue bg-blue text-black", "text-red font-bold")).toMatchInlineSnapshot(`"bg-blue text-red font-bold"`);
   });
 });

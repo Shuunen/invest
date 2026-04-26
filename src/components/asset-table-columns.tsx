@@ -1,13 +1,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { computeScore, type Asset } from "../schemas/index.ts";
 import { cn } from "../utils/browser-styles.ts";
-import {
-  DECIMAL_PLACES,
-  formatNumber,
-  getScoreDotClass,
-  SCORE_MISSING_VALUE,
-  SCORE_TITLE,
-} from "./asset-table-utils.ts";
+import { DECIMAL_PLACES, formatNumber, getScoreDotClass, SCORE_MISSING_VALUE, SCORE_TITLE } from "./asset-table-utils.ts";
 
 function booleanCell(value: boolean) {
   return (

@@ -13,8 +13,7 @@ type HeaderStats = {
 function computeHeaderStats(assets: Asset[]): HeaderStats {
   const scores = assets.map(asset => computeScore(asset));
   const definedScores = scores.filter((score): score is number => score !== undefined);
-  const avgScore =
-    definedScores.length > 0 ? definedScores.reduce((acc, val) => acc + val, 0) / definedScores.length : undefined;
+  const avgScore = definedScores.length > 0 ? definedScores.reduce((acc, val) => acc + val, 0) / definedScores.length : undefined;
   let topIndex = -1;
   let topScore = -Infinity;
   for (let idx = 0; idx < scores.length; idx += 1) {
@@ -36,9 +35,7 @@ export function renderPageHeader(assets: Asset[]) {
     <div className="border-b border-base-200 bg-base-100 px-4 pt-5 pb-0">
       <div className="mb-4">
         <h1 className="text-2xl font-bold tracking-tight">Instruments</h1>
-        <p className="mt-1 text-sm text-base-content/60">
-          Ranked by composite score — 3-year performance + risk/reward ratio, adjusted for fees.
-        </p>
+        <p className="mt-1 text-sm text-base-content/60">Ranked by composite score — 3-year performance + risk/reward ratio, adjusted for fees.</p>
       </div>
       <div className="flex items-center gap-6 border-t border-base-200 py-3 text-sm">
         <div>
@@ -47,9 +44,7 @@ export function renderPageHeader(assets: Asset[]) {
         </div>
         <div className="h-5 w-px bg-primary" />
         <div>
-          <span className="text-lg font-bold tabular-nums">
-            {avgScore === undefined ? "—" : formatNumber(avgScore)}
-          </span>
+          <span className="text-lg font-bold tabular-nums">{avgScore === undefined ? "—" : formatNumber(avgScore)}</span>
           <span className="ml-1.5 text-xs tracking-wide text-base-content/50 uppercase">Avg Score</span>
         </div>
         {topLabel !== undefined && (
@@ -81,17 +76,8 @@ export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number
       </button>
       <div tabIndex={0} className="dropdown-content menu z-9999 w-52 rounded-box bg-base-100 p-2 shadow-2xl">
         {table.getAllLeafColumns().map(column => (
-          <label
-            key={column.id}
-            className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-primary/30"
-          >
-            <input
-              type="checkbox"
-              className="checkbox checkbox-sm"
-              checked={column.getIsVisible()}
-              disabled={column.getIsVisible() && visibleLeafCount <= 1}
-              onChange={column.getToggleVisibilityHandler()}
-            />
+          <label key={column.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-primary/30">
+            <input type="checkbox" className="checkbox checkbox-sm" checked={column.getIsVisible()} disabled={column.getIsVisible() && visibleLeafCount <= 1} onChange={column.getToggleVisibilityHandler()} />
             <span className="label-text">{String(column.columnDef.header)}</span>
           </label>
         ))}
