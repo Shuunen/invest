@@ -3,9 +3,7 @@ import sampleJson from "../data/sample.json" with { type: "json" };
 
 const PORTFOLIO_ID = sampleJson.portfolios[0].id;
 const PORTFOLIO_NAME = sampleJson.portfolios[0].name;
-const PORTFOLIO_ASSETS = sampleJson.portfolios[0].entries
-  .map(entry => sampleJson.assets.find(ast => ast.isin === entry.isin))
-  .filter(Boolean);
+const PORTFOLIO_ASSETS = sampleJson.portfolios[0].entries.map(entry => sampleJson.assets.find(ast => ast.isin === entry.isin)).filter(Boolean);
 
 async function importSampleData(page: Page) {
   await page.goto("/");
@@ -50,10 +48,7 @@ test("root element mounts and renders content", async ({ page }) => {
 
 test("page has correct viewport meta", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute(
-    "content",
-    "width=device-width, initial-scale=1.0",
-  );
+  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute("content", "width=device-width, initial-scale=1.0");
 });
 
 test("portfolio page shows assets and survives a reload", async ({ page }) => {

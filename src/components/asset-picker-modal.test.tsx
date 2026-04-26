@@ -35,65 +35,30 @@ const FILTERED_LIST = [ASSET_A, ASSET_B];
 
 describe("AssetPickerModal - no assets", () => {
   it("shows empty message when assets list is empty", () => {
-    render(
-      <AssetPickerModal
-        assets={NO_ASSETS}
-        initialSelected={new Set<string>()}
-        onCancel={vi.fn<() => void>()}
-        onConfirm={vi.fn<(isins: string[]) => void>()}
-      />,
-    );
+    render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     expect(screen.getByText(/no instruments available/i)).toBeInTheDocument();
   });
 });
 
 describe("AssetPickerModal - with assets", () => {
   it("renders asset rows", () => {
-    render(
-      <AssetPickerModal
-        assets={SINGLE_ASSET_LIST}
-        initialSelected={new Set<string>()}
-        onCancel={vi.fn<() => void>()}
-        onConfirm={vi.fn<(isins: string[]) => void>()}
-      />,
-    );
+    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     expect(screen.getByText("Test ETF")).toBeInTheDocument();
     expect(screen.getByText("LU1234567890")).toBeInTheDocument();
   });
 
   it("pre-checks initially selected assets", () => {
-    render(
-      <AssetPickerModal
-        assets={SINGLE_ASSET_LIST}
-        initialSelected={new Set([BASE_ASSET.isin])}
-        onCancel={vi.fn<() => void>()}
-        onConfirm={vi.fn<(isins: string[]) => void>()}
-      />,
-    );
+    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     expect(screen.getByRole("checkbox", { hidden: true })).toBeChecked();
   });
 
   it("shows selected count", () => {
-    render(
-      <AssetPickerModal
-        assets={SINGLE_ASSET_LIST}
-        initialSelected={new Set([BASE_ASSET.isin])}
-        onCancel={vi.fn<() => void>()}
-        onConfirm={vi.fn<(isins: string[]) => void>()}
-      />,
-    );
+    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     expect(screen.getByText(/1 selected/i)).toBeInTheDocument();
   });
 
   it("toggles selection when row is clicked", () => {
-    render(
-      <AssetPickerModal
-        assets={SINGLE_ASSET_LIST}
-        initialSelected={new Set<string>()}
-        onCancel={vi.fn<() => void>()}
-        onConfirm={vi.fn<(isins: string[]) => void>()}
-      />,
-    );
+    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     const checkbox = screen.getByRole("checkbox", { hidden: true });
     expect(checkbox).not.toBeChecked();
     const row = screen.getByText("Test ETF").closest("tr");
@@ -103,14 +68,7 @@ describe("AssetPickerModal - with assets", () => {
   });
 
   it("toggles selection when checkbox is clicked directly", () => {
-    render(
-      <AssetPickerModal
-        assets={SINGLE_ASSET_LIST}
-        initialSelected={new Set<string>()}
-        onCancel={vi.fn<() => void>()}
-        onConfirm={vi.fn<(isins: string[]) => void>()}
-      />,
-    );
+    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     const checkbox = screen.getByRole("checkbox", { hidden: true });
     fireEvent.click(checkbox);
     expect(checkbox).toBeChecked();
@@ -120,70 +78,35 @@ describe("AssetPickerModal - with assets", () => {
   });
 
   it("filters assets by name", async () => {
-    render(
-      <AssetPickerModal
-        assets={FILTERED_LIST}
-        initialSelected={new Set<string>()}
-        onCancel={vi.fn<() => void>()}
-        onConfirm={vi.fn<(isins: string[]) => void>()}
-      />,
-    );
+    render(<AssetPickerModal assets={FILTERED_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     await userEvent.type(screen.getByRole("searchbox", { hidden: true }), "global");
     expect(screen.getByText("Global ETF")).toBeInTheDocument();
     expect(screen.queryByText("Bond Fund")).not.toBeInTheDocument();
   });
 
   it("shows no match message when filter matches nothing", async () => {
-    render(
-      <AssetPickerModal
-        assets={SINGLE_ASSET_LIST}
-        initialSelected={new Set<string>()}
-        onCancel={vi.fn<() => void>()}
-        onConfirm={vi.fn<(isins: string[]) => void>()}
-      />,
-    );
+    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     await userEvent.type(screen.getByRole("searchbox", { hidden: true }), "zzznomatch");
     expect(screen.getByText(/no instruments match/i)).toBeInTheDocument();
   });
 
   it("calls onCancel when Cancel button is clicked", () => {
     const onCancel = vi.fn<() => void>();
-    render(
-      <AssetPickerModal
-        assets={NO_ASSETS}
-        initialSelected={new Set<string>()}
-        onCancel={onCancel}
-        onConfirm={vi.fn<(isins: string[]) => void>()}
-      />,
-    );
+    render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     fireEvent.click(screen.getByRole("button", { hidden: true, name: /cancel/i }));
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
   it("calls onCancel when X button is clicked", () => {
     const onCancel = vi.fn<() => void>();
-    render(
-      <AssetPickerModal
-        assets={NO_ASSETS}
-        initialSelected={new Set<string>()}
-        onCancel={onCancel}
-        onConfirm={vi.fn<(isins: string[]) => void>()}
-      />,
-    );
+    render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     fireEvent.click(screen.getByRole("button", { hidden: true, name: /close/i }));
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
   it("calls onCancel when backdrop is clicked", () => {
     const onCancel = vi.fn<() => void>();
-    const { container } = render(
-      <AssetPickerModal
-        assets={NO_ASSETS}
-        initialSelected={new Set<string>()}
-        onCancel={onCancel}
-        onConfirm={vi.fn<(isins: string[]) => void>()}
-      />,
-    );
+    const { container } = render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     const backdrop = container.querySelector(".modal-backdrop");
     invariant(backdrop, "Expected backdrop element to exist");
     fireEvent.click(backdrop);
@@ -192,14 +115,7 @@ describe("AssetPickerModal - with assets", () => {
 
   it("calls onConfirm with selected isins when Confirm is clicked", () => {
     const onConfirm = vi.fn<(isins: string[]) => void>();
-    render(
-      <AssetPickerModal
-        assets={SINGLE_ASSET_LIST}
-        initialSelected={new Set([BASE_ASSET.isin])}
-        onCancel={vi.fn<() => void>()}
-        onConfirm={onConfirm}
-      />,
-    );
+    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={onConfirm} title="Select assets" />);
     fireEvent.click(screen.getByRole("button", { hidden: true, name: /confirm/i }));
     expect(onConfirm).toHaveBeenCalledWith([BASE_ASSET.isin]);
   });

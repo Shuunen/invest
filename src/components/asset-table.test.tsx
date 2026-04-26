@@ -129,10 +129,7 @@ describe("AssetTable - data display", () => {
   });
 
   it("renders all ISIN rows", () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "ETF One" }),
-      makeAsset({ isin: "FR0000000001", name: "ETF Two" }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "ETF One" }), makeAsset({ isin: "FR0000000001", name: "ETF Two" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     expect(screen.getByText("ETF One")).toBeInTheDocument();
@@ -199,10 +196,7 @@ describe("AssetTable - score column", () => {
 
 describe("AssetTable - sorting", () => {
   it("sort by name on header click updates store", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Zebra ETF" }),
-      makeAsset({ isin: "FR0000000001", name: "Apple ETF" }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Zebra ETF" }), makeAsset({ isin: "FR0000000001", name: "Apple ETF" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     fireEvent.click(screen.getByRole("button", { name: /name/i }));
@@ -236,9 +230,7 @@ describe("AssetTable - column hiding", () => {
     render(<AssetTable />);
     expect(screen.getAllByText("Provider").length).toBeGreaterThan(0);
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    const providerCheckbox = Array.from(checkboxes).find(checkbox =>
-      checkbox.closest("label")?.textContent?.includes("Provider"),
-    ) as HTMLInputElement | undefined;
+    const providerCheckbox = Array.from(checkboxes).find(checkbox => checkbox.closest("label")?.textContent?.includes("Provider")) as HTMLInputElement | undefined;
     invariant(providerCheckbox, "Expected to find Provider checkbox");
     fireEvent.click(providerCheckbox);
     await waitFor(() => {
@@ -282,9 +274,7 @@ describe("AssetTable - column visibility guard", () => {
     });
     render(<AssetTable />);
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    const scoreCheckbox = Array.from(checkboxes).find(checkbox =>
-      checkbox.closest("label")?.textContent?.includes("Score"),
-    ) as HTMLInputElement | undefined;
+    const scoreCheckbox = Array.from(checkboxes).find(checkbox => checkbox.closest("label")?.textContent?.includes("Score")) as HTMLInputElement | undefined;
     invariant(scoreCheckbox, "Expected to find Score checkbox");
     expect(scoreCheckbox.disabled).toBe(true);
   });
@@ -292,10 +282,7 @@ describe("AssetTable - column visibility guard", () => {
 
 describe("AssetTable - filter", () => {
   it("filter input change narrows displayed rows", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "ProviderA", tickers: ["ALP"] }),
-      makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "ProviderB", tickers: ["BET"] }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "ProviderA", tickers: ["ALP"] }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "ProviderB", tickers: ["BET"] })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     const input = screen.getByPlaceholderText(/search/i);
@@ -307,10 +294,7 @@ describe("AssetTable - filter", () => {
   });
 
   it("filter matches by ISIN", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Alpha ETF" }),
-      makeAsset({ isin: "FR0000000001", name: "Beta ETF" }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF" }), makeAsset({ isin: "FR0000000001", name: "Beta ETF" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     const input = screen.getByPlaceholderText(/search/i);
@@ -321,10 +305,7 @@ describe("AssetTable - filter", () => {
   });
 
   it("filter matches by provider", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi" }),
-      makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "Lyxor" }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi" }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "Lyxor" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     const input = screen.getByPlaceholderText(/search/i);
@@ -335,10 +316,7 @@ describe("AssetTable - filter", () => {
   });
 
   it("filter matches by ticker", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Alpha ETF", tickers: ["IWDA"] }),
-      makeAsset({ isin: "FR0000000001", name: "Beta ETF", tickers: ["VWRL"] }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", tickers: ["IWDA"] }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", tickers: ["VWRL"] })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     const input = screen.getByPlaceholderText(/search/i);
@@ -392,10 +370,7 @@ describe("AssetTable - tickers column", () => {
   });
 
   it("sort by tickers column uses custom sortingFn", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Zebra ETF", tickers: ["ZZZ"] }),
-      makeAsset({ isin: "FR0000000001", name: "Apple ETF", tickers: ["AAA"] }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Zebra ETF", tickers: ["ZZZ"] }), makeAsset({ isin: "FR0000000001", name: "Apple ETF", tickers: ["AAA"] })];
     useAppStore.setState({
       data: {
         ...makeTestData(assets),

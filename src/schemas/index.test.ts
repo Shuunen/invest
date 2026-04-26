@@ -32,10 +32,7 @@ describe("AppDataSchema", () => {
       portfolios: [
         {
           ...firstPortfolio,
-          entries: [
-            ...firstPortfolio.entries,
-            { inPEA: false, isin: "XX0000000000", notes: "", positionValue: 100, targetAmount: 0 },
-          ],
+          entries: [...firstPortfolio.entries, { inPEA: false, isin: "XX0000000000", notes: "", positionValue: 100, targetAmount: 0 }],
         },
         ...valid.portfolios.slice(1),
       ],
@@ -105,9 +102,7 @@ describe("computeScore", () => {
   });
 
   it("matches formula: perf3y + risk3y*5 - fees*10", () => {
-    const asset = AppDataSchema.parse(JSON.parse(sampleRaw)).assets.find(
-      entry => entry.performance3y !== undefined && entry.riskReward3y !== undefined,
-    );
+    const asset = AppDataSchema.parse(JSON.parse(sampleRaw)).assets.find(entry => entry.performance3y !== undefined && entry.riskReward3y !== undefined);
     invariant(asset, "Expected to find an ISIN with all required fields");
     invariant(asset.performance3y !== undefined, "Expected performance3y to be defined");
     invariant(asset.riskReward3y !== undefined, "Expected riskReward3y to be defined");

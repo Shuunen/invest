@@ -13,12 +13,7 @@ function PortfolioNavLinks() {
   const portfolios = useAppStore(state => state.data.portfolios);
   return portfolios.map(portfolio => (
     <li key={portfolio.id}>
-      <Link
-        to="/portfolios/$id"
-        title={`My ${portfolio.name} portfolio`}
-        params={{ id: portfolio.id }}
-        activeProps={{ className: activeMenuClass }}
-      >
+      <Link to="/portfolios/$id" title={`My ${portfolio.name} portfolio`} params={{ id: portfolio.id }} activeProps={{ className: activeMenuClass }}>
         {portfolio.name}
       </Link>
     </li>
@@ -52,13 +47,7 @@ export function App() {
           </ul>
         </div>
         <div className="navbar-end gap-2">
-          <button
-            type="button"
-            className="btn btn-soft btn-sm btn-primary"
-            aria-label="New portfolio"
-            title="Add portfolio"
-            onClick={() => setCreateOpen(true)}
-          >
+          <button type="button" className="btn btn-soft btn-sm btn-primary" aria-label="New portfolio" title="Add portfolio" onClick={() => setCreateOpen(true)}>
             <PlusCircle size={16} />
           </button>
           <ImportExportButtons />

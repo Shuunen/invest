@@ -1,13 +1,21 @@
-import { X } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Asset } from "../schemas/index.ts";
 import { matchesFilter } from "./asset-table-hooks.ts";
+import { AssetTable } from "./asset-table.tsx";
+import { ModalActions } from "./modal-actions.tsx";
+import { ModalHeader } from "./modal-header.tsx";
 
 type Props = {
+  /** The list of all available assets to choose from in the picker */
   assets: Asset[];
+  /** The ISINs of the assets that should be initially selected when the modal opens */
   initialSelected: Set<string>;
+  /** Called when the user cancels the selection (e.g. by clicking outside the modal or on the Cancel button) */
   onCancel: () => void;
+  /** Called with the new set of selected ISINs when the user confirms their selection */
   onConfirm: (selectedIsins: string[]) => void;
+  /** The title of the modal */
+  title: string;
 };
 
 function useAssetPicker(assets: Asset[], initialSelected: Set<string>, onConfirm: (selectedIsins: string[]) => void) {
@@ -36,89 +44,23 @@ function useAssetPicker(assets: Asset[], initialSelected: Set<string>, onConfirm
   return { filter, filtered, handleConfirm, selected, setFilter, toggle };
 }
 
-type RenderContentArgs = {
-  assets: Asset[];
-  filtered: Asset[];
-  selected: Set<string>;
-  toggle: (isin: string) => void;
-};
+type RenderListArgs = { assets: Asset[]; filtered: Asset[]; selected: Set<string>; toggle: (isin: string) => void };
 
-function renderPickerContent({ assets, filtered, selected, toggle }: RenderContentArgs) {
-  if (assets.length === 0)
-    return <p className="p-4 text-center text-base-content/60">No instruments available. Import assets first.</p>;
-  if (filtered.length === 0)
-    return <p className="p-4 text-center text-base-content/60">No instruments match your search.</p>;
-  return (
-    <table className="table w-full table-sm">
-      <thead className="sticky top-0 z-10 bg-base-100">
-        <tr>
-          <th className="w-8" />
-          <th>ISIN</th>
-          <th>Name</th>
-          <th>Provider</th>
-        </tr>
-      </thead>
-      <tbody>
-        {filtered.map(asset => (
-          <tr
-            key={asset.isin}
-            className="hover cursor-pointer select-none hover:bg-accent/20"
-            onClick={() => toggle(asset.isin)}
-          >
-            <td>
-              <input
-                type="checkbox"
-                className="checkbox checkbox-sm checkbox-primary"
-                checked={selected.has(asset.isin)}
-                onChange={() => toggle(asset.isin)}
-                onClick={event => event.stopPropagation()}
-              />
-            </td>
-            <td className="font-mono text-xs">{asset.isin}</td>
-            <td>{asset.name}</td>
-            <td className="text-base-content/60">{asset.provider}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+function renderPickerList({ assets, filtered, selected, toggle }: RenderListArgs) {
+  if (assets.length === 0) return <p className="p-4 text-center text-base-content/60">No instruments available. Import assets first.</p>;
+  if (filtered.length === 0) return <p className="p-4 text-center text-base-content/60">No instruments match your search.</p>;
+  return <AssetTable assets={filtered} selectedIsins={selected} onToggleSelect={toggle} />;
 }
 
-export function AssetPickerModal({ assets, initialSelected, onCancel, onConfirm }: Props) {
-  const { filter, filtered, handleConfirm, selected, setFilter, toggle } = useAssetPicker(
-    assets,
-    initialSelected,
-    onConfirm,
-  );
+export function AssetPickerModal({ assets, initialSelected, onCancel, onConfirm, title }: Props) {
+  const { filtered, handleConfirm, selected, toggle } = useAssetPicker(assets, initialSelected, onConfirm);
   return (
     <dialog className="modal-open modal" aria-modal="true">
-      <div className="modal-box max-w-2xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-lg font-bold">Select Assets</h3>
-          <button type="button" className="btn btn-circle btn-ghost btn-sm" aria-label="Close" onClick={onCancel}>
-            <X size={16} />
-          </button>
-        </div>
-        <input
-          type="search"
-          className="input-bordered input mb-3 w-full"
-          placeholder="Filter by name, ISIN, ticker…"
-          value={filter}
-          onChange={event => setFilter(event.target.value)}
-          autoFocus
-        />
-        <div className="max-h-96 overflow-y-auto rounded-box border border-base-200">
-          {renderPickerContent({ assets, filtered, selected, toggle })}
-        </div>
+      <div className="modal-box max-w-none">
+        <ModalHeader title={title} onClose={onCancel} />
+        <div className="max-h-144 overflow-y-auto rounded-box border border-base-200">{renderPickerList({ assets, filtered, selected, toggle })}</div>
         <p className="mt-2 text-sm text-base-content/60">{selected.size} selected</p>
-        <div className="modal-action">
-          <button type="button" className="btn btn-ghost" onClick={onCancel}>
-            Cancel
-          </button>
-          <button type="button" className="btn btn-primary" onClick={handleConfirm}>
-            Confirm
-          </button>
-        </div>
+        <ModalActions onCancel={onCancel} onConfirm={handleConfirm} confirmText="Confirm" type="default" />
       </div>
       <div className="modal-backdrop" onClick={onCancel} />
     </dialog>

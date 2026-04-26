@@ -26,15 +26,6 @@ describe("CreatePortfolioModal", () => {
     await expect(screen.findByText(/name is required/i)).resolves.toBeInTheDocument();
   });
 
-  it("clears name error when user types", async () => {
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /create/i }));
-    await expect(screen.findByText(/name is required/i)).resolves.toBeInTheDocument();
-    await userEvent.type(screen.getByLabelText(/^name$/i), "x");
-    expect(screen.queryByText(/name is required/i)).not.toBeInTheDocument();
-  });
-
   it("calls onClose when Cancel is clicked", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();

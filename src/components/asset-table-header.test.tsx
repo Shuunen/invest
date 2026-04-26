@@ -43,10 +43,7 @@ describe("renderPageHeader", () => {
   });
 
   it("shows top performer ticker", () => {
-    const assets = [
-      makeAsset({ fees: 0, performance3y: 5, riskReward3y: 0, tickers: ["LOW"] }),
-      makeAsset({ fees: 0, isin: "FR0000000001", performance3y: 20, riskReward3y: 0, tickers: ["HIGH"] }),
-    ];
+    const assets = [makeAsset({ fees: 0, performance3y: 5, riskReward3y: 0, tickers: ["LOW"] }), makeAsset({ fees: 0, isin: "FR0000000001", performance3y: 20, riskReward3y: 0, tickers: ["HIGH"] })];
     render(renderPageHeader(assets));
     expect(screen.getByText("HIGH")).toBeInTheDocument();
   });
