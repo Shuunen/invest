@@ -5,6 +5,7 @@
 
 :root {
   --color-base-100: white;
+  --color-primary-content: snow;
 }
 
 .btn-primary:hover {
