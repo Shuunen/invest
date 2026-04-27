@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { invariant } from "es-toolkit";
 import { db } from "../db/db.ts";
 import { computeScore, type AppData, type Asset } from "../schemas/index.ts";
@@ -36,6 +36,9 @@ function makeTestData(assets: Asset[]): AppData {
     settings: { ...defaultAppData.settings, columnVisibility: {}, sort: { column: "score", direction: "desc" } },
   };
 }
+
+const SELECT_ASSET = makeAsset({ isin: "LU1234567890" });
+const SELECT_ASSETS = [SELECT_ASSET];
 
 describe("matchesFilter", () => {
   const asset = makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi", tickers: ["IWDA"] });
@@ -146,6 +149,15 @@ describe("AssetTable - data display", () => {
     const cells = document.querySelectorAll("td");
     const dashCell = Array.from(cells).find(td => td.textContent?.trim() === "—");
     expect(dashCell).toBeDefined();
+  });
+});
+
+describe("AssetTable - select column", () => {
+  it("renders unchecked select checkbox when onToggleSelect is set but no selectedIsins", () => {
+    render(<AssetTable assets={SELECT_ASSETS} onToggleSelect={vi.fn<(isin: string) => void>()} />);
+    const row = screen.getByText(SELECT_ASSET.name).closest("tr");
+    invariant(row, "Expected table row to exist");
+    expect(within(row).getByRole("checkbox", { hidden: true })).not.toBeChecked();
   });
 });
 

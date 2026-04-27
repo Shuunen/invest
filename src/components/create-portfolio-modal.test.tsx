@@ -26,6 +26,14 @@ describe("CreatePortfolioModal", () => {
     await expect(screen.findByText(/name is required/i)).resolves.toBeInTheDocument();
   });
 
+  it("shows validation error when submitting with empty broker", async () => {
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
+    await userEvent.type(screen.getByLabelText(/^name$/i), "My Fund");
+    fireEvent.click(screen.getByRole("button", { hidden: true, name: /create/i }));
+    await expect(screen.findByText(/broker is required/i)).resolves.toBeInTheDocument();
+  });
+
   it("calls onClose when Cancel is clicked", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();

@@ -224,6 +224,7 @@ export function AssetTable({ assets: propAssets, onRemoveAsset, onToggleSelect, 
     if (loadError) return renderError(loadError, handleRetry);
     if (data.assets.length === 0) return renderEmpty();
   }
+  const filterReturnedNoResults = filterText.trim() !== "" && table.getRowModel().rows.length === 0;
   return (
     <>
       {!propAssets && renderPageHeader(data.assets)}
@@ -235,7 +236,18 @@ export function AssetTable({ assets: propAssets, onRemoveAsset, onToggleSelect, 
         <table className="table-hover table w-full">
           <caption className="sr-only">ISINs reference data table</caption>
           {renderTableHeader(table)}
-          {renderTableBody(table, quintileClasses, onToggleSelect)}
+          {filterReturnedNoResults ? (
+            <tbody>
+              <tr>
+                <td colSpan={table.getVisibleLeafColumns().length} className="p-8 text-center">
+                  <p className="mb-4 text-2xl">No results found for &quot;{filterText}&quot;</p>
+                  <p className="text-base-content/60">Try adjusting your search criteria</p>
+                </td>
+              </tr>
+            </tbody>
+          ) : (
+            renderTableBody(table, quintileClasses, onToggleSelect)
+          )}
         </table>
       </div>
     </>

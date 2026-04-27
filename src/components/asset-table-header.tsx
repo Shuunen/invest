@@ -89,6 +89,7 @@ export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number
 export function renderSearchFilter(filterText: string, setFilterText: (value: string) => void) {
   return (
     <input
+      data-testid="input-filter"
       type="search"
       className="input-bordered input input-sm w-full max-w-sm outline-gray-300"
       placeholder="Search ISIN, name, tickers…"
