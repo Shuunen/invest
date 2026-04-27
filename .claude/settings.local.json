@@ -13,7 +13,9 @@
       "Bash(git remote *)",
       "Bash(git -C *)",
       "Bash(gh pr *)",
-      "Skill(qa)"
+      "Skill(qa)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-review-read *)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-review-log *)"
     ]
   }
 }
