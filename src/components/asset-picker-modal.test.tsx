@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { invariant } from "es-toolkit";
 import type { Asset } from "../schemas/index.ts";
@@ -49,7 +49,9 @@ describe("AssetPickerModal - with assets", () => {
 
   it("pre-checks initially selected assets", () => {
     render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
-    expect(screen.getByRole("checkbox", { hidden: true })).toBeChecked();
+    const row = screen.getByText("Test ETF").closest("tr");
+    invariant(row, "Expected table row to exist");
+    expect(within(row).getByRole("checkbox", { hidden: true })).toBeChecked();
   });
 
   it("shows selected count", () => {
@@ -57,24 +59,30 @@ describe("AssetPickerModal - with assets", () => {
     expect(screen.getByText(/1 selected/i)).toBeInTheDocument();
   });
 
-  it("toggles selection when row is clicked", () => {
+  it("toggles selection when row is clicked", async () => {
     render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
-    const checkbox = screen.getByRole("checkbox", { hidden: true });
-    expect(checkbox).not.toBeChecked();
     const row = screen.getByText("Test ETF").closest("tr");
     invariant(row, "Expected table row to exist");
+    const checkbox = within(row).getByRole("checkbox", { hidden: true });
+    expect(checkbox).not.toBeChecked();
     fireEvent.click(row);
-    expect(checkbox).toBeChecked();
+    await waitFor(() => {
+      expect(within(row).getByRole("checkbox", { hidden: true })).toBeChecked();
+    });
   });
 
   it("toggles selection when checkbox is clicked directly", () => {
-    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
-    const checkbox = screen.getByRole("checkbox", { hidden: true });
-    fireEvent.click(checkbox);
+    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    const row = screen.getByText("Test ETF").closest("tr");
+    invariant(row, "Expected table row to exist");
+    const checkbox = within(row).getByRole("checkbox", { hidden: true });
     expect(checkbox).toBeChecked();
-    // click again to uncheck (exercises the delete branch)
+    // click to uncheck (exercises the delete branch)
     fireEvent.click(checkbox);
     expect(checkbox).not.toBeChecked();
+    // click again to re-check (exercises the add branch)
+    fireEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
   });
 
   it("filters assets by name", async () => {
@@ -86,37 +94,37 @@ describe("AssetPickerModal - with assets", () => {
 
   it("shows no match message when filter matches nothing", async () => {
     render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
-    await userEvent.type(screen.getByRole("searchbox", { hidden: true }), "zzznomatch");
-    expect(screen.getByText(/no instruments match/i)).toBeInTheDocument();
+    await userEvent.type(screen.getByTestId("input-filter"), "zzznomatch");
+    expect(screen.getByText(/no results found/i)).toBeInTheDocument();
   });
 
-  it("calls onCancel when Cancel button is clicked", () => {
+  it("calls onCancel when Cancel button is clicked", async () => {
     const onCancel = vi.fn<() => void>();
     render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /cancel/i }));
+    await userEvent.click(screen.getByRole("button", { hidden: true, name: /cancel/i }));
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
-  it("calls onCancel when X button is clicked", () => {
+  it("calls onCancel when X button is clicked", async () => {
     const onCancel = vi.fn<() => void>();
     render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /close/i }));
+    await userEvent.click(screen.getByRole("button", { hidden: true, name: /close/i }));
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
-  it("calls onCancel when backdrop is clicked", () => {
+  it("calls onCancel when backdrop is clicked", async () => {
     const onCancel = vi.fn<() => void>();
     const { container } = render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     const backdrop = container.querySelector(".modal-backdrop");
     invariant(backdrop, "Expected backdrop element to exist");
-    fireEvent.click(backdrop);
+    await userEvent.click(backdrop);
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
-  it("calls onConfirm with selected isins when Confirm is clicked", () => {
+  it("calls onConfirm with selected isins when Confirm is clicked", async () => {
     const onConfirm = vi.fn<(isins: string[]) => void>();
     render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={onConfirm} title="Select assets" />);
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /confirm/i }));
+    await userEvent.click(screen.getByRole("button", { hidden: true, name: /confirm/i }));
     expect(onConfirm).toHaveBeenCalledWith([BASE_ASSET.isin]);
   });
 });
