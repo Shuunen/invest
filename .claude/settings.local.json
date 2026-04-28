@@ -15,7 +15,8 @@
       "Bash(gh pr *)",
       "Skill(qa)",
       "Bash(~/.claude/skills/gstack/bin/gstack-review-read *)",
-      "Bash(~/.claude/skills/gstack/bin/gstack-review-log *)"
+      "Bash(~/.claude/skills/gstack/bin/gstack-review-log *)",
+      "Bash(~/.claude/skills/gstack/bin/gstack --help)"
     ]
   }
 }
