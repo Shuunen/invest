@@ -5,11 +5,17 @@
 
 :root {
   --color-base-100: white;
+  --color-primary-content: snow;
 }
 
 .btn-primary:hover {
   @apply border-primary/30 bg-primary/10 text-primary;
 }
+
+.btn-error:hover {
+  @apply border-error/30 bg-error/10 text-error;
+}
+
 .btn-ghost:hover {
   @apply bg-base-100;
 }
