@@ -5,6 +5,9 @@ import { useAppStore } from "../store/use-app-store.ts";
 
 const JSON_INDENT = 2;
 const ISO_DATE_SLICE_END = 10;
+const REVOKE_DELAY_MS = 100;
+const ISO_TIME_START = 11;
+const ISO_TIME_END = 16;
 
 function buildExportBlob(data: AppData, now: string): Blob {
   const exportData = { ...data, settings: { ...data.settings, lastExportedAt: now } };
@@ -17,7 +20,7 @@ function triggerDownload(blob: Blob, filename: string) {
   anchor.href = url;
   anchor.download = filename;
   anchor.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS);
 }
 
 function useImportExport() {
@@ -29,9 +32,8 @@ function useImportExport() {
 
   function handleExport() {
     const now = new Date().toISOString();
-    // datetime should be YYYY-MM-DD HHhmm
-    // oxlint-disable-next-line no-magic-numbers
-    const datetime = `${now.toLocaleString().slice(0, ISO_DATE_SLICE_END).replace("T", " ")} ${now.slice(11, 16).replace(":", "h")}`;
+    // datetime is YYYY-MM-DD HHhmm
+    const datetime = `${now.slice(0, ISO_DATE_SLICE_END)} ${now.slice(ISO_TIME_START, ISO_TIME_END).replace(":", "h")}`;
     triggerDownload(buildExportBlob(data, now), `invest-${datetime}.json`);
     setLastExportedAt(now);
   }
@@ -73,7 +75,7 @@ export function ImportExportButtons() {
         <button type="button" className="btn btn-soft btn-sm btn-primary" aria-label="Import data" title="Import data" onClick={handleImportClick}>
           <Upload size={16} />
         </button>
-        <button type="button" className="btn btn-soft btn-sm btn-primary" aria-label="Export data" title="Export data" disabled={data.assets.length === 0} onClick={handleExport}>
+        <button type="button" className="btn btn-soft btn-sm btn-primary" aria-label="Export data" title="Export data" disabled={data.assets.length === 0 && data.portfolios.length === 0} onClick={handleExport}>
           <Download size={16} />
         </button>
       </div>

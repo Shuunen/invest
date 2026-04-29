@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { SettingsSchema, type AppData, type Portfolio, type PortfolioEntry, type Settings } from "../schemas/index.ts";
+import { MAX_PORTFOLIOS, SettingsSchema, type AppData, type Portfolio, type PortfolioEntry, type Settings } from "../schemas/index.ts";
 
 const defaultSettings: Settings = SettingsSchema.parse({});
 
@@ -29,9 +29,10 @@ type AppStore = {
 export const useAppStore = create<AppStore>()(
   subscribeWithSelector(set => ({
     addPortfolio: portfolio =>
-      set(state => ({
-        data: { ...state.data, portfolios: [...state.data.portfolios, portfolio] },
-      })),
+      set(state => {
+        if (state.data.portfolios.length >= MAX_PORTFOLIOS) return state;
+        return { data: { ...state.data, portfolios: [...state.data.portfolios, portfolio] } };
+      }),
     data: defaultAppData,
     deletePortfolio: id =>
       set(state => ({

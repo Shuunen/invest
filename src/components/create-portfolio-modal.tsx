@@ -16,6 +16,8 @@ function useCreatePortfolioForm(onClose: () => void) {
 
   function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
+    setNameError(undefined);
+    setBrokerError(undefined);
     const nameTrimmed = name.trim();
     if (!nameTrimmed) {
       setNameError("Name is required.");
@@ -37,7 +39,7 @@ function useCreatePortfolioForm(onClose: () => void) {
     void navigate({ params: { id: portfolio.id }, to: "/portfolios/$id" });
   }
 
-  return { broker, brokerError, handleSubmit, name, nameError, setBroker, setBrokerError, setName, setNameError };
+  return { broker, brokerError, handleSubmit, name, nameError, setBroker, setName };
 }
 
 export function CreatePortfolioModal({ onClose }: { onClose: () => void }) {
@@ -47,7 +49,7 @@ export function CreatePortfolioModal({ onClose }: { onClose: () => void }) {
       <div className="modal-box">
         <ModalHeader title="Create portfolio" onClose={onClose} />
         <form onSubmit={handleSubmit} noValidate>
-          <FormControl label="Name" name="portfolio-name" placeholder="ex : Personal portfolio" error={nameError} setValue={setName} value={name} />
+          <FormControl autoFocus label="Name" name="portfolio-name" placeholder="ex : Personal portfolio" error={nameError} setValue={setName} value={name} />
           <FormControl label="Broker" name="portfolio-broker" placeholder="ex : Interactive Brokers" error={brokerError} setValue={setBroker} value={broker} />
           <ModalActions onCancel={onClose} confirmText="Create" />
         </form>

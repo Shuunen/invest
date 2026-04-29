@@ -47,7 +47,6 @@ function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
 
 type Props = {
   assets?: Asset[];
-  hideFilters?: boolean;
   onRemoveAsset?: (isin: string) => void;
   onToggleSelect?: (isin: string) => void;
   selectedIsins?: Set<string>;

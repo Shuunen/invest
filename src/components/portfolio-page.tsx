@@ -32,7 +32,7 @@ function renderPortfolioHeader({ broker, entryCount, name, onAddAssets }: Render
       <div className="mb-1 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">{name}</h1>
-          {broker && <p className="mt-0.5 text-sm text-base-content/60">Broker: {broker}</p>}
+          <p className="mt-0.5 text-sm text-base-content/60">Broker: {broker}</p>
         </div>
         <button type="button" className="btn btn-soft btn-primary" onClick={onAddAssets}>
           Edit assets
