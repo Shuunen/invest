@@ -11,7 +11,7 @@ import { ModalHeader } from "./modal-header.tsx";
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
   return selectedIsins.map(isin => {
     const existing = existingEntries.find(entry => entry.isin === isin);
-    return existing ?? { inPEA: false, isin, notes: "", positionValue: 0, targetAmount: 0 };
+    return existing ?? { inPEA: false, isin, notes: "", positionValue: 0, shares: 0, targetAmount: 0 };
   });
 }
 
@@ -93,9 +93,11 @@ export function PortfolioPage({ portfolioId }: Props) {
   const portfolio = useAppStore(state => state.data.portfolios.find(port => port.id === portfolioId));
   const assets = useAppStore(state => state.data.assets);
   const setPortfolioAssets = useAppStore(state => state.setPortfolioAssets);
+  const updatePortfolioEntryShares = useAppStore(state => state.updatePortfolioEntryShares);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [isinToDelete, setIsinToDelete] = useState<string | undefined>(undefined);
   const portfolioAssets = useMemo(() => (portfolio?.entries ?? []).map(entry => assets.find(ast => ast.isin === entry.isin)).filter((ast): ast is Asset => ast !== undefined), [assets, portfolio]);
+  const sharesMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.shares])), [portfolio]);
 
   if (!portfolio) return renderNotFound();
   const { broker, entries, name } = portfolio;
@@ -117,7 +119,7 @@ export function PortfolioPage({ portfolioId }: Props) {
   return (
     <div className="flex flex-col">
       {renderPortfolioHeader({ broker, entryCount: entries.length, name, onAddAssets: () => setPickerOpen(true) })}
-      {portfolioAssets.length === 0 ? renderNoAssets() : <AssetTable assets={portfolioAssets} onRemoveAsset={setIsinToDelete} />}
+      {portfolioAssets.length === 0 ? renderNoAssets() : <AssetTable assets={portfolioAssets} onRemoveAsset={setIsinToDelete} onSharesChange={(isin, shares) => updatePortfolioEntryShares(portfolioId, isin, shares)} sharesMap={sharesMap} />}
       {pickerOpen && <AssetPickerModal assets={assets} initialSelected={selectedIsins} onCancel={() => setPickerOpen(false)} onConfirm={handlePickerConfirm} title={`${name} portfolio assets`} />}
       {isinToDelete !== undefined &&
         renderDeleteConfirmModal({

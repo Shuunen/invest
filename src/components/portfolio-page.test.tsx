@@ -82,7 +82,7 @@ describe("PortfolioPage - empty portfolio", () => {
   it("uses singular 'asset' when count is 1", () => {
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, shares: 0, targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -98,7 +98,7 @@ describe("PortfolioPage - with assets", () => {
   it("renders asset table when portfolio has entries", () => {
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, shares: 0, targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -113,7 +113,7 @@ describe("PortfolioPage - with assets", () => {
   it("remove button calls setPortfolioAssets without the removed isin", () => {
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, shares: 0, targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -128,10 +128,44 @@ describe("PortfolioPage - with assets", () => {
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(0);
   });
 
+  it("shares input updates entry shares in the store on blur", () => {
+    const asset = makeAsset();
+    const portfolio = makePortfolio({
+      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, shares: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    const input = screen.getByRole("spinbutton", { name: /shares for test etf/i });
+    fireEvent.click(input);
+    fireEvent.change(input, { target: { value: "15" } });
+    fireEvent.blur(input);
+    expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.shares).toBe(15);
+  });
+
+  it("shares input does not update the store when value is unchanged on blur", () => {
+    const asset = makeAsset();
+    const portfolio = makePortfolio({
+      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, shares: 5, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    const input = screen.getByRole("spinbutton", { name: /shares for test etf/i });
+    fireEvent.blur(input);
+    expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.shares).toBe(5);
+  });
+
   it("cancel on delete confirmation modal keeps the asset", () => {
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, shares: 0, targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -149,7 +183,7 @@ describe("PortfolioPage - with assets", () => {
   it("delete confirmation modal falls back to isin when asset is missing from the store", () => {
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ inPEA: false, isin: asset.isin, notes: "", positionValue: 0, shares: 0, targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -197,7 +231,7 @@ describe("PortfolioPage - asset picker modal", () => {
   it("confirm updates the portfolio assets via buildEntries preserving existing entries", () => {
     const asset1 = makeAsset({ isin: "LU1234567890", name: "ETF A" });
     const asset2 = makeAsset({ isin: "LU0987654321", name: "ETF B" });
-    const existingEntry = { inPEA: true, isin: asset1.isin, notes: "keep", positionValue: 100, targetAmount: 200 };
+    const existingEntry = { inPEA: true, isin: asset1.isin, notes: "keep", positionValue: 100, shares: 0, targetAmount: 200 };
     const portfolio = makePortfolio({ entries: [existingEntry] });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset1, asset2], portfolios: [portfolio] },

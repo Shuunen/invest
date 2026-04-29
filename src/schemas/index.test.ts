@@ -32,7 +32,7 @@ describe("AppDataSchema", () => {
       portfolios: [
         {
           ...firstPortfolio,
-          entries: [...firstPortfolio.entries, { inPEA: false, isin: "XX0000000000", notes: "", positionValue: 100, targetAmount: 0 }],
+          entries: [...firstPortfolio.entries, { inPEA: false, isin: "XX0000000000", notes: "", positionValue: 100, shares: 0, targetAmount: 0 }],
         },
         ...valid.portfolios.slice(1),
       ],

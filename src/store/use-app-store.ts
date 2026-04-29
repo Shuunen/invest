@@ -4,6 +4,10 @@ import { MAX_PORTFOLIOS, SettingsSchema, type AppData, type Portfolio, type Port
 
 const defaultSettings: Settings = SettingsSchema.parse({});
 
+function patchPortfolioEntryShares(portfolios: Portfolio[], { isin, portfolioId, shares }: { isin: string; portfolioId: string; shares: number }): Portfolio[] {
+  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, shares } : entry)) } : portfolio));
+}
+
 export const defaultAppData: AppData = {
   assets: [],
   portfolios: [],
@@ -24,6 +28,7 @@ type AppStore = {
   setPortfolioAssets: (portfolioId: string, entries: PortfolioEntry[]) => void;
   setSort: (sort: Settings["sort"]) => void;
   updatePortfolio: (id: string, patch: Partial<Pick<Portfolio, "name" | "broker">>) => void;
+  updatePortfolioEntryShares: (portfolioId: string, isin: string, shares: number) => void;
 };
 
 export const useAppStore = create<AppStore>()(
@@ -71,6 +76,10 @@ export const useAppStore = create<AppStore>()(
           ...state.data,
           portfolios: state.data.portfolios.map(portfolio => (portfolio.id === id ? { ...portfolio, ...patch } : portfolio)),
         },
+      })),
+    updatePortfolioEntryShares: (portfolioId, isin, shares) =>
+      set(state => ({
+        data: { ...state.data, portfolios: patchPortfolioEntryShares(state.data.portfolios, { isin, portfolioId, shares }) },
       })),
   })),
 );

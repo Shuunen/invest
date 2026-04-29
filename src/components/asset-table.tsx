@@ -10,7 +10,12 @@ import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./asse
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
 import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, getAriaSortValue, SKELETON_COLS, SKELETON_ROWS } from "./asset-table-utils.ts";
 
-type AssetTableMeta = { onToggleSelect?: (isin: string) => void; selectedIsins?: Set<string> };
+type AssetTableMeta = {
+  onSharesChange?: (isin: string, shares: number) => void;
+  onToggleSelect?: (isin: string) => void;
+  selectedIsins?: Set<string>;
+  sharesMap?: Map<string, number>;
+};
 
 function makeSelectColumn(): ColumnDef<Asset> {
   return {
@@ -32,6 +37,34 @@ function makeSelectColumn(): ColumnDef<Asset> {
   };
 }
 
+function makeSharesColumn(): ColumnDef<Asset> {
+  return {
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { isin } = row.original;
+      const value = meta?.sharesMap?.get(isin) ?? 0;
+      return (
+        <input
+          type="number"
+          className="input input-xs w-20 text-right"
+          min={0}
+          defaultValue={value}
+          key={value}
+          aria-label={`Shares for ${row.original.name}`}
+          onClick={event => event.stopPropagation()}
+          onBlur={event => {
+            const shares = Math.max(0, Number(event.target.value) || 0);
+            if (shares !== value) meta?.onSharesChange?.(isin, shares);
+          }}
+        />
+      );
+    },
+    enableSorting: false,
+    header: "Shares",
+    id: "shares",
+  };
+}
+
 function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
   return {
     cell: ({ row }) => (
@@ -48,8 +81,10 @@ function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
 type Props = {
   assets?: Asset[];
   onRemoveAsset?: (isin: string) => void;
+  onSharesChange?: (isin: string, shares: number) => void;
   onToggleSelect?: (isin: string) => void;
   selectedIsins?: Set<string>;
+  sharesMap?: Map<string, number>;
 };
 
 function getSortIndicator(sorted: "asc" | "desc" | false): string {
@@ -71,11 +106,11 @@ function renderThContent(header: Header<Asset, unknown>) {
   );
 }
 
-function buildActiveColumns(onToggleSelect: ((isin: string) => void) | undefined, onRemoveAsset: ((isin: string) => void) | undefined): ColumnDef<Asset>[] {
-  return [...(onToggleSelect ? [makeSelectColumn()] : []), ...columns, ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : [])];
+function buildActiveColumns(onToggleSelect: ((isin: string) => void) | undefined, onRemoveAsset: ((isin: string) => void) | undefined, onSharesChange: ((isin: string, shares: number) => void) | undefined): ColumnDef<Asset>[] {
+  return [...(onToggleSelect ? [makeSelectColumn()] : []), ...columns, ...(onSharesChange ? [makeSharesColumn()] : []), ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : [])];
 }
 
-function useAssetTableState({ assets: propAssets, onRemoveAsset, onToggleSelect, selectedIsins }: Props = {}) {
+function useAssetTableState({ assets: propAssets, onRemoveAsset, onSharesChange, onToggleSelect, selectedIsins, sharesMap }: Props = {}) {
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
@@ -96,11 +131,12 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onToggleSelect,
     if (!lower) return propAssets ?? data.assets;
     return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
   }, [data.assets, filterText, propAssets]);
-  const activeColumns = buildActiveColumns(onToggleSelect, onRemoveAsset);
+  const activeColumns = buildActiveColumns(onToggleSelect, onRemoveAsset, onSharesChange);
+  const meta: AssetTableMeta | undefined = (onToggleSelect ?? onSharesChange) ? { onSharesChange, onToggleSelect, selectedIsins, sharesMap } : undefined;
   const table = useTableInstance({
     columns: activeColumns,
     filteredAssets,
-    meta: onToggleSelect ? { onToggleSelect, selectedIsins } : undefined,
+    meta,
     resolvedVisibility,
     setColumnVisibility,
     setSort,
@@ -216,8 +252,8 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
   );
 }
 
-export function AssetTable({ assets: propAssets, onRemoveAsset, onToggleSelect, selectedIsins }: Props = {}) {
-  const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({ assets: propAssets, onRemoveAsset, onToggleSelect, selectedIsins });
+export function AssetTable({ assets: propAssets, onRemoveAsset, onSharesChange, onToggleSelect, selectedIsins, sharesMap }: Props = {}) {
+  const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({ assets: propAssets, onRemoveAsset, onSharesChange, onToggleSelect, selectedIsins, sharesMap });
   if (!propAssets) {
     if (isLoading) return renderSkeleton();
     if (loadError) return renderError(loadError, handleRetry);

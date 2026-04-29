@@ -80,6 +80,7 @@ export const PortfolioEntrySchema = z.object({
   isin: z.string().regex(ISIN_REGEX),
   notes: z.string().default(""),
   positionValue: z.number().nonnegative(),
+  shares: z.number().nonnegative().default(0),
   targetAmount: z.number().nonnegative(),
 });
 

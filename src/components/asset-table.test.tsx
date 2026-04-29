@@ -40,6 +40,9 @@ function makeTestData(assets: Asset[]): AppData {
 const SELECT_ASSET = makeAsset({ isin: "LU1234567890" });
 const SELECT_ASSETS = [SELECT_ASSET];
 
+const SHARES_ASSET = makeAsset();
+const SHARES_ASSETS = [SHARES_ASSET];
+
 describe("matchesFilter", () => {
   const asset = makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi", tickers: ["IWDA"] });
 
@@ -500,5 +503,45 @@ describe("AssetTable - useDexieSync", () => {
       },
       { timeout: 2000 },
     );
+  });
+});
+
+describe("AssetTable - shares column", () => {
+  it("renders shares column with default 0 when no sharesMap is provided", () => {
+    useAppStore.setState({ data: makeTestData(SHARES_ASSETS), isLoading: false, loadError: undefined });
+    const onSharesChange = vi.fn<(isin: string, shares: number) => void>();
+    render(<AssetTable assets={SHARES_ASSETS} onSharesChange={onSharesChange} />);
+    const input = screen.getByRole("spinbutton", { name: /shares for test etf/i });
+    expect(input).toHaveValue(0);
+  });
+
+  it("calls onSharesChange when input value changes and blurs", () => {
+    useAppStore.setState({ data: makeTestData(SHARES_ASSETS), isLoading: false, loadError: undefined });
+    const onSharesChange = vi.fn<(isin: string, shares: number) => void>();
+    render(<AssetTable assets={SHARES_ASSETS} onSharesChange={onSharesChange} />);
+    const input = screen.getByRole("spinbutton", { name: /shares for test etf/i });
+    fireEvent.change(input, { target: { value: "7" } });
+    fireEvent.blur(input);
+    expect(onSharesChange).toHaveBeenCalledWith(SHARES_ASSET.isin, 7);
+  });
+
+  it("does not call onSharesChange when value is unchanged on blur", () => {
+    useAppStore.setState({ data: makeTestData(SHARES_ASSETS), isLoading: false, loadError: undefined });
+    const onSharesChange = vi.fn<(isin: string, shares: number) => void>();
+    const sharesMap = new Map([[SHARES_ASSET.isin, 3]]);
+    render(<AssetTable assets={SHARES_ASSETS} onSharesChange={onSharesChange} sharesMap={sharesMap} />);
+    const input = screen.getByRole("spinbutton", { name: /shares for test etf/i });
+    fireEvent.blur(input);
+    expect(onSharesChange).not.toHaveBeenCalled();
+  });
+
+  it("clamps NaN input (empty string) to 0 and does not update when initial value is also 0", () => {
+    useAppStore.setState({ data: makeTestData(SHARES_ASSETS), isLoading: false, loadError: undefined });
+    const onSharesChange = vi.fn<(isin: string, shares: number) => void>();
+    render(<AssetTable assets={SHARES_ASSETS} onSharesChange={onSharesChange} />);
+    const input = screen.getByRole("spinbutton", { name: /shares for test etf/i });
+    fireEvent.change(input, { target: { value: "" } });
+    fireEvent.blur(input);
+    expect(onSharesChange).not.toHaveBeenCalled();
   });
 });
