@@ -20,6 +20,7 @@ function triggerDownload(blob: Blob, filename: string) {
   anchor.href = url;
   anchor.download = filename;
   anchor.click();
+  /* v8 ignore next */
   setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS);
 }
 
