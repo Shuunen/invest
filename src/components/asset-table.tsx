@@ -39,29 +39,37 @@ function makeSelectColumn(): ColumnDef<Asset> {
 
 function makeSharesColumn(): ColumnDef<Asset> {
   return {
-    cell: ({ row, table }) => {
-      const meta = table.options.meta as AssetTableMeta | undefined;
-      const { isin } = row.original;
-      const value = meta?.sharesMap?.get(isin) ?? 0;
-      return (
-        <input
-          type="number"
-          className="input input-xs w-20 text-right"
-          min={0}
-          defaultValue={value}
-          key={value}
-          aria-label={`Shares for ${row.original.name}`}
-          onClick={event => event.stopPropagation()}
-          onBlur={event => {
-            const shares = Math.max(0, Number(event.target.value) || 0);
-            if (shares !== value) meta?.onSharesChange?.(isin, shares);
-          }}
-        />
-      );
-    },
-    enableSorting: false,
+    columns: [
+      {
+        cell: ({ row, table }) => {
+          const meta = table.options.meta as AssetTableMeta | undefined;
+          const { isin } = row.original;
+          const value = meta?.sharesMap?.get(isin) ?? 0;
+          return (
+            <input
+              type="number"
+              className="input input-xs w-20 text-right"
+              min={0}
+              defaultValue={value}
+              key={value}
+              id={`shares-input-${isin}`}
+              data-testid={`shares-input-${isin}`}
+              aria-label={`Shares for ${row.original.name}`}
+              onClick={event => event.stopPropagation()}
+              onBlur={event => {
+                const shares = Math.max(0, Number(event.target.value) || 0);
+                if (shares !== value) meta?.onSharesChange?.(isin, shares);
+              }}
+            />
+          );
+        },
+        enableSorting: false,
+        header: "Count",
+        id: "shares",
+      },
+    ],
     header: "Shares",
-    id: "shares",
+    id: "sharesGroup",
   };
 }
 
