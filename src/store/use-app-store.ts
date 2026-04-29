@@ -4,8 +4,8 @@ import { MAX_PORTFOLIOS, SettingsSchema, type AppData, type Portfolio, type Port
 
 const defaultSettings: Settings = SettingsSchema.parse({});
 
-function patchPortfolioEntryShares(portfolios: Portfolio[], { isin, portfolioId, shares }: { isin: string; portfolioId: string; shares: number }): Portfolio[] {
-  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, shares } : entry)) } : portfolio));
+function patchPortfolioEntryAmount(portfolios: Portfolio[], { amount, isin, portfolioId }: { amount: number; isin: string; portfolioId: string }): Portfolio[] {
+  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, amount } : entry)) } : portfolio));
 }
 
 export const defaultAppData: AppData = {
@@ -28,7 +28,7 @@ type AppStore = {
   setPortfolioAssets: (portfolioId: string, entries: PortfolioEntry[]) => void;
   setSort: (sort: Settings["sort"]) => void;
   updatePortfolio: (id: string, patch: Partial<Pick<Portfolio, "name" | "broker">>) => void;
-  updatePortfolioEntryShares: (portfolioId: string, isin: string, shares: number) => void;
+  updatePortfolioEntryAmount: (portfolioId: string, isin: string, amount: number) => void;
 };
 
 export const useAppStore = create<AppStore>()(
@@ -77,9 +77,9 @@ export const useAppStore = create<AppStore>()(
           portfolios: state.data.portfolios.map(portfolio => (portfolio.id === id ? { ...portfolio, ...patch } : portfolio)),
         },
       })),
-    updatePortfolioEntryShares: (portfolioId, isin, shares) =>
+    updatePortfolioEntryAmount: (portfolioId, isin, amount) =>
       set(state => ({
-        data: { ...state.data, portfolios: patchPortfolioEntryShares(state.data.portfolios, { isin, portfolioId, shares }) },
+        data: { ...state.data, portfolios: patchPortfolioEntryAmount(state.data.portfolios, { amount, isin, portfolioId }) },
       })),
   })),
 );

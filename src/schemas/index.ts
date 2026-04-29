@@ -77,11 +77,11 @@ export function computeScore(asset: Asset): number | undefined {
 // --- Portfolio ---
 
 export const PortfolioEntrySchema = z.object({
+  amount: z.number().nonnegative().default(0),
   inPEA: z.boolean().default(false),
   isin: z.string().regex(ISIN_REGEX),
   notes: z.string().default(""),
   positionValue: z.number().nonnegative(),
-  shares: z.number().nonnegative().default(0),
   targetAmount: z.number().nonnegative(),
 });
 

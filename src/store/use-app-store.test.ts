@@ -116,7 +116,7 @@ describe("useAppStore - portfolio mutations", () => {
   });
 
   it("setPortfolioAssets replaces entries for the given portfolio", () => {
-    const entry = { inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, shares: 0, targetAmount: 0 };
+    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [basePortfolio] },
       isLoading: false,
@@ -129,7 +129,7 @@ describe("useAppStore - portfolio mutations", () => {
 
   it("setPortfolioAssets does not affect other portfolios", () => {
     const other = { ...basePortfolio, id: "00000000-0000-4000-8000-000000000002", name: "Other" };
-    const entry = { inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, shares: 0, targetAmount: 0 };
+    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [basePortfolio, other] },
       isLoading: false,
@@ -150,21 +150,21 @@ describe("useAppStore - portfolio mutations", () => {
     expect(useAppStore.getState().data.portfolios[1]?.name).toBe("Other");
   });
 
-  it("updatePortfolioEntryShares updates the shares for the given entry", () => {
-    const entry = { inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, shares: 0, targetAmount: 0 };
+  it("updatePortfolioEntryAmount updates the shares for the given entry", () => {
+    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
     const portfolio = { ...basePortfolio, entries: [entry] };
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [portfolio] },
       isLoading: false,
       loadError: undefined,
     });
-    useAppStore.getState().updatePortfolioEntryShares(portfolio.id, "LU1234567890", 42);
-    expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.shares).toBe(42);
+    useAppStore.getState().updatePortfolioEntryAmount(portfolio.id, "LU1234567890", 42);
+    expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.amount).toBe(42);
   });
 
-  it("updatePortfolioEntryShares does not affect other entries or portfolios", () => {
-    const entry1 = { inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, shares: 0, targetAmount: 0 };
-    const entry2 = { inPEA: false, isin: "LU0987654321", notes: "", positionValue: 0, shares: 5, targetAmount: 0 };
+  it("updatePortfolioEntryAmount does not affect other entries or portfolios", () => {
+    const entry1 = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    const entry2 = { amount: 5, inPEA: false, isin: "LU0987654321", notes: "", positionValue: 0, targetAmount: 0 };
     const other = { ...basePortfolio, entries: [entry2], id: "00000000-0000-4000-8000-000000000002" };
     const portfolio = { ...basePortfolio, entries: [entry1, entry2] };
     useAppStore.setState({
@@ -172,8 +172,8 @@ describe("useAppStore - portfolio mutations", () => {
       isLoading: false,
       loadError: undefined,
     });
-    useAppStore.getState().updatePortfolioEntryShares(portfolio.id, "LU1234567890", 10);
-    expect(useAppStore.getState().data.portfolios[0]?.entries[1]?.shares).toBe(5);
-    expect(useAppStore.getState().data.portfolios[1]?.entries[0]?.shares).toBe(5);
+    useAppStore.getState().updatePortfolioEntryAmount(portfolio.id, "LU1234567890", 10);
+    expect(useAppStore.getState().data.portfolios[0]?.entries[1]?.amount).toBe(5);
+    expect(useAppStore.getState().data.portfolios[1]?.entries[0]?.amount).toBe(5);
   });
 });
