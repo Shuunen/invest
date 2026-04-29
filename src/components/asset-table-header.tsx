@@ -75,12 +75,15 @@ export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number
         Columns <EyeIcon size={16} />
       </button>
       <div tabIndex={0} className="dropdown-content menu z-9999 w-52 rounded-box bg-base-100 p-2 shadow-2xl">
-        {table.getAllLeafColumns().map(column => (
-          <label key={column.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-primary/30">
-            <input type="checkbox" className="checkbox checkbox-sm" checked={column.getIsVisible()} disabled={column.getIsVisible() && visibleLeafCount <= 1} onChange={column.getToggleVisibilityHandler()} />
-            <span className="label-text">{String(column.columnDef.header)}</span>
-          </label>
-        ))}
+        {table
+          .getAllLeafColumns()
+          .filter(column => column.columnDef.enableHiding !== false)
+          .map(column => (
+            <label key={column.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-primary/30">
+              <input type="checkbox" className="checkbox checkbox-sm" checked={column.getIsVisible()} disabled={column.getIsVisible() && visibleLeafCount <= 1} onChange={column.getToggleVisibilityHandler()} />
+              <span className="label-text">{String(column.columnDef.header)}</span>
+            </label>
+          ))}
       </div>
     </div>
   );

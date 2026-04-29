@@ -132,6 +132,7 @@ export function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<As
         <Trash2 size={14} />
       </button>
     ),
+    enableHiding: false,
     enableSorting: false,
     header: "",
     id: "remove",
