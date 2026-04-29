@@ -1,5 +1,6 @@
 import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
+import { tr } from "zod/v4/locales/index.js";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
@@ -38,37 +39,31 @@ function makeSelectColumn(): ColumnDef<Asset> {
 
 function makeSharesColumn(): ColumnDef<Asset> {
   return {
-    columns: [
-      {
-        cell: ({ row, table }) => {
-          const meta = table.options.meta as AssetTableMeta | undefined;
-          const { isin } = row.original;
-          const value = meta?.amountMap?.get(isin) ?? 0;
-          return (
-            <input
-              type="number"
-              className="input input-xs w-12 text-center"
-              min={0}
-              defaultValue={value}
-              key={value}
-              id={`amount-input-${isin}`}
-              data-testid={`amount-input-${isin}`}
-              aria-label={`Amount for ${row.original.name}`}
-              onClick={event => event.stopPropagation()}
-              onBlur={event => {
-                const amount = Math.max(0, Number(event.target.value) || 0);
-                if (amount !== value) meta?.onAmountChange?.(isin, amount);
-              }}
-            />
-          );
-        },
-        enableSorting: false,
-        header: "Amount",
-        id: "amount",
-      },
-    ],
-    header: "Shares",
-    id: "amountGroup",
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { isin } = row.original;
+      const value = meta?.amountMap?.get(isin) ?? 0;
+      return (
+        <input
+          type="number"
+          className="input input-xs w-12 text-center"
+          min={0}
+          defaultValue={value}
+          key={value}
+          id={`amount-input-${isin}`}
+          data-testid={`amount-input-${isin}`}
+          aria-label={`Amount for ${row.original.name}`}
+          onClick={event => event.stopPropagation()}
+          onBlur={event => {
+            const amount = Math.max(0, Number(event.target.value) || 0);
+            if (amount !== value) meta?.onAmountChange?.(isin, amount);
+          }}
+        />
+      );
+    },
+    enableSorting: true,
+    header: "Amount",
+    id: "amount",
   };
 }
 
