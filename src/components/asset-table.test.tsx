@@ -571,4 +571,12 @@ describe("AssetTable - amount column", () => {
     expect(inputs[0]).toHaveValue(0);
     expect(inputs[1]).toHaveValue(0);
   });
+
+  it("ignores stored amount sort when rendered without onAmountChange", () => {
+    act(() => {
+      useAppStore.setState({ data: makeTestData(SORT_ASSETS) });
+      useAppStore.getState().setSort({ column: "amount", direction: "desc" });
+    });
+    expect(() => render(<AssetTable assets={SORT_ASSETS} />)).not.toThrow();
+  });
 });

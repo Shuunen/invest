@@ -113,13 +113,17 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
   useHydration(retryKey);
   useDexieSync();
   const resolvedVisibility = useMemo(() => ({ ...DEFAULT_COLUMN_VISIBILITY, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
-  const sorting: SortingState = useMemo(() => [{ desc: data.settings.sort.direction === "desc", id: data.settings.sort.column }], [data.settings.sort]);
+  const activeColumns = buildActiveColumns({ amountMap, onAmountChange, onRemoveAsset, onToggleSelect });
+  const sorting: SortingState = useMemo(() => {
+    const { column, direction } = data.settings.sort;
+    if (column === "amount" && !onAmountChange) return [];
+    return [{ desc: direction === "desc", id: column }];
+  }, [data.settings.sort, onAmountChange]);
   const filteredAssets = useMemo(() => {
     const lower = filterText.trim().toLowerCase();
     if (!lower) return propAssets ?? data.assets;
     return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
   }, [data.assets, filterText, propAssets]);
-  const activeColumns = buildActiveColumns({ amountMap, onAmountChange, onRemoveAsset, onToggleSelect });
   const meta: AssetTableMeta | undefined = (onToggleSelect ?? onAmountChange) ? { amountMap, onAmountChange, onToggleSelect, selectedIsins } : undefined;
   const table = useTableInstance({
     columns: activeColumns,
