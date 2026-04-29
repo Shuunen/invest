@@ -270,6 +270,7 @@ describe("AssetTable - column visibility guard", () => {
       performance1y: false,
       performance3y: false,
       performance5y: false,
+      price: false,
       provider: false,
       riskReward1y: false,
       riskReward3y: false,

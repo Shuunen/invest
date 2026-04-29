@@ -7,7 +7,7 @@ import { columns, makeRemoveColumn } from "./asset-table-columns.tsx";
 import { useDexieSync, useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
-import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, formatNumber, getAriaSortValue, SKELETON_COLS, SKELETON_ROWS } from "./asset-table-utils.ts";
+import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, getAriaSortValue, SKELETON_COLS, SKELETON_ROWS } from "./asset-table-utils.ts";
 
 type AssetTableMeta = {
   onAmountChange?: (isin: string, amount: number) => void;
@@ -65,12 +65,6 @@ function makeSharesColumn(): ColumnDef<Asset> {
         enableSorting: false,
         header: "Amount",
         id: "amount",
-      },
-      {
-        accessorKey: "price",
-        cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
-        header: "Price",
-        id: "price",
       },
     ],
     header: "Shares",

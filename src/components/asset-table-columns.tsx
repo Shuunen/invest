@@ -117,6 +117,12 @@ export const columns: ColumnDef<Asset>[] = [
     header: "Risk/Reward",
     id: "riskReward",
   },
+  {
+    accessorKey: "price",
+    cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
+    header: "Price",
+    id: "price",
+  },
 ];
 
 export function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
