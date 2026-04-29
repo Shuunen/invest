@@ -7,7 +7,7 @@ import { columns, makeRemoveColumn } from "./asset-table-columns.tsx";
 import { useDexieSync, useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
-import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, getAriaSortValue, SKELETON_COLS, SKELETON_ROWS } from "./asset-table-utils.ts";
+import { computeQuintileClasses, DECIMAL_PLACES, DEFAULT_COLUMN_VISIBILITY, getAriaSortValue, SKELETON_COLS, SKELETON_ROWS } from "./asset-table-utils.ts";
 
 type AssetTableMeta = {
   onAmountChange?: (isin: string, amount: number) => void;
@@ -33,6 +33,15 @@ function makeSelectColumn(): ColumnDef<Asset> {
     enableSorting: false,
     header: "",
     id: "select",
+  };
+}
+
+function makeValueColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
+  return {
+    accessorFn: row => (amountMap?.get(row.isin) ?? 0) * (row.price ?? 0),
+    cell: ({ getValue }) => `${getValue<number>().toFixed(DECIMAL_PLACES)} €`,
+    header: "Value",
+    id: "value",
   };
 }
 
@@ -95,7 +104,7 @@ function renderThContent(header: Header<Asset, unknown>) {
 }
 
 function buildActiveColumns({ onToggleSelect, onRemoveAsset, onAmountChange, amountMap }: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "amountMap">): ColumnDef<Asset>[] {
-  return [...(onToggleSelect ? [makeSelectColumn()] : []), ...columns, ...(onAmountChange ? [makeSharesColumn(amountMap)] : []), ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : [])];
+  return [...(onToggleSelect ? [makeSelectColumn()] : []), ...columns, ...(onAmountChange ? [makeSharesColumn(amountMap), makeValueColumn(amountMap)] : []), ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : [])];
 }
 
 function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap }: Props = {}) {

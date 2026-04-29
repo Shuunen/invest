@@ -43,9 +43,20 @@ const SELECT_ASSETS = [SELECT_ASSET];
 
 const AMOUNT_ASSET = makeAsset();
 const AMOUNT_ASSETS = [AMOUNT_ASSET];
+const VALUE_ASSET_NO_PRICE = makeAsset({ isin: "LU1234567890", price: undefined });
+const VALUE_ASSETS_NO_PRICE = [VALUE_ASSET_NO_PRICE];
+const VALUE_ASSET_WITH_PRICE = makeAsset({ isin: "LU1234567890", price: 100 });
+const VALUE_ASSETS_WITH_PRICE = [VALUE_ASSET_WITH_PRICE];
+const VALUE_ASSET_PRICE_50 = makeAsset({ isin: "LU1234567890", price: 50 });
+const VALUE_ASSETS_PRICE_50 = [VALUE_ASSET_PRICE_50];
 const SORT_ASSET_1 = makeAsset({ isin: "LU0000000001", name: "ETF One" });
 const SORT_ASSET_2 = makeAsset({ isin: "LU0000000002", name: "ETF Two" });
 const SORT_ASSETS = [SORT_ASSET_1, SORT_ASSET_2];
+const VALUE_SORT_ASSET_1 = makeAsset({ isin: SORT_ASSET_1.isin, name: "ETF One", price: 20 });
+const VALUE_SORT_ASSET_2 = makeAsset({ isin: SORT_ASSET_2.isin, name: "ETF Two", price: 30 });
+const VALUE_SORT_ASSETS = [VALUE_SORT_ASSET_1, VALUE_SORT_ASSET_2];
+const VALUE_SORT_ASSET_NO_PRICE = makeAsset({ isin: SORT_ASSET_1.isin, name: "ETF One", price: undefined });
+const VALUE_SORT_ASSETS_NO_PRICE = [VALUE_SORT_ASSET_NO_PRICE];
 
 describe("matchesFilter", () => {
   const asset = makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi", tickers: ["IWDA"] });
@@ -508,6 +519,52 @@ describe("AssetTable - useDexieSync", () => {
       },
       { timeout: 2000 },
     );
+  });
+});
+
+describe("AssetTable - value column", () => {
+  it("shows 0.00 € when price is undefined", () => {
+    const amountMap = new Map([[VALUE_ASSET_NO_PRICE.isin, 5]]);
+    render(<AssetTable assets={VALUE_ASSETS_NO_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    expect(screen.getByText("0.00 €")).toBeInTheDocument();
+  });
+
+  it("shows computed value when price and amount are set", () => {
+    const amountMap = new Map([[VALUE_ASSET_WITH_PRICE.isin, 3]]);
+    render(<AssetTable assets={VALUE_ASSETS_WITH_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    expect(screen.getByText("300.00 €")).toBeInTheDocument();
+  });
+
+  it("shows 0.00 € when no amountMap entry exists", () => {
+    render(<AssetTable assets={VALUE_ASSETS_PRICE_50} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
+    expect(screen.getByText("0.00 €")).toBeInTheDocument();
+  });
+
+  it("sorts by value column with undefined price uses 0 fallback", () => {
+    render(<AssetTable assets={VALUE_SORT_ASSETS_NO_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
+    const valueHeader = screen.getByRole("button", { name: /value/i });
+    fireEvent.click(valueHeader);
+    expect(screen.getByText("0.00 €")).toBeInTheDocument();
+  });
+
+  it("sorts by value column with defined amountMap missing ISIN entry uses 0 fallback", () => {
+    const emptyAmountMap = new Map<string, number>();
+    render(<AssetTable assets={VALUE_SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={emptyAmountMap} />);
+    const valueHeader = screen.getByRole("button", { name: /value/i });
+    fireEvent.click(valueHeader);
+    expect(screen.getAllByText("0.00 €").length).toBeGreaterThan(0);
+  });
+
+  it("sorts by value column using accessorFn", () => {
+    const amountMap = new Map([
+      [SORT_ASSET_1.isin, 10],
+      [SORT_ASSET_2.isin, 5],
+    ]);
+    render(<AssetTable assets={VALUE_SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    const valueHeader = screen.getByRole("button", { name: /value/i });
+    fireEvent.click(valueHeader);
+    expect(screen.getByText("200.00 €")).toBeInTheDocument();
+    expect(screen.getByText("150.00 €")).toBeInTheDocument();
   });
 });
 

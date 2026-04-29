@@ -12,6 +12,7 @@
       "Bash(git remote *)",
       "Bash(git stash *)",
       "Bash(node -e *)",
+      "Bash(npx vitest *)",
       "Bash(pnpm add *)",
       "Bash(pnpm check *)",
       "Bash(pnpm exec *)",
