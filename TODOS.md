@@ -31,9 +31,10 @@
 **Context:** Entering 5 real ISINs in `data/sample.json` will make the unit obvious from the numbers you see. Resolve before build step 1.
 **Depends on:** Nothing — check your ETF data source (Morningstar, broker platform, ETF factsheet) first.
 
+## Completed
+
 ### Review Wealthfolio's Dexie schema and import/export
 
 **What:** Read the Dexie table definitions and JSON import/export code in [afadil/wealthfolio](https://github.com/afadil/wealthfolio).
 **Why:** They already solved the nested-vs-normalized transform (portfolios with embedded entries[] in export, normalized tables in Dexie). Steal what works.
-**Context:** Do this before build step 2 (Dexie schema). Budget ~1h human / ~15min with CC.
-**Depends on:** Nothing.
+**Completed:** v0.2.0 (2026-04-23)
