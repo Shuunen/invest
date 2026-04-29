@@ -1,14 +1,13 @@
 import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
-import { Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { columns } from "./asset-table-columns.tsx";
+import { columns, makeRemoveColumn } from "./asset-table-columns.tsx";
 import { useDexieSync, useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
-import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, getAriaSortValue, SKELETON_COLS, SKELETON_ROWS } from "./asset-table-utils.ts";
+import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, formatNumber, getAriaSortValue, SKELETON_COLS, SKELETON_ROWS } from "./asset-table-utils.ts";
 
 type AssetTableMeta = {
   onSharesChange?: (isin: string, shares: number) => void;
@@ -48,7 +47,7 @@ function makeSharesColumn(): ColumnDef<Asset> {
           return (
             <input
               type="number"
-              className="input input-xs w-20 text-right"
+              className="input input-xs w-12 text-center"
               min={0}
               defaultValue={value}
               key={value}
@@ -67,22 +66,15 @@ function makeSharesColumn(): ColumnDef<Asset> {
         header: "Count",
         id: "shares",
       },
+      {
+        accessorKey: "price",
+        cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
+        header: "Price",
+        id: "price",
+      },
     ],
     header: "Shares",
     id: "sharesGroup",
-  };
-}
-
-function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
-  return {
-    cell: ({ row }) => (
-      <button type="button" className="btn text-error btn-ghost btn-xs" aria-label={`Remove ${row.original.name}`} onClick={() => onRemove(row.original.isin)}>
-        <Trash2 size={14} />
-      </button>
-    ),
-    enableSorting: false,
-    header: "",
-    id: "remove",
   };
 }
 

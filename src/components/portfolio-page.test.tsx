@@ -16,6 +16,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
     performance1y: 10,
     performance3y: 30,
     performance5y: 50,
+    price: undefined,
     provider: "Test",
     riskReward1y: 1.5,
     riskReward3y: 1.8,

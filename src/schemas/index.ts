@@ -51,6 +51,7 @@ export const AssetSchema = z.object({
   performance1y: nullableNumber,
   performance3y: nullableNumber,
   performance5y: nullableNumber,
+  price: nullableNumber,
   provider: z.string().default(""),
   riskReward1y: nullableNumber,
   riskReward3y: nullableNumber,

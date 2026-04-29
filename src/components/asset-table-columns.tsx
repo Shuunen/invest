@@ -1,4 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
+import { Trash2 } from "lucide-react";
 import { computeScore, type Asset } from "../schemas/index.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { DECIMAL_PLACES, formatNumber, getScoreDotClass, SCORE_MISSING_VALUE, SCORE_TITLE } from "./asset-table-utils.ts";
@@ -117,3 +118,16 @@ export const columns: ColumnDef<Asset>[] = [
     id: "riskReward",
   },
 ];
+
+export function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
+  return {
+    cell: ({ row }) => (
+      <button type="button" className="btn text-error btn-ghost btn-xs" aria-label={`Remove ${row.original.name}`} onClick={() => onRemove(row.original.isin)}>
+        <Trash2 size={14} />
+      </button>
+    ),
+    enableSorting: false,
+    header: "",
+    id: "remove",
+  };
+}
