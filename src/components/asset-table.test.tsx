@@ -43,6 +43,9 @@ const SELECT_ASSETS = [SELECT_ASSET];
 
 const AMOUNT_ASSET = makeAsset();
 const AMOUNT_ASSETS = [AMOUNT_ASSET];
+const SORT_ASSET_1 = makeAsset({ isin: "LU0000000001", name: "ETF One" });
+const SORT_ASSET_2 = makeAsset({ isin: "LU0000000002", name: "ETF Two" });
+const SORT_ASSETS = [SORT_ASSET_1, SORT_ASSET_2];
 
 describe("matchesFilter", () => {
   const asset = makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi", tickers: ["IWDA"] });
@@ -545,5 +548,27 @@ describe("AssetTable - amount column", () => {
     fireEvent.change(input, { target: { value: "" } });
     fireEvent.blur(input);
     expect(onAmountChange).not.toHaveBeenCalled();
+  });
+
+  it("sorts by amount column using accessorFn with amountMap", () => {
+    const amountMap = new Map([
+      [SORT_ASSET_1.isin, 5],
+      [SORT_ASSET_2.isin, 2],
+    ]);
+    render(<AssetTable assets={SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    const amountHeader = screen.getByRole("button", { name: /amount/i });
+    fireEvent.click(amountHeader);
+    const inputs = screen.getAllByRole("spinbutton");
+    expect(inputs[0]).toHaveValue(2);
+    expect(inputs[1]).toHaveValue(5);
+  });
+
+  it("sorts by amount column using accessorFn without amountMap", () => {
+    render(<AssetTable assets={SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
+    const amountHeader = screen.getByRole("button", { name: /amount/i });
+    fireEvent.click(amountHeader);
+    const inputs = screen.getAllByRole("spinbutton");
+    expect(inputs[0]).toHaveValue(0);
+    expect(inputs[1]).toHaveValue(0);
   });
 });

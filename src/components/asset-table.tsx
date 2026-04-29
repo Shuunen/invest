@@ -1,6 +1,5 @@
 import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
-import { tr } from "zod/v4/locales/index.js";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
@@ -37,8 +36,9 @@ function makeSelectColumn(): ColumnDef<Asset> {
   };
 }
 
-function makeSharesColumn(): ColumnDef<Asset> {
+function makeSharesColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
   return {
+    accessorFn: row => amountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
       const meta = table.options.meta as AssetTableMeta | undefined;
       const { isin } = row.original;
@@ -61,7 +61,6 @@ function makeSharesColumn(): ColumnDef<Asset> {
         />
       );
     },
-    enableSorting: true,
     header: "Amount",
     id: "amount",
   };
@@ -95,8 +94,8 @@ function renderThContent(header: Header<Asset, unknown>) {
   );
 }
 
-function buildActiveColumns(onToggleSelect: ((isin: string) => void) | undefined, onRemoveAsset: ((isin: string) => void) | undefined, onAmountChange: ((isin: string, shares: number) => void) | undefined): ColumnDef<Asset>[] {
-  return [...(onToggleSelect ? [makeSelectColumn()] : []), ...columns, ...(onAmountChange ? [makeSharesColumn()] : []), ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : [])];
+function buildActiveColumns({ onToggleSelect, onRemoveAsset, onAmountChange, amountMap }: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "amountMap">): ColumnDef<Asset>[] {
+  return [...(onToggleSelect ? [makeSelectColumn()] : []), ...columns, ...(onAmountChange ? [makeSharesColumn(amountMap)] : []), ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : [])];
 }
 
 function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap }: Props = {}) {
@@ -120,7 +119,7 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
     if (!lower) return propAssets ?? data.assets;
     return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
   }, [data.assets, filterText, propAssets]);
-  const activeColumns = buildActiveColumns(onToggleSelect, onRemoveAsset, onAmountChange);
+  const activeColumns = buildActiveColumns({ amountMap, onAmountChange, onRemoveAsset, onToggleSelect });
   const meta: AssetTableMeta | undefined = (onToggleSelect ?? onAmountChange) ? { amountMap, onAmountChange, onToggleSelect, selectedIsins } : undefined;
   const table = useTableInstance({
     columns: activeColumns,

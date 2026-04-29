@@ -1,23 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm install *)",
-      "Bash(pnpm add *)",
-      "Bash(pnpm exec *)",
-      "Bash(node -e *)",
-      "Bash(pnpm check *)",
-      "Bash(pnpm run *)",
+      "Bash(~/.claude/skills/gstack/bin/gstack --help)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-review-log *)",
+      "Bash(~/.claude/skills/gstack/bin/gstack-review-read *)",
+      "Bash(gh pr *)",
+      "Bash(git -C *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Bash(git remote *)",
-      "Bash(git -C *)",
-      "Bash(gh pr *)",
-      "Skill(qa)",
-      "Bash(~/.claude/skills/gstack/bin/gstack-review-read *)",
-      "Bash(~/.claude/skills/gstack/bin/gstack-review-log *)",
-      "Bash(~/.claude/skills/gstack/bin/gstack --help)",
-      "Bash(pnpm test *)"
+      "Bash(git stash *)",
+      "Bash(node -e *)",
+      "Bash(pnpm add *)",
+      "Bash(pnpm check *)",
+      "Bash(pnpm exec *)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm run *)",
+      "Bash(pnpm test *)",
+      "Skill(qa)"
     ]
   }
 }
