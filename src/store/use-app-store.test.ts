@@ -83,6 +83,16 @@ describe("useAppStore - portfolio mutations", () => {
     expect(useAppStore.getState().data.portfolios[0]?.name).toBe("My Portfolio");
   });
 
+  it("addPortfolio ignores the call when MAX_PORTFOLIOS is reached", () => {
+    const maxPortfolios = Array.from({ length: 50 }, (_unused, index) => ({
+      ...basePortfolio,
+      id: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
+    }));
+    useAppStore.setState({ data: { ...defaultAppData, portfolios: maxPortfolios }, isLoading: false, loadError: undefined });
+    useAppStore.getState().addPortfolio({ ...basePortfolio, id: "00000000-0000-4000-8000-999999999999" });
+    expect(useAppStore.getState().data.portfolios).toHaveLength(50);
+  });
+
   it("deletePortfolio removes the portfolio by id", () => {
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [basePortfolio] },

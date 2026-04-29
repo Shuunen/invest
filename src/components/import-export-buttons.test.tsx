@@ -36,10 +36,23 @@ describe("ImportExportButtons", () => {
     expect(screen.getByRole("button", { name: /export/i })).toBeInTheDocument();
   });
 
-  it("Export is disabled when no assets", () => {
+  it("Export is disabled when no assets and no portfolios", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     expect(screen.getByRole("button", { name: /export/i })).toBeDisabled();
+  });
+
+  it("Export is enabled when portfolios exist but no assets", () => {
+    useAppStore.setState({
+      data: {
+        ...defaultAppData,
+        portfolios: [{ broker: "Test", entries: [], id: "00000000-0000-4000-8000-000000000001", name: "P1" }],
+      },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<ImportExportButtons />);
+    expect(screen.getByRole("button", { name: /export/i })).not.toBeDisabled();
   });
 
   it("Export is enabled when assets exist", () => {

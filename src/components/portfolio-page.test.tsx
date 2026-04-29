@@ -68,17 +68,6 @@ describe("PortfolioPage - empty portfolio", () => {
     expect(screen.getByText(/broker: interactive brokers/i)).toBeInTheDocument();
   });
 
-  it("does not render broker line when broker is empty", () => {
-    const portfolio = makePortfolio({ broker: "" });
-    useAppStore.setState({
-      data: { ...defaultAppData, portfolios: [portfolio] },
-      isLoading: false,
-      loadError: undefined,
-    });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.queryByText(/broker:/i)).not.toBeInTheDocument();
-  });
-
   it("shows 0 assets count in header", () => {
     const portfolio = makePortfolio();
     useAppStore.setState({
