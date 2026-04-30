@@ -31,6 +31,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
 
 describe("ImportExportButtons", () => {
   it("renders Import and Export buttons", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     expect(screen.getByRole("button", { name: /import/i })).toBeInTheDocument();
@@ -38,12 +39,14 @@ describe("ImportExportButtons", () => {
   });
 
   it("Export is disabled when no assets and no portfolios", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     expect(screen.getByRole("button", { name: /export/i })).toBeDisabled();
   });
 
   it("Export is enabled when portfolios exist but no assets", () => {
+    expect.hasAssertions();
     useAppStore.setState({
       data: {
         ...defaultAppData,
@@ -57,6 +60,7 @@ describe("ImportExportButtons", () => {
   });
 
   it("Export is enabled when assets exist", () => {
+    expect.hasAssertions();
     useAppStore.setState({
       data: { ...defaultAppData, assets: [makeAsset()] },
       isLoading: false,
@@ -67,6 +71,7 @@ describe("ImportExportButtons", () => {
   });
 
   it("clicking Export triggers a download and updates lastExportedAt", () => {
+    expect.hasAssertions();
     useAppStore.setState({
       data: { ...defaultAppData, assets: [makeAsset()] },
       isLoading: false,
@@ -81,6 +86,7 @@ describe("ImportExportButtons", () => {
   });
 
   it("clicking Import triggers the hidden file input click", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -90,6 +96,7 @@ describe("ImportExportButtons", () => {
   });
 
   it("file change with no file selected does nothing", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -98,6 +105,7 @@ describe("ImportExportButtons", () => {
   });
 
   it("importing valid JSON calls loadData", async () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -109,6 +117,7 @@ describe("ImportExportButtons", () => {
   });
 
   it("importing invalid JSON shows an error alert", async () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -121,6 +130,7 @@ describe("ImportExportButtons", () => {
   });
 
   it("dismissing the error alert removes it", async () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
@@ -134,6 +144,7 @@ describe("ImportExportButtons", () => {
   });
 
   it("clicking Import clears a previously shown error", async () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;

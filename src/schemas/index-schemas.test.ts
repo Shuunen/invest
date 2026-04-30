@@ -15,21 +15,25 @@ const validAsset = {
 
 describe("AssetSchema rejections", () => {
   it("rejects an ISIN code with invalid format", () => {
+    expect.hasAssertions();
     const result = AssetSchema.safeParse({ ...validAsset, isin: "INVALID" });
     expect(result.success).toBe(false);
   });
 
   it("rejects negative fees", () => {
+    expect.hasAssertions();
     const result = AssetSchema.safeParse({ ...validAsset, fees: -0.1 });
     expect(result.success).toBe(false);
   });
 
   it("rejects empty name", () => {
+    expect.hasAssertions();
     const result = AssetSchema.safeParse({ ...validAsset, name: "" });
     expect(result.success).toBe(false);
   });
 
   it("rejects geoAllocation with unknown country key", () => {
+    expect.hasAssertions();
     const result = AssetSchema.safeParse({ ...validAsset, geoAllocation: { unknownCountry: 1 } });
     expect(result.success).toBe(false);
     invariant(result.error, "Expected validation to fail");
@@ -39,6 +43,7 @@ describe("AssetSchema rejections", () => {
   });
 
   it("rejects sectorAllocation with unknown sector key", () => {
+    expect.hasAssertions();
     const result = AssetSchema.safeParse({ ...validAsset, sectorAllocation: { unknownSector: 0.5 } });
     expect(result.success).toBe(false);
     invariant(result.error, "Expected validation to fail");
@@ -52,17 +57,20 @@ describe("AssetSchema rejections", () => {
 
 describe("AssetSchema happy paths", () => {
   it("coerces absent nullable performance/risk fields to undefined", () => {
+    expect.hasAssertions();
     const result = AssetSchema.parse(validAsset);
     expect(result.performance3y).toBeUndefined();
     expect(result.riskReward3y).toBeUndefined();
   });
 
   it("accepts valid geoAllocation with known country keys", () => {
+    expect.hasAssertions();
     const result = AssetSchema.safeParse({ ...validAsset, geoAllocation: { france: 0.4, us: 0.6 } });
     expect(result.success).toBe(true);
   });
 
   it("accepts valid sectorAllocation with known sector keys", () => {
+    expect.hasAssertions();
     const result = AssetSchema.safeParse({ ...validAsset, sectorAllocation: { financials: 0.5, technology: 0.5 } });
     expect(result.success).toBe(true);
   });
@@ -78,21 +86,25 @@ describe("PortfolioEntrySchema", () => {
   };
 
   it("rejects an ISIN code with invalid format", () => {
+    expect.hasAssertions();
     const result = PortfolioEntrySchema.safeParse({ ...validEntry, isin: "bad-isin" });
     expect(result.success).toBe(false);
   });
 
   it("rejects negative positionValue", () => {
+    expect.hasAssertions();
     const result = PortfolioEntrySchema.safeParse({ ...validEntry, positionValue: -1 });
     expect(result.success).toBe(false);
   });
 
   it("rejects negative targetAmount", () => {
+    expect.hasAssertions();
     const result = PortfolioEntrySchema.safeParse({ ...validEntry, targetAmount: -50 });
     expect(result.success).toBe(false);
   });
 
   it("defaults inPEA to false and notes to empty string", () => {
+    expect.hasAssertions();
     const result = PortfolioEntrySchema.parse(validEntry);
     expect(result.inPEA).toBe(false);
     expect(result.notes).toBe("");
@@ -109,21 +121,25 @@ describe("PortfolioSchema", () => {
   };
 
   it("rejects an invalid UUID", () => {
+    expect.hasAssertions();
     const result = PortfolioSchema.safeParse({ ...validPortfolio, id: "not-a-uuid" });
     expect(result.success).toBe(false);
   });
 
   it("rejects an empty name", () => {
+    expect.hasAssertions();
     const result = PortfolioSchema.safeParse({ ...validPortfolio, name: "" });
     expect(result.success).toBe(false);
   });
 
   it("rejects an empty broker", () => {
+    expect.hasAssertions();
     const result = PortfolioSchema.safeParse({ ...validPortfolio, broker: "" });
     expect(result.success).toBe(false);
   });
 
   it("parses a valid portfolio and defaults entries to empty array", () => {
+    expect.hasAssertions();
     const result = PortfolioSchema.parse(validPortfolio);
     expect(result.broker).toBe("Trading 212");
     expect(result.entries).toStrictEqual([]);
@@ -134,26 +150,31 @@ describe("PortfolioSchema", () => {
 
 describe("SettingsSchema: datetime and range validation", () => {
   it("accepts a valid ISO datetime for lastExportedAt", () => {
+    expect.hasAssertions();
     const result = SettingsSchema.parse({ lastExportedAt: "2024-01-15T12:00:00.000Z" });
     expect(result.lastExportedAt).toBe("2024-01-15T12:00:00.000Z");
   });
 
   it("rejects similarityThreshold below 0", () => {
+    expect.hasAssertions();
     const result = SettingsSchema.safeParse({ similarityThreshold: -0.1 });
     expect(result.success).toBe(false);
   });
 
   it("rejects similarityThreshold above 1", () => {
+    expect.hasAssertions();
     const result = SettingsSchema.safeParse({ similarityThreshold: 1.1 });
     expect(result.success).toBe(false);
   });
 
   it("rejects negative editCount", () => {
+    expect.hasAssertions();
     const result = SettingsSchema.safeParse({ editCount: -1 });
     expect(result.success).toBe(false);
   });
 
   it("rejects invalid sort direction", () => {
+    expect.hasAssertions();
     const result = SettingsSchema.safeParse({ sort: { column: "name", direction: "up" } });
     expect(result.success).toBe(false);
   });
@@ -161,6 +182,7 @@ describe("SettingsSchema: datetime and range validation", () => {
 
 describe("SettingsSchema: default values", () => {
   it("applies scalar defaults when no fields supplied", () => {
+    expect.hasAssertions();
     const result = SettingsSchema.parse({});
     expect(result.theme).toBe("light");
     expect(result.editCount).toBe(0);
@@ -168,6 +190,7 @@ describe("SettingsSchema: default values", () => {
   });
 
   it("applies collection defaults when no fields supplied", () => {
+    expect.hasAssertions();
     const result = SettingsSchema.parse({});
     expect(result.columnOrder).toStrictEqual([]);
     expect(result.columnVisibility).toStrictEqual({});
@@ -179,6 +202,7 @@ describe("SettingsSchema: default values", () => {
 
 describe("safeImportJson error message format", () => {
   it("joins multiple schema errors with newlines", () => {
+    expect.hasAssertions();
     // Two violations: invalid theme AND negative positionValue on a portfolio entry
     const bad = {
       assets: [],
@@ -205,6 +229,7 @@ describe("safeImportJson error message format", () => {
 
 describe("AppDataSchema limits", () => {
   it("rejects more than MAX_PORTFOLIOS portfolios", () => {
+    expect.hasAssertions();
     const tooManyPortfolios = Array.from({ length: MAX_PORTFOLIOS + 1 }, (_val, idx) => ({
       broker: "Broker",
       entries: [],
@@ -216,6 +241,7 @@ describe("AppDataSchema limits", () => {
   });
 
   it("rejects more than MAX_ISINS ISINs", () => {
+    expect.hasAssertions();
     const tooManyIsins = Array.from({ length: MAX_ISINS + 1 }, (_val, idx) => ({
       availableForPlan: false,
       availableOnBroker: false,

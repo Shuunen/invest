@@ -8,6 +8,7 @@ function Bomb({ shouldThrow }: { shouldThrow: boolean }) {
 
 describe("ErrorBoundary - normal rendering", () => {
   it("renders children when no error", () => {
+    expect.hasAssertions();
     render(
       <ErrorBoundary>
         <Bomb shouldThrow={false} />
@@ -19,6 +20,7 @@ describe("ErrorBoundary - normal rendering", () => {
 
 describe("ErrorBoundary - error state", () => {
   it("renders error UI when child throws", () => {
+    expect.hasAssertions();
     vi.spyOn(console, "error").mockImplementation(() => {
       /* suppress React error logs in test */
     });
@@ -32,6 +34,7 @@ describe("ErrorBoundary - error state", () => {
   });
 
   it("Retry button renders when onReset provided and calls it on click", () => {
+    expect.hasAssertions();
     vi.spyOn(console, "error").mockImplementation(() => {
       /* suppress React error logs in test */
     });
@@ -48,6 +51,7 @@ describe("ErrorBoundary - error state", () => {
   });
 
   it("Retry button absent when no onReset provided", () => {
+    expect.hasAssertions();
     vi.spyOn(console, "error").mockImplementation(() => {
       /* suppress React error logs in test */
     });

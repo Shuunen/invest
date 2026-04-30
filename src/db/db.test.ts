@@ -4,6 +4,7 @@ import { type AppDataRecord, db } from "./db.ts";
 
 describe("AppDataDb", () => {
   it("returns undefined for missing record", async () => {
+    expect.hasAssertions();
     await db.delete();
     await db.open();
     const record = await db.appdata.get(1);
@@ -11,6 +12,7 @@ describe("AppDataDb", () => {
   });
 
   it("stores and retrieves AppData", async () => {
+    expect.hasAssertions();
     await db.delete();
     await db.open();
     const result = AppDataSchema.safeParse({ assets: [], portfolios: [], settings: {} });
@@ -22,6 +24,7 @@ describe("AppDataDb", () => {
   });
 
   it("re-parsing through Zod catches corrupted data", async () => {
+    expect.hasAssertions();
     await db.delete();
     await db.open();
     const malformed = { data: { assets: "not-an-array" }, id: 1 };
@@ -31,6 +34,7 @@ describe("AppDataDb", () => {
   });
 
   it("handles Dexie open after delete", async () => {
+    expect.hasAssertions();
     await db.delete();
     await db.open();
     const count = await db.appdata.count();

@@ -62,49 +62,60 @@ describe("matchesFilter", () => {
   const asset = makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi", tickers: ["IWDA"] });
 
   it("matches name case-insensitively", () => {
+    expect.hasAssertions();
     expect(matchesFilter(asset, "alpha etf")).toBe(true);
   });
 
   it("matches ISIN partially", () => {
+    expect.hasAssertions();
     expect(matchesFilter(asset, "lu1234")).toBe(true);
   });
 
   it("matches provider case-insensitively", () => {
+    expect.hasAssertions();
     expect(matchesFilter(asset, "amundi")).toBe(true);
   });
 
   it("matches ticker case-insensitively", () => {
+    expect.hasAssertions();
     expect(matchesFilter(asset, "iwda")).toBe(true);
   });
 
   it("returns false when tickers is empty and no other field matches", () => {
+    expect.hasAssertions();
     const noTickers = makeAsset({ isin: "FR0000000001", name: "Zeta", provider: "X", tickers: [] });
     expect(matchesFilter(noTickers, "iwda")).toBe(false);
   });
 
   it("returns false when nothing matches", () => {
+    expect.hasAssertions();
     expect(matchesFilter(asset, "nomatch")).toBe(false);
   });
 });
 
 describe("quintileClass", () => {
   it("returns undefined for undefined value", () => {
+    expect.hasAssertions();
     expect(quintileClass(undefined, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBeUndefined();
   });
 
   it("returns green class for top quintile", () => {
+    expect.hasAssertions();
     expect(quintileClass(10, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBe("bg-success/20 text-success-content");
   });
 
   it("returns red class for bottom quintile", () => {
+    expect.hasAssertions();
     expect(quintileClass(1, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBe("bg-error/20 text-error-content");
   });
 
   it("returns undefined for middle value", () => {
+    expect.hasAssertions();
     expect(quintileClass(5, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBeUndefined();
   });
 
   it("returns undefined when fewer than 3 rows", () => {
+    expect.hasAssertions();
     expect(
       quintileClass(
         2,
@@ -116,6 +127,7 @@ describe("quintileClass", () => {
 
 describe("AssetTable - loading and error states", () => {
   it("shows loading skeleton rows when isLoading is true", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<AssetTable />);
     act(() => {
@@ -126,6 +138,7 @@ describe("AssetTable - loading and error states", () => {
   });
 
   it("shows error banner with Retry button on loadError", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: new Error("DB failed") });
     render(<AssetTable />);
     expect(screen.getByRole("alert")).toBeInTheDocument();
@@ -134,6 +147,7 @@ describe("AssetTable - loading and error states", () => {
   });
 
   it("retry button clears the error state", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: new Error("DB failed") });
     render(<AssetTable />);
     expect(screen.getByRole("alert")).toBeInTheDocument();
@@ -144,12 +158,14 @@ describe("AssetTable - loading and error states", () => {
 
 describe("AssetTable - data display", () => {
   it("shows empty state when no ISINs after loading", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     expect(screen.getByText(/no instruments added yet/i)).toBeInTheDocument();
   });
 
   it("renders all ISIN rows", () => {
+    expect.hasAssertions();
     const assets = [makeAsset({ isin: "LU1234567890", name: "ETF One" }), makeAsset({ isin: "FR0000000001", name: "ETF Two" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
@@ -158,6 +174,7 @@ describe("AssetTable - data display", () => {
   });
 
   it("renders undefined numeric cell as em dash", () => {
+    expect.hasAssertions();
     useAppStore.setState({
       data: makeTestData([makeAsset({ performance3y: undefined })]),
       isLoading: false,
@@ -172,6 +189,7 @@ describe("AssetTable - data display", () => {
 
 describe("AssetTable - select column", () => {
   it("renders unchecked select checkbox when onToggleSelect is set but no selectedIsins", () => {
+    expect.hasAssertions();
     render(<AssetTable assets={SELECT_ASSETS} onToggleSelect={vi.fn<(isin: string) => void>()} />);
     const row = screen.getByText(SELECT_ASSET.name).closest("tr");
     invariant(row, "Expected table row to exist");
@@ -181,6 +199,7 @@ describe("AssetTable - select column", () => {
 
 describe("AssetTable - score column", () => {
   it("score column matches computeScore output", () => {
+    expect.hasAssertions();
     const asset = makeAsset({ fees: 0.2, performance3y: 30, riskReward3y: 1.8 });
     const expected = computeScore(asset);
     expect(expected).toBeDefined();
@@ -192,6 +211,7 @@ describe("AssetTable - score column", () => {
   });
 
   it("top-quintile score renders with green dot indicator", () => {
+    expect.hasAssertions();
     const highAsset = makeAsset({ fees: 0, isin: "HIGH0000001", performance3y: 200, riskReward3y: 0 });
     const assets = [
       highAsset,
@@ -207,9 +227,11 @@ describe("AssetTable - score column", () => {
   });
 
   it("bottom-quintile score renders with red dot indicator", () => {
+    expect.hasAssertions();
     const lowAsset = makeAsset({ fees: 100, isin: "LOW0000001X", performance3y: 0, riskReward3y: 0 });
     const score = computeScore(lowAsset);
-    invariant(score !== undefined && score < 0, "Expected score to be negative for this test");
+    invariant(score !== undefined, "Expected score to be defined for this test");
+    invariant(score < 0, "Expected score to be negative for this test");
     const assets = [lowAsset, makeAsset({ fees: 0, isin: "HIGH0000001", performance3y: 200, riskReward3y: 0 }), makeAsset({ fees: 0, isin: "HIGH0000002", performance3y: 200, riskReward3y: 0 })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
@@ -218,6 +240,7 @@ describe("AssetTable - score column", () => {
   });
 
   it("mid-quintile score renders with warning dot indicator", () => {
+    expect.hasAssertions();
     const midAsset = makeAsset({ fees: 0, isin: "MID00000001", performance3y: 50, riskReward3y: 0 });
     const assets = [
       midAsset,
@@ -235,6 +258,7 @@ describe("AssetTable - score column", () => {
 
 describe("AssetTable - sorting", () => {
   it("sort by name on header click updates store", async () => {
+    expect.hasAssertions();
     const assets = [makeAsset({ isin: "LU1234567890", name: "Zebra ETF" }), makeAsset({ isin: "FR0000000001", name: "Apple ETF" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
@@ -246,6 +270,7 @@ describe("AssetTable - sorting", () => {
   });
 
   it("sort toggles direction on second click", async () => {
+    expect.hasAssertions();
     const assets = [makeAsset({ isin: "LU1234567890" }), makeAsset({ isin: "FR0000000001" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
@@ -265,6 +290,7 @@ describe("AssetTable - sorting", () => {
 
 describe("AssetTable - column hiding", () => {
   it("unchecking a column removes its header from DOM", async () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([makeAsset()]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     expect(screen.getAllByText("Provider").length).toBeGreaterThan(0);
@@ -283,6 +309,7 @@ describe("AssetTable - column hiding", () => {
 
 describe("AssetTable - column visibility guard", () => {
   it("last visible column toggle is disabled", () => {
+    expect.hasAssertions();
     const colsAllHidden: Record<string, boolean> = {
       availableForPlan: false,
       availableOnBroker: false,
@@ -322,6 +349,7 @@ describe("AssetTable - column visibility guard", () => {
 
 describe("AssetTable - filter", () => {
   it("filter input change narrows displayed rows", async () => {
+    expect.hasAssertions();
     const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "ProviderA", tickers: ["ALP"] }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "ProviderB", tickers: ["BET"] })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
@@ -334,6 +362,7 @@ describe("AssetTable - filter", () => {
   });
 
   it("filter matches by ISIN", async () => {
+    expect.hasAssertions();
     const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF" }), makeAsset({ isin: "FR0000000001", name: "Beta ETF" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
@@ -345,6 +374,7 @@ describe("AssetTable - filter", () => {
   });
 
   it("filter matches by provider", async () => {
+    expect.hasAssertions();
     const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi" }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "Lyxor" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
@@ -356,6 +386,7 @@ describe("AssetTable - filter", () => {
   });
 
   it("filter matches by ticker", async () => {
+    expect.hasAssertions();
     const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", tickers: ["IWDA"] }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", tickers: ["VWRL"] })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
@@ -369,6 +400,7 @@ describe("AssetTable - filter", () => {
 
 describe("AssetTable - boolean and hidden columns", () => {
   it("renders Yes/No badges for boolean columns when made visible", () => {
+    expect.hasAssertions();
     const asset = makeAsset({ availableForPlan: true, availableOnBroker: false, isAccumulating: true });
     useAppStore.setState({
       data: {
@@ -392,6 +424,7 @@ describe("AssetTable - boolean and hidden columns", () => {
 
 describe("AssetTable - tickers column", () => {
   it("renders tickers cell content when column is visible", () => {
+    expect.hasAssertions();
     const asset = makeAsset({ tickers: ["IWDA", "EUNL"] });
     useAppStore.setState({
       data: {
@@ -410,6 +443,7 @@ describe("AssetTable - tickers column", () => {
   });
 
   it("sort by tickers column uses custom sortingFn", async () => {
+    expect.hasAssertions();
     const assets = [makeAsset({ isin: "LU1234567890", name: "Zebra ETF", tickers: ["ZZZ"] }), makeAsset({ isin: "FR0000000001", name: "Apple ETF", tickers: ["AAA"] })];
     useAppStore.setState({
       data: {
@@ -433,6 +467,7 @@ describe("AssetTable - tickers column", () => {
 
 describe("AssetTable - hidden numeric columns", () => {
   it("renders performance1y and riskReward1y cells when made visible", () => {
+    expect.hasAssertions();
     const asset = makeAsset({ performance1y: 142.5, riskReward1y: 857.4 });
     useAppStore.setState({
       data: {
@@ -454,6 +489,7 @@ describe("AssetTable - hidden numeric columns", () => {
 
 describe("AssetTable - sort clearing", () => {
   it("clicking sorted column three times clears the sort and resets to asc", async () => {
+    expect.hasAssertions();
     const assets = [makeAsset({ isin: "LU1234567890" }), makeAsset({ isin: "FR0000000001" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
@@ -469,6 +505,7 @@ describe("AssetTable - sort clearing", () => {
 
 describe("AssetTable - useHydration", () => {
   it("loads data from DB when isLoading is true on mount", async () => {
+    expect.hasAssertions();
     await db.delete();
     await db.open();
     const seedAsset = makeAsset({ isin: "LU9999999990", name: "Seeded ETF" });
@@ -485,6 +522,7 @@ describe("AssetTable - useHydration", () => {
   });
 
   it("falls back to seedData when DB has no record", async () => {
+    expect.hasAssertions();
     await db.delete();
     await db.open();
 
@@ -497,6 +535,7 @@ describe("AssetTable - useHydration", () => {
   });
 
   it("sets loadError when DB throws during load", async () => {
+    expect.hasAssertions();
     vi.spyOn(db.appdata, "get").mockRejectedValueOnce(new Error("DB read failed"));
 
     useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
@@ -510,6 +549,7 @@ describe("AssetTable - useHydration", () => {
 
 describe("AssetTable - useDexieSync", () => {
   it("writes data to DB after debounce when store changes", async () => {
+    expect.hasAssertions();
     await db.delete();
     await db.open();
 
@@ -533,23 +573,27 @@ describe("AssetTable - useDexieSync", () => {
 
 describe("AssetTable - value column", () => {
   it("shows 0 € when price is undefined", () => {
+    expect.hasAssertions();
     const amountMap = new Map([[VALUE_ASSET_NO_PRICE.isin, 5]]);
     render(<AssetTable assets={VALUE_ASSETS_NO_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
     expect(screen.getByText("0 €")).toBeInTheDocument();
   });
 
   it("shows computed value when price and amount are set", () => {
+    expect.hasAssertions();
     const amountMap = new Map([[VALUE_ASSET_WITH_PRICE.isin, 3]]);
     render(<AssetTable assets={VALUE_ASSETS_WITH_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
     expect(screen.getByText("300 €")).toBeInTheDocument();
   });
 
   it("shows 0 € when no amountMap entry exists", () => {
+    expect.hasAssertions();
     render(<AssetTable assets={VALUE_ASSETS_PRICE_50} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
     expect(screen.getByText("0 €")).toBeInTheDocument();
   });
 
   it("sorts by value column with undefined price uses 0 fallback", () => {
+    expect.hasAssertions();
     render(<AssetTable assets={VALUE_SORT_ASSETS_NO_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
     const valueHeader = screen.getByRole("button", { name: /value/i });
     fireEvent.click(valueHeader);
@@ -557,6 +601,7 @@ describe("AssetTable - value column", () => {
   });
 
   it("sorts by value column with defined amountMap missing ISIN entry uses 0 fallback", () => {
+    expect.hasAssertions();
     const emptyAmountMap = new Map<string, number>();
     render(<AssetTable assets={VALUE_SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={emptyAmountMap} />);
     const valueHeader = screen.getByRole("button", { name: /value/i });
@@ -565,6 +610,7 @@ describe("AssetTable - value column", () => {
   });
 
   it("sorts by value column using accessorFn", () => {
+    expect.hasAssertions();
     const amountMap = new Map([
       [SORT_ASSET_1.isin, 10],
       [SORT_ASSET_2.isin, 5],
@@ -579,6 +625,7 @@ describe("AssetTable - value column", () => {
 
 describe("AssetTable - amount column", () => {
   it("renders shares column with default 0 when no amountMap is provided", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
     render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
@@ -587,6 +634,7 @@ describe("AssetTable - amount column", () => {
   });
 
   it("calls onAmountChange when input value changes and blurs", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
     render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
@@ -597,6 +645,7 @@ describe("AssetTable - amount column", () => {
   });
 
   it("does not call onAmountChange when value is unchanged on blur", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
     const amountMap = new Map([[AMOUNT_ASSET.isin, 3]]);
@@ -607,6 +656,7 @@ describe("AssetTable - amount column", () => {
   });
 
   it("clamps NaN input (empty string) to 0 and does not update when initial value is also 0", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
     render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
@@ -617,6 +667,7 @@ describe("AssetTable - amount column", () => {
   });
 
   it("sorts by amount column using accessorFn with amountMap", () => {
+    expect.hasAssertions();
     const amountMap = new Map([
       [SORT_ASSET_1.isin, 5],
       [SORT_ASSET_2.isin, 2],
@@ -630,6 +681,7 @@ describe("AssetTable - amount column", () => {
   });
 
   it("sorts by amount column using accessorFn without amountMap", () => {
+    expect.hasAssertions();
     render(<AssetTable assets={SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
     const amountHeader = screen.getByRole("button", { name: /amount/i });
     fireEvent.click(amountHeader);
@@ -639,6 +691,7 @@ describe("AssetTable - amount column", () => {
   });
 
   it("ignores stored amount sort when rendered without onAmountChange", () => {
+    expect.hasAssertions();
     act(() => {
       useAppStore.setState({ data: makeTestData(SORT_ASSETS) });
       useAppStore.getState().setSort({ column: "amount", direction: "desc" });

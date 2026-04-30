@@ -39,6 +39,7 @@ function makePortfolio(overrides: Partial<Portfolio> = {}): Portfolio {
 
 describe("PortfolioPage - not found", () => {
   it("renders not found message when portfolio id does not exist", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<PortfolioPage portfolioId="nonexistent" />);
     expect(screen.getByText(/portfolio not found/i)).toBeInTheDocument();
@@ -47,6 +48,7 @@ describe("PortfolioPage - not found", () => {
 
 describe("PortfolioPage - empty portfolio", () => {
   it("renders portfolio name and empty state", () => {
+    expect.hasAssertions();
     const portfolio = makePortfolio();
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [portfolio] },
@@ -59,6 +61,7 @@ describe("PortfolioPage - empty portfolio", () => {
   });
 
   it("renders broker name when set", () => {
+    expect.hasAssertions();
     const portfolio = makePortfolio({ broker: "Interactive Brokers" });
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [portfolio] },
@@ -70,6 +73,7 @@ describe("PortfolioPage - empty portfolio", () => {
   });
 
   it("shows 0 assets count in header", () => {
+    expect.hasAssertions();
     const portfolio = makePortfolio();
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [portfolio] },
@@ -81,6 +85,7 @@ describe("PortfolioPage - empty portfolio", () => {
   });
 
   it("uses singular 'asset' when count is 1", () => {
+    expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
       entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
@@ -97,6 +102,7 @@ describe("PortfolioPage - empty portfolio", () => {
 
 describe("PortfolioPage - with assets", () => {
   it("renders asset table when portfolio has entries", () => {
+    expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
       entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
@@ -112,6 +118,7 @@ describe("PortfolioPage - with assets", () => {
   });
 
   it("remove button calls setPortfolioAssets without the removed isin", () => {
+    expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
       entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
@@ -130,6 +137,7 @@ describe("PortfolioPage - with assets", () => {
   });
 
   it("amount input updates entry amount in the store on blur", () => {
+    expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
       entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
@@ -148,6 +156,7 @@ describe("PortfolioPage - with assets", () => {
   });
 
   it("amount input does not update the store when value is unchanged on blur", () => {
+    expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
       entries: [{ amount: 5, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
@@ -164,6 +173,7 @@ describe("PortfolioPage - with assets", () => {
   });
 
   it("cancel on delete confirmation modal keeps the asset", () => {
+    expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
       entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
@@ -182,6 +192,7 @@ describe("PortfolioPage - with assets", () => {
   });
 
   it("delete confirmation modal falls back to isin when asset is missing from the store", () => {
+    expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
       entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
@@ -204,6 +215,7 @@ describe("PortfolioPage - with assets", () => {
 
 describe("PortfolioPage - asset picker modal", () => {
   it("opens the asset picker modal when Add / Edit assets is clicked", () => {
+    expect.hasAssertions();
     const portfolio = makePortfolio();
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [portfolio] },
@@ -217,6 +229,7 @@ describe("PortfolioPage - asset picker modal", () => {
   });
 
   it("closes the picker on cancel", () => {
+    expect.hasAssertions();
     const portfolio = makePortfolio();
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [portfolio] },
@@ -230,6 +243,7 @@ describe("PortfolioPage - asset picker modal", () => {
   });
 
   it("confirm updates the portfolio assets via buildEntries preserving existing entries", () => {
+    expect.hasAssertions();
     const asset1 = makeAsset({ isin: "LU1234567890", name: "ETF A" });
     const asset2 = makeAsset({ isin: "LU0987654321", name: "ETF B" });
     const existingEntry = { amount: 0, inPEA: true, isin: asset1.isin, notes: "keep", positionValue: 100, targetAmount: 200 };

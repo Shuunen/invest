@@ -13,6 +13,7 @@ vi.mock(import("@tanstack/react-router"), async () => {
 
 describe("CreatePortfolioModal", () => {
   it("renders name and broker fields", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
     expect(screen.getByLabelText(/^name$/i)).toBeInTheDocument();
@@ -20,6 +21,7 @@ describe("CreatePortfolioModal", () => {
   });
 
   it("shows validation error when submitting with empty name", async () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
     fireEvent.click(screen.getByRole("button", { hidden: true, name: /create/i }));
@@ -27,6 +29,7 @@ describe("CreatePortfolioModal", () => {
   });
 
   it("shows validation error when submitting with empty broker", async () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
     await userEvent.type(screen.getByLabelText(/^name$/i), "My Fund");
@@ -35,6 +38,7 @@ describe("CreatePortfolioModal", () => {
   });
 
   it("calls onClose when Cancel is clicked", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
     render(<CreatePortfolioModal onClose={onClose} />);
@@ -43,6 +47,7 @@ describe("CreatePortfolioModal", () => {
   });
 
   it("calls onClose when X button is clicked", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
     render(<CreatePortfolioModal onClose={onClose} />);
@@ -51,6 +56,7 @@ describe("CreatePortfolioModal", () => {
   });
 
   it("calls onClose when backdrop is clicked", () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
     const { container } = render(<CreatePortfolioModal onClose={onClose} />);
@@ -62,6 +68,7 @@ describe("CreatePortfolioModal", () => {
   });
 
   it("submitting valid form adds portfolio and navigates", async () => {
+    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
     render(<CreatePortfolioModal onClose={onClose} />);
