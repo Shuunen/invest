@@ -3,7 +3,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
 import { computeScore, type Asset } from "../schemas/index.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { formatNumber, formatPrice, SCORE_MISSING_VALUE, formatPercent } from "./asset-table-utils.ts";
+import { formatNumber, formatPercent, formatPrice, SCORE_MISSING_VALUE } from "./asset-table-utils.ts";
 
 declare module "@tanstack/react-table" {
   // oxlint-disable-next-line typescript-eslint/consistent-type-definitions
@@ -13,12 +13,114 @@ declare module "@tanstack/react-table" {
   }
 }
 
+export type AssetTableMeta = {
+  onAmountChange?: (isin: string, amount: number) => void;
+  onPriceChange?: (isin: string, price: number) => void;
+  onToggleSelect?: (isin: string) => void;
+  selectedIsins?: Set<string>;
+  amountMap?: Map<string, number>;
+};
+
 function booleanCell(value: boolean) {
   return (
     <span aria-label={value ? "Yes" : "No"} className={`badge ${value ? cn("bg-success/40") : cn("badge-ghost")}`}>
       {value ? "Yes" : "No"}
     </span>
   );
+}
+
+export function makeSelectColumn(): ColumnDef<Asset> {
+  return {
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      return (
+        <input
+          type="checkbox"
+          className="checkbox checkbox-sm checkbox-primary"
+          checked={meta?.selectedIsins?.has(row.original.isin) ?? false}
+          onChange={() => meta?.onToggleSelect?.(row.original.isin)}
+          onClick={event => event.stopPropagation()}
+        />
+      );
+    },
+    enableHiding: false,
+    enableSorting: false,
+    header: "",
+    id: "select",
+  };
+}
+
+export function makeValueColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
+  return {
+    accessorFn: row => (amountMap?.get(row.isin) ?? 0) * (row.price ?? 0),
+    cell: ({ getValue }) => `${formatNumber(getValue<number>())} €`,
+    header: "Value",
+    id: "value",
+    meta: { center: true, title: "Value : amount * price in €" },
+  };
+}
+
+export function makeAmountColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
+  return {
+    accessorFn: row => amountMap?.get(row.isin) ?? 0,
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { isin } = row.original;
+      const value = meta?.amountMap?.get(isin) ?? 0;
+      return (
+        <input
+          type="number"
+          className="input input-xs w-12 text-center"
+          min={0}
+          defaultValue={value}
+          key={value}
+          id={`amount-input-${isin}`}
+          data-testid={`amount-input-${isin}`}
+          aria-label={`Amount for ${row.original.name}`}
+          onClick={event => event.stopPropagation()}
+          onBlur={event => {
+            const amount = Math.max(0, Number(event.target.value) || 0);
+            if (amount !== value) meta?.onAmountChange?.(isin, amount);
+          }}
+        />
+      );
+    },
+    header: "Amount",
+    id: "amount",
+    meta: { center: true, title: "Amount of units held" },
+  };
+}
+
+export function makePriceEditColumn(): ColumnDef<Asset> {
+  return {
+    accessorKey: "price",
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { isin } = row.original;
+      const value = row.original.price;
+      return (
+        <input
+          type="number"
+          className="input input-xs w-20 text-center"
+          min={0}
+          step={0.01}
+          defaultValue={value}
+          key={value}
+          id={`price-input-${isin}`}
+          data-testid={`price-input-${isin}`}
+          aria-label={`Price for ${row.original.name}`}
+          onClick={event => event.stopPropagation()}
+          onBlur={event => {
+            const price = Math.max(0, Number(event.target.value) || 0);
+            if (price !== value) meta?.onPriceChange?.(isin, price);
+          }}
+        />
+      );
+    },
+    header: "Price",
+    id: "price",
+    meta: { center: true, title: "Price of one asset in €" },
+  };
 }
 
 export const columns: ColumnDef<Asset>[] = [

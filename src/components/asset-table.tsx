@@ -1,89 +1,23 @@
 import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
+import { invariant } from "es-toolkit";
+import { CheckIcon, PencilLineIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { columns, makeRemoveColumn } from "./asset-table-columns.tsx";
+import { type AssetTableMeta, columns, makeAmountColumn, makePriceEditColumn, makeRemoveColumn, makeSelectColumn, makeValueColumn } from "./asset-table-columns.tsx";
 import { useDexieSync, useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
 import { renderSkeleton } from "./asset-table-skeleton.tsx";
-import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, formatNumber, getAriaSortValue, getScoreDotClass } from "./asset-table-utils.ts";
+import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, getAriaSortValue, getScoreDotClass } from "./asset-table-utils.ts";
 import { PageHeader } from "./page-header.tsx";
-
-type AssetTableMeta = {
-  onAmountChange?: (isin: string, amount: number) => void;
-  onToggleSelect?: (isin: string) => void;
-  selectedIsins?: Set<string>;
-  amountMap?: Map<string, number>;
-};
-
-function makeSelectColumn(): ColumnDef<Asset> {
-  return {
-    cell: ({ row, table }) => {
-      const meta = table.options.meta as AssetTableMeta | undefined;
-      return (
-        <input
-          type="checkbox"
-          className="checkbox checkbox-sm checkbox-primary"
-          checked={meta?.selectedIsins?.has(row.original.isin) ?? false}
-          onChange={() => meta?.onToggleSelect?.(row.original.isin)}
-          onClick={event => event.stopPropagation()}
-        />
-      );
-    },
-    enableHiding: false,
-    enableSorting: false,
-    header: "",
-    id: "select",
-  };
-}
-
-function makeValueColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
-  return {
-    accessorFn: row => (amountMap?.get(row.isin) ?? 0) * (row.price ?? 0),
-    cell: ({ getValue }) => `${formatNumber(getValue<number>())} €`,
-    header: "Value",
-    id: "value",
-    meta: { center: true, title: "Value : amount * price in €" },
-  };
-}
-
-function makeAmountColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
-  return {
-    accessorFn: row => amountMap?.get(row.isin) ?? 0,
-    cell: ({ row, table }) => {
-      const meta = table.options.meta as AssetTableMeta | undefined;
-      const { isin } = row.original;
-      const value = meta?.amountMap?.get(isin) ?? 0;
-      return (
-        <input
-          type="number"
-          className="input input-xs w-12 text-center"
-          min={0}
-          defaultValue={value}
-          key={value}
-          id={`amount-input-${isin}`}
-          data-testid={`amount-input-${isin}`}
-          aria-label={`Amount for ${row.original.name}`}
-          onClick={event => event.stopPropagation()}
-          onBlur={event => {
-            const amount = Math.max(0, Number(event.target.value) || 0);
-            if (amount !== value) meta?.onAmountChange?.(isin, amount);
-          }}
-        />
-      );
-    },
-    header: "Amount",
-    id: "amount",
-    meta: { center: true, title: "Amount of units held" },
-  };
-}
 
 type Props = {
   assets?: Asset[];
   onRemoveAsset?: (isin: string) => void;
   onAmountChange?: (isin: string, amount: number) => void;
+  onPriceChange?: (isin: string, price: number) => void;
   onToggleSelect?: (isin: string) => void;
   selectedIsins?: Set<string>;
   amountMap?: Map<string, number>;
@@ -108,11 +42,18 @@ function renderThContent(header: Header<Asset, unknown>) {
   );
 }
 
-function buildActiveColumns({ onToggleSelect, onRemoveAsset, onAmountChange, amountMap }: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "amountMap">): ColumnDef<Asset>[] {
-  return [...(onToggleSelect ? [makeSelectColumn()] : []), ...columns, ...(onAmountChange ? [makeAmountColumn(amountMap), makeValueColumn(amountMap)] : []), ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : [])];
+function buildActiveColumns({ onToggleSelect, onRemoveAsset, onAmountChange, onPriceChange, amountMap }: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onPriceChange" | "amountMap">): ColumnDef<Asset>[] {
+  const baseCols = onPriceChange ? columns.filter(col => col.id !== "price") : columns;
+  return [
+    ...(onToggleSelect ? [makeSelectColumn()] : []),
+    ...baseCols,
+    ...(onAmountChange ? [makeAmountColumn(amountMap), makeValueColumn(amountMap)] : []),
+    ...(onPriceChange ? [makePriceEditColumn()] : []),
+    ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : []),
+  ];
 }
 
-function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap }: Props = {}) {
+function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onPriceChange, onToggleSelect, selectedIsins, amountMap }: Props = {}) {
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
@@ -127,7 +68,7 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
   useHydration(retryKey);
   useDexieSync();
   const resolvedVisibility = useMemo(() => ({ ...DEFAULT_COLUMN_VISIBILITY, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
-  const activeColumns = buildActiveColumns({ amountMap, onAmountChange, onRemoveAsset, onToggleSelect });
+  const activeColumns = buildActiveColumns({ amountMap, onAmountChange, onPriceChange, onRemoveAsset, onToggleSelect });
   const sorting: SortingState = useMemo(() => {
     const { column, direction } = data.settings.sort;
     if (column === "amount" && !onAmountChange) return [];
@@ -138,7 +79,7 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
     if (!lower) return propAssets ?? data.assets;
     return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
   }, [data.assets, filterText, propAssets]);
-  const meta: AssetTableMeta | undefined = (onToggleSelect ?? onAmountChange) ? { amountMap, onAmountChange, onToggleSelect, selectedIsins } : undefined;
+  const meta: AssetTableMeta | undefined = (onToggleSelect ?? onAmountChange ?? onPriceChange) ? { amountMap, onAmountChange, onPriceChange, onToggleSelect, selectedIsins } : undefined;
   const table = useTableInstance({
     columns: activeColumns,
     filteredAssets,
@@ -183,6 +124,23 @@ function renderEmpty() {
       <p className="mb-4 text-base-content/60">Use the Import button in the top bar to get started</p>
     </div>
   );
+}
+
+function renderNoResults(colCount: number, filterText: string) {
+  return (
+    <tbody>
+      <tr>
+        <td colSpan={colCount} className="p-8 text-center">
+          <p className="mb-4 text-2xl">No results found for &quot;{filterText}&quot;</p>
+          <p className="text-base-content/60">Try adjusting your search criteria</p>
+        </td>
+      </tr>
+    </tbody>
+  );
+}
+
+function renderAssetsHeader(assets: Asset[], actions: { icon: React.ReactNode; label: string; onClick: () => void }[]) {
+  return <PageHeader assets={assets} title="Assets" subtitle="This is the list of available assets you can use to create and manage your portfolios." actions={actions} />;
 }
 
 function renderTableHeader(table: Table<Asset>) {
@@ -244,16 +202,37 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
 }
 
 export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap }: Props = {}) {
-  const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({ amountMap, assets: propAssets, onAmountChange, onRemoveAsset, onToggleSelect, selectedIsins });
-  if (!propAssets) {
-    if (isLoading) return renderSkeleton();
-    if (loadError) return renderError(loadError, handleRetry);
-    if (data.assets.length === 0) return renderEmpty();
-  }
+  const [isPriceEditing, setIsPriceEditing] = useState(false);
+  const updateAsset = useAppStore(state => state.updateAsset);
+  const storeAssets = useAppStore(state => state.data.assets);
+  const priceEditActions = useMemo(() => {
+    const icon = isPriceEditing ? <CheckIcon size={16} /> : <PencilLineIcon size={16} />;
+    return [{ icon, label: isPriceEditing ? "Done" : "Edit prices", onClick: () => setIsPriceEditing(prev => !prev) }];
+  }, [isPriceEditing]);
+  const onPriceChange: ((isin: string, price: number) => void) | undefined =
+    !propAssets && isPriceEditing
+      ? (isin, price) => {
+          const storeAsset = storeAssets.find(entry => entry.isin === isin);
+          invariant(storeAsset, `Asset ${isin} not found in store`);
+          updateAsset(isin, { ...storeAsset, price });
+        }
+      : undefined;
+  const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({
+    amountMap,
+    assets: propAssets,
+    onAmountChange,
+    onPriceChange,
+    onRemoveAsset,
+    onToggleSelect,
+    selectedIsins,
+  });
+  if (!propAssets && isLoading) return renderSkeleton();
+  if (!propAssets && loadError) return renderError(loadError, handleRetry);
+  if (!propAssets && data.assets.length === 0) return renderEmpty();
   const filterReturnedNoResults = filterText.trim() !== "" && table.getRowModel().rows.length === 0;
   return (
     <>
-      {!propAssets && <PageHeader assets={data.assets} title="Assets" subtitle="This is the list of available assets you can use to create and manage your portfolios." />}
+      {!propAssets && renderAssetsHeader(data.assets, priceEditActions)}
       <div className="relative p-4 text-left">
         <div className="sticky top-5 z-20 ml-2 flex gap-4">
           {renderSearchFilter(filterText, setFilterText)}
@@ -262,18 +241,7 @@ export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, 
         <table className="table-hover table w-full">
           <caption className="sr-only">ISINs reference data table</caption>
           {renderTableHeader(table)}
-          {filterReturnedNoResults ? (
-            <tbody>
-              <tr>
-                <td colSpan={table.getVisibleLeafColumns().length} className="p-8 text-center">
-                  <p className="mb-4 text-2xl">No results found for &quot;{filterText}&quot;</p>
-                  <p className="text-base-content/60">Try adjusting your search criteria</p>
-                </td>
-              </tr>
-            </tbody>
-          ) : (
-            renderTableBody(table, quintileClasses, onToggleSelect)
-          )}
+          {filterReturnedNoResults ? renderNoResults(table.getVisibleLeafColumns().length, filterText) : renderTableBody(table, quintileClasses, onToggleSelect)}
         </table>
       </div>
     </>

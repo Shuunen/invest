@@ -711,6 +711,98 @@ describe("AssetTable - amount column", () => {
   });
 });
 
+describe("AssetTable - price editing", () => {
+  const PRICE_ASSET = makeAsset({ isin: "LU9876543210", price: 50 });
+
+  it("shows Edit prices button in the page header", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    expect(screen.getByRole("button", { name: /edit prices/i })).toBeInTheDocument();
+  });
+
+  it("clicking Edit prices shows price inputs", async () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    await waitFor(() => {
+      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
+    });
+  });
+
+  it("clicking Done hides price inputs", async () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    await waitFor(() => {
+      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByRole("button", { name: /done/i }));
+    await waitFor(() => {
+      expect(screen.queryByTestId(`price-input-${PRICE_ASSET.isin}`)).not.toBeInTheDocument();
+    });
+  });
+
+  it("blurring price input with a new value updates the asset price in store", async () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    await waitFor(() => {
+      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
+    });
+    const input = screen.getByTestId(`price-input-${PRICE_ASSET.isin}`);
+    fireEvent.change(input, { target: { value: "75" } });
+    fireEvent.blur(input);
+    await waitFor(() => {
+      const updated = useAppStore.getState().data.assets.find(entry => entry.isin === PRICE_ASSET.isin);
+      expect(updated?.price).toBe(75);
+    });
+  });
+
+  it("blurring price input with unchanged value does not update the store", async () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    const editCountBefore = useAppStore.getState().data.settings.editCount;
+    render(<AssetTable />);
+    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    await waitFor(() => {
+      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
+    });
+    fireEvent.blur(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`));
+    expect(useAppStore.getState().data.settings.editCount).toBe(editCountBefore);
+  });
+
+  it("clamps NaN price input (empty string) to 0 and does not update when initial price is also 0", async () => {
+    expect.hasAssertions();
+    const zeroAsset = makeAsset({ isin: "LU0000000000", price: 0 });
+    useAppStore.setState({ data: makeTestData([zeroAsset]), isLoading: false, loadError: undefined });
+    const editCountBefore = useAppStore.getState().data.settings.editCount;
+    render(<AssetTable />);
+    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    await waitFor(() => {
+      expect(screen.getByTestId(`price-input-${zeroAsset.isin}`)).toBeInTheDocument();
+    });
+    const input = screen.getByTestId(`price-input-${zeroAsset.isin}`);
+    fireEvent.change(input, { target: { value: "" } });
+    fireEvent.blur(input);
+    expect(useAppStore.getState().data.settings.editCount).toBe(editCountBefore);
+  });
+
+  it("clicking price input stops event propagation", async () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    await waitFor(() => {
+      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
+    });
+    expect(() => fireEvent.click(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`))).not.toThrow();
+  });
+});
+
 describe("formatPercent", () => {
   it("formats positive numbers with plus sign and percent symbol", () => {
     expect.hasAssertions();
