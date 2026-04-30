@@ -123,6 +123,31 @@ describe("useAppStore - asset mutations", () => {
     useAppStore.getState().updateAsset(baseAsset.isin, baseAsset);
     expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
   });
+
+  it("updateAssetPrice updates the matching asset price and leaves others unchanged", () => {
+    expect.hasAssertions();
+    const assetB = { ...baseAsset, isin: "LU0987654321", name: "ETF B", price: 20 };
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [baseAsset, assetB] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    useAppStore.getState().updateAssetPrice(baseAsset.isin, 99);
+    expect(useAppStore.getState().data.assets[0]?.price).toBe(99);
+    expect(useAppStore.getState().data.assets[1]?.price).toBe(20);
+  });
+
+  it("updateAssetPrice increments editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [baseAsset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().updateAssetPrice(baseAsset.isin, 42);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
+  });
 });
 
 describe("useAppStore - portfolio mutations", () => {

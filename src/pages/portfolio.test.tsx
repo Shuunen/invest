@@ -275,6 +275,45 @@ describe("PortfolioPage - with assets", () => {
   });
 });
 
+describe("PortfolioPage - price editing", () => {
+  it("clicking Edit prices toggles to Done and shows price inputs", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1111111111", price: 50 });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.queryByTestId(`price-input-${asset.isin}`)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    expect(screen.getByRole("button", { name: /done/i })).toBeInTheDocument();
+    expect(screen.getByTestId(`price-input-${asset.isin}`)).toBeInTheDocument();
+  });
+
+  it("price input blur with new value updates asset price in the store", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1111111111", price: 50 });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    const input = screen.getByTestId(`price-input-${asset.isin}`);
+    fireEvent.change(input, { target: { value: "99" } });
+    fireEvent.blur(input);
+    expect(useAppStore.getState().data.assets[0]?.price).toBe(99);
+  });
+});
+
 describe("PortfolioPage - asset picker modal", () => {
   it("opens the asset picker modal when Add / Edit assets is clicked", () => {
     expect.hasAssertions();

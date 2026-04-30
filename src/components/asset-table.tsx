@@ -1,5 +1,4 @@
 import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
-import { invariant } from "es-toolkit";
 import { CheckIcon, PencilLineIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Asset } from "../schemas/index.ts";
@@ -47,8 +46,8 @@ function buildActiveColumns({ onToggleSelect, onRemoveAsset, onAmountChange, onP
   return [
     ...(onToggleSelect ? [makeSelectColumn()] : []),
     ...baseCols,
-    ...(onAmountChange ? [makeAmountColumn(amountMap), makeValueColumn(amountMap)] : []),
     ...(onPriceChange ? [makePriceEditColumn()] : []),
+    ...(onAmountChange ? [makeAmountColumn(amountMap), makeValueColumn(amountMap)] : []),
     ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : []),
   ];
 }
@@ -201,22 +200,14 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
   );
 }
 
-export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap }: Props = {}) {
+export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap, onPriceChange: propOnPriceChange }: Props = {}) {
   const [isPriceEditing, setIsPriceEditing] = useState(false);
-  const updateAsset = useAppStore(state => state.updateAsset);
-  const storeAssets = useAppStore(state => state.data.assets);
   const priceEditActions = useMemo(() => {
     const icon = isPriceEditing ? <CheckIcon size={16} /> : <PencilLineIcon size={16} />;
     return [{ icon, label: isPriceEditing ? "Done" : "Edit prices", onClick: () => setIsPriceEditing(prev => !prev) }];
   }, [isPriceEditing]);
-  const onPriceChange: ((isin: string, price: number) => void) | undefined =
-    !propAssets && isPriceEditing
-      ? (isin, price) => {
-          const storeAsset = storeAssets.find(entry => entry.isin === isin);
-          invariant(storeAsset, `Asset ${isin} not found in store`);
-          updateAsset(isin, { ...storeAsset, price });
-        }
-      : undefined;
+  const internalOnPriceChange: ((isin: string, price: number) => void) | undefined = !propAssets && isPriceEditing ? (isin, price) => useAppStore.getState().updateAssetPrice(isin, price) : undefined;
+  const onPriceChange = propOnPriceChange ?? internalOnPriceChange;
   const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({
     amountMap,
     assets: propAssets,

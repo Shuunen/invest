@@ -1,5 +1,5 @@
 import { invariant } from "es-toolkit";
-import { SquarePenIcon } from "lucide-react";
+import { CheckIcon, ListTodoIcon, PencilLineIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AssetPickerModal } from "../components/asset-picker-modal.tsx";
 import { formatPrice } from "../components/asset-table-utils.ts";
@@ -9,6 +9,22 @@ import { ModalHeader } from "../components/modal-header.tsx";
 import { PageHeader } from "../components/page-header.tsx";
 import type { Asset, PortfolioEntry } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
+
+function usePriceEditing() {
+  const [isPriceEditing, setIsPriceEditing] = useState(false);
+  const onPriceChange = useMemo(() => (isPriceEditing ? (isin: string, price: number) => useAppStore.getState().updateAssetPrice(isin, price) : undefined), [isPriceEditing]);
+  return { isPriceEditing, onPriceChange, setIsPriceEditing };
+}
+
+function usePortfolioData(portfolioId: string) {
+  const portfolio = useAppStore(state => state.data.portfolios.find(port => port.id === portfolioId));
+  const assets = useAppStore(state => state.data.assets);
+  const portfolioAssets = useMemo(() => (portfolio?.entries ?? []).map(entry => assets.find(ast => ast.isin === entry.isin)).filter((ast): ast is Asset => ast !== undefined), [assets, portfolio]);
+  const amountMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.amount])), [portfolio]);
+  const totalValue = useTotalValue(portfolio?.entries ?? [], assets);
+  const headerMetrics = useMemo(() => [{ color: "success" as const, label: "Total Value", value: formatPrice(totalValue) }], [totalValue]);
+  return { amountMap, assets, headerMetrics, portfolio, portfolioAssets };
+}
 
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
   return selectedIsins.map(isin => {
@@ -76,17 +92,19 @@ type Props = {
 };
 
 export function PortfolioPage({ portfolioId }: Props) {
-  const portfolio = useAppStore(state => state.data.portfolios.find(port => port.id === portfolioId));
-  const assets = useAppStore(state => state.data.assets);
+  const { amountMap, assets, headerMetrics, portfolio, portfolioAssets } = usePortfolioData(portfolioId);
   const setPortfolioAssets = useAppStore(state => state.setPortfolioAssets);
   const updatePortfolioEntryAmount = useAppStore(state => state.updatePortfolioEntryAmount);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [isinToDelete, setIsinToDelete] = useState<string | undefined>(undefined);
-  const portfolioAssets = useMemo(() => (portfolio?.entries ?? []).map(entry => assets.find(ast => ast.isin === entry.isin)).filter((ast): ast is Asset => ast !== undefined), [assets, portfolio]);
-  const amountMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.amount])), [portfolio]);
-  const totalValue = useTotalValue(portfolio?.entries ?? [], assets);
-  const headerMetrics = useMemo(() => [{ color: "success" as const, label: "Total Value", value: formatPrice(totalValue) }], [totalValue]);
-  const actions = useMemo(() => [{ icon: <SquarePenIcon size={16} />, label: "Edit assets", onClick: () => setPickerOpen(true) }], []);
+  const { isPriceEditing, onPriceChange, setIsPriceEditing } = usePriceEditing();
+  const actions = useMemo(
+    () => [
+      { icon: <ListTodoIcon size={16} />, label: "Select assets", onClick: () => setPickerOpen(true) },
+      { icon: isPriceEditing ? <CheckIcon size={16} /> : <PencilLineIcon size={16} />, label: isPriceEditing ? "Set prices" : "Edit prices", onClick: () => setIsPriceEditing(prev => !prev) },
+    ],
+    [isPriceEditing, setIsPriceEditing],
+  );
 
   if (!portfolio) return renderNotFound();
   const { broker, entries, name } = portfolio;
@@ -108,7 +126,11 @@ export function PortfolioPage({ portfolioId }: Props) {
   return (
     <div className="flex flex-col">
       <PageHeader title={name} subtitle={`Broker : ${broker}`} assets={portfolioAssets} metrics={headerMetrics} actions={actions} />
-      {portfolioAssets.length === 0 ? renderNoAssets() : <AssetTable assets={portfolioAssets} onRemoveAsset={setIsinToDelete} onAmountChange={(isin, amount) => updatePortfolioEntryAmount(portfolioId, isin, amount)} amountMap={amountMap} />}
+      {portfolioAssets.length === 0 ? (
+        renderNoAssets()
+      ) : (
+        <AssetTable assets={portfolioAssets} onRemoveAsset={setIsinToDelete} onAmountChange={(isin, amount) => updatePortfolioEntryAmount(portfolioId, isin, amount)} onPriceChange={onPriceChange} amountMap={amountMap} />
+      )}
       {pickerOpen && <AssetPickerModal assets={assets} initialSelected={selectedIsins} onCancel={() => setPickerOpen(false)} onConfirm={handlePickerConfirm} title={`${name} portfolio assets`} />}
       {isinToDelete !== undefined &&
         renderDeleteConfirmModal({
