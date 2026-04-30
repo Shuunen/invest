@@ -1,11 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
 import { invariant } from "es-toolkit";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppStore } from "../store/use-app-store.ts";
 import { AllocationsSection } from "./edit/allocations.tsx";
 import { FinancialSection } from "./edit/financials.tsx";
-import { FlagsSection } from "./edit/flags.tsx";
 import { buildAssetFromForm, toFormState, type FormState } from "./edit/form-state.ts";
 import { GeneralSection } from "./edit/general.tsx";
 
@@ -15,6 +14,10 @@ function useAssetEditForm(isin: string) {
   const updateAsset = useAppStore(state => state.updateAsset);
 
   const [form, setForm] = useState<FormState | undefined>(() => (asset ? toFormState(asset) : undefined));
+
+  useEffect(() => {
+    if (asset && !form) setForm(toFormState(asset));
+  }, [asset, form]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   function patch<Key extends keyof FormState>(key: Key, value: FormState[Key]) {
@@ -55,7 +58,7 @@ export function AssetEditPage({ isin }: Props) {
   const goBack = () => void navigate({ params: { isin }, to: "/assets/$isin" });
 
   return (
-    <div className="mx-auto max-w-2xl p-6">
+    <div className="mx-auto max-w-4xl p-6">
       <div className="mb-6 flex items-center justify-between">
         <button type="button" className="btn gap-1 btn-ghost btn-sm" onClick={goBack}>
           <ArrowLeft size={16} />
@@ -67,19 +70,13 @@ export function AssetEditPage({ isin }: Props) {
       </div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Edit asset</h1>
-        <p className="mt-1 font-mono text-sm text-base-content/60">{isin}</p>
+        <p className="mt-1 font-mono text-sm text-base-content">{isin}</p>
       </div>
-      <GeneralSection form={form} errors={errors} patch={patch} />
-      <FlagsSection form={form} patch={patch} />
-      <FinancialSection form={form} errors={errors} patch={patch} />
-      <AllocationsSection form={form} errors={errors} patch={patch} />
-      <div className="flex justify-end gap-2">
-        <button type="button" className="btn btn-ghost btn-sm" onClick={goBack}>
-          Cancel
-        </button>
-        <button type="button" className="btn btn-sm btn-primary" onClick={handleSave}>
-          Save
-        </button>
+
+      <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+        <GeneralSection form={form} errors={errors} patch={patch} />
+        <FinancialSection form={form} errors={errors} patch={patch} />
+        <AllocationsSection form={form} errors={errors} patch={patch} />
       </div>
     </div>
   );

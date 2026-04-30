@@ -40,6 +40,18 @@ describe("AssetEditPage - not found", () => {
     render(<AssetEditPage isin="XX0000000000" />);
     expect(screen.getByText(/asset not found/i)).toBeInTheDocument();
   });
+
+  it("renders form after store loads asynchronously", async () => {
+    expect.hasAssertions();
+    const asset = makeAsset();
+    useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
+    render(<AssetEditPage isin={asset.isin} />);
+    expect(screen.getByText(/asset not found/i)).toBeInTheDocument();
+    useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
+    await waitFor(() => {
+      expect(screen.getByDisplayValue("Test ETF")).toBeInTheDocument();
+    });
+  });
 });
 
 describe("AssetEditPage - form", () => {
@@ -144,7 +156,7 @@ describe("AssetEditPage - form", () => {
     fireEvent.change(screen.getByLabelText(/accumulating/i), { target: { checked: false } });
     fireEvent.change(screen.getByLabelText(/available on broker/i), { target: { checked: false } });
     fireEvent.change(screen.getByLabelText(/available for plan/i), { target: { checked: true } });
-    fireEvent.change(screen.getByLabelText(/sector allocation/i), { target: { value: '{"Tech": 0.5}' } });
+    fireEvent.change(document.querySelectorAll("textarea")[1], { target: { value: '{"Tech": 0.5}' } });
     fireEvent.change(screen.getByDisplayValue("Test Provider"), { target: { value: "New Provider" } });
     fireEvent.change(screen.getByDisplayValue("TST"), { target: { value: "TST, ABC" } });
     expect(screen.getByDisplayValue("0.3")).toBeInTheDocument();
@@ -195,7 +207,7 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    const geoTextarea = screen.getByLabelText(/geographic allocation/i);
+    const [geoTextarea] = document.querySelectorAll("textarea");
     fireEvent.change(geoTextarea, { target: { value: "bad json" } });
     expect(geoTextarea).toBeInTheDocument();
   });
@@ -209,7 +221,7 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    const geoTextarea = screen.getByLabelText(/geographic allocation/i);
+    const [geoTextarea] = document.querySelectorAll("textarea");
     fireEvent.change(geoTextarea, { target: { value: "not json" } });
     fireEvent.click(screen.getAllByRole("button", { name: /save/i })[0]);
     await waitFor(() => {

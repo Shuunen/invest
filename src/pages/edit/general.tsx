@@ -1,3 +1,4 @@
+import { CheckboxField } from "../../components/form/checkbox-field.tsx";
 import { TextField } from "../../components/form/text-field.tsx";
 import type { FormState, PatchFn } from "./form-state.ts";
 
@@ -16,6 +17,10 @@ export function GeneralSection({ form, errors, patch }: Props) {
         {errors.name && <p className="text-xs text-error">{errors.name}</p>}
         <TextField label="Provider" name="provider" value={form.provider} onChange={val => patch("provider", val)} />
         <TextField label="Tickers (comma-separated)" name="tickers" value={form.tickers} onChange={val => patch("tickers", val)} placeholder="e.g. IWDA, SWRD" />
+        <h2 className="card-title text-base">Flags</h2>
+        <CheckboxField label="Accumulating" name="isAccumulating" value={form.isAccumulating} onChange={val => patch("isAccumulating", val)} />
+        <CheckboxField label="Available on broker" name="availableOnBroker" value={form.availableOnBroker} onChange={val => patch("availableOnBroker", val)} />
+        <CheckboxField label="Available for plan (PEA)" name="availableForPlan" value={form.availableForPlan} onChange={val => patch("availableForPlan", val)} />
       </div>
     </div>
   );
