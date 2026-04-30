@@ -1,6 +1,5 @@
-import { formatNumber, formatPrice } from "../../components/asset-table-utils.ts";
+import { formatNumber, formatPercent, formatPrice } from "../../components/asset-table-utils.ts";
 import type { Asset } from "../../schemas/index.ts";
-import { nbDecimals } from "../../utils/constants.ts";
 import { FieldRow } from "./field-row.tsx";
 
 type Props = {
@@ -12,7 +11,7 @@ export function ViewFinancialSection({ asset }: Props) {
     <div className="card mb-4 border border-base-200 bg-base-100">
       <div className="card-body p-4">
         <h2 className="mb-3 card-title text-base">Financial</h2>
-        <FieldRow label="Fees" value={`${asset.fees.toFixed(nbDecimals)}%`} />
+        <FieldRow label="Fees" value={formatPercent(asset.fees)} />
         <FieldRow label="Price" value={formatPrice(asset.price)} />
         <FieldRow label="Performance 1y" value={formatNumber(asset.performance1y)} />
         <FieldRow label="Performance 3y" value={formatNumber(asset.performance3y)} />

@@ -1,0 +1,28 @@
+import { cn } from "../utils/browser-styles";
+import { formatNumber } from "./asset-table-utils";
+
+export type MetricItem = {
+  color: "success" | "neutral" | "danger" | "warning" | "info";
+  label: string | number;
+  value: string | number | undefined;
+};
+
+export function Metric({ label, value, color }: MetricItem) {
+  const displayValue = typeof value === "number" ? formatNumber(value) : (value ?? "—");
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span
+        className={cn(`font-mono text-xl font-bold tracking-tight`, {
+          "text-danger": color === "danger",
+          "text-info": color === "info",
+          "text-neutral": color === "neutral",
+          "text-success": color === "success",
+          "text-warning": color === "warning",
+        })}
+      >
+        {displayValue}
+      </span>
+      <span className="text-[10px] font-medium tracking-widest text-base-content/40 uppercase">{label}</span>
+    </div>
+  );
+}

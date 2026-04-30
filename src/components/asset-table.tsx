@@ -7,7 +7,7 @@ import { columns, makeRemoveColumn } from "./asset-table-columns.tsx";
 import { useDexieSync, useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
-import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, formatNumber, getAriaSortValue, getScoreDotClass, SKELETON_COLS, SKELETON_ROWS, SCORE_TITLE } from "./asset-table-utils.ts";
+import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, formatNumber, getAriaSortValue, getScoreDotClass, SKELETON_COLS, SKELETON_ROWS } from "./asset-table-utils.ts";
 
 type AssetTableMeta = {
   onAmountChange?: (isin: string, amount: number) => void;
@@ -247,7 +247,7 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
             return (
               <td key={cell.id} className={tdClass}>
                 {isScoreCol && (
-                  <span className="flex items-center gap-1.5" title={SCORE_TITLE}>
+                  <span className="flex items-center gap-1.5">
                     <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${getScoreDotClass(qClass)}`} />
                     <span className="w-6 text-center">{cellNode}</span>
                   </span>

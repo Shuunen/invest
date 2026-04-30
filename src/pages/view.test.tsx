@@ -78,7 +78,7 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    expect(screen.getByText(/0\.20%/)).toBeInTheDocument();
+    expect(screen.getByText(/0\.20 %/)).toBeInTheDocument();
   });
 
   it("renders em dash for undefined price", () => {

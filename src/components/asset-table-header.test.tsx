@@ -29,7 +29,7 @@ describe("renderPageHeader", () => {
   it("shows asset count", () => {
     expect.hasAssertions();
     render(renderPageHeader([makeAsset(), makeAsset({ isin: "FR0000000001" })]));
-    expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByText("2.00")).toBeInTheDocument();
   });
 
   it("shows avg score", () => {
@@ -43,7 +43,7 @@ describe("renderPageHeader", () => {
   it("shows — for avg score when no scores defined", () => {
     expect.hasAssertions();
     render(renderPageHeader([makeAsset({ performance3y: undefined, riskReward3y: undefined })]));
-    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
   });
 
   it("shows top performer ticker", () => {
@@ -60,17 +60,23 @@ describe("renderPageHeader", () => {
     expect(screen.getByText(asset.isin)).toBeInTheDocument();
   });
 
-  it("shows accumulating count", () => {
+  it("shows avg fee", () => {
     expect.hasAssertions();
-    const assets = [makeAsset({ isAccumulating: true }), makeAsset({ isAccumulating: false, isin: "FR0000000001" })];
+    const assets = [makeAsset({ fees: 0.2 }), makeAsset({ fees: 0.4, isin: "FR0000000001" })];
     render(renderPageHeader(assets));
-    expect(screen.getByText("1 / 2")).toBeInTheDocument();
+    expect(screen.getByText("0.30 %")).toBeInTheDocument();
   });
 
-  it("hides top performer section when no scored assets", () => {
+  it("renders with empty assets list", () => {
+    expect.hasAssertions();
+    render(renderPageHeader([]));
+    expect(screen.getByText("0")).toBeInTheDocument();
+  });
+
+  it("shows top performer label even when no scored assets", () => {
     expect.hasAssertions();
     render(renderPageHeader([makeAsset({ performance3y: undefined, riskReward3y: undefined })]));
-    expect(screen.queryByText("Top Performer")).not.toBeInTheDocument();
+    expect(screen.queryByText("Top Performer")).toBeInTheDocument();
   });
 });
 

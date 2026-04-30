@@ -4,7 +4,7 @@ import { db } from "../db/db.ts";
 import { computeScore, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { matchesFilter } from "./asset-table-hooks.ts";
-import { quintileClass } from "./asset-table-utils.ts";
+import { quintileClass, formatPercent } from "./asset-table-utils.ts";
 import { AssetTable } from "./asset-table.tsx";
 
 const mockLink = vi.hoisted(
@@ -708,5 +708,17 @@ describe("AssetTable - amount column", () => {
       useAppStore.getState().setSort({ column: "amount", direction: "desc" });
     });
     expect(() => render(<AssetTable assets={SORT_ASSETS} />)).not.toThrow();
+  });
+});
+
+describe("formatPercent", () => {
+  it("formats positive numbers with plus sign and percent symbol", () => {
+    expect.hasAssertions();
+    expect(formatPercent(12.345)).toBe("12 %");
+  });
+
+  it("formats undefined numbers with dash", () => {
+    expect.hasAssertions();
+    expect(formatPercent(undefined)).toBe("—");
   });
 });

@@ -1,3 +1,4 @@
+import { formatPercent } from "../../components/asset-table-utils.ts";
 import type { Asset } from "../../schemas/index.ts";
 import { maxPercentage } from "../../utils/constants.ts";
 
@@ -6,7 +7,7 @@ function renderAllocation(map: Asset["geoAllocation"] | Asset["sectorAllocation"
   if (entries.length === 0) return "—";
   return entries
     .toSorted(([, valueA], [, valueB]) => valueB - valueA)
-    .map(([key, pct]) => `${key}: ${(pct * maxPercentage).toFixed(1)}%`)
+    .map(([key, pct]) => `${key}: ${formatPercent(pct * maxPercentage)}`)
     .join(" · ");
 }
 
