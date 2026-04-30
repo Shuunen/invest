@@ -1,5 +1,5 @@
-import type { FormState, PatchFn } from "./asset-edit-form-state.ts";
-import { JsonTextarea } from "./form/json-textarea.tsx";
+import { JsonTextarea } from "../../components/form/json-textarea.tsx";
+import type { FormState, PatchFn } from "./form-state.ts";
 
 type Props = {
   errors: Record<string, string>;

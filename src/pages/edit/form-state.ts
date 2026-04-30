@@ -1,5 +1,5 @@
-import { AssetSchema, type Asset } from "../schemas/index.ts";
-import { jsonParse, jsonStringify } from "../utils/json.ts";
+import { AssetSchema, type Asset } from "../../schemas/index.ts";
+import { jsonParse, jsonStringify } from "../../utils/json.ts";
 
 export type FormState = {
   availableForPlan: boolean;

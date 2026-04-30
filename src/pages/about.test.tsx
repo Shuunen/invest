@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { AboutPage } from "./about-page.tsx";
+import { AboutPage } from "./about.tsx";
 
 describe("AboutPage", () => {
   it("renders the app title", () => {

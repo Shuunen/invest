@@ -1,5 +1,5 @@
 import { version as APP_VERSION } from "../../package.json";
-import { InvestIcon } from "./invest-icon.tsx";
+import { InvestIcon } from "../components/invest-icon.tsx";
 
 export function AboutPage() {
   return (

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
-import { IndexPage } from "./index-page.tsx";
+import { IndexPage } from "./assets.tsx";
 
 describe("IndexPage", () => {
   it("renders the AssetTable inside an ErrorBoundary", () => {

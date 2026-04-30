@@ -1,7 +1,7 @@
-import type { Asset } from "../schemas/index.ts";
-import { nbDecimals } from "../utils/constants.ts";
-import { formatNumber, formatPrice } from "./asset-table-utils.ts";
-import { FieldRow } from "./asset-view-field-row.tsx";
+import { formatNumber, formatPrice } from "../../components/asset-table-utils.ts";
+import type { Asset } from "../../schemas/index.ts";
+import { nbDecimals } from "../../utils/constants.ts";
+import { FieldRow } from "./field-row.tsx";
 
 type Props = {
   asset: Asset;

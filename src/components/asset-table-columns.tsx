@@ -3,7 +3,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
 import { computeScore, type Asset } from "../schemas/index.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { DECIMAL_PLACES, formatNumber, SCORE_MISSING_VALUE } from "./asset-table-utils.ts";
+import { DECIMAL_PLACES, formatNumber, formatPrice, SCORE_MISSING_VALUE } from "./asset-table-utils.ts";
 
 declare module "@tanstack/react-table" {
   // oxlint-disable-next-line typescript-eslint/consistent-type-definitions
@@ -120,7 +120,7 @@ export const columns: ColumnDef<Asset>[] = [
   },
   {
     accessorKey: "price",
-    cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
+    cell: ({ getValue }) => formatPrice(getValue<number | undefined>()),
     header: "Price",
     id: "price",
     meta: { center: true, title: "Price of one asset in €" },

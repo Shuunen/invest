@@ -3,11 +3,11 @@ import { invariant } from "es-toolkit";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useAppStore } from "../store/use-app-store.ts";
-import { AllocationsSection } from "./asset-edit-allocations-section.tsx";
-import { FinancialSection } from "./asset-edit-financials-section.tsx";
-import { FlagsSection } from "./asset-edit-flags-section.tsx";
-import { buildAssetFromForm, toFormState, type FormState } from "./asset-edit-form-state.ts";
-import { GeneralSection } from "./asset-edit-general-section.tsx";
+import { AllocationsSection } from "./edit/allocations.tsx";
+import { FinancialSection } from "./edit/financials.tsx";
+import { FlagsSection } from "./edit/flags.tsx";
+import { buildAssetFromForm, toFormState, type FormState } from "./edit/form-state.ts";
+import { GeneralSection } from "./edit/general.tsx";
 
 function useAssetEditForm(isin: string) {
   const navigate = useNavigate();

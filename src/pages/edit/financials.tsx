@@ -1,5 +1,5 @@
-import type { FormState, PatchFn } from "./asset-edit-form-state.ts";
-import { NumberField } from "./form/number-field.tsx";
+import { NumberField } from "../../components/form/number-field.tsx";
+import type { FormState, PatchFn } from "./form-state.ts";
 
 type Props = {
   errors: Record<string, string>;

@@ -1,5 +1,5 @@
-import type { Asset } from "../schemas/index.ts";
-import { maxPercentage } from "../utils/constants.ts";
+import type { Asset } from "../../schemas/index.ts";
+import { maxPercentage } from "../../utils/constants.ts";
 
 function renderAllocation(map: Asset["geoAllocation"] | Asset["sectorAllocation"]): string {
   const entries = Object.entries(map);

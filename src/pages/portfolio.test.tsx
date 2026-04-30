@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { invariant } from "es-toolkit";
 import type { Asset, Portfolio } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
-import { PortfolioPage } from "./portfolio-page.tsx";
+import { PortfolioPage } from "./portfolio.tsx";
 
 const mockLink = vi.hoisted(
   () =>

@@ -1,10 +1,10 @@
 import { createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
 import { App } from "./app.tsx";
-import { AboutPage } from "./components/about-page.tsx";
-import { AssetEditPage } from "./components/asset-edit-page.tsx";
-import { AssetViewPage } from "./components/asset-view-page.tsx";
-import { IndexPage } from "./components/index-page.tsx";
-import { PortfolioPage } from "./components/portfolio-page.tsx";
+import { AboutPage } from "./pages/about.tsx";
+import { IndexPage } from "./pages/assets.tsx";
+import { AssetEditPage } from "./pages/edit.tsx";
+import { PortfolioPage } from "./pages/portfolio.tsx";
+import { AssetViewPage } from "./pages/view.tsx";
 
 const rootRoute = createRootRoute({
   component: App,

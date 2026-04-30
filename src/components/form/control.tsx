@@ -1,4 +1,4 @@
-import { cn } from "../utils/browser-styles";
+import { cn } from "../../utils/browser-styles";
 
 type FormControlProps = {
   autoFocus?: boolean;

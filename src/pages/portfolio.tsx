@@ -1,12 +1,12 @@
 import { invariant } from "es-toolkit";
 import { SquarePenIcon } from "lucide-react";
 import { useMemo, useState } from "react";
+import { AssetPickerModal } from "../components/asset-picker-modal.tsx";
+import { AssetTable } from "../components/asset-table.tsx";
+import { ModalActions } from "../components/modal-actions.tsx";
+import { ModalHeader } from "../components/modal-header.tsx";
 import type { Asset, PortfolioEntry } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
-import { AssetPickerModal } from "./asset-picker-modal.tsx";
-import { AssetTable } from "./asset-table.tsx";
-import { ModalActions } from "./modal-actions.tsx";
-import { ModalHeader } from "./modal-header.tsx";
 
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
   return selectedIsins.map(isin => {

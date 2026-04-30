@@ -1,5 +1,5 @@
-import type { Asset } from "../schemas/index.ts";
-import { FieldRow } from "./asset-view-field-row.tsx";
+import type { Asset } from "../../schemas/index.ts";
+import { FieldRow } from "./field-row.tsx";
 
 function booleanBadge(value: boolean, label: string) {
   return (

@@ -1,6 +1,6 @@
 import { invariant } from "es-toolkit";
-import type { Asset } from "../schemas/index.ts";
-import { buildAssetFromForm, parseOptionalNumber, toFormState, type FormState } from "./asset-edit-form-state.ts";
+import type { Asset } from "../../schemas/index.ts";
+import { buildAssetFromForm, parseOptionalNumber, toFormState, type FormState } from "./form-state.ts";
 
 const BASE_ISIN = "LU1234567890";
 

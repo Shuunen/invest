@@ -1,11 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Pencil } from "lucide-react";
+import { formatNumber, SCORE_MISSING_VALUE } from "../components/asset-table-utils.ts";
 import { computeScore } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
-import { formatNumber, SCORE_MISSING_VALUE } from "./asset-table-utils.ts";
-import { ViewAllocationsSection } from "./asset-view-allocations-section.tsx";
-import { ViewFinancialSection } from "./asset-view-financial-section.tsx";
-import { ViewGeneralSection } from "./asset-view-general-section.tsx";
+import { ViewAllocationsSection } from "./view/allocations.tsx";
+import { ViewFinancialSection } from "./view/financial.tsx";
+import { ViewGeneralSection } from "./view/general.tsx";
 
 type Props = { isin: string };
 

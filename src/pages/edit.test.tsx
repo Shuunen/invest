@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
-import { AssetEditPage } from "./asset-edit-page.tsx";
+import { AssetEditPage } from "./edit.tsx";
 
 const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>());
 
