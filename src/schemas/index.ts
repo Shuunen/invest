@@ -140,8 +140,6 @@ export const AppDataSchema = z
 
 export type AppData = z.infer<typeof AppDataSchema>;
 
-// --- Import helper (JSON.parse wrapped before Zod) ---
-
 export function parseAppData(raw: unknown): AppData {
   return AppDataSchema.parse(raw);
 }
@@ -151,7 +149,7 @@ export function safeImportJson(text: string): { data: AppData } | { error: strin
   try {
     parsed = JSON.parse(text);
   } catch (error) {
-    /* v8 ignore next -- JSON.parse always throws SyntaxError; String(error) is unreachable */
+    /* v8 ignore next -- always throws SyntaxError; String(error) is unreachable */
     const detail = error instanceof Error ? error.message : String(error);
     return { error: `Invalid JSON: ${detail}` };
   }

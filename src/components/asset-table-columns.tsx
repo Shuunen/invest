@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
 import { computeScore, type Asset } from "../schemas/index.ts";
@@ -48,10 +49,12 @@ export const columns: ColumnDef<Asset>[] = [
   },
   {
     accessorKey: "name",
-    cell: ({ getValue }) => (
-      <span className="block max-w-xs truncate" title={getValue<string>()}>
-        {getValue<string>()}
-      </span>
+    cell: ({ getValue, row }) => (
+      <Link to="/assets/$isin" params={{ isin: row.original.isin }}>
+        <span className="block max-w-xs link truncate link-primary link-hover" title={getValue<string>()}>
+          {getValue<string>()}
+        </span>
+      </Link>
     ),
     header: "Name",
   },

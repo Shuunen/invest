@@ -2,8 +2,8 @@ import { Download, Upload, X } from "lucide-react";
 import { type ChangeEvent, useRef, useState } from "react";
 import { safeImportJson, type AppData } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
+import { jsonStringify } from "../utils/json.ts";
 
-const JSON_INDENT = 2;
 const ISO_DATE_SLICE_END = 10;
 const REVOKE_DELAY_MS = 100;
 const ISO_TIME_START = 11;
@@ -11,7 +11,7 @@ const ISO_TIME_END = 16;
 
 function buildExportBlob(data: AppData, now: string): Blob {
   const exportData = { ...data, settings: { ...data.settings, lastExportedAt: now } };
-  return new Blob([JSON.stringify(exportData, undefined, JSON_INDENT)], { type: "application/json" });
+  return new Blob([jsonStringify(exportData)], { type: "application/json" });
 }
 
 function triggerDownload(blob: Blob, filename: string) {

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { MAX_PORTFOLIOS, SettingsSchema, type AppData, type Portfolio, type PortfolioEntry, type Settings } from "../schemas/index.ts";
+import { MAX_PORTFOLIOS, SettingsSchema, type AppData, type Asset, type Portfolio, type PortfolioEntry, type Settings } from "../schemas/index.ts";
 
 const defaultSettings: Settings = SettingsSchema.parse({});
 
@@ -27,11 +27,13 @@ type AppStore = {
   setLoadError: (error: Error) => void;
   setPortfolioAssets: (portfolioId: string, entries: PortfolioEntry[]) => void;
   setSort: (sort: Settings["sort"]) => void;
+  updateAsset: (isin: string, asset: Asset) => void;
   updatePortfolio: (id: string, patch: Partial<Pick<Portfolio, "name" | "broker">>) => void;
   updatePortfolioEntryAmount: (portfolioId: string, isin: string, amount: number) => void;
 };
 
 export const useAppStore = create<AppStore>()(
+  // oxlint-disable-next-line max-lines-per-function
   subscribeWithSelector(set => ({
     addPortfolio: portfolio =>
       set(state => {
@@ -69,6 +71,14 @@ export const useAppStore = create<AppStore>()(
     setSort: sort =>
       set(state => ({
         data: { ...state.data, settings: { ...state.data.settings, sort } },
+      })),
+    updateAsset: (isin, asset) =>
+      set(state => ({
+        data: {
+          ...state.data,
+          assets: state.data.assets.map(data => (data.isin === isin ? asset : data)),
+          settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
+        },
       })),
     updatePortfolio: (id, patch) =>
       set(state => ({

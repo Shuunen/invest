@@ -1,9 +1,12 @@
 import { version as APP_VERSION } from "../../package.json";
+import { InvestIcon } from "./invest-icon.tsx";
 
 export function AboutPage() {
   return (
     <div className="mx-auto max-w-lg p-8">
-      <h1 className="mb-2 text-3xl font-bold">📈 Invest</h1>
+      <h1 className="mb-2 flex items-center gap-3 text-3xl font-bold">
+        <InvestIcon size={32} /> Invest
+      </h1>
       <p className="mb-6 text-base-content/60">v{APP_VERSION}</p>
       <p className="mb-4">A personal ETF &amp; stock reference tracker. Browse your instruments, compare scores, and manage which ones belong in your portfolios.</p>
       <div className="divider" />

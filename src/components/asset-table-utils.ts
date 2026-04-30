@@ -60,6 +60,10 @@ export function formatNumber(val: number | undefined): string {
   return val === undefined ? "—" : Math.round(val).toString();
 }
 
+export function formatPrice(val: number | undefined): string {
+  return val === undefined ? "—" : `${formatNumber(val)} €`;
+}
+
 export function computeQuintileClasses(rows: Row<Asset>[]): Map<string, Map<string, string | undefined>> {
   // Pre-compute scores once per row to avoid redundant calls in the score column
   const scoreCache = new Map(rows.map(row => [row.id, computeScore(row.original)]));

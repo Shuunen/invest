@@ -1,9 +1,10 @@
 import { Link, Outlet } from "@tanstack/react-router";
-import { ChartNoAxesCombinedIcon, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useHydration } from "./components/asset-table-db.ts";
 import { CreatePortfolioModal } from "./components/create-portfolio-modal.tsx";
 import { ImportExportButtons } from "./components/import-export-buttons.tsx";
+import { InvestIcon } from "./components/invest-icon.tsx";
 import { useAppStore } from "./store/use-app-store.ts";
 import { cn } from "./utils/browser-styles";
 
@@ -29,7 +30,7 @@ export function App() {
         <div className="navbar-start">
           <Link to="/">
             <div className="flex items-center gap-3 text-2xl font-bold text-primary/70 hover:text-primary">
-              <ChartNoAxesCombinedIcon /> Invest
+              <InvestIcon /> Invest
             </div>
           </Link>
         </div>

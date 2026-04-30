@@ -7,6 +7,17 @@ import { matchesFilter } from "./asset-table-hooks.ts";
 import { quintileClass } from "./asset-table-utils.ts";
 import { AssetTable } from "./asset-table.tsx";
 
+const mockLink = vi.hoisted(
+  () =>
+    ({ children }: { children: React.ReactNode }): React.ReactElement =>
+      children as React.ReactElement,
+);
+
+vi.mock(import("@tanstack/react-router"), async () => {
+  const actual = await import("@tanstack/react-router");
+  return { ...actual, Link: mockLink as unknown as typeof actual.Link };
+});
+
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPlan: false,
