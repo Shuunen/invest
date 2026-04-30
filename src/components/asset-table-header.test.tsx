@@ -32,10 +32,10 @@ describe("renderPageHeader", () => {
   });
 
   it("shows avg score", () => {
-    const asset = makeAsset({ fees: 0, performance3y: 10, riskReward3y: 2 });
+    const asset = makeAsset({ fees: 0, performance3y: 100, riskReward3y: 20 });
     render(renderPageHeader([asset]));
-    // score = 10 + 2*5 - 0*10 = 20
-    expect(screen.getByText("20.00")).toBeInTheDocument();
+    // score = 100 + 20*5 - 0*10 = 200
+    expect(screen.getByText("200")).toBeInTheDocument();
   });
 
   it("shows — for avg score when no scores defined", () => {

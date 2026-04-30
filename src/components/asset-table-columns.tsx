@@ -2,7 +2,15 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
 import { computeScore, type Asset } from "../schemas/index.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { DECIMAL_PLACES, formatNumber, getScoreDotClass, SCORE_MISSING_VALUE, SCORE_TITLE } from "./asset-table-utils.ts";
+import { DECIMAL_PLACES, formatNumber, SCORE_MISSING_VALUE } from "./asset-table-utils.ts";
+
+declare module "@tanstack/react-table" {
+  // oxlint-disable-next-line typescript-eslint/consistent-type-definitions
+  interface ColumnMeta<TData, TValue> {
+    center?: boolean;
+    title?: string;
+  }
+}
 
 function booleanCell(value: boolean) {
   return (
@@ -15,15 +23,7 @@ function booleanCell(value: boolean) {
 export const columns: ColumnDef<Asset>[] = [
   {
     accessorFn: row => computeScore(row) ?? SCORE_MISSING_VALUE,
-    cell: ({ getValue }) => {
-      const score = getValue<number>();
-      return (
-        <span className="flex items-center gap-1.5" title={SCORE_TITLE}>
-          <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${getScoreDotClass(score)}`} />
-          {score.toFixed(DECIMAL_PLACES)}
-        </span>
-      );
-    },
+    cell: ({ getValue }) => formatNumber(getValue<number>()),
     header: "Score",
     id: "score",
   },
@@ -59,69 +59,68 @@ export const columns: ColumnDef<Asset>[] = [
     accessorKey: "isAccumulating",
     cell: ({ getValue }) => booleanCell(getValue<boolean>()),
     header: "Acc",
+    meta: { title: "Accumulating" },
   },
   {
     accessorKey: "availableOnBroker",
     cell: ({ getValue }) => booleanCell(getValue<boolean>()),
     header: "Broker",
+    meta: { title: "Broker availability" },
   },
   {
     accessorKey: "availableForPlan",
     cell: ({ getValue }) => booleanCell(getValue<boolean>()),
     header: "Plan",
+    meta: { title: "Plan compatibility" },
   },
   {
     accessorKey: "fees",
     cell: ({ getValue }) => `${getValue<number>().toFixed(DECIMAL_PLACES)}%`,
     header: "Fees",
+    meta: { center: true, title: "Fees in %" },
   },
   {
-    columns: [
-      {
-        accessorKey: "performance1y",
-        cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
-        header: "1y",
-      },
-      {
-        accessorKey: "performance3y",
-        cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
-        header: "3y",
-      },
-      {
-        accessorKey: "performance5y",
-        cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
-        header: "5y",
-      },
-    ],
-    header: "Performance",
-    id: "performance",
+    accessorKey: "performance1y",
+    cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
+    header: "P1y",
+    meta: { center: true, title: "Performance over 1 year" },
   },
   {
-    columns: [
-      {
-        accessorKey: "riskReward1y",
-        cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
-        header: "1y",
-      },
-      {
-        accessorKey: "riskReward3y",
-        cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
-        header: "3y",
-      },
-      {
-        accessorKey: "riskReward5y",
-        cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
-        header: "5y",
-      },
-    ],
-    header: "Risk/Reward",
-    id: "riskReward",
+    accessorKey: "performance3y",
+    cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
+    header: "P3y",
+    meta: { center: true, title: "Performance over 3 years" },
+  },
+  {
+    accessorKey: "performance5y",
+    cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
+    header: "P5y",
+    meta: { center: true, title: "Performance over 5 years" },
+  },
+  {
+    accessorKey: "riskReward1y",
+    cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
+    header: "RR1y",
+    meta: { center: true, title: "Risk/Reward over 1 year" },
+  },
+  {
+    accessorKey: "riskReward3y",
+    cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
+    header: "RR3y",
+    meta: { center: true, title: "Risk/Reward over 3 years" },
+  },
+  {
+    accessorKey: "riskReward5y",
+    cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
+    header: "RR5y",
+    meta: { center: true, title: "Risk/Reward over 5 years" },
   },
   {
     accessorKey: "price",
     cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
     header: "Price",
     id: "price",
+    meta: { center: true, title: "Price of one asset in €" },
   },
 ];
 

@@ -16,14 +16,14 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
     isAccumulating: true,
     isin: "LU1234567890",
     name: "Test ETF",
-    performance1y: 10,
-    performance3y: 30,
-    performance5y: 50,
+    performance1y: 115,
+    performance3y: 230,
+    performance5y: 350,
     price: undefined,
     provider: "Test",
-    riskReward1y: 1.5,
-    riskReward3y: 1.8,
-    riskReward5y: 1.6,
+    riskReward1y: 412,
+    riskReward3y: 326,
+    riskReward5y: 178,
     sectorAllocation: {},
     tickers: ["TST"],
     ...overrides,
@@ -104,11 +104,11 @@ describe("quintileClass", () => {
     expect(quintileClass(5, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBeUndefined();
   });
 
-  it("returns undefined when fewer than 10 rows", () => {
+  it("returns undefined when fewer than 3 rows", () => {
     expect(
       quintileClass(
-        9,
-        Array.from({ length: 9 }, (_el, idx) => idx + 1),
+        2,
+        Array.from({ length: 2 }, (_el, idx) => idx + 1),
       ),
     ).toBeUndefined();
   });
@@ -187,38 +187,47 @@ describe("AssetTable - score column", () => {
     invariant(expected !== undefined, "Expected score to be defined");
     useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const scoreEls = screen.getAllByText(expected.toFixed(2));
+    const scoreEls = screen.getAllByText(Math.round(expected).toString());
     expect(scoreEls.length).toBeGreaterThan(0);
   });
 
-  it("high score (>=4) renders with green dot indicator", () => {
-    const asset = makeAsset({ fees: 0, performance3y: 200, riskReward3y: 0 });
-    useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
+  it("top-quintile score renders with green dot indicator", () => {
+    const highAsset = makeAsset({ fees: 0, isin: "HIGH0000001", performance3y: 200, riskReward3y: 0 });
+    const assets = [
+      highAsset,
+      makeAsset({ fees: 100, isin: "LOW00000001", performance3y: 0, riskReward3y: 0 }),
+      makeAsset({ fees: 100, isin: "LOW00000002", performance3y: 0, riskReward3y: 0 }),
+      makeAsset({ fees: 100, isin: "LOW00000003", performance3y: 0, riskReward3y: 0 }),
+      makeAsset({ fees: 100, isin: "LOW00000004", performance3y: 0, riskReward3y: 0 }),
+    ];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const score = computeScore(asset);
-    invariant(score !== undefined, "Expected score to be defined");
     const dotEl = document.querySelector(".bg-success.rounded-full");
     expect(dotEl).toBeInTheDocument();
   });
 
-  it("negative score renders with red dot indicator", () => {
-    const asset = makeAsset({ fees: 100, performance3y: 0, riskReward3y: 0 });
-    useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
+  it("bottom-quintile score renders with red dot indicator", () => {
+    const lowAsset = makeAsset({ fees: 100, isin: "LOW0000001X", performance3y: 0, riskReward3y: 0 });
+    const score = computeScore(lowAsset);
+    invariant(score !== undefined && score < 0, "Expected score to be negative for this test");
+    const assets = [lowAsset, makeAsset({ fees: 0, isin: "HIGH0000001", performance3y: 200, riskReward3y: 0 }), makeAsset({ fees: 0, isin: "HIGH0000002", performance3y: 200, riskReward3y: 0 })];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const score = computeScore(asset);
-    invariant(score !== undefined, "Expected score to be defined");
-    invariant(score < 0, "Expected score to be negative for this test");
     const dotEl = document.querySelector(".bg-error.rounded-full");
     expect(dotEl).toBeInTheDocument();
   });
 
-  it("low positive score (0-3) renders with warning dot indicator", () => {
-    const asset = makeAsset({ fees: 0, performance3y: 1, riskReward3y: 0 });
-    useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
+  it("mid-quintile score renders with warning dot indicator", () => {
+    const midAsset = makeAsset({ fees: 0, isin: "MID00000001", performance3y: 50, riskReward3y: 0 });
+    const assets = [
+      midAsset,
+      makeAsset({ fees: 0, isin: "HIGH0000001", performance3y: 200, riskReward3y: 0 }),
+      makeAsset({ fees: 0, isin: "HIGH0000002", performance3y: 200, riskReward3y: 0 }),
+      makeAsset({ fees: 50, isin: "LOW00000001", performance3y: 0, riskReward3y: 0 }),
+      makeAsset({ fees: 50, isin: "LOW00000002", performance3y: 0, riskReward3y: 0 }),
+    ];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const score = computeScore(asset);
-    invariant(score !== undefined, "Expected score to be defined");
-    invariant(score >= 0 && score < 4, "Expected score to be in warning range for this test");
     const dotEl = document.querySelector(".bg-warning.rounded-full");
     expect(dotEl).toBeInTheDocument();
   });
@@ -424,7 +433,7 @@ describe("AssetTable - tickers column", () => {
 
 describe("AssetTable - hidden numeric columns", () => {
   it("renders performance1y and riskReward1y cells when made visible", () => {
-    const asset = makeAsset({ performance1y: 12.5, riskReward1y: 0.9 });
+    const asset = makeAsset({ performance1y: 142.5, riskReward1y: 857.4 });
     useAppStore.setState({
       data: {
         ...makeTestData([asset]),
@@ -438,8 +447,8 @@ describe("AssetTable - hidden numeric columns", () => {
       loadError: undefined,
     });
     render(<AssetTable />);
-    expect(screen.getByText("12.50")).toBeInTheDocument();
-    expect(screen.getByText("0.90")).toBeInTheDocument();
+    expect(screen.getByText("143")).toBeInTheDocument();
+    expect(screen.getByText("857")).toBeInTheDocument();
   });
 });
 
@@ -523,28 +532,28 @@ describe("AssetTable - useDexieSync", () => {
 });
 
 describe("AssetTable - value column", () => {
-  it("shows 0.00 € when price is undefined", () => {
+  it("shows 0 € when price is undefined", () => {
     const amountMap = new Map([[VALUE_ASSET_NO_PRICE.isin, 5]]);
     render(<AssetTable assets={VALUE_ASSETS_NO_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
-    expect(screen.getByText("0.00 €")).toBeInTheDocument();
+    expect(screen.getByText("0 €")).toBeInTheDocument();
   });
 
   it("shows computed value when price and amount are set", () => {
     const amountMap = new Map([[VALUE_ASSET_WITH_PRICE.isin, 3]]);
     render(<AssetTable assets={VALUE_ASSETS_WITH_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
-    expect(screen.getByText("300.00 €")).toBeInTheDocument();
+    expect(screen.getByText("300 €")).toBeInTheDocument();
   });
 
-  it("shows 0.00 € when no amountMap entry exists", () => {
+  it("shows 0 € when no amountMap entry exists", () => {
     render(<AssetTable assets={VALUE_ASSETS_PRICE_50} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
-    expect(screen.getByText("0.00 €")).toBeInTheDocument();
+    expect(screen.getByText("0 €")).toBeInTheDocument();
   });
 
   it("sorts by value column with undefined price uses 0 fallback", () => {
     render(<AssetTable assets={VALUE_SORT_ASSETS_NO_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
     const valueHeader = screen.getByRole("button", { name: /value/i });
     fireEvent.click(valueHeader);
-    expect(screen.getByText("0.00 €")).toBeInTheDocument();
+    expect(screen.getByText("0 €")).toBeInTheDocument();
   });
 
   it("sorts by value column with defined amountMap missing ISIN entry uses 0 fallback", () => {
@@ -552,7 +561,7 @@ describe("AssetTable - value column", () => {
     render(<AssetTable assets={VALUE_SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={emptyAmountMap} />);
     const valueHeader = screen.getByRole("button", { name: /value/i });
     fireEvent.click(valueHeader);
-    expect(screen.getAllByText("0.00 €").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("0 €").length).toBeGreaterThan(0);
   });
 
   it("sorts by value column using accessorFn", () => {
@@ -563,8 +572,8 @@ describe("AssetTable - value column", () => {
     render(<AssetTable assets={VALUE_SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
     const valueHeader = screen.getByRole("button", { name: /value/i });
     fireEvent.click(valueHeader);
-    expect(screen.getByText("200.00 €")).toBeInTheDocument();
-    expect(screen.getByText("150.00 €")).toBeInTheDocument();
+    expect(screen.getByText("200 €")).toBeInTheDocument();
+    expect(screen.getByText("150 €")).toBeInTheDocument();
   });
 });
 

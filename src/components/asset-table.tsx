@@ -7,7 +7,7 @@ import { columns, makeRemoveColumn } from "./asset-table-columns.tsx";
 import { useDexieSync, useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
-import { computeQuintileClasses, DECIMAL_PLACES, DEFAULT_COLUMN_VISIBILITY, getAriaSortValue, SKELETON_COLS, SKELETON_ROWS } from "./asset-table-utils.ts";
+import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, formatNumber, getAriaSortValue, getScoreDotClass, SKELETON_COLS, SKELETON_ROWS, SCORE_TITLE } from "./asset-table-utils.ts";
 
 type AssetTableMeta = {
   onAmountChange?: (isin: string, amount: number) => void;
@@ -30,6 +30,7 @@ function makeSelectColumn(): ColumnDef<Asset> {
         />
       );
     },
+    enableHiding: false,
     enableSorting: false,
     header: "",
     id: "select",
@@ -39,13 +40,14 @@ function makeSelectColumn(): ColumnDef<Asset> {
 function makeValueColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
   return {
     accessorFn: row => (amountMap?.get(row.isin) ?? 0) * (row.price ?? 0),
-    cell: ({ getValue }) => `${getValue<number>().toFixed(DECIMAL_PLACES)} €`,
+    cell: ({ getValue }) => `${formatNumber(getValue<number>())} €`,
     header: "Value",
     id: "value",
+    meta: { center: true, title: "Value : amount * price in €" },
   };
 }
 
-function makeSharesColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
+function makeAmountColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
   return {
     accessorFn: row => amountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
@@ -72,6 +74,7 @@ function makeSharesColumn(amountMap: Map<string, number> | undefined): ColumnDef
     },
     header: "Amount",
     id: "amount",
+    meta: { center: true, title: "Amount of units held" },
   };
 }
 
@@ -89,14 +92,13 @@ function getSortIndicator(sorted: "asc" | "desc" | false): string {
   if (sorted === "desc") return " ▼";
   return "";
 }
-
 function renderThContent(header: Header<Asset, unknown>) {
-  if (header.isPlaceholder) return undefined;
   const sorted = header.column.getIsSorted();
   const label = flexRender(header.column.columnDef.header, header.getContext());
+  const title = header.column.columnDef.meta?.title;
   if (!header.column.getCanSort()) return <span>{label}</span>;
   return (
-    <button type="button" className={cn("btn", sorted ? "btn-soft btn-primary" : "btn-ghost")} onClick={header.column.getToggleSortingHandler()}>
+    <button type="button" title={title} className={cn("btn", sorted ? "btn-soft btn-primary" : "btn-ghost")} onClick={header.column.getToggleSortingHandler()}>
       {label}
       <span className="scale-75">{getSortIndicator(sorted)}</span>
     </button>
@@ -104,7 +106,7 @@ function renderThContent(header: Header<Asset, unknown>) {
 }
 
 function buildActiveColumns({ onToggleSelect, onRemoveAsset, onAmountChange, amountMap }: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "amountMap">): ColumnDef<Asset>[] {
-  return [...(onToggleSelect ? [makeSelectColumn()] : []), ...columns, ...(onAmountChange ? [makeSharesColumn(amountMap), makeValueColumn(amountMap)] : []), ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : [])];
+  return [...(onToggleSelect ? [makeSelectColumn()] : []), ...columns, ...(onAmountChange ? [makeAmountColumn(amountMap), makeValueColumn(amountMap)] : []), ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : [])];
 }
 
 function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap }: Props = {}) {
@@ -211,7 +213,7 @@ function renderTableHeader(table: Table<Asset>) {
             <th
               key={header.id}
               aria-sort={header.column.getCanSort() ? getAriaSortValue(header.column.getIsSorted()) : undefined}
-              className={cn(header.column.getIsSorted() ? "font-semibold" : undefined, "pl-2")}
+              className={cn(header.column.getIsSorted() ? "font-semibold" : undefined, header.column.columnDef.meta?.center ? "text-center" : "pl-2")}
               colSpan={header.colSpan}
               scope="col"
             >
@@ -233,17 +235,24 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
       {table.getRowModel().rows.map(row => (
         <tr
           key={row.id}
+          data-testid={`asset-row-${row.original.isin}`}
           className={cn("rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary hover:backdrop-brightness-105", onRowClick && "cursor-pointer select-none")}
           onClick={onRowClick ? () => onRowClick(row.original.isin) : undefined}
         >
           {row.getVisibleCells().map(cell => {
             const qClass = quintileClasses.get(cell.column.id)?.get(row.id);
             const isScoreCol = cell.column.id === "score";
-            const tdClass = cn({ "font-semibold": isScoreCol }, qClass);
+            const tdClass = cn({ "font-semibold": isScoreCol }, { "text-center": cell.column.columnDef.meta?.center }, qClass);
             const cellNode = flexRender(cell.column.columnDef.cell, cell.getContext());
             return (
               <td key={cell.id} className={tdClass}>
-                {cellNode}
+                {isScoreCol && (
+                  <span className="flex items-center gap-1.5" title={SCORE_TITLE}>
+                    <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${getScoreDotClass(qClass)}`} />
+                    <span className="w-6 text-center">{cellNode}</span>
+                  </span>
+                )}
+                {!isScoreCol && cellNode}
               </td>
             );
           })}
@@ -265,7 +274,7 @@ export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, 
     <>
       {!propAssets && renderPageHeader(data.assets)}
       <div className="relative p-4 text-left">
-        <div className="sticky top-5 z-20 -mb-9 ml-2 flex gap-4">
+        <div className="sticky top-5 z-20 ml-2 flex gap-4">
           {renderSearchFilter(filterText, setFilterText)}
           {renderColumnFilter(table, visibleLeafCount)}
         </div>

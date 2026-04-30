@@ -2,7 +2,7 @@ import type { Row } from "@tanstack/react-table";
 import { computeScore, type Asset } from "../schemas/index.ts";
 
 export const DECIMAL_PLACES = 2;
-export const MIN_ROWS_FOR_FORMATTING = 10;
+export const MIN_ROWS_FOR_FORMATTING = 3;
 export const QUINTILE_HIGH_THRESHOLD = 0.8;
 export const QUINTILE_LOW_THRESHOLD = 0.2;
 export const SCORE_HIGH_THRESHOLD = 4;
@@ -15,9 +15,9 @@ export function getAriaSortValue(sorted: "asc" | "desc" | false): "ascending" | 
   return "none";
 }
 
-export function getScoreDotClass(score: number): string {
-  if (score >= SCORE_HIGH_THRESHOLD) return "bg-success";
-  if (score < 0) return "bg-error";
+export function getScoreDotClass(qClass: string | undefined): string {
+  if (qClass?.includes("success")) return "bg-success";
+  if (qClass?.includes("error")) return "bg-error";
   return "bg-warning";
 }
 export const SKELETON_COLS = 9;
@@ -57,7 +57,7 @@ function quintileClassFromSorted(value: number | undefined, sortedDefined: numbe
 }
 
 export function formatNumber(val: number | undefined): string {
-  return val === undefined ? "—" : val.toFixed(DECIMAL_PLACES);
+  return val === undefined ? "—" : Math.round(val).toString();
 }
 
 export function computeQuintileClasses(rows: Row<Asset>[]): Map<string, Map<string, string | undefined>> {
