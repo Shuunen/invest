@@ -290,7 +290,7 @@ describe("PortfolioPage - price editing", () => {
     render(<PortfolioPage portfolioId={portfolio.id} />);
     expect(screen.queryByTestId(`price-input-${asset.isin}`)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
-    expect(screen.getByRole("button", { name: /done/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /set prices/i })).toBeInTheDocument();
     expect(screen.getByTestId(`price-input-${asset.isin}`)).toBeInTheDocument();
   });
 
@@ -325,7 +325,7 @@ describe("PortfolioPage - asset picker modal", () => {
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
     expect(screen.queryByRole("heading", { hidden: true, name: /portfolio assets/i })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /edit assets/i }));
+    fireEvent.click(screen.getByRole("button", { name: /select assets/i }));
     expect(screen.getByRole("heading", { hidden: true, name: /portfolio assets/i })).toBeInTheDocument();
   });
 
@@ -338,7 +338,7 @@ describe("PortfolioPage - asset picker modal", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    fireEvent.click(screen.getByRole("button", { name: /edit assets/i }));
+    fireEvent.click(screen.getByRole("button", { name: /select assets/i }));
     fireEvent.click(screen.getByRole("button", { hidden: true, name: /cancel/i }));
     expect(screen.queryByRole("heading", { hidden: true, name: /portfolio assets/i })).not.toBeInTheDocument();
   });
@@ -355,7 +355,7 @@ describe("PortfolioPage - asset picker modal", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    fireEvent.click(screen.getByRole("button", { name: /edit assets/i }));
+    fireEvent.click(screen.getByRole("button", { name: /select assets/i }));
     // Click ETF B row to select it (it starts unselected)
     const etfBRow = screen.getByText("ETF B").closest("tr");
     invariant(etfBRow, "Expected ETF B row to exist");

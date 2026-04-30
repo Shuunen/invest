@@ -43,7 +43,7 @@ function renderNoAssets() {
       <p className="mb-4 text-4xl">📂</p>
       <h2 className="mb-2 text-lg font-semibold">No assets yet</h2>
       <p className="mb-4 text-base-content/60">
-        Click <strong className="text-primary">Edit assets</strong> to add instruments to this portfolio.
+        Click <strong className="text-primary">Select assets</strong> to add instruments to this portfolio.
       </p>
     </div>
   );
