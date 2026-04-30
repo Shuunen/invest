@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { computeScore, type Asset } from "../schemas";
 import { formatPercent } from "./asset-table-utils";
 import type { MetricItem } from "./metric";
@@ -32,14 +33,27 @@ function metricItems(assets: Asset[]) {
   ] satisfies MetricItem[];
 }
 
-type Props = {
-  assets: Asset[];
-  title: string;
-  subtitle: string;
-  children?: React.ReactNode;
+type Action = {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
 };
 
-export function PageHeader({ assets, title, subtitle, children }: Props) {
+type Props = {
+  /** Optional actions to display on the right side of the header as buttons. */
+  actions?: Action[];
+  /** The list of assets to compute the default metrics from. */
+  assets: Asset[];
+  /** Additional optional metrics to display in the header, alongside the ones computed from the assets. */
+  metrics?: MetricItem[];
+  /** The subtitle of the page header. */
+  subtitle: string;
+  /** The title of the page header. */
+  title: string;
+};
+
+export function PageHeader({ actions, assets, metrics, title, subtitle }: Props) {
+  const combinedMetrics = useMemo(() => [...metricItems(assets), ...(metrics ?? [])], [assets, metrics]);
   return (
     <div className="bg-base-100 px-4 pt-5">
       <div className="flex items-center justify-between">
@@ -47,9 +61,18 @@ export function PageHeader({ assets, title, subtitle, children }: Props) {
           <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
           <p className="mt-1 text-sm text-base-content/60">{subtitle}</p>
         </div>
-        {children}
+        {actions && actions.length > 0 && (
+          <div className="flex gap-2">
+            {actions.map(action => (
+              <button key={action.label} type="button" className="btn btn-soft btn-primary" onClick={action.onClick}>
+                {action.label}
+                {action.icon}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-      <Metrics items={metricItems(assets)} />
+      <Metrics items={combinedMetrics} />
     </div>
   );
 }

@@ -2,12 +2,14 @@ import { invariant } from "es-toolkit";
 import { SquarePenIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AssetPickerModal } from "../components/asset-picker-modal.tsx";
+import { formatPrice } from "../components/asset-table-utils.ts";
 import { AssetTable } from "../components/asset-table.tsx";
 import { ModalActions } from "../components/modal-actions.tsx";
 import { ModalHeader } from "../components/modal-header.tsx";
 import { PageHeader } from "../components/page-header.tsx";
 import type { Asset, PortfolioEntry } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
+
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
   return selectedIsins.map(isin => {
     const existing = existingEntries.find(entry => entry.isin === isin);
@@ -17,24 +19,6 @@ function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]
 
 function removeEntry(entries: PortfolioEntry[], isin: string): PortfolioEntry[] {
   return entries.filter(en => en.isin !== isin);
-}
-
-type RenderHeaderOptions = {
-  broker: string;
-  assets: Asset[];
-  name: string;
-  onAddAssets: () => void;
-};
-
-function renderPortfolioHeader({ assets, broker, name, onAddAssets }: RenderHeaderOptions) {
-  return (
-    <PageHeader title={name} subtitle={`Broker : ${broker}`} assets={assets}>
-      <button type="button" className="btn btn-soft btn-primary" onClick={onAddAssets}>
-        Edit assets
-        <SquarePenIcon size={16} />
-      </button>
-    </PageHeader>
-  );
 }
 
 function renderNoAssets() {
@@ -68,12 +52,23 @@ function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDele
     <dialog className="modal-open modal" aria-modal="true">
       <div className="modal-box">
         <ModalHeader title="Remove asset" onClose={onCancel} type="danger" />
-        Remove <span className="font-semibold">{assetName}</span> from this portfolio? This cannot be undone.
+        Remove <span className="font-semibold">{assetName}</span> from this portfolio ? This cannot be undone.
         <ModalActions onCancel={onCancel} onConfirm={onConfirm} confirmText="Remove" type="danger" />
       </div>
       <div className="modal-backdrop" onClick={onCancel} />
     </dialog>
   );
+}
+
+function useTotalValue(entries: PortfolioEntry[], assets: Asset[]) {
+  return useMemo(() => {
+    let total = 0;
+    for (const entry of entries) {
+      const asset = assets.find(data => data.isin === entry.isin);
+      total += entry.amount * (asset?.price ?? 0);
+    }
+    return total;
+  }, [entries, assets]);
 }
 
 type Props = {
@@ -89,6 +84,9 @@ export function PortfolioPage({ portfolioId }: Props) {
   const [isinToDelete, setIsinToDelete] = useState<string | undefined>(undefined);
   const portfolioAssets = useMemo(() => (portfolio?.entries ?? []).map(entry => assets.find(ast => ast.isin === entry.isin)).filter((ast): ast is Asset => ast !== undefined), [assets, portfolio]);
   const amountMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.amount])), [portfolio]);
+  const totalValue = useTotalValue(portfolio?.entries ?? [], assets);
+  const headerMetrics = useMemo(() => [{ color: "success" as const, label: "Total Value", value: formatPrice(totalValue) }], [totalValue]);
+  const actions = useMemo(() => [{ icon: <SquarePenIcon size={16} />, label: "Edit assets", onClick: () => setPickerOpen(true) }], []);
 
   if (!portfolio) return renderNotFound();
   const { broker, entries, name } = portfolio;
@@ -109,7 +107,7 @@ export function PortfolioPage({ portfolioId }: Props) {
 
   return (
     <div className="flex flex-col">
-      {renderPortfolioHeader({ assets: portfolioAssets, broker, name, onAddAssets: () => setPickerOpen(true) })}
+      <PageHeader title={name} subtitle={`Broker : ${broker}`} assets={portfolioAssets} metrics={headerMetrics} actions={actions} />
       {portfolioAssets.length === 0 ? renderNoAssets() : <AssetTable assets={portfolioAssets} onRemoveAsset={setIsinToDelete} onAmountChange={(isin, amount) => updatePortfolioEntryAmount(portfolioId, isin, amount)} amountMap={amountMap} />}
       {pickerOpen && <AssetPickerModal assets={assets} initialSelected={selectedIsins} onCancel={() => setPickerOpen(false)} onConfirm={handlePickerConfirm} title={`${name} portfolio assets`} />}
       {isinToDelete !== undefined &&

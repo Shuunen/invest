@@ -144,6 +144,41 @@ describe("PortfolioPage - with assets", () => {
     expect(screen.getByText("LU1234567890")).toBeInTheDocument();
   });
 
+  it("shows total portfolio value in header as amount * price", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ price: 200 });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 3, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByText("Total Value")).toBeInTheDocument();
+    expect(screen.getAllByText("600 €").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("counts 0 for entries whose asset is no longer in the store", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ price: 100 });
+    const portfolio = makePortfolio({
+      entries: [
+        { amount: 2, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 },
+        { amount: 5, inPEA: false, isin: "ZZ9999999999", notes: "", positionValue: 0, targetAmount: 0 },
+      ],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByText("Total Value")).toBeInTheDocument();
+    expect(screen.getAllByText("200 €").length).toBeGreaterThanOrEqual(1);
+  });
+
   it("remove button calls setPortfolioAssets without the removed isin", () => {
     expect.hasAssertions();
     const asset = makeAsset();
