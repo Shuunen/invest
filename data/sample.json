@@ -3,7 +3,7 @@
     {
       "id": "87b67f15-e6f2-480b-8388-5440cc1c7423",
       "name": "Personal",
-      "broker": "Shares",
+      "broker": "Fortuneo",
       "entries": [
         {
           "isin": "IE00B4L5Y983",
@@ -11,111 +11,13 @@
           "targetAmount": 0,
           "notes": "the base of my portfolio",
           "inPEA": false
-        }
-      ]
-    },
-    {
-      "id": "3597cd5f-9db8-48c4-a237-96be7d323bbb",
-      "name": "HumaCode",
-      "broker": "Shares",
-      "entries": [
-        {
-          "isin": "LU1829219390",
-          "positionValue": 5600,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
         },
         {
-          "isin": "LU1481203070",
-          "positionValue": 5600,
+          "isin": "FR0011871128",
+          "positionValue": 2000,
           "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "IE00BM67HT60",
-          "positionValue": 4700,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "IE00BGV5VN51",
-          "positionValue": 2400,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "IE00BM67HL84",
-          "positionValue": 3800,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "LU1681048804",
-          "positionValue": 4500,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "IE00B4L5Y983",
-          "positionValue": 4400,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "IE00B6R52036",
-          "positionValue": 6600,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "LU0908500753",
-          "positionValue": 4000,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "IE00B441G979",
-          "positionValue": 1800,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "IE00B5L8K969",
-          "positionValue": 4500,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "IE000M7V94E1",
-          "positionValue": 5600,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "IE000YU9K6K2",
-          "positionValue": 4500,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
-        },
-        {
-          "isin": "IE000YYE6WK5",
-          "positionValue": 4800,
-          "targetAmount": 0,
-          "notes": "",
-          "inPEA": false
+          "notes": "improve tech exposure",
+          "inPEA": true
         }
       ]
     }
@@ -150,6 +52,16 @@
       "riskReward5y": 1.42,
       "geoAllocation": {},
       "sectorAllocation": {}
+    },
+    {
+      "provider": "Amundi",
+      "isin": "FR0011871128",
+      "tickers": ["PSP5"],
+      "name": "PEA S&P 500 UCITS ETF Acc",
+      "isAccumulating": true,
+      "availableOnBroker": true,
+      "availableForPlan": true,
+      "fees": 0.12
     },
     {
       "provider": "Amundi",

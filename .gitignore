@@ -1,4 +1,6 @@
+.gstack/
 coverage
 dist
 node_modules
 test-results
+tsconfig.tsbuildinfo

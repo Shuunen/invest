@@ -1,101 +1,115 @@
-import { flexRender, type Header, type SortingState, type Table } from "@tanstack/react-table";
-import { useEffect, useMemo, useState } from "react";
-import sampleJson from "../../data/sample.json";
-import { db } from "../db/db.ts";
-import { AppDataSchema, type AppData, type Asset } from "../schemas/index.ts";
-import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
+import type { Asset } from "../schemas/index.ts";
+import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
+import { columns, makeRemoveColumn } from "./asset-table-columns.tsx";
+import { useDexieSync, useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
-import {
-  computeQuintileClasses,
-  DEFAULT_COLUMN_VISIBILITY,
-  getAriaSortValue,
-  SKELETON_COLS,
-  SKELETON_ROWS,
-} from "./asset-table-utils.ts";
+import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, formatNumber, getAriaSortValue, getScoreDotClass, SKELETON_COLS, SKELETON_ROWS, SCORE_TITLE } from "./asset-table-utils.ts";
 
-const DEBOUNCE_MS = 300;
-const seedResult = AppDataSchema.safeParse(sampleJson);
-/* v8 ignore next -- sample.json is always valid; the false branch is unreachable */
-const seedData: AppData = seedResult.success ? seedResult.data : { ...defaultAppData };
+type AssetTableMeta = {
+  onAmountChange?: (isin: string, amount: number) => void;
+  onToggleSelect?: (isin: string) => void;
+  selectedIsins?: Set<string>;
+  amountMap?: Map<string, number>;
+};
+
+function makeSelectColumn(): ColumnDef<Asset> {
+  return {
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      return (
+        <input
+          type="checkbox"
+          className="checkbox checkbox-sm checkbox-primary"
+          checked={meta?.selectedIsins?.has(row.original.isin) ?? false}
+          onChange={() => meta?.onToggleSelect?.(row.original.isin)}
+          onClick={event => event.stopPropagation()}
+        />
+      );
+    },
+    enableHiding: false,
+    enableSorting: false,
+    header: "",
+    id: "select",
+  };
+}
+
+function makeValueColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
+  return {
+    accessorFn: row => (amountMap?.get(row.isin) ?? 0) * (row.price ?? 0),
+    cell: ({ getValue }) => `${formatNumber(getValue<number>())} €`,
+    header: "Value",
+    id: "value",
+    meta: { center: true, title: "Value : amount * price in €" },
+  };
+}
+
+function makeAmountColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
+  return {
+    accessorFn: row => amountMap?.get(row.isin) ?? 0,
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { isin } = row.original;
+      const value = meta?.amountMap?.get(isin) ?? 0;
+      return (
+        <input
+          type="number"
+          className="input input-xs w-12 text-center"
+          min={0}
+          defaultValue={value}
+          key={value}
+          id={`amount-input-${isin}`}
+          data-testid={`amount-input-${isin}`}
+          aria-label={`Amount for ${row.original.name}`}
+          onClick={event => event.stopPropagation()}
+          onBlur={event => {
+            const amount = Math.max(0, Number(event.target.value) || 0);
+            if (amount !== value) meta?.onAmountChange?.(isin, amount);
+          }}
+        />
+      );
+    },
+    header: "Amount",
+    id: "amount",
+    meta: { center: true, title: "Amount of units held" },
+  };
+}
+
+type Props = {
+  assets?: Asset[];
+  onRemoveAsset?: (isin: string) => void;
+  onAmountChange?: (isin: string, amount: number) => void;
+  onToggleSelect?: (isin: string) => void;
+  selectedIsins?: Set<string>;
+  amountMap?: Map<string, number>;
+};
 
 function getSortIndicator(sorted: "asc" | "desc" | false): string {
   if (sorted === "asc") return " ▲";
   if (sorted === "desc") return " ▼";
   return "";
 }
-
 function renderThContent(header: Header<Asset, unknown>) {
-  if (header.isPlaceholder) return undefined;
   const sorted = header.column.getIsSorted();
   const label = flexRender(header.column.columnDef.header, header.getContext());
+  const title = header.column.columnDef.meta?.title;
   if (!header.column.getCanSort()) return <span>{label}</span>;
   return (
-    <button
-      type="button"
-      className={cn("btn", sorted ? "btn-soft btn-primary" : "btn-ghost")}
-      onClick={header.column.getToggleSortingHandler()}
-    >
+    <button type="button" title={title} className={cn("btn", sorted ? "btn-soft btn-primary" : "btn-ghost")} onClick={header.column.getToggleSortingHandler()}>
       {label}
       <span className="scale-75">{getSortIndicator(sorted)}</span>
     </button>
   );
 }
 
-function useHydration(retryKey: number) {
-  useEffect(() => {
-    let cancelled = false;
-    if (useAppStore.getState().isLoading) {
-      const load = async () => {
-        try {
-          const record = await db.appdata.get(1);
-          if (cancelled) return;
-          const raw = record?.data ?? seedData;
-          useAppStore.getState().loadData(AppDataSchema.parse(raw));
-        } catch (error: unknown) {
-          /* v8 ignore next 2 -- cancelled=true on unmount-during-error and non-Error throws are defensive */
-          if (!cancelled) {
-            const err = error instanceof Error ? error : new Error(String(error));
-            useAppStore.getState().setLoadError(err);
-          }
-        }
-      };
-      void load();
-    }
-    return () => {
-      cancelled = true;
-    };
-  }, [retryKey]);
+function buildActiveColumns({ onToggleSelect, onRemoveAsset, onAmountChange, amountMap }: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "amountMap">): ColumnDef<Asset>[] {
+  return [...(onToggleSelect ? [makeSelectColumn()] : []), ...columns, ...(onAmountChange ? [makeAmountColumn(amountMap), makeValueColumn(amountMap)] : []), ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : [])];
 }
 
-function useDexieSync() {
-  useEffect(() => {
-    let writeTimer: ReturnType<typeof setTimeout> | undefined = undefined;
-    const unsubscribe = useAppStore.subscribe(
-      state => state.data,
-      newData => {
-        clearTimeout(writeTimer);
-        writeTimer = setTimeout(() => {
-          const save = async () => {
-            try {
-              await db.appdata.put({ data: newData, id: 1 });
-            } catch {
-              // Silently ignore: write failure is non-critical (in-memory state stays correct)
-            }
-          };
-          void save();
-        }, DEBOUNCE_MS);
-      },
-    );
-    return () => {
-      unsubscribe();
-      clearTimeout(writeTimer);
-    };
-  }, []);
-}
-
-function useAssetTableState() {
+function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap }: Props = {}) {
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
@@ -109,22 +123,28 @@ function useAssetTableState() {
   };
   useHydration(retryKey);
   useDexieSync();
-  const resolvedVisibility = useMemo(
-    () => ({ ...DEFAULT_COLUMN_VISIBILITY, ...data.settings.columnVisibility }),
-    [data.settings.columnVisibility],
-  );
-  const sorting: SortingState = useMemo(
-    () => [{ desc: data.settings.sort.direction === "desc", id: data.settings.sort.column }],
-    [data.settings.sort],
-  );
+  const resolvedVisibility = useMemo(() => ({ ...DEFAULT_COLUMN_VISIBILITY, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
+  const activeColumns = buildActiveColumns({ amountMap, onAmountChange, onRemoveAsset, onToggleSelect });
+  const sorting: SortingState = useMemo(() => {
+    const { column, direction } = data.settings.sort;
+    if (column === "amount" && !onAmountChange) return [];
+    return [{ desc: direction === "desc", id: column }];
+  }, [data.settings.sort, onAmountChange]);
   const filteredAssets = useMemo(() => {
     const lower = filterText.trim().toLowerCase();
-    if (!lower) return data.assets;
-    return data.assets.filter(row => matchesFilter(row, lower));
-  }, [data.assets, filterText]);
-  const table = useTableInstance({ filteredAssets, resolvedVisibility, setColumnVisibility, setSort, sorting });
-  const { rows } = table.getRowModel();
-  const quintileClasses = useMemo(() => computeQuintileClasses(rows), [rows]);
+    if (!lower) return propAssets ?? data.assets;
+    return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
+  }, [data.assets, filterText, propAssets]);
+  const meta: AssetTableMeta | undefined = (onToggleSelect ?? onAmountChange) ? { amountMap, onAmountChange, onToggleSelect, selectedIsins } : undefined;
+  const table = useTableInstance({
+    columns: activeColumns,
+    filteredAssets,
+    meta,
+    resolvedVisibility,
+    setColumnVisibility,
+    setSort,
+    sorting,
+  });
   const visibleLeafCount = table.getVisibleLeafColumns().length;
   return {
     data,
@@ -132,7 +152,7 @@ function useAssetTableState() {
     handleRetry,
     isLoading,
     loadError,
-    quintileClasses,
+    quintileClasses: computeQuintileClasses(table.getRowModel().rows),
     setFilterText,
     table,
     visibleLeafCount,
@@ -186,14 +206,14 @@ function renderEmpty() {
 
 function renderTableHeader(table: Table<Asset>) {
   return (
-    <thead className="sticky top-6 z-10 bg-base-100">
+    <thead className="sticky top-0 z-10 bg-base-100">
       {table.getHeaderGroups().map(headerGroup => (
         <tr key={headerGroup.id}>
           {headerGroup.headers.map(header => (
             <th
               key={header.id}
               aria-sort={header.column.getCanSort() ? getAriaSortValue(header.column.getIsSorted()) : undefined}
-              className={cn(header.column.getIsSorted() ? "font-semibold" : undefined, "pl-2")}
+              className={cn(header.column.getIsSorted() ? "font-semibold" : undefined, header.column.columnDef.meta?.center ? "text-center" : "pl-2")}
               colSpan={header.colSpan}
               scope="col"
             >
@@ -209,22 +229,30 @@ function renderTableHeader(table: Table<Asset>) {
   );
 }
 
-function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<string, string | undefined>>) {
+function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<string, string | undefined>>, onRowClick?: (isin: string) => void) {
   return (
     <tbody>
       {table.getRowModel().rows.map(row => (
         <tr
           key={row.id}
-          className="rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary hover:backdrop-brightness-105"
+          data-testid={`asset-row-${row.original.isin}`}
+          className={cn("rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary hover:backdrop-brightness-105", onRowClick && "cursor-pointer select-none")}
+          onClick={onRowClick ? () => onRowClick(row.original.isin) : undefined}
         >
           {row.getVisibleCells().map(cell => {
             const qClass = quintileClasses.get(cell.column.id)?.get(row.id);
             const isScoreCol = cell.column.id === "score";
-            const tdClass = cn({ "font-semibold": isScoreCol }, qClass);
+            const tdClass = cn({ "font-semibold": isScoreCol }, { "text-center": cell.column.columnDef.meta?.center }, qClass);
             const cellNode = flexRender(cell.column.columnDef.cell, cell.getContext());
             return (
               <td key={cell.id} className={tdClass}>
-                {cellNode}
+                {isScoreCol && (
+                  <span className="flex items-center gap-1.5" title={SCORE_TITLE}>
+                    <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${getScoreDotClass(qClass)}`} />
+                    <span className="w-6 text-center">{cellNode}</span>
+                  </span>
+                )}
+                {!isScoreCol && cellNode}
               </td>
             );
           })}
@@ -234,33 +262,37 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
   );
 }
 
-export function AssetTable() {
-  const {
-    data,
-    filterText,
-    handleRetry,
-    isLoading,
-    loadError,
-    quintileClasses,
-    setFilterText,
-    table,
-    visibleLeafCount,
-  } = useAssetTableState();
-  if (isLoading) return renderSkeleton();
-  if (loadError) return renderError(loadError, handleRetry);
-  if (data.assets.length === 0) return renderEmpty();
+export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap }: Props = {}) {
+  const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({ amountMap, assets: propAssets, onAmountChange, onRemoveAsset, onToggleSelect, selectedIsins });
+  if (!propAssets) {
+    if (isLoading) return renderSkeleton();
+    if (loadError) return renderError(loadError, handleRetry);
+    if (data.assets.length === 0) return renderEmpty();
+  }
+  const filterReturnedNoResults = filterText.trim() !== "" && table.getRowModel().rows.length === 0;
   return (
     <>
-      {renderPageHeader(data.assets)}
+      {!propAssets && renderPageHeader(data.assets)}
       <div className="relative p-4 text-left">
-        <div className="absolute top-6 left-4 z-20 flex gap-4">
+        <div className="sticky top-5 z-20 ml-2 flex gap-4">
           {renderSearchFilter(filterText, setFilterText)}
           {renderColumnFilter(table, visibleLeafCount)}
         </div>
         <table className="table-hover table w-full">
           <caption className="sr-only">ISINs reference data table</caption>
           {renderTableHeader(table)}
-          {renderTableBody(table, quintileClasses)}
+          {filterReturnedNoResults ? (
+            <tbody>
+              <tr>
+                <td colSpan={table.getVisibleLeafColumns().length} className="p-8 text-center">
+                  <p className="mb-4 text-2xl">No results found for &quot;{filterText}&quot;</p>
+                  <p className="text-base-content/60">Try adjusting your search criteria</p>
+                </td>
+              </tr>
+            </tbody>
+          ) : (
+            renderTableBody(table, quintileClasses, onToggleSelect)
+          )}
         </table>
       </div>
     </>

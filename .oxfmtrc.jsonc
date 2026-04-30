@@ -20,7 +20,7 @@
     "**/.storybook/tw.css",
   ],
   "objectWrap": "preserve",
-  "printWidth": 120,
+  "printWidth": 240,
   "quoteProps": "as-needed",
   "semi": true,
   "singleAttributePerLine": false,

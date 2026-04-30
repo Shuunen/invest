@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { invariant } from "es-toolkit";
 import { db } from "../db/db.ts";
 import { computeScore, type AppData, type Asset } from "../schemas/index.ts";
@@ -16,13 +16,14 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
     isAccumulating: true,
     isin: "LU1234567890",
     name: "Test ETF",
-    performance1y: 10,
-    performance3y: 30,
-    performance5y: 50,
+    performance1y: 115,
+    performance3y: 230,
+    performance5y: 350,
+    price: undefined,
     provider: "Test",
-    riskReward1y: 1.5,
-    riskReward3y: 1.8,
-    riskReward5y: 1.6,
+    riskReward1y: 412,
+    riskReward3y: 326,
+    riskReward5y: 178,
     sectorAllocation: {},
     tickers: ["TST"],
     ...overrides,
@@ -36,6 +37,26 @@ function makeTestData(assets: Asset[]): AppData {
     settings: { ...defaultAppData.settings, columnVisibility: {}, sort: { column: "score", direction: "desc" } },
   };
 }
+
+const SELECT_ASSET = makeAsset({ isin: "LU1234567890" });
+const SELECT_ASSETS = [SELECT_ASSET];
+
+const AMOUNT_ASSET = makeAsset();
+const AMOUNT_ASSETS = [AMOUNT_ASSET];
+const VALUE_ASSET_NO_PRICE = makeAsset({ isin: "LU1234567890", price: undefined });
+const VALUE_ASSETS_NO_PRICE = [VALUE_ASSET_NO_PRICE];
+const VALUE_ASSET_WITH_PRICE = makeAsset({ isin: "LU1234567890", price: 100 });
+const VALUE_ASSETS_WITH_PRICE = [VALUE_ASSET_WITH_PRICE];
+const VALUE_ASSET_PRICE_50 = makeAsset({ isin: "LU1234567890", price: 50 });
+const VALUE_ASSETS_PRICE_50 = [VALUE_ASSET_PRICE_50];
+const SORT_ASSET_1 = makeAsset({ isin: "LU0000000001", name: "ETF One" });
+const SORT_ASSET_2 = makeAsset({ isin: "LU0000000002", name: "ETF Two" });
+const SORT_ASSETS = [SORT_ASSET_1, SORT_ASSET_2];
+const VALUE_SORT_ASSET_1 = makeAsset({ isin: SORT_ASSET_1.isin, name: "ETF One", price: 20 });
+const VALUE_SORT_ASSET_2 = makeAsset({ isin: SORT_ASSET_2.isin, name: "ETF Two", price: 30 });
+const VALUE_SORT_ASSETS = [VALUE_SORT_ASSET_1, VALUE_SORT_ASSET_2];
+const VALUE_SORT_ASSET_NO_PRICE = makeAsset({ isin: SORT_ASSET_1.isin, name: "ETF One", price: undefined });
+const VALUE_SORT_ASSETS_NO_PRICE = [VALUE_SORT_ASSET_NO_PRICE];
 
 describe("matchesFilter", () => {
   const asset = makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi", tickers: ["IWDA"] });
@@ -83,11 +104,11 @@ describe("quintileClass", () => {
     expect(quintileClass(5, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBeUndefined();
   });
 
-  it("returns undefined when fewer than 10 rows", () => {
+  it("returns undefined when fewer than 3 rows", () => {
     expect(
       quintileClass(
-        9,
-        Array.from({ length: 9 }, (_el, idx) => idx + 1),
+        2,
+        Array.from({ length: 2 }, (_el, idx) => idx + 1),
       ),
     ).toBeUndefined();
   });
@@ -129,10 +150,7 @@ describe("AssetTable - data display", () => {
   });
 
   it("renders all ISIN rows", () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "ETF One" }),
-      makeAsset({ isin: "FR0000000001", name: "ETF Two" }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "ETF One" }), makeAsset({ isin: "FR0000000001", name: "ETF Two" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     expect(screen.getByText("ETF One")).toBeInTheDocument();
@@ -152,6 +170,15 @@ describe("AssetTable - data display", () => {
   });
 });
 
+describe("AssetTable - select column", () => {
+  it("renders unchecked select checkbox when onToggleSelect is set but no selectedIsins", () => {
+    render(<AssetTable assets={SELECT_ASSETS} onToggleSelect={vi.fn<(isin: string) => void>()} />);
+    const row = screen.getByText(SELECT_ASSET.name).closest("tr");
+    invariant(row, "Expected table row to exist");
+    expect(within(row).getByRole("checkbox", { hidden: true })).not.toBeChecked();
+  });
+});
+
 describe("AssetTable - score column", () => {
   it("score column matches computeScore output", () => {
     const asset = makeAsset({ fees: 0.2, performance3y: 30, riskReward3y: 1.8 });
@@ -160,38 +187,47 @@ describe("AssetTable - score column", () => {
     invariant(expected !== undefined, "Expected score to be defined");
     useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const scoreEls = screen.getAllByText(expected.toFixed(2));
+    const scoreEls = screen.getAllByText(Math.round(expected).toString());
     expect(scoreEls.length).toBeGreaterThan(0);
   });
 
-  it("high score (>=4) renders with green dot indicator", () => {
-    const asset = makeAsset({ fees: 0, performance3y: 200, riskReward3y: 0 });
-    useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
+  it("top-quintile score renders with green dot indicator", () => {
+    const highAsset = makeAsset({ fees: 0, isin: "HIGH0000001", performance3y: 200, riskReward3y: 0 });
+    const assets = [
+      highAsset,
+      makeAsset({ fees: 100, isin: "LOW00000001", performance3y: 0, riskReward3y: 0 }),
+      makeAsset({ fees: 100, isin: "LOW00000002", performance3y: 0, riskReward3y: 0 }),
+      makeAsset({ fees: 100, isin: "LOW00000003", performance3y: 0, riskReward3y: 0 }),
+      makeAsset({ fees: 100, isin: "LOW00000004", performance3y: 0, riskReward3y: 0 }),
+    ];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const score = computeScore(asset);
-    invariant(score !== undefined, "Expected score to be defined");
     const dotEl = document.querySelector(".bg-success.rounded-full");
     expect(dotEl).toBeInTheDocument();
   });
 
-  it("negative score renders with red dot indicator", () => {
-    const asset = makeAsset({ fees: 100, performance3y: 0, riskReward3y: 0 });
-    useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
+  it("bottom-quintile score renders with red dot indicator", () => {
+    const lowAsset = makeAsset({ fees: 100, isin: "LOW0000001X", performance3y: 0, riskReward3y: 0 });
+    const score = computeScore(lowAsset);
+    invariant(score !== undefined && score < 0, "Expected score to be negative for this test");
+    const assets = [lowAsset, makeAsset({ fees: 0, isin: "HIGH0000001", performance3y: 200, riskReward3y: 0 }), makeAsset({ fees: 0, isin: "HIGH0000002", performance3y: 200, riskReward3y: 0 })];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const score = computeScore(asset);
-    invariant(score !== undefined, "Expected score to be defined");
-    invariant(score < 0, "Expected score to be negative for this test");
     const dotEl = document.querySelector(".bg-error.rounded-full");
     expect(dotEl).toBeInTheDocument();
   });
 
-  it("low positive score (0-3) renders with warning dot indicator", () => {
-    const asset = makeAsset({ fees: 0, performance3y: 1, riskReward3y: 0 });
-    useAppStore.setState({ data: makeTestData([asset]), isLoading: false, loadError: undefined });
+  it("mid-quintile score renders with warning dot indicator", () => {
+    const midAsset = makeAsset({ fees: 0, isin: "MID00000001", performance3y: 50, riskReward3y: 0 });
+    const assets = [
+      midAsset,
+      makeAsset({ fees: 0, isin: "HIGH0000001", performance3y: 200, riskReward3y: 0 }),
+      makeAsset({ fees: 0, isin: "HIGH0000002", performance3y: 200, riskReward3y: 0 }),
+      makeAsset({ fees: 50, isin: "LOW00000001", performance3y: 0, riskReward3y: 0 }),
+      makeAsset({ fees: 50, isin: "LOW00000002", performance3y: 0, riskReward3y: 0 }),
+    ];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const score = computeScore(asset);
-    invariant(score !== undefined, "Expected score to be defined");
-    invariant(score >= 0 && score < 4, "Expected score to be in warning range for this test");
     const dotEl = document.querySelector(".bg-warning.rounded-full");
     expect(dotEl).toBeInTheDocument();
   });
@@ -199,10 +235,7 @@ describe("AssetTable - score column", () => {
 
 describe("AssetTable - sorting", () => {
   it("sort by name on header click updates store", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Zebra ETF" }),
-      makeAsset({ isin: "FR0000000001", name: "Apple ETF" }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Zebra ETF" }), makeAsset({ isin: "FR0000000001", name: "Apple ETF" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     fireEvent.click(screen.getByRole("button", { name: /name/i }));
@@ -236,9 +269,7 @@ describe("AssetTable - column hiding", () => {
     render(<AssetTable />);
     expect(screen.getAllByText("Provider").length).toBeGreaterThan(0);
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    const providerCheckbox = Array.from(checkboxes).find(checkbox =>
-      checkbox.closest("label")?.textContent?.includes("Provider"),
-    ) as HTMLInputElement | undefined;
+    const providerCheckbox = Array.from(checkboxes).find(checkbox => checkbox.closest("label")?.textContent?.includes("Provider")) as HTMLInputElement | undefined;
     invariant(providerCheckbox, "Expected to find Provider checkbox");
     fireEvent.click(providerCheckbox);
     await waitFor(() => {
@@ -262,6 +293,7 @@ describe("AssetTable - column visibility guard", () => {
       performance1y: false,
       performance3y: false,
       performance5y: false,
+      price: false,
       provider: false,
       riskReward1y: false,
       riskReward3y: false,
@@ -282,9 +314,7 @@ describe("AssetTable - column visibility guard", () => {
     });
     render(<AssetTable />);
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-    const scoreCheckbox = Array.from(checkboxes).find(checkbox =>
-      checkbox.closest("label")?.textContent?.includes("Score"),
-    ) as HTMLInputElement | undefined;
+    const scoreCheckbox = Array.from(checkboxes).find(checkbox => checkbox.closest("label")?.textContent?.includes("Score")) as HTMLInputElement | undefined;
     invariant(scoreCheckbox, "Expected to find Score checkbox");
     expect(scoreCheckbox.disabled).toBe(true);
   });
@@ -292,10 +322,7 @@ describe("AssetTable - column visibility guard", () => {
 
 describe("AssetTable - filter", () => {
   it("filter input change narrows displayed rows", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "ProviderA", tickers: ["ALP"] }),
-      makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "ProviderB", tickers: ["BET"] }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "ProviderA", tickers: ["ALP"] }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "ProviderB", tickers: ["BET"] })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     const input = screen.getByPlaceholderText(/search/i);
@@ -307,10 +334,7 @@ describe("AssetTable - filter", () => {
   });
 
   it("filter matches by ISIN", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Alpha ETF" }),
-      makeAsset({ isin: "FR0000000001", name: "Beta ETF" }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF" }), makeAsset({ isin: "FR0000000001", name: "Beta ETF" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     const input = screen.getByPlaceholderText(/search/i);
@@ -321,10 +345,7 @@ describe("AssetTable - filter", () => {
   });
 
   it("filter matches by provider", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi" }),
-      makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "Lyxor" }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi" }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "Lyxor" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     const input = screen.getByPlaceholderText(/search/i);
@@ -335,10 +356,7 @@ describe("AssetTable - filter", () => {
   });
 
   it("filter matches by ticker", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Alpha ETF", tickers: ["IWDA"] }),
-      makeAsset({ isin: "FR0000000001", name: "Beta ETF", tickers: ["VWRL"] }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", tickers: ["IWDA"] }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", tickers: ["VWRL"] })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     const input = screen.getByPlaceholderText(/search/i);
@@ -392,10 +410,7 @@ describe("AssetTable - tickers column", () => {
   });
 
   it("sort by tickers column uses custom sortingFn", async () => {
-    const assets = [
-      makeAsset({ isin: "LU1234567890", name: "Zebra ETF", tickers: ["ZZZ"] }),
-      makeAsset({ isin: "FR0000000001", name: "Apple ETF", tickers: ["AAA"] }),
-    ];
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Zebra ETF", tickers: ["ZZZ"] }), makeAsset({ isin: "FR0000000001", name: "Apple ETF", tickers: ["AAA"] })];
     useAppStore.setState({
       data: {
         ...makeTestData(assets),
@@ -418,7 +433,7 @@ describe("AssetTable - tickers column", () => {
 
 describe("AssetTable - hidden numeric columns", () => {
   it("renders performance1y and riskReward1y cells when made visible", () => {
-    const asset = makeAsset({ performance1y: 12.5, riskReward1y: 0.9 });
+    const asset = makeAsset({ performance1y: 142.5, riskReward1y: 857.4 });
     useAppStore.setState({
       data: {
         ...makeTestData([asset]),
@@ -432,8 +447,8 @@ describe("AssetTable - hidden numeric columns", () => {
       loadError: undefined,
     });
     render(<AssetTable />);
-    expect(screen.getByText("12.50")).toBeInTheDocument();
-    expect(screen.getByText("0.90")).toBeInTheDocument();
+    expect(screen.getByText("143")).toBeInTheDocument();
+    expect(screen.getByText("857")).toBeInTheDocument();
   });
 });
 
@@ -513,5 +528,121 @@ describe("AssetTable - useDexieSync", () => {
       },
       { timeout: 2000 },
     );
+  });
+});
+
+describe("AssetTable - value column", () => {
+  it("shows 0 € when price is undefined", () => {
+    const amountMap = new Map([[VALUE_ASSET_NO_PRICE.isin, 5]]);
+    render(<AssetTable assets={VALUE_ASSETS_NO_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    expect(screen.getByText("0 €")).toBeInTheDocument();
+  });
+
+  it("shows computed value when price and amount are set", () => {
+    const amountMap = new Map([[VALUE_ASSET_WITH_PRICE.isin, 3]]);
+    render(<AssetTable assets={VALUE_ASSETS_WITH_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    expect(screen.getByText("300 €")).toBeInTheDocument();
+  });
+
+  it("shows 0 € when no amountMap entry exists", () => {
+    render(<AssetTable assets={VALUE_ASSETS_PRICE_50} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
+    expect(screen.getByText("0 €")).toBeInTheDocument();
+  });
+
+  it("sorts by value column with undefined price uses 0 fallback", () => {
+    render(<AssetTable assets={VALUE_SORT_ASSETS_NO_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
+    const valueHeader = screen.getByRole("button", { name: /value/i });
+    fireEvent.click(valueHeader);
+    expect(screen.getByText("0 €")).toBeInTheDocument();
+  });
+
+  it("sorts by value column with defined amountMap missing ISIN entry uses 0 fallback", () => {
+    const emptyAmountMap = new Map<string, number>();
+    render(<AssetTable assets={VALUE_SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={emptyAmountMap} />);
+    const valueHeader = screen.getByRole("button", { name: /value/i });
+    fireEvent.click(valueHeader);
+    expect(screen.getAllByText("0 €").length).toBeGreaterThan(0);
+  });
+
+  it("sorts by value column using accessorFn", () => {
+    const amountMap = new Map([
+      [SORT_ASSET_1.isin, 10],
+      [SORT_ASSET_2.isin, 5],
+    ]);
+    render(<AssetTable assets={VALUE_SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    const valueHeader = screen.getByRole("button", { name: /value/i });
+    fireEvent.click(valueHeader);
+    expect(screen.getByText("200 €")).toBeInTheDocument();
+    expect(screen.getByText("150 €")).toBeInTheDocument();
+  });
+});
+
+describe("AssetTable - amount column", () => {
+  it("renders shares column with default 0 when no amountMap is provided", () => {
+    useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
+    const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
+    render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
+    const input = screen.getByRole("spinbutton", { name: /amount for test etf/i });
+    expect(input).toHaveValue(0);
+  });
+
+  it("calls onAmountChange when input value changes and blurs", () => {
+    useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
+    const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
+    render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
+    const input = screen.getByRole("spinbutton", { name: /amount for test etf/i });
+    fireEvent.change(input, { target: { value: "7" } });
+    fireEvent.blur(input);
+    expect(onAmountChange).toHaveBeenCalledWith(AMOUNT_ASSET.isin, 7);
+  });
+
+  it("does not call onAmountChange when value is unchanged on blur", () => {
+    useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
+    const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
+    const amountMap = new Map([[AMOUNT_ASSET.isin, 3]]);
+    render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} amountMap={amountMap} />);
+    const input = screen.getByRole("spinbutton", { name: /amount for test etf/i });
+    fireEvent.blur(input);
+    expect(onAmountChange).not.toHaveBeenCalled();
+  });
+
+  it("clamps NaN input (empty string) to 0 and does not update when initial value is also 0", () => {
+    useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
+    const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
+    render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
+    const input = screen.getByRole("spinbutton", { name: /amount for test etf/i });
+    fireEvent.change(input, { target: { value: "" } });
+    fireEvent.blur(input);
+    expect(onAmountChange).not.toHaveBeenCalled();
+  });
+
+  it("sorts by amount column using accessorFn with amountMap", () => {
+    const amountMap = new Map([
+      [SORT_ASSET_1.isin, 5],
+      [SORT_ASSET_2.isin, 2],
+    ]);
+    render(<AssetTable assets={SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    const amountHeader = screen.getByRole("button", { name: /amount/i });
+    fireEvent.click(amountHeader);
+    const inputs = screen.getAllByRole("spinbutton");
+    expect(inputs[0]).toHaveValue(2);
+    expect(inputs[1]).toHaveValue(5);
+  });
+
+  it("sorts by amount column using accessorFn without amountMap", () => {
+    render(<AssetTable assets={SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
+    const amountHeader = screen.getByRole("button", { name: /amount/i });
+    fireEvent.click(amountHeader);
+    const inputs = screen.getAllByRole("spinbutton");
+    expect(inputs[0]).toHaveValue(0);
+    expect(inputs[1]).toHaveValue(0);
+  });
+
+  it("ignores stored amount sort when rendered without onAmountChange", () => {
+    act(() => {
+      useAppStore.setState({ data: makeTestData(SORT_ASSETS) });
+      useAppStore.getState().setSort({ column: "amount", direction: "desc" });
+    });
+    expect(() => render(<AssetTable assets={SORT_ASSETS} />)).not.toThrow();
   });
 });

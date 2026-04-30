@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0] - 2026-04-23
+
+### Added
+
+- Portfolio management: create portfolios with a name and broker, navigate between them via the sidebar
+- `AssetPickerModal` — select and deselect instruments for a portfolio from the full asset table
+- `PortfolioPage` — per-portfolio view with asset table, asset count, and a remove-with-confirmation flow
+- `CreatePortfolioModal` — validated form (name required, broker required) with `autoFocus` on first field and per-field error clearing
+- `ModalHeader`, `ModalActions`, `FormActions` — shared modal shell components, eliminating dialog boilerplate
+- `addPortfolio`, `deletePortfolio`, `updatePortfolio`, `setPortfolioAssets` store actions
+- `MAX_PORTFOLIOS` (50) cap enforced at store level — `addPortfolio` ignores calls beyond the limit
+- Export enabled when portfolios exist even with no assets loaded
+- 9 Playwright E2E tests covering portfolio creation, navigation, asset editing, and export
+- `e2e/tsconfig.json` — dedicated TypeScript config for Playwright tests (Node + DOM types)
+
+### Changed
+
+- `broker` field on `PortfolioSchema` is now required (`min(1)`) — portfolios must always have a broker name
+- `FormControl` `autoFocus` is now an optional prop (default `false`) instead of hardcoded `true`
+- Export button disabled condition updated: disabled only when both assets and portfolios are empty
+- Download filename now uses `ISO_TIME_START`/`ISO_TIME_END` constants for the time slice; removed `toLocaleString()` no-op
+
+### Fixed
+
+- `URL.revokeObjectURL` now deferred 100 ms after `anchor.click()` to prevent race with browser download pipeline
+- `addPortfolio` previously bypassed the `MAX_PORTFOLIOS` schema limit; now capped in the store
+
 ## [0.1.0] - 2026-04-21
 
 ### Added

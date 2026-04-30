@@ -2,7 +2,7 @@ import type { Row } from "@tanstack/react-table";
 import { computeScore, type Asset } from "../schemas/index.ts";
 
 export const DECIMAL_PLACES = 2;
-export const MIN_ROWS_FOR_FORMATTING = 10;
+export const MIN_ROWS_FOR_FORMATTING = 3;
 export const QUINTILE_HIGH_THRESHOLD = 0.8;
 export const QUINTILE_LOW_THRESHOLD = 0.2;
 export const SCORE_HIGH_THRESHOLD = 4;
@@ -15,9 +15,9 @@ export function getAriaSortValue(sorted: "asc" | "desc" | false): "ascending" | 
   return "none";
 }
 
-export function getScoreDotClass(score: number): string {
-  if (score >= SCORE_HIGH_THRESHOLD) return "bg-success";
-  if (score < 0) return "bg-error";
+export function getScoreDotClass(qClass: string | undefined): string {
+  if (qClass?.includes("success")) return "bg-success";
+  if (qClass?.includes("error")) return "bg-error";
   return "bg-warning";
 }
 export const SKELETON_COLS = 9;
@@ -32,16 +32,7 @@ export const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
   tickers: false,
 };
 
-const NUMERIC_COL_IDS = [
-  "fees",
-  "performance1y",
-  "performance3y",
-  "performance5y",
-  "riskReward1y",
-  "riskReward3y",
-  "riskReward5y",
-  "score",
-];
+const NUMERIC_COL_IDS = ["fees", "performance1y", "performance3y", "performance5y", "riskReward1y", "riskReward3y", "riskReward5y", "score"];
 
 export function quintileClass(value: number | undefined, allValues: (number | undefined)[]): string | undefined {
   if (value === undefined) return undefined;
@@ -66,7 +57,7 @@ function quintileClassFromSorted(value: number | undefined, sortedDefined: numbe
 }
 
 export function formatNumber(val: number | undefined): string {
-  return val === undefined ? "—" : val.toFixed(DECIMAL_PLACES);
+  return val === undefined ? "—" : Math.round(val).toString();
 }
 
 export function computeQuintileClasses(rows: Row<Asset>[]): Map<string, Map<string, string | undefined>> {
@@ -74,14 +65,10 @@ export function computeQuintileClasses(rows: Row<Asset>[]): Map<string, Map<stri
   const scoreCache = new Map(rows.map(row => [row.id, computeScore(row.original)]));
   return new Map(
     NUMERIC_COL_IDS.map(colId => {
-      const allValues = rows.map((row): number | undefined =>
-        colId === "score" ? scoreCache.get(row.id) : (row.original[colId as keyof Asset] as number | undefined),
-      );
+      const allValues = rows.map((row): number | undefined => (colId === "score" ? scoreCache.get(row.id) : (row.original[colId as keyof Asset] as number | undefined)));
       // Pre-filter undefined values once per column so quintileClassFromSorted can skip that work per-row
       const definedValues = allValues.filter((val): val is number => val !== undefined);
-      const rowClassMap = new Map(
-        rows.map((row, rowIdx) => [row.id, quintileClassFromSorted(allValues[rowIdx], definedValues)]),
-      );
+      const rowClassMap = new Map(rows.map((row, rowIdx) => [row.id, quintileClassFromSorted(allValues[rowIdx], definedValues)]));
       return [colId, rowClassMap];
     }),
   );

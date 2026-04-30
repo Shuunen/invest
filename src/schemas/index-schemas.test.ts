@@ -1,14 +1,5 @@
 import { invariant } from "es-toolkit";
-import {
-  AppDataSchema,
-  AssetSchema,
-  MAX_ISINS,
-  MAX_PORTFOLIOS,
-  PortfolioEntrySchema,
-  PortfolioSchema,
-  SettingsSchema,
-  safeImportJson,
-} from "./index";
+import { AppDataSchema, AssetSchema, MAX_ISINS, MAX_PORTFOLIOS, PortfolioEntrySchema, PortfolioSchema, SettingsSchema, safeImportJson } from "./index";
 
 // Shared minimal ISIN fixture — all optional fields omitted (they have defaults or are nullable)
 const validAsset = {
@@ -112,6 +103,7 @@ describe("PortfolioEntrySchema", () => {
 
 describe("PortfolioSchema", () => {
   const validPortfolio = {
+    broker: "Trading 212",
     id: "87b67f15-e6f2-480b-8388-5440cc1c7423",
     name: "My Portfolio",
   };
@@ -126,9 +118,14 @@ describe("PortfolioSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("defaults broker to empty string and entries to empty array", () => {
+  it("rejects an empty broker", () => {
+    const result = PortfolioSchema.safeParse({ ...validPortfolio, broker: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("parses a valid portfolio and defaults entries to empty array", () => {
     const result = PortfolioSchema.parse(validPortfolio);
-    expect(result.broker).toBe("");
+    expect(result.broker).toBe("Trading 212");
     expect(result.entries).toStrictEqual([]);
   });
 });
@@ -187,6 +184,7 @@ describe("safeImportJson error message format", () => {
       assets: [],
       portfolios: [
         {
+          broker: "Broker",
           entries: [{ isin: "IE00B4L5Y983", positionValue: -1, targetAmount: 0 }],
           id: "87b67f15-e6f2-480b-8388-5440cc1c7423",
           name: "P",
@@ -208,6 +206,7 @@ describe("safeImportJson error message format", () => {
 describe("AppDataSchema limits", () => {
   it("rejects more than MAX_PORTFOLIOS portfolios", () => {
     const tooManyPortfolios = Array.from({ length: MAX_PORTFOLIOS + 1 }, (_val, idx) => ({
+      broker: "Broker",
       entries: [],
       id: `87b67f15-e6f2-480b-${String(idx).padStart(4, "0")}-5440cc1c7423`,
       name: `Portfolio ${idx}`,

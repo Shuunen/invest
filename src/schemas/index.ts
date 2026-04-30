@@ -2,62 +2,13 @@ import { z } from "zod/v4";
 
 // --- Geography ---
 
-const CountryEuropeSchema = z.enum([
-  "uk",
-  "switzerland",
-  "france",
-  "germany",
-  "netherlands",
-  "norway",
-  "sweden",
-  "austria",
-  "finland",
-  "italy",
-  "poland",
-  "spain",
-  "belgium",
-  "ireland",
-  "denmark",
-]);
+const CountryEuropeSchema = z.enum(["uk", "switzerland", "france", "germany", "netherlands", "norway", "sweden", "austria", "finland", "italy", "poland", "spain", "belgium", "ireland", "denmark"]);
 
-const CountryAsiaSchema = z.enum([
-  "china",
-  "japan",
-  "taiwan",
-  "hongKong",
-  "southKorea",
-  "malaysia",
-  "indonesia",
-  "thailand",
-]);
+const CountryAsiaSchema = z.enum(["china", "japan", "taiwan", "hongKong", "southKorea", "malaysia", "indonesia", "thailand"]);
 
-const CountrySchema = z.enum([
-  "us",
-  "canada",
-  "brazil",
-  "europe",
-  ...CountryEuropeSchema.options,
-  "asia",
-  ...CountryAsiaSchema.options,
-  "india",
-  "saudiArabia",
-  "australia",
-  "africa",
-]);
+const CountrySchema = z.enum(["us", "canada", "brazil", "europe", ...CountryEuropeSchema.options, "asia", ...CountryAsiaSchema.options, "india", "saudiArabia", "australia", "africa"]);
 
-const SectorSchema = z.enum([
-  "technology",
-  "financials",
-  "healthcare",
-  "consumerDiscretionary",
-  "consumerStaples",
-  "industrials",
-  "energy",
-  "utilities",
-  "materials",
-  "realEstate",
-  "communicationServices",
-]);
+const SectorSchema = z.enum(["technology", "financials", "healthcare", "consumerDiscretionary", "consumerStaples", "industrials", "energy", "utilities", "materials", "realEstate", "communicationServices"]);
 
 export type Country = z.infer<typeof CountrySchema>;
 export type CountryAsia = z.infer<typeof CountryAsiaSchema>;
@@ -100,6 +51,7 @@ export const AssetSchema = z.object({
   performance1y: nullableNumber,
   performance3y: nullableNumber,
   performance5y: nullableNumber,
+  price: nullableNumber,
   provider: z.string().default(""),
   riskReward1y: nullableNumber,
   riskReward3y: nullableNumber,
@@ -125,6 +77,7 @@ export function computeScore(asset: Asset): number | undefined {
 // --- Portfolio ---
 
 export const PortfolioEntrySchema = z.object({
+  amount: z.number().nonnegative().default(0),
   inPEA: z.boolean().default(false),
   isin: z.string().regex(ISIN_REGEX),
   notes: z.string().default(""),
@@ -135,7 +88,7 @@ export const PortfolioEntrySchema = z.object({
 export type PortfolioEntry = z.infer<typeof PortfolioEntrySchema>;
 
 export const PortfolioSchema = z.object({
-  broker: z.string().default(""),
+  broker: z.string().min(1),
   entries: z.array(PortfolioEntrySchema).default([]),
   id: z.uuid(),
   name: z.string().min(1),

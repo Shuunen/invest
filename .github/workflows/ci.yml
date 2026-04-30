@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup pnpm 10
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           run_install: false
           version: 10
@@ -24,11 +24,6 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile && echo install dependencies ok ✅
-
-      - name: Set Nx SHAs
-        uses: nrwl/nx-set-shas@v4
-        with:
-          main-branch-name: "master"
 
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps && echo playwright install ok ✅
