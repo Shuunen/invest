@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin "daisyui/index.js" {
   themes: nord;
+  logs: false;
 }
 
 :root {
