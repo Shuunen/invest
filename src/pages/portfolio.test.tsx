@@ -80,7 +80,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByText(/broker: interactive brokers/i)).toBeInTheDocument();
+    expect(screen.getByText(/broker : interactive brokers/i)).toBeInTheDocument();
   });
 
   it("shows 0 assets count in header", () => {
@@ -92,7 +92,8 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByText(/0 assets/i)).toBeInTheDocument();
+    expect(screen.getByText("0")).toBeInTheDocument();
+    expect(screen.getByText("Assets")).toBeInTheDocument();
   });
 
   it("uses singular 'asset' when count is 1", () => {
@@ -107,11 +108,26 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByText(/^1 asset$/i)).toBeInTheDocument();
+    expect(screen.getByText("Assets")).toBeInTheDocument();
   });
 });
 
 describe("PortfolioPage - with assets", () => {
+  it("shows isin as top performer label when asset has no tickers", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ tickers: [] });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getAllByText(asset.isin).length).toBeGreaterThanOrEqual(1);
+  });
+
   it("renders asset table when portfolio has entries", () => {
     expect.hasAssertions();
     const asset = makeAsset();

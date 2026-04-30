@@ -21,8 +21,6 @@ export function getScoreDotClass(qClass: string | undefined): string {
   if (qClass?.includes("error")) return "bg-error";
   return "bg-warning";
 }
-export const SKELETON_COLS = 9;
-export const SKELETON_ROWS = 5;
 
 export const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
   availableForPlan: false,

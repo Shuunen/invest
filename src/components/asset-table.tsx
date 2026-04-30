@@ -5,9 +5,11 @@ import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { columns, makeRemoveColumn } from "./asset-table-columns.tsx";
 import { useDexieSync, useHydration } from "./asset-table-db.ts";
-import { renderColumnFilter, renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
+import { renderColumnFilter, renderSearchFilter } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
-import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, formatNumber, getAriaSortValue, getScoreDotClass, SKELETON_COLS, SKELETON_ROWS } from "./asset-table-utils.ts";
+import { renderSkeleton } from "./asset-table-skeleton.tsx";
+import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, formatNumber, getAriaSortValue, getScoreDotClass } from "./asset-table-utils.ts";
+import { PageHeader } from "./page-header.tsx";
 
 type AssetTableMeta = {
   onAmountChange?: (isin: string, amount: number) => void;
@@ -92,6 +94,7 @@ function getSortIndicator(sorted: "asc" | "desc" | false): string {
   if (sorted === "desc") return " ▼";
   return "";
 }
+
 function renderThContent(header: Header<Asset, unknown>) {
   const sorted = header.column.getIsSorted();
   const label = flexRender(header.column.columnDef.header, header.getContext());
@@ -157,28 +160,6 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
     table,
     visibleLeafCount,
   };
-}
-
-function renderSkeleton() {
-  return (
-    <div className="p-4 text-left">
-      <div className="w-full overflow-x-auto">
-        <table className="table w-full">
-          <tbody>
-            {Array.from({ length: SKELETON_ROWS }, (_el, rowIdx) => (
-              <tr key={rowIdx}>
-                {Array.from({ length: SKELETON_COLS }, (_colEl, colIdx) => (
-                  <td key={colIdx}>
-                    <div className="h-4 w-full skeleton" />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
 }
 
 function renderError(error: Error, handleRetry: () => void) {
@@ -272,7 +253,7 @@ export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, 
   const filterReturnedNoResults = filterText.trim() !== "" && table.getRowModel().rows.length === 0;
   return (
     <>
-      {!propAssets && renderPageHeader(data.assets)}
+      {!propAssets && <PageHeader assets={data.assets} title="Assets" subtitle="This is the list of available assets you can use to create and manage your portfolios." />}
       <div className="relative p-4 text-left">
         <div className="sticky top-5 z-20 ml-2 flex gap-4">
           {renderSearchFilter(filterText, setFilterText)}

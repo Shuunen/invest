@@ -5,9 +5,9 @@ import { AssetPickerModal } from "../components/asset-picker-modal.tsx";
 import { AssetTable } from "../components/asset-table.tsx";
 import { ModalActions } from "../components/modal-actions.tsx";
 import { ModalHeader } from "../components/modal-header.tsx";
+import { PageHeader } from "../components/page-header.tsx";
 import type { Asset, PortfolioEntry } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
-
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
   return selectedIsins.map(isin => {
     const existing = existingEntries.find(entry => entry.isin === isin);
@@ -21,28 +21,19 @@ function removeEntry(entries: PortfolioEntry[], isin: string): PortfolioEntry[] 
 
 type RenderHeaderOptions = {
   broker: string;
-  entryCount: number;
+  assets: Asset[];
   name: string;
   onAddAssets: () => void;
 };
 
-function renderPortfolioHeader({ broker, entryCount, name, onAddAssets }: RenderHeaderOptions) {
+function renderPortfolioHeader({ assets, broker, name, onAddAssets }: RenderHeaderOptions) {
   return (
-    <div className="border-b border-base-200 bg-base-100 px-4 pt-5 pb-4">
-      <div className="mb-1 flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{name}</h1>
-          <p className="mt-0.5 text-sm text-base-content/60">Broker: {broker}</p>
-        </div>
-        <button type="button" className="btn btn-soft btn-primary" onClick={onAddAssets}>
-          Edit assets
-          <SquarePenIcon size={16} />
-        </button>
-      </div>
-      <p className="text-sm text-base-content/60">
-        {entryCount} asset{entryCount === 1 ? "" : "s"}
-      </p>
-    </div>
+    <PageHeader title={name} subtitle={`Broker : ${broker}`} assets={assets}>
+      <button type="button" className="btn btn-soft btn-primary" onClick={onAddAssets}>
+        Edit assets
+        <SquarePenIcon size={16} />
+      </button>
+    </PageHeader>
   );
 }
 
@@ -118,7 +109,7 @@ export function PortfolioPage({ portfolioId }: Props) {
 
   return (
     <div className="flex flex-col">
-      {renderPortfolioHeader({ broker, entryCount: entries.length, name, onAddAssets: () => setPickerOpen(true) })}
+      {renderPortfolioHeader({ assets: portfolioAssets, broker, name, onAddAssets: () => setPickerOpen(true) })}
       {portfolioAssets.length === 0 ? renderNoAssets() : <AssetTable assets={portfolioAssets} onRemoveAsset={setIsinToDelete} onAmountChange={(isin, amount) => updatePortfolioEntryAmount(portfolioId, isin, amount)} amountMap={amountMap} />}
       {pickerOpen && <AssetPickerModal assets={assets} initialSelected={selectedIsins} onCancel={() => setPickerOpen(false)} onConfirm={handlePickerConfirm} title={`${name} portfolio assets`} />}
       {isinToDelete !== undefined &&
