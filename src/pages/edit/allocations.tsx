@@ -1,6 +1,7 @@
 import { NumberField } from "../../components/form/number-field.tsx";
 import { COUNTRIES, SECTORS, type Country, type Sector } from "../../schemas/index.ts";
 import type { FormState, PatchFn } from "./form-state.ts";
+import { ProgressBar } from "./progress-bar.tsx";
 
 type Props = {
   form: FormState;
@@ -20,6 +21,9 @@ function formatLabel(key: string): string {
 }
 
 export function AllocationsSection({ form, patch }: Props) {
+  const totalGeo = Object.values(form.geoAllocation).reduce((sum, val) => sum + Number(val), 0);
+  const totalSector = Object.values(form.sectorAllocation).reduce((sum, val) => sum + Number(val), 0);
+
   function patchGeo(country: Country, value: string) {
     patch("geoAllocation", { ...form.geoAllocation, [country]: value });
   }
@@ -33,6 +37,7 @@ export function AllocationsSection({ form, patch }: Props) {
       <div className="card">
         <div className="card-body">
           <h2 className="card-title">Geographic allocation</h2>
+          <ProgressBar name="geo-allocation" total={totalGeo} />
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
             {COUNTRIES.map(country => (
               <NumberField key={country} label={formatLabel(country)} isHorizontal name={`geo-allocation-${country}`} suffix="%" value={form.geoAllocation[country] ?? ""} onChange={value => patchGeo(country, value)} />
@@ -43,6 +48,7 @@ export function AllocationsSection({ form, patch }: Props) {
       <div className="card">
         <div className="card-body">
           <h2 className="card-title">Sector allocation</h2>
+          <ProgressBar name="sector-allocation" total={totalSector} />
           <div className="grid gap-x-4 gap-y-2">
             {SECTORS.map(sector => (
               <NumberField key={sector} label={formatLabel(sector)} isHorizontal name={`sector-allocation-${sector}`} suffix="%" value={form.sectorAllocation[sector] ?? ""} onChange={value => patchSector(sector, value)} />
