@@ -1,3 +1,4 @@
+import type { Asset } from "../schemas/index.ts";
 import { useAppStore, defaultAppData } from "./use-app-store.ts";
 
 describe("useAppStore - initial state and load", () => {
@@ -73,6 +74,92 @@ describe("useAppStore - settings mutations", () => {
     useAppStore.getState().setSort({ column: "fees", direction: "asc" });
     unsub();
     expect(received.length).toBeGreaterThan(0);
+  });
+});
+
+describe("useAppStore - asset mutations", () => {
+  const baseAsset: Asset = {
+    availableForPlan: false,
+    availableOnBroker: true,
+    fees: 0.2,
+    geoAllocation: {},
+    isAccumulating: true,
+    isin: "LU1234567890",
+    name: "ETF A",
+    performance1y: 10,
+    performance3y: 30,
+    performance5y: 50,
+    price: 100,
+    provider: "Provider A",
+    riskReward1y: 1.5,
+    riskReward3y: 1.8,
+    riskReward5y: 1.6,
+    sectorAllocation: {},
+    tickers: ["A"],
+  };
+
+  it("updateAsset updates the matching asset and leaves others unchanged", () => {
+    expect.hasAssertions();
+    const assetB = { ...baseAsset, isin: "LU0987654321", name: "ETF B" };
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [baseAsset, assetB] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const updated = { ...baseAsset, name: "Updated ETF A" };
+    useAppStore.getState().updateAsset(baseAsset.isin, updated);
+    expect(useAppStore.getState().data.assets[0]?.name).toBe("Updated ETF A");
+    expect(useAppStore.getState().data.assets[1]?.name).toBe("ETF B");
+  });
+
+  it("updateAsset increments editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [baseAsset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().updateAsset(baseAsset.isin, baseAsset);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
+  });
+
+  it("updateAsset does nothing when ISIN does not exist", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [baseAsset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().updateAsset("XX0000000000", baseAsset);
+    expect(useAppStore.getState().data.assets).toHaveLength(1);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before);
+  });
+
+  it("updateAssetPrice updates the matching asset price and leaves others unchanged", () => {
+    expect.hasAssertions();
+    const assetB = { ...baseAsset, isin: "LU0987654321", name: "ETF B", price: 20 };
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [baseAsset, assetB] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    useAppStore.getState().updateAssetPrice(baseAsset.isin, 99);
+    expect(useAppStore.getState().data.assets[0]?.price).toBe(99);
+    expect(useAppStore.getState().data.assets[1]?.price).toBe(20);
+  });
+
+  it("updateAssetPrice increments editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [baseAsset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().updateAssetPrice(baseAsset.isin, 42);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
   });
 });
 

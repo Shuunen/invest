@@ -2,16 +2,18 @@ import { Download, Upload, X } from "lucide-react";
 import { type ChangeEvent, useRef, useState } from "react";
 import { safeImportJson, type AppData } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
+import { jsonStringify } from "../utils/json.ts";
 
-const JSON_INDENT = 2;
 const ISO_DATE_SLICE_END = 10;
 const REVOKE_DELAY_MS = 100;
 const ISO_TIME_START = 11;
 const ISO_TIME_END = 16;
 
-function buildExportBlob(data: AppData, now: string): Blob {
+function buildExportBlob(data: AppData, now: string): Blob | undefined {
   const exportData = { ...data, settings: { ...data.settings, lastExportedAt: now } };
-  return new Blob([JSON.stringify(exportData, undefined, JSON_INDENT)], { type: "application/json" });
+  const json = jsonStringify(exportData);
+  if (json === undefined) return undefined;
+  return new Blob([json], { type: "application/json" });
 }
 
 function triggerDownload(blob: Blob, filename: string) {
@@ -30,12 +32,17 @@ function useImportExport() {
   const setLastExportedAt = useAppStore(state => state.setLastExportedAt);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState<string | undefined>(undefined);
+  const [exportError, setExportError] = useState<string | undefined>(undefined);
 
   function handleExport() {
     const now = new Date().toISOString();
-    // datetime is YYYY-MM-DD HHhmm
     const datetime = `${now.slice(0, ISO_DATE_SLICE_END)} ${now.slice(ISO_TIME_START, ISO_TIME_END).replace(":", "h")}`;
-    triggerDownload(buildExportBlob(data, now), `invest-${datetime}.json`);
+    const blob = buildExportBlob(data, now);
+    if (!blob) {
+      setExportError("Export failed: could not serialize data.");
+      return;
+    }
+    triggerDownload(blob, `invest-${datetime}.json`);
     setLastExportedAt(now);
   }
 
@@ -62,28 +69,31 @@ function useImportExport() {
 
   function dismissError() {
     setImportError(undefined);
+    setExportError(undefined);
   }
 
-  return { data, dismissError, fileInputRef, handleExport, handleFileChange, handleImportClick, importError };
+  return { data, dismissError, exportError, fileInputRef, handleExport, handleFileChange, handleImportClick, importError };
 }
 
 export function ImportExportButtons() {
-  const { data, dismissError, fileInputRef, handleExport, handleFileChange, handleImportClick, importError } = useImportExport();
+  const { data, dismissError, exportError, fileInputRef, handleExport, handleFileChange, handleImportClick, importError } = useImportExport();
+  const displayError = importError ?? exportError;
+  const errorTestId = importError === undefined ? "export-error" : "import-error";
   return (
     <div className="flex flex-col items-end gap-1">
       <div className="flex items-center gap-2">
-        <input ref={fileInputRef} type="file" accept=".json,application/json" className="hidden" onChange={handleFileChange} />
-        <button type="button" className="btn btn-soft btn-sm btn-primary" aria-label="Import data" title="Import data" onClick={handleImportClick}>
+        <input ref={fileInputRef} type="file" data-testid="file-input" accept=".json,application/json" className="hidden" onChange={handleFileChange} />
+        <button type="button" data-testid="import-button" className="btn btn-soft btn-sm btn-primary" aria-label="Import data" title="Import data" onClick={handleImportClick}>
           <Upload size={16} />
         </button>
-        <button type="button" className="btn btn-soft btn-sm btn-primary" aria-label="Export data" title="Export data" disabled={data.assets.length === 0 && data.portfolios.length === 0} onClick={handleExport}>
+        <button type="button" data-testid="export-button" className="btn btn-soft btn-sm btn-primary" aria-label="Export data" title="Export data" disabled={data.assets.length === 0 && data.portfolios.length === 0} onClick={handleExport}>
           <Download size={16} />
         </button>
       </div>
-      {importError !== undefined && (
-        <div role="alert" className="alert px-3 py-1 text-sm alert-error">
-          <span>{importError}</span>
-          <button type="button" className="btn btn-ghost btn-xs" aria-label="Dismiss error" onClick={dismissError}>
+      {displayError !== undefined && (
+        <div role="alert" data-testid={errorTestId} className="alert px-3 py-1 text-sm alert-error">
+          <span>{displayError}</span>
+          <button type="button" data-testid="dismiss-error-button" className="btn btn-ghost btn-xs" aria-label="Dismiss error" onClick={dismissError}>
             <X size={12} />
           </button>
         </div>

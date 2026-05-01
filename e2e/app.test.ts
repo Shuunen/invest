@@ -102,7 +102,7 @@ test("can edit portfolio assets via the asset picker", async ({ page }) => {
   await expect(page.getByRole("cell", { exact: true, name: initialAssetNames[0] })).toBeVisible();
 
   // Open the asset picker
-  await page.getByRole("button", { name: "Edit assets" }).click();
+  await page.getByRole("button", { name: "Select assets" }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
 
   // Deselect the first asset

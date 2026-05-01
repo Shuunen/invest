@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { invariant } from "es-toolkit";
+import { jsonParse } from "../utils/json";
 import { safeImportJson, parseAppData, computeScore, AppDataSchema, SettingsSchema, type AppData } from "./index";
 
 const sampleRaw = readFileSync(join(process.cwd(), "data/sample.json"), "utf8");
@@ -28,7 +29,7 @@ describe("AppDataSchema", () => {
 
   it("rejects portfolio entry referencing unknown ISIN", () => {
     expect.hasAssertions();
-    const valid = AppDataSchema.parse(JSON.parse(sampleRaw));
+    const valid = AppDataSchema.parse(jsonParse(sampleRaw));
     const [firstPortfolio] = valid.portfolios;
     invariant(firstPortfolio, "Expected at least one portfolio");
     const invalidData: AppData = {
@@ -63,7 +64,7 @@ describe("safeImportJson", () => {
 describe("parseAppData", () => {
   it("returns parsed data for valid input", () => {
     expect.hasAssertions();
-    const data = parseAppData(JSON.parse(sampleRaw));
+    const data = parseAppData(jsonParse(sampleRaw));
     expect(Array.isArray(data.assets)).toBe(true);
     expect(data.assets.length).toBeGreaterThan(0);
     expect(Array.isArray(data.portfolios)).toBe(true);
@@ -81,7 +82,7 @@ describe("SettingsSchema", () => {
   it("coerces null lastExportedAt to undefined", () => {
     expect.hasAssertions();
     // JSON payloads use null for absent values; the schema must coerce to undefined
-    const result = SettingsSchema.parse(JSON.parse('{"lastExportedAt":null}'));
+    const result = SettingsSchema.parse(jsonParse('{"lastExportedAt":null}'));
     expect(result.lastExportedAt).toBeUndefined();
   });
 });
@@ -89,7 +90,7 @@ describe("SettingsSchema", () => {
 describe("computeScore", () => {
   it("returns undefined when performance3y is missing", () => {
     expect.hasAssertions();
-    const asset = AppDataSchema.parse(JSON.parse(sampleRaw)).assets.find(entry => entry.performance3y === undefined);
+    const asset = AppDataSchema.parse(jsonParse(sampleRaw)).assets.find(entry => entry.performance3y === undefined);
     expect(asset).toBeDefined();
     invariant(asset, "Expected to find an ISIN with undefined performance3y");
     expect(computeScore(asset)).toBeUndefined();
@@ -97,14 +98,14 @@ describe("computeScore", () => {
 
   it("returns undefined when riskReward3y is missing but performance3y is defined", () => {
     expect.hasAssertions();
-    const base = AppDataSchema.parse(JSON.parse(sampleRaw)).assets.find(entry => entry.performance3y !== undefined);
+    const base = AppDataSchema.parse(jsonParse(sampleRaw)).assets.find(entry => entry.performance3y !== undefined);
     invariant(base, "Expected to find an ISIN with performance3y defined");
     expect(computeScore({ ...base, riskReward3y: undefined })).toBeUndefined();
   });
 
   it("returns a number for fully populated ISINs", () => {
     expect.hasAssertions();
-    const data = AppDataSchema.parse(JSON.parse(sampleRaw));
+    const data = AppDataSchema.parse(jsonParse(sampleRaw));
     // oxlint-disable-next-line vitest/no-conditional-in-test
     const complete = data.assets.find(entry => entry.performance3y !== undefined && entry.riskReward3y !== undefined);
     expect(complete).toBeDefined();
@@ -116,7 +117,7 @@ describe("computeScore", () => {
   it("matches formula: perf3y + risk3y*5 - fees*10", () => {
     expect.hasAssertions();
     // oxlint-disable-next-line vitest/no-conditional-in-test
-    const asset = AppDataSchema.parse(JSON.parse(sampleRaw)).assets.find(entry => entry.performance3y !== undefined && entry.riskReward3y !== undefined);
+    const asset = AppDataSchema.parse(jsonParse(sampleRaw)).assets.find(entry => entry.performance3y !== undefined && entry.riskReward3y !== undefined);
     invariant(asset, "Expected to find an ISIN with all required fields");
     invariant(asset.performance3y !== undefined, "Expected performance3y to be defined");
     invariant(asset.riskReward3y !== undefined, "Expected riskReward3y to be defined");

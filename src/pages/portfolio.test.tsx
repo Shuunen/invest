@@ -1,8 +1,18 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { invariant } from "es-toolkit";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { Asset, Portfolio } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
-import { PortfolioPage } from "./portfolio-page.tsx";
+import { PortfolioPage } from "./portfolio.tsx";
+
+const mockLink = vi.hoisted(
+  () =>
+    ({ children }: { children: React.ReactNode }): React.ReactElement =>
+      children as React.ReactElement,
+);
+
+vi.mock(import("@tanstack/react-router"), async () => {
+  const actual = await import("@tanstack/react-router");
+  return { ...actual, Link: mockLink as unknown as typeof actual.Link };
+});
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
@@ -42,7 +52,7 @@ describe("PortfolioPage - not found", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<PortfolioPage portfolioId="nonexistent" />);
-    expect(screen.getByText(/portfolio not found/i)).toBeInTheDocument();
+    expect(screen.getByTestId("not-found")).toBeInTheDocument();
   });
 });
 
@@ -56,8 +66,8 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("My Portfolio");
-    expect(screen.getByText(/no assets yet/i)).toBeInTheDocument();
+    expect(screen.getByTestId("page-title")).toHaveTextContent("My Portfolio");
+    expect(screen.getByTestId("no-assets-message")).toBeInTheDocument();
   });
 
   it("renders broker name when set", () => {
@@ -69,7 +79,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByText(/broker: interactive brokers/i)).toBeInTheDocument();
+    expect(screen.getByTestId("page-subtitle")).toHaveTextContent(/broker : interactive brokers/i);
   });
 
   it("shows 0 assets count in header", () => {
@@ -81,7 +91,8 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByText(/0 assets/i)).toBeInTheDocument();
+    expect(screen.getByTestId("metric-assets-value")).toHaveTextContent("0");
+    expect(screen.getByTestId("metric-assets-label")).toBeInTheDocument();
   });
 
   it("uses singular 'asset' when count is 1", () => {
@@ -96,11 +107,24 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByText(/^1 asset$/i)).toBeInTheDocument();
+    expect(screen.getByTestId("metric-assets-label")).toBeInTheDocument();
   });
-});
 
-describe("PortfolioPage - with assets", () => {
+  it("shows isin as top performer label when asset has no tickers", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ tickers: [] });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByTestId("metric-top-performer-value")).toHaveTextContent(asset.isin);
+  });
+
   it("renders asset table when portfolio has entries", () => {
     expect.hasAssertions();
     const asset = makeAsset();
@@ -113,8 +137,43 @@ describe("PortfolioPage - with assets", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByText("Test ETF")).toBeInTheDocument();
-    expect(screen.getByText("LU1234567890")).toBeInTheDocument();
+    expect(screen.getByTestId("name-lu1234567890")).toBeInTheDocument();
+    expect(screen.getByTestId("isin-lu1234567890")).toBeInTheDocument();
+  });
+
+  it("shows total portfolio value in header as amount * price", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ price: 200 });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 3, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByTestId("metric-total-value-label")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-total-value-value")).toHaveTextContent("600 €");
+  });
+
+  it("counts 0 for entries whose asset is no longer in the store", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ price: 100 });
+    const portfolio = makePortfolio({
+      entries: [
+        { amount: 2, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 },
+        { amount: 5, inPEA: false, isin: "ZZ9999999999", notes: "", positionValue: 0, targetAmount: 0 },
+      ],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByTestId("metric-total-value-label")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-total-value-value")).toHaveTextContent("200 €");
   });
 
   it("remove button calls setPortfolioAssets without the removed isin", () => {
@@ -129,10 +188,10 @@ describe("PortfolioPage - with assets", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    fireEvent.click(screen.getByRole("button", { name: /remove test etf/i }));
+    fireEvent.click(screen.getByTestId("remove-lu1234567890"));
     // confirmation modal should appear; deletion is not yet applied
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(1);
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /^remove$/i }));
+    fireEvent.click(screen.getByTestId("confirm-button"));
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(0);
   });
 
@@ -148,7 +207,7 @@ describe("PortfolioPage - with assets", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    const input = screen.getByRole("spinbutton", { name: /amount for test etf/i });
+    const input = screen.getByTestId("amount-input-lu1234567890");
     fireEvent.click(input);
     fireEvent.change(input, { target: { value: "15" } });
     fireEvent.blur(input);
@@ -167,7 +226,7 @@ describe("PortfolioPage - with assets", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    const input = screen.getByRole("spinbutton", { name: /amount for test etf/i });
+    const input = screen.getByTestId("amount-input-lu1234567890");
     fireEvent.blur(input);
     expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.amount).toBe(5);
   });
@@ -184,11 +243,11 @@ describe("PortfolioPage - with assets", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    fireEvent.click(screen.getByRole("button", { name: /remove test etf/i }));
-    expect(screen.getByRole("heading", { hidden: true, name: /remove asset/i })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /cancel/i }));
+    fireEvent.click(screen.getByTestId("remove-lu1234567890"));
+    expect(screen.getByTestId("modal-title")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("cancel-button"));
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(1);
-    expect(screen.queryByRole("heading", { hidden: true, name: /remove asset/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("modal-title")).not.toBeInTheDocument();
   });
 
   it("delete confirmation modal falls back to isin when asset is missing from the store", () => {
@@ -203,13 +262,53 @@ describe("PortfolioPage - with assets", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    fireEvent.click(screen.getByRole("button", { name: /remove test etf/i }));
-    // Remove the asset from the store while the modal is open
-    useAppStore.setState(prev => ({
-      data: { ...prev.data, assets: [] },
-    }));
+    fireEvent.click(screen.getByTestId("remove-lu1234567890"));
+    act(() => {
+      useAppStore.setState(prev => ({
+        data: { ...prev.data, assets: [] },
+      }));
+    });
     // The modal should still be visible and fall back to displaying the ISIN
-    expect(screen.getByText(asset.isin)).toBeInTheDocument();
+    expect(screen.getByTestId("modal-asset-name")).toHaveTextContent(asset.isin);
+  });
+});
+
+describe("PortfolioPage - price editing", () => {
+  it("clicking Edit prices toggles to Done and shows price inputs", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1111111111", price: 50 });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.queryByTestId(`price-input-${asset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("action-edit-prices"));
+    expect(screen.getByTestId("action-set-prices")).toBeInTheDocument();
+    expect(screen.getByTestId(`price-input-${asset.isin.toLowerCase()}`)).toBeInTheDocument();
+  });
+
+  it("price input blur with new value updates asset price in the store", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1111111111", price: 50 });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    fireEvent.click(screen.getByTestId("action-edit-prices"));
+    const input = screen.getByTestId(`price-input-${asset.isin.toLowerCase()}`);
+    fireEvent.change(input, { target: { value: "99" } });
+    fireEvent.blur(input);
+    expect(useAppStore.getState().data.assets[0]?.price).toBe(99);
   });
 });
 
@@ -223,9 +322,9 @@ describe("PortfolioPage - asset picker modal", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.queryByRole("heading", { hidden: true, name: /portfolio assets/i })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /edit assets/i }));
-    expect(screen.getByRole("heading", { hidden: true, name: /portfolio assets/i })).toBeInTheDocument();
+    expect(screen.queryByTestId("modal-title")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("action-select-assets"));
+    expect(screen.getByTestId("modal-title")).toBeInTheDocument();
   });
 
   it("closes the picker on cancel", () => {
@@ -237,9 +336,9 @@ describe("PortfolioPage - asset picker modal", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    fireEvent.click(screen.getByRole("button", { name: /edit assets/i }));
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /cancel/i }));
-    expect(screen.queryByRole("heading", { hidden: true, name: /portfolio assets/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("action-select-assets"));
+    fireEvent.click(screen.getByTestId("cancel-button"));
+    expect(screen.queryByTestId("modal-title")).not.toBeInTheDocument();
   });
 
   it("confirm updates the portfolio assets via buildEntries preserving existing entries", () => {
@@ -254,12 +353,10 @@ describe("PortfolioPage - asset picker modal", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    fireEvent.click(screen.getByRole("button", { name: /edit assets/i }));
+    fireEvent.click(screen.getByTestId("action-select-assets"));
     // Click ETF B row to select it (it starts unselected)
-    const etfBRow = screen.getByText("ETF B").closest("tr");
-    invariant(etfBRow, "Expected ETF B row to exist");
-    fireEvent.click(etfBRow);
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /confirm/i }));
+    fireEvent.click(screen.getByTestId("asset-row-LU0987654321"));
+    fireEvent.click(screen.getByTestId("confirm-button"));
     const updatedEntries = useAppStore.getState().data.portfolios[0]?.entries;
     expect(updatedEntries?.some(en => en.isin === asset2.isin)).toBe(true);
     // existing entry data is preserved for asset1

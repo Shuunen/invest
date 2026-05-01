@@ -37,7 +37,12 @@ function useAssetPicker(initialSelected: Set<string>, onConfirm: (selectedIsins:
 type RenderListArgs = { assets: Asset[]; selected: Set<string>; toggle: (isin: string) => void };
 
 function renderPickerList({ assets, selected, toggle }: RenderListArgs) {
-  if (assets.length === 0) return <p className="p-4 text-center text-base-content/60">No instruments available. Import assets first.</p>;
+  if (assets.length === 0)
+    return (
+      <p data-testid="no-assets-message" className="p-4 text-center text-base-content/60">
+        No instruments available. Import assets first.
+      </p>
+    );
   return <AssetTable assets={assets} selectedIsins={selected} onToggleSelect={toggle} />;
 }
 
@@ -48,7 +53,9 @@ export function AssetPickerModal({ assets, initialSelected, onCancel, onConfirm,
       <div className="modal-box max-w-none">
         <ModalHeader title={title} onClose={onCancel} />
         <div className="max-h-144 overflow-y-auto rounded-box border border-base-200">{renderPickerList({ assets, selected, toggle })}</div>
-        <p className="mt-2 text-sm text-base-content/60">{selected.size} selected</p>
+        <p data-testid="selected-count" className="mt-2 text-sm text-base-content/60">
+          {selected.size} selected
+        </p>
         <ModalActions onCancel={onCancel} onConfirm={handleConfirm} confirmText="Confirm" type="default" />
       </div>
       <div className="modal-backdrop" onClick={onCancel} />

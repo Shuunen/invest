@@ -16,25 +16,25 @@ describe("CreatePortfolioModal", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
-    expect(screen.getByLabelText(/^name$/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/broker/i)).toBeInTheDocument();
+    expect(screen.getByTestId("portfolio-name")).toBeInTheDocument();
+    expect(screen.getByTestId("portfolio-broker")).toBeInTheDocument();
   });
 
   it("shows validation error when submitting with empty name", async () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /create/i }));
-    await expect(screen.findByText(/name is required/i)).resolves.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("confirm-button"));
+    await expect(screen.findByTestId("portfolio-name-error")).resolves.toBeInTheDocument();
   });
 
   it("shows validation error when submitting with empty broker", async () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
-    await userEvent.type(screen.getByLabelText(/^name$/i), "My Fund");
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /create/i }));
-    await expect(screen.findByText(/broker is required/i)).resolves.toBeInTheDocument();
+    await userEvent.type(screen.getByTestId("portfolio-name"), "My Fund");
+    fireEvent.click(screen.getByTestId("confirm-button"));
+    await expect(screen.findByTestId("portfolio-broker-error")).resolves.toBeInTheDocument();
   });
 
   it("calls onClose when Cancel is clicked", () => {
@@ -42,7 +42,7 @@ describe("CreatePortfolioModal", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
     render(<CreatePortfolioModal onClose={onClose} />);
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /cancel/i }));
+    fireEvent.click(screen.getByTestId("cancel-button"));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
@@ -51,7 +51,7 @@ describe("CreatePortfolioModal", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
     render(<CreatePortfolioModal onClose={onClose} />);
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /close/i }));
+    fireEvent.click(screen.getByTestId("modal-close-button"));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
@@ -72,9 +72,9 @@ describe("CreatePortfolioModal", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
     render(<CreatePortfolioModal onClose={onClose} />);
-    await userEvent.type(screen.getByLabelText(/^name$/i), "My Fund");
-    await userEvent.type(screen.getByLabelText(/broker/i), "Degiro");
-    fireEvent.click(screen.getByRole("button", { hidden: true, name: /create/i }));
+    await userEvent.type(screen.getByTestId("portfolio-name"), "My Fund");
+    await userEvent.type(screen.getByTestId("portfolio-broker"), "Degiro");
+    fireEvent.click(screen.getByTestId("confirm-button"));
     expect(useAppStore.getState().data.portfolios).toHaveLength(1);
     expect(useAppStore.getState().data.portfolios[0]?.name).toBe("My Fund");
     expect(useAppStore.getState().data.portfolios[0]?.broker).toBe("Degiro");

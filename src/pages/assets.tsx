@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { AssetTable } from "./asset-table.tsx";
-import { ErrorBoundary } from "./error-boundary.tsx";
+import { AssetTable } from "../components/asset-table.tsx";
+import { ErrorBoundary } from "../components/error-boundary.tsx";
 
 export function IndexPage() {
   const [errorKey, setErrorKey] = useState(0);

@@ -1,11 +1,17 @@
 @import "tailwindcss";
 @plugin "daisyui/index.js" {
-  themes: nord;
+  logs: false;
 }
 
 :root {
   --color-base-100: white;
   --color-primary-content: snow;
+  --color-primary: var(--color-sky-600);
+  --color-error: var(--color-red-600);
+  --color-base-content: var(--color-gray-900);
+  --color-success: var(--color-green-600);
+  --color-info: var(--color-primary);
+  --color-warning: var(--color-yellow-500);
 }
 
 .btn-primary:hover {
@@ -18,4 +24,16 @@
 
 .btn-ghost:hover {
   @apply bg-base-100;
+}
+
+.checkbox {
+  @apply rounded-full;
+}
+
+.card {
+  @apply border border-gray-300 bg-base-100 shadow;
+}
+
+.card-body {
+  @apply gap-3 px-5 py-4;
 }

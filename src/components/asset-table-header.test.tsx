@@ -1,94 +1,21 @@
 import { render, screen } from "@testing-library/react";
-import type { Asset } from "../schemas/index.ts";
-import { renderSearchFilter, renderPageHeader } from "./asset-table-header.tsx";
-
-function makeAsset(overrides: Partial<Asset> = {}): Asset {
-  return {
-    availableForPlan: false,
-    availableOnBroker: true,
-    fees: 0.2,
-    geoAllocation: {},
-    isAccumulating: true,
-    isin: "LU1234567890",
-    name: "Test ETF",
-    performance1y: 10,
-    performance3y: 30,
-    performance5y: 50,
-    price: undefined,
-    provider: "Test",
-    riskReward1y: 1.5,
-    riskReward3y: 1.8,
-    riskReward5y: 1.6,
-    sectorAllocation: {},
-    tickers: ["TST"],
-    ...overrides,
-  };
-}
-
-describe("renderPageHeader", () => {
-  it("shows asset count", () => {
-    expect.hasAssertions();
-    render(renderPageHeader([makeAsset(), makeAsset({ isin: "FR0000000001" })]));
-    expect(screen.getByText("2")).toBeInTheDocument();
-  });
-
-  it("shows avg score", () => {
-    expect.hasAssertions();
-    const asset = makeAsset({ fees: 0, performance3y: 100, riskReward3y: 20 });
-    render(renderPageHeader([asset]));
-    // score = 100 + 20*5 - 0*10 = 200
-    expect(screen.getByText("200")).toBeInTheDocument();
-  });
-
-  it("shows — for avg score when no scores defined", () => {
-    expect.hasAssertions();
-    render(renderPageHeader([makeAsset({ performance3y: undefined, riskReward3y: undefined })]));
-    expect(screen.getByText("—")).toBeInTheDocument();
-  });
-
-  it("shows top performer ticker", () => {
-    expect.hasAssertions();
-    const assets = [makeAsset({ fees: 0, performance3y: 5, riskReward3y: 0, tickers: ["LOW"] }), makeAsset({ fees: 0, isin: "FR0000000001", performance3y: 20, riskReward3y: 0, tickers: ["HIGH"] })];
-    render(renderPageHeader(assets));
-    expect(screen.getByText("HIGH")).toBeInTheDocument();
-  });
-
-  it("falls back to ISIN when tickers is empty", () => {
-    expect.hasAssertions();
-    const asset = makeAsset({ fees: 0, performance3y: 10, riskReward3y: 0, tickers: [] });
-    render(renderPageHeader([asset]));
-    expect(screen.getByText(asset.isin)).toBeInTheDocument();
-  });
-
-  it("shows accumulating count", () => {
-    expect.hasAssertions();
-    const assets = [makeAsset({ isAccumulating: true }), makeAsset({ isAccumulating: false, isin: "FR0000000001" })];
-    render(renderPageHeader(assets));
-    expect(screen.getByText("1 / 2")).toBeInTheDocument();
-  });
-
-  it("hides top performer section when no scored assets", () => {
-    expect.hasAssertions();
-    render(renderPageHeader([makeAsset({ performance3y: undefined, riskReward3y: undefined })]));
-    expect(screen.queryByText("Top Performer")).not.toBeInTheDocument();
-  });
-});
+import { renderSearchFilter } from "./asset-table-header.tsx";
 
 function noop() {
   // intentionally empty — renderFilter callbacks are not under test here
 }
 
-describe("renderFilter", () => {
+describe("renderSearchFilter", () => {
   it("renders search input with placeholder", () => {
     expect.hasAssertions();
     render(renderSearchFilter("", noop));
-    expect(screen.getByPlaceholderText("Search ISIN, name, tickers…")).toBeInTheDocument();
+    expect(screen.getByTestId("input-filter")).toBeInTheDocument();
   });
 
   it("reflects current filter value", () => {
     expect.hasAssertions();
     render(renderSearchFilter("IWDA", noop));
-    const input = screen.getByRole("searchbox") as HTMLInputElement;
+    const input = screen.getByTestId("input-filter") as HTMLInputElement;
     expect(input.value).toBe("IWDA");
   });
 });

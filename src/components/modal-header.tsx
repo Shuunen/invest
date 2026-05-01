@@ -14,8 +14,10 @@ export function ModalHeader({ title, onClose, type = "default" }: ModalHeaderPro
         "text-error": type === "danger",
       })}
     >
-      <h3 className="text-lg font-bold">{title}</h3>
-      <button type="button" className="btn btn-circle btn-ghost btn-sm" aria-label="Close" onClick={onClose}>
+      <h3 data-testid="modal-title" className="text-lg font-bold">
+        {title}
+      </h3>
+      <button type="button" data-testid="modal-close-button" className="btn btn-circle btn-ghost btn-sm" aria-label="Close" onClick={onClose}>
         <XIcon size={16} />
       </button>
     </div>

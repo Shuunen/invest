@@ -1,4 +1,4 @@
-import { FormActions, type FormActionsProps } from "./form-actions";
+import { FormActions, type FormActionsProps } from "./form/actions";
 
 export function ModalActions({ onCancel, onConfirm, confirmText, type }: FormActionsProps) {
   return (
