@@ -9,10 +9,10 @@ export type CheckboxFieldProps = {
 
 export function CheckboxField({ label, name, onChange, value }: CheckboxFieldProps) {
   return (
-    <div className="form-control">
-      <label className="label cursor-pointer justify-start gap-3" htmlFor={name}>
-        <input id={name} data-testid={kebabCase(name)} type="checkbox" className="checkbox checkbox-sm checkbox-primary" checked={value} onChange={event => onChange(event.target.checked)} />
-        <span className="label-text">{label}</span>
+    <div className="form-control hover:font-bold">
+      <label className="label cursor-pointer justify-start gap-1" htmlFor={name}>
+        <input id={name} data-testid={kebabCase(name)} type="checkbox" className="checkbox checkbox-xs checkbox-primary" checked={value} onChange={event => onChange(event.target.checked)} />
+        <span className="label-text text-sm tracking-tighter">{label}</span>
       </label>
     </div>
   );

@@ -141,3 +141,17 @@ data-testid={`metric-${kebabCase(label)}-value`}
 <button data-testid="save-button">Save</button>
 <input data-testid="name-input" />
 ```
+
+### Use `cn` for dynamic classNames, never ternaries
+
+Import `cn` from `../../utils/browser-styles.ts` (adjust relative path as needed). Pass conditional classes as bare strings with a boolean guard — never build class strings with ternary operators or template literals.
+
+```tsx
+import { cn } from "../../utils/browser-styles.ts";
+
+// bad — ternary clutter
+<div className={`base-class ${isActive ? "active" : ""}`} />
+
+// good — object syntax, cn drops falsy values automatically
+<div className={cn("base-class", { "active": isActive })} />
+```

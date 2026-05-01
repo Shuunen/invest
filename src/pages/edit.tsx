@@ -78,7 +78,7 @@ export function AssetEditPage({ isin }: Props) {
       <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
         <GeneralSection form={form} errors={errors} patch={patch} />
         <FinancialSection form={form} errors={errors} patch={patch} />
-        <AllocationsSection form={form} errors={errors} patch={patch} />
+        <AllocationsSection form={form} patch={patch} />
       </div>
     </div>
   );

@@ -1,4 +1,13 @@
-import { jsonStringify } from "./json.ts";
+import { jsonParse, jsonStringify } from "./json.ts";
+
+describe("jsonParse", () => {
+  it("returns undefined and logs error for invalid JSON", () => {
+    expect.hasAssertions();
+    const consoleSpy = vi.spyOn(console, "error").mockReturnValue(undefined);
+    expect(jsonParse("not valid json")).toBeUndefined();
+    expect(consoleSpy).toHaveBeenCalledWith("Failed to parse JSON :", expect.any(SyntaxError));
+  });
+});
 
 describe("jsonStringify", () => {
   it("returns empty string and logs error for circular reference", () => {

@@ -156,7 +156,8 @@ describe("AssetEditPage - form", () => {
     fireEvent.change(screen.getByTestId("is-accumulating"), { target: { checked: false } });
     fireEvent.change(screen.getByTestId("available-on-broker"), { target: { checked: false } });
     fireEvent.change(screen.getByTestId("available-for-plan"), { target: { checked: true } });
-    fireEvent.change(screen.getByTestId("json-textarea-sector-allocation"), { target: { value: '{"Tech": 0.5}' } });
+    fireEvent.change(screen.getByTestId("geo-allocation-us"), { target: { value: "60" } });
+    fireEvent.change(screen.getByTestId("sector-allocation-technology"), { target: { value: "50" } });
     fireEvent.change(screen.getByTestId("provider"), { target: { value: "New Provider" } });
     fireEvent.change(screen.getByTestId("tickers"), { target: { value: "TST, ABC" } });
     expect(screen.getByTestId("fees")).toHaveValue(0.3);
@@ -197,22 +198,7 @@ describe("AssetEditPage - form", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("shows error in json textarea when geo allocation is invalid json on save attempt", () => {
-    expect.hasAssertions();
-    mockNavigate.mockClear();
-    const asset = makeAsset();
-    useAppStore.setState({
-      data: { ...defaultAppData, assets: [asset] },
-      isLoading: false,
-      loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />);
-    const geoTextarea = screen.getByTestId("json-textarea-geo-allocation");
-    fireEvent.change(geoTextarea, { target: { value: "bad json" } });
-    expect(geoTextarea).toBeInTheDocument();
-  });
-
-  it("saves successfully with invalid JSON in geo allocation (falls back to empty object)", async () => {
+  it("saves geo allocation from percentage inputs and stores as decimals", async () => {
     expect.hasAssertions();
     const asset = makeAsset();
     useAppStore.setState({
@@ -221,12 +207,12 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    const geoTextarea = screen.getByTestId("json-textarea-geo-allocation");
-    fireEvent.change(geoTextarea, { target: { value: "not json" } });
+    fireEvent.change(screen.getByTestId("geo-allocation-us"), { target: { value: "60" } });
+    fireEvent.change(screen.getByTestId("geo-allocation-france"), { target: { value: "40" } });
     fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
     });
-    expect(useAppStore.getState().data.assets[0]?.geoAllocation).toStrictEqual({});
+    expect(useAppStore.getState().data.assets[0]?.geoAllocation).toStrictEqual({ france: 0.4, us: 0.6 });
   });
 });

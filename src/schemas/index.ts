@@ -15,8 +15,10 @@ export type CountryAsia = z.infer<typeof CountryAsiaSchema>;
 export type CountryEurope = z.infer<typeof CountryEuropeSchema>;
 export type Sector = z.infer<typeof SectorSchema>;
 
+export const COUNTRIES = CountrySchema.options satisfies readonly Country[];
 export const COUNTRIES_ASIA = CountryAsiaSchema.options satisfies readonly CountryAsia[];
 export const COUNTRIES_EUROPE = CountryEuropeSchema.options satisfies readonly CountryEurope[];
+export const SECTORS = SectorSchema.options satisfies readonly Sector[];
 
 // --- ISIN ---
 

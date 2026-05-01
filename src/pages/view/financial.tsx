@@ -1,5 +1,5 @@
 import { formatNumber, formatPercent, formatPrice } from "../../components/asset-table-utils.ts";
-import { computeScore, type Asset } from "../../schemas/index.ts";
+import type { Asset } from "../../schemas/index.ts";
 import { FieldRow } from "./field-row.tsx";
 
 type Props = {
@@ -7,17 +7,10 @@ type Props = {
 };
 
 export function ViewFinancialSection({ asset }: Props) {
-  const score = computeScore(asset);
   return (
     <div className="card mb-4 border border-base-200 bg-base-100">
       <div className="card-body p-4">
         <h2 className="mb-3 card-title text-base">Financial</h2>
-        <div className="mb-2 flex items-center gap-2">
-          <span className="text-sm text-base-content/60">Score</span>
-          <span className="text-3xl font-bold" data-testid="score-display">
-            {score === undefined ? "—" : formatNumber(score)}
-          </span>
-        </div>
         <FieldRow label="Fees" value={formatPercent(asset.fees)} name="fees" />
         <FieldRow label="Price" value={formatPrice(asset.price)} name="price" />
         <FieldRow label="Performance 1y" value={formatNumber(asset.performance1y)} name="performance-1y" />

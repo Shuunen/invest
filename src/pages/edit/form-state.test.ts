@@ -32,7 +32,7 @@ function makeFormState(overrides: Partial<FormState> = {}): FormState {
     availableForPlan: false,
     availableOnBroker: true,
     fees: "0.20",
-    geoAllocation: "{}",
+    geoAllocation: {},
     isAccumulating: true,
     name: "Test ETF",
     performance1y: "10",
@@ -43,7 +43,7 @@ function makeFormState(overrides: Partial<FormState> = {}): FormState {
     riskReward1y: "1.5",
     riskReward3y: "1.8",
     riskReward5y: "1.6",
-    sectorAllocation: "{}",
+    sectorAllocation: {},
     tickers: "TST",
     ...overrides,
   };
@@ -116,6 +116,20 @@ describe("toFormState", () => {
     const form = toFormState(asset);
     expect(form.tickers).toBe("IWDA, SWRD");
   });
+
+  it("converts geo allocation decimals to percentage strings", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ geoAllocation: { france: 0.4, us: 0.6 } });
+    const form = toFormState(asset);
+    expect(form.geoAllocation).toStrictEqual({ france: "40", us: "60" });
+  });
+
+  it("converts sector allocation decimals to percentage strings", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ sectorAllocation: { financials: 0.5, technology: 0.5 } });
+    const form = toFormState(asset);
+    expect(form.sectorAllocation).toStrictEqual({ financials: "50", technology: "50" });
+  });
 });
 
 describe("buildAssetFromForm - success", () => {
@@ -141,18 +155,25 @@ describe("buildAssetFromForm - success", () => {
     expect(result.data.performance1y).toBeUndefined();
   });
 
-  it("falls back to empty object for invalid JSON in geoAllocation", () => {
+  it("converts geo allocation percentages to decimals", () => {
     expect.hasAssertions();
-    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ geoAllocation: "not valid json" }));
+    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ geoAllocation: { france: "40", us: "60" } }));
     invariant("data" in result, "Expected success result");
-    expect(result.data.geoAllocation).toStrictEqual({});
+    expect(result.data.geoAllocation).toStrictEqual({ france: 0.4, us: 0.6 });
   });
 
-  it("falls back to empty object for invalid JSON in sectorAllocation", () => {
+  it("converts sector allocation percentages to decimals", () => {
     expect.hasAssertions();
-    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ sectorAllocation: "not valid json" }));
+    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ sectorAllocation: { financials: "50", technology: "50" } }));
     invariant("data" in result, "Expected success result");
-    expect(result.data.sectorAllocation).toStrictEqual({});
+    expect(result.data.sectorAllocation).toStrictEqual({ financials: 0.5, technology: 0.5 });
+  });
+
+  it("omits zero and empty geo allocation entries", () => {
+    expect.hasAssertions();
+    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ geoAllocation: { france: "0", germany: "", us: "60" } }));
+    invariant("data" in result, "Expected success result");
+    expect(result.data.geoAllocation).toStrictEqual({ us: 0.6 });
   });
 });
 

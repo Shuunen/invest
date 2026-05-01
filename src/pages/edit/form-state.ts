@@ -1,11 +1,11 @@
-import { AssetSchema, type Asset } from "../../schemas/index.ts";
-import { jsonParse, jsonStringify } from "../../utils/json.ts";
+import { AssetSchema, type Asset, type Country, type Sector } from "../../schemas/index.ts";
+import { maxPercentage } from "../../utils/constants.ts";
 
 export type FormState = {
   availableForPlan: boolean;
   availableOnBroker: boolean;
   fees: string;
-  geoAllocation: string;
+  geoAllocation: Partial<Record<Country, string>>;
   isAccumulating: boolean;
   name: string;
   performance1y: string;
@@ -16,18 +16,26 @@ export type FormState = {
   riskReward1y: string;
   riskReward3y: string;
   riskReward5y: string;
-  sectorAllocation: string;
+  sectorAllocation: Partial<Record<Sector, string>>;
   tickers: string;
 };
 
 export type PatchFn = <Key extends keyof FormState>(key: Key, value: FormState[Key]) => void;
+
+function toPercentString(decimal: number): string {
+  return String(decimal * maxPercentage);
+}
+
+function fromPercentString(pct: string): number {
+  return Number(pct) / maxPercentage;
+}
 
 export function toFormState(asset: Asset): FormState {
   return {
     availableForPlan: asset.availableForPlan,
     availableOnBroker: asset.availableOnBroker,
     fees: String(asset.fees),
-    geoAllocation: jsonStringify(asset.geoAllocation),
+    geoAllocation: Object.fromEntries(Object.entries(asset.geoAllocation).map(([key, val]) => [key, toPercentString(val)])) as Partial<Record<Country, string>>,
     isAccumulating: asset.isAccumulating,
     name: asset.name,
     performance1y: asset.performance1y === undefined ? "" : String(asset.performance1y),
@@ -38,7 +46,7 @@ export function toFormState(asset: Asset): FormState {
     riskReward1y: asset.riskReward1y === undefined ? "" : String(asset.riskReward1y),
     riskReward3y: asset.riskReward3y === undefined ? "" : String(asset.riskReward3y),
     riskReward5y: asset.riskReward5y === undefined ? "" : String(asset.riskReward5y),
-    sectorAllocation: jsonStringify(asset.sectorAllocation),
+    sectorAllocation: Object.fromEntries(Object.entries(asset.sectorAllocation).map(([key, val]) => [key, toPercentString(val)])) as Partial<Record<Sector, string>>,
     tickers: asset.tickers.join(", "),
   };
 }
@@ -68,12 +76,23 @@ function parseZodErrors(issues: { message: string; path: unknown[] }[]): Record<
   return fieldErrors;
 }
 
+function parseAllocation(record: Partial<Record<string, string>>): Record<string, number> {
+  return Object.fromEntries(
+    Object.entries(record)
+      .filter((entry): entry is [string, string] => {
+        const [, pct] = entry;
+        return pct !== undefined && pct !== "" && Number(pct) !== 0;
+      })
+      .map(([key, pct]) => [key, fromPercentString(pct)]),
+  );
+}
+
 export function buildAssetFromForm(isin: string, form: FormState): { data: Asset } | { errors: Record<string, string> } {
   const result = AssetSchema.safeParse({
     availableForPlan: form.availableForPlan,
     availableOnBroker: form.availableOnBroker,
     fees: Number(form.fees),
-    geoAllocation: jsonParse(form.geoAllocation) ?? {},
+    geoAllocation: parseAllocation(form.geoAllocation),
     isAccumulating: form.isAccumulating,
     isin,
     name: form.name,
@@ -85,7 +104,7 @@ export function buildAssetFromForm(isin: string, form: FormState): { data: Asset
     riskReward1y: parseOptionalNumber(form.riskReward1y),
     riskReward3y: parseOptionalNumber(form.riskReward3y),
     riskReward5y: parseOptionalNumber(form.riskReward5y),
-    sectorAllocation: jsonParse(form.sectorAllocation) ?? {},
+    sectorAllocation: parseAllocation(form.sectorAllocation),
     tickers: parseTickers(form.tickers),
   });
 

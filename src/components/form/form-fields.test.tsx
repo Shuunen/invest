@@ -2,6 +2,33 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { invariant } from "es-toolkit";
 import { CheckboxField } from "./checkbox-field.tsx";
 import { JsonTextarea } from "./json-textarea.tsx";
+import { NumberField } from "./number-field.tsx";
+
+describe("NumberField", () => {
+  it("renders suffix when provided", () => {
+    expect.hasAssertions();
+    render(<NumberField label="Fee" name="fees" value="0.2" suffix="%" onChange={() => undefined} />);
+    expect(screen.getByText("%")).toBeInTheDocument();
+  });
+
+  it("does not render suffix when omitted", () => {
+    expect.hasAssertions();
+    render(<NumberField label="Fee" name="fees" value="0.2" onChange={() => undefined} />);
+    expect(screen.queryByText("%")).toBeNull();
+  });
+
+  it("applies horizontal layout classes when isHorizontal is true", () => {
+    expect.hasAssertions();
+    render(<NumberField label="Fee" name="fees" value="0.2" isHorizontal onChange={() => undefined} />);
+    expect(screen.getByTestId("fees").closest(".form-control")).toHaveClass("flex");
+  });
+
+  it("does not apply horizontal layout classes by default", () => {
+    expect.hasAssertions();
+    render(<NumberField label="Fee" name="fees" value="0.2" onChange={() => undefined} />);
+    expect(screen.getByTestId("fees").closest(".form-control")).not.toHaveClass("flex");
+  });
+});
 
 describe("CheckboxField", () => {
   it("renders label and checked state", () => {
