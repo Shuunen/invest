@@ -51,7 +51,7 @@ describe("AssetViewPage - not found", () => {
     });
     render(<AssetViewPage isin={asset.isin} />);
     expect(screen.getByTestId("asset-name")).toHaveTextContent("Test ETF");
-    expect(screen.getByTestId("isin-display")).toBeInTheDocument();
+    expect(screen.getByTestId("field-row-isin")).toBeInTheDocument();
   });
 
   it("renders provider and tickers", () => {

@@ -8,9 +8,9 @@ type Props = {
 
 export function ViewFinancialSection({ asset }: Props) {
   return (
-    <div className="card mb-4 border border-base-200 bg-base-100">
-      <div className="card-body p-4">
-        <h2 className="mb-3 card-title text-base">Financial</h2>
+    <div className="card">
+      <div className="card-body">
+        <h2 className="card-title">Financial</h2>
         <FieldRow label="Fees" value={formatPercent(asset.fees)} name="fees" />
         <FieldRow label="Price" value={formatPrice(asset.price)} name="price" />
         <FieldRow label="Performance 1y" value={formatNumber(asset.performance1y)} name="performance-1y" />

@@ -26,7 +26,7 @@ export function App() {
   useHydration(0);
   return (
     <div className="flex min-h-screen flex-col">
-      <nav className="navbar sticky top-0 z-50 border-b border-base-200 bg-base-100 px-4 shadow-sm">
+      <nav className="navbar sticky top-0 z-50 px-4 shadow-sm">
         <div className="navbar-start">
           <Link to="/">
             <div className="flex items-center gap-3 text-2xl font-bold text-primary">

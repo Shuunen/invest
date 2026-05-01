@@ -29,3 +29,11 @@
 .checkbox {
   @apply rounded-full;
 }
+
+.card {
+  @apply border border-gray-300 bg-base-100 shadow;
+}
+
+.card-body {
+  @apply gap-3 px-5 py-4;
+}

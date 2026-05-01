@@ -47,7 +47,7 @@ export function AssetViewPage({ isin }: Props) {
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <ViewGeneralSection asset={asset} />
         <ViewFinancialSection asset={asset} />
         <ViewAllocationsSection geoAllocation={asset.geoAllocation} sectorAllocation={asset.sectorAllocation} />

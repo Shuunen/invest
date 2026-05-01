@@ -23,7 +23,7 @@ export type AssetTableMeta = {
 
 function booleanCell(isin: string, field: string, value: boolean) {
   return (
-    <span data-testid={`bool-${field}-${isin.toLowerCase()}`} aria-label={value ? "Yes" : "No"} className={cn("badge", { "badge-ghost": !value, "bg-success/10": value })}>
+    <span data-testid={`bool-${field}-${isin.toLowerCase()}`} aria-label={value ? "Yes" : "No"} className={cn("badge", { "bg-error/10": !value, "bg-success/10": value })}>
       {value ? "Yes" : "No"}
     </span>
   );
@@ -161,7 +161,7 @@ export const columns: ColumnDef<Asset>[] = [
       const name = getValue<string>();
       const { isin } = row.original;
       const inner = (
-        <span className="block max-w-xs link truncate link-primary link-hover" data-testid={`name-${isin.toLowerCase()}`} title={name}>
+        <span className={cn("block max-w-xs truncate", { "link link-primary link-hover": !meta?.onToggleSelect })} data-testid={`name-${isin.toLowerCase()}`} title={name}>
           {name}
         </span>
       );

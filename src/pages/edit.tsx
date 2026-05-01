@@ -75,7 +75,7 @@ export function AssetEditPage({ isin }: Props) {
         <p className="mt-1 font-mono text-sm text-base-content">{isin}</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <GeneralSection form={form} errors={errors} patch={patch} />
         <FinancialSection form={form} errors={errors} patch={patch} />
         <AllocationsSection form={form} patch={patch} />

@@ -9,9 +9,9 @@ type Props = {
 
 export function FinancialSection({ form, errors, patch }: Props) {
   return (
-    <div className="card mb-4 border border-base-200 bg-base-100">
-      <div className="card-body gap-3 p-4">
-        <h2 className="card-title text-base">Financial</h2>
+    <div className="card">
+      <div className="card-body">
+        <h2 className="card-title">Financial</h2>
         <div className="grid grid-cols-2 gap-3">
           <NumberField label="Fees (%)" name="fees" value={form.fees} onChange={val => patch("fees", val)} placeholder="0.20" />
           {errors.fees && <p className="col-span-2 text-xs text-error">{errors.fees}</p>}

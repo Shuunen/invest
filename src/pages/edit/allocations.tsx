@@ -30,9 +30,9 @@ export function AllocationsSection({ form, patch }: Props) {
 
   return (
     <>
-      <div className="card border border-base-200 bg-base-100">
-        <div className="card-body gap-3 p-4">
-          <h2 className="card-title text-base">Geographic allocation</h2>
+      <div className="card">
+        <div className="card-body">
+          <h2 className="card-title">Geographic allocation</h2>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
             {COUNTRIES.map(country => (
               <NumberField key={country} label={formatLabel(country)} isHorizontal name={`geo-allocation-${country}`} suffix="%" value={form.geoAllocation[country] ?? ""} onChange={value => patchGeo(country, value)} />
@@ -40,9 +40,9 @@ export function AllocationsSection({ form, patch }: Props) {
           </div>
         </div>
       </div>
-      <div className="card border border-base-200 bg-base-100">
-        <div className="card-body gap-3 p-4">
-          <h2 className="card-title text-base">Sector allocation</h2>
+      <div className="card">
+        <div className="card-body">
+          <h2 className="card-title">Sector allocation</h2>
           <div className="grid gap-x-4 gap-y-2">
             {SECTORS.map(sector => (
               <NumberField key={sector} label={formatLabel(sector)} isHorizontal name={`sector-allocation-${sector}`} suffix="%" value={form.sectorAllocation[sector] ?? ""} onChange={value => patchSector(sector, value)} />
