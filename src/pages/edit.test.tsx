@@ -111,7 +111,7 @@ describe("AssetEditPage - form", () => {
     });
     render(<AssetEditPage isin={asset.isin} />);
     fireEvent.click(screen.getByTestId("cancel-button"));
-    expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
+    expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
   });
 
   it("blocks save and shows error when fees is negative, clears error on correction", async () => {

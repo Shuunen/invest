@@ -101,7 +101,7 @@ describe("AssetViewPage - not found", () => {
     });
     render(<AssetViewPage isin={asset.isin} />);
     fireEvent.click(screen.getByTestId("edit-button"));
-    expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin/edit" });
+    expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin/edit" });
   });
 
   it("back button calls history.back", () => {
@@ -158,7 +158,7 @@ describe("AssetViewPage - not found", () => {
     expect(screen.getByTestId("field-row-tickers")).toHaveTextContent("—");
   });
 
-  it("renders em dash for score when all performance values are undefined", () => {
+  it("renders em dash for performance and risk/reward when all values are undefined", () => {
     expect.hasAssertions();
     const asset = makeAsset({
       performance1y: undefined,
@@ -174,7 +174,8 @@ describe("AssetViewPage - not found", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    expect(screen.getByTestId("score-display")).toHaveTextContent("—");
+    expect(screen.getByTestId("field-row-performance-1-y")).toHaveTextContent("—");
+    expect(screen.getByTestId("field-row-risk-reward-1-y")).toHaveTextContent("—");
   });
 
   it("renders sorted allocation entries", () => {

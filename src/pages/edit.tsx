@@ -57,7 +57,7 @@ export function AssetEditPage({ isin }: Props) {
       </div>
     );
 
-  const goBack = () => void navigate({ params: { isin }, to: "/assets/$isin" });
+  const goBack = () => void navigate({ params: { isin }, replace: true, to: "/assets/$isin" });
 
   return (
     <div className="mx-auto max-w-4xl p-6">
