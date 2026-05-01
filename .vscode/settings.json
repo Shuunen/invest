@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["autoplan", "dexie", "Dexie", "gstack", "indexeddb", "isins", "misalign", "tsgo"],
+  "cSpell.words": ["autoplan", "dexie", "Dexie", "financials", "gstack", "indexeddb", "isins", "misalign", "tsgo"],
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,
   "js/ts.experimental.useTsgo": true,
