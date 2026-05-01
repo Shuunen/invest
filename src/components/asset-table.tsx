@@ -153,7 +153,7 @@ function renderTableHeader(table: Table<Asset>) {
             <th
               key={header.id}
               aria-sort={header.column.getCanSort() ? getAriaSortValue(header.column.getIsSorted()) : undefined}
-              className={cn(header.column.getIsSorted() ? "font-semibold" : undefined, header.column.columnDef.meta?.center ? "text-center" : "pl-2")}
+              className={cn(header.column.getIsSorted() ? "font-semibold" : undefined, header.column.columnDef.meta?.center ? "text-center" : "pl-0")}
               colSpan={header.colSpan}
               scope="col"
             >
@@ -227,7 +227,7 @@ export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, 
     <>
       {!propAssets && renderAssetsHeader(data.assets, priceEditActions)}
       <div className="relative p-4 text-left">
-        <div className="sticky top-5 z-20 ml-2 flex gap-4">
+        <div className="sticky top-5 z-20 flex gap-4">
           {renderSearchFilter(filterText, setFilterText)}
           {renderColumnFilter(table, visibleLeafCount)}
         </div>

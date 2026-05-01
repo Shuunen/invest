@@ -1,5 +1,5 @@
 import { invariant } from "es-toolkit";
-import { CheckIcon, ListTodoIcon, PencilLineIcon } from "lucide-react";
+import { CheckIcon, ListIcon, PencilLineIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AssetPickerModal } from "../components/asset-picker-modal.tsx";
 import { formatPrice } from "../components/asset-table-utils.ts";
@@ -104,7 +104,7 @@ export function PortfolioPage({ portfolioId }: Props) {
   const { isPriceEditing, onPriceChange, setIsPriceEditing } = usePriceEditing();
   const actions = useMemo(
     () => [
-      { icon: <ListTodoIcon size={16} />, label: "Select assets", onClick: () => setPickerOpen(true) },
+      { icon: <ListIcon size={16} />, label: "Select assets", onClick: () => setPickerOpen(true) },
       { icon: isPriceEditing ? <CheckIcon size={16} /> : <PencilLineIcon size={16} />, label: isPriceEditing ? "Set prices" : "Edit prices", onClick: () => setIsPriceEditing(prev => !prev) },
     ],
     [isPriceEditing, setIsPriceEditing],

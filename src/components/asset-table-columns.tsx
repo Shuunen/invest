@@ -23,7 +23,7 @@ export type AssetTableMeta = {
 
 function booleanCell(value: boolean) {
   return (
-    <span data-testid={value ? "bool-yes" : "bool-no"} aria-label={value ? "Yes" : "No"} className={`badge ${value ? cn("bg-success/40") : cn("badge-ghost")}`}>
+    <span data-testid={value ? "bool-yes" : "bool-no"} aria-label={value ? "Yes" : "No"} className={`badge ${value ? cn("bg-success/10") : cn("badge-ghost")}`}>
       {value ? "Yes" : "No"}
     </span>
   );
