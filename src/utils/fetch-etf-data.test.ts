@@ -1,4 +1,4 @@
-import { fetchEtfData, parseEtfHtml } from "./fetch-etf-data.ts";
+import { fetchEtfData, parseEtfHtml, parseSectorsFromAjaxXml } from "./fetch-etf-data.ts";
 import sampleHtml from "./fetch-etf-sample.html?raw";
 
 function buildHtml(overrides: Record<string, string> = {}): string {
@@ -184,14 +184,116 @@ describe("parseEtfHtml — invalid values", () => {
   });
 });
 
+describe("parseSectorsFromAjaxXml", () => {
+  const sampleXml = `<?xml version="1.0" encoding="UTF-8"?><ajax-response><component id="id168" ><![CDATA[<a id="id168" state="active">Show less</a>]]></component><component id="id192" ><![CDATA[<table class="table mb-0" data-testid="etf-holdings_sectors_table" id="id192"><tbody><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Technology</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">33.90%</span></div></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Financials</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">10.38%</span></div></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Telecommunication</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">10.22%</span></div></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Consumer Discretionary</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">10.01%</span></div></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Health Care</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">9.31%</span></div></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Industrials</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">8.32%</span></div></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Consumer Staples</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">4.98%</span></div></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Energy</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">4.01%</span></div></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Utilities</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">2.54%</span></div></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Real Estate</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">1.92%</span></div></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Basic Materials</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">1.61%</span></div></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Other</td><td><div class="right"><span data-testid="tl_etf-holdings_sectors_value_percentage">2.81%</span></div></td></tr></tbody></table>]]></component></ajax-response>`;
+
+  it("parses all known sectors from the AJAX XML response", () => {
+    expect.hasAssertions();
+    const result = parseSectorsFromAjaxXml(sampleXml);
+    expect(result).toMatchInlineSnapshot(`
+      {
+        "communicationServices": 10.22,
+        "consumerDiscretionary": 10.01,
+        "consumerStaples": 4.98,
+        "energy": 4.01,
+        "financials": 10.38,
+        "healthcare": 9.31,
+        "industrials": 8.32,
+        "materials": 1.61,
+        "realEstate": 1.92,
+        "technology": 33.9,
+        "utilities": 2.54,
+      }
+    `);
+  });
+
+  it("skips the Other row since it has no mapped key", () => {
+    expect.hasAssertions();
+    const result = parseSectorsFromAjaxXml(sampleXml);
+    expect(Object.keys(result)).not.toContain("other");
+  });
+
+  it("returns empty object when XML has no sectors table", () => {
+    expect.hasAssertions();
+    const result = parseSectorsFromAjaxXml(`<?xml version="1.0"?><ajax-response><component><![CDATA[<a>Show less</a>]]></component></ajax-response>`);
+    expect(result).toStrictEqual({});
+  });
+});
+
 describe("fetchEtfData", () => {
   it("fetches and parses ETF data successfully", async () => {
     expect.hasAssertions();
     const html = buildHtml();
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, text: () => Promise.resolve(html) }));
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: false, status: 404 }),
+    );
     const result = await fetchEtfData("IE00B5BMR087");
     expect(result.name).toBe("iShares Core S&P 500 UCITS ETF USD (Acc)");
     expect(result.tickers).toBe("SXR8");
+  });
+
+  it("uses expanded sectors from AJAX endpoint when available", async () => {
+    expect.hasAssertions();
+    const html = buildHtml();
+    const xml = `<?xml version="1.0"?><ajax-response><component><![CDATA[<table data-testid="etf-holdings_sectors_table"><tbody><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Technology</td><td><span data-testid="tl_etf-holdings_sectors_value_percentage">33.90%</span></td></tr><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Health Care</td><td><span data-testid="tl_etf-holdings_sectors_value_percentage">9.31%</span></td></tr></tbody></table>]]></component></ajax-response>`;
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(xml) }),
+    );
+    const result = await fetchEtfData("IE00B5BMR087");
+    expect(result.sectorAllocation).toStrictEqual({ healthcare: 9.31, technology: 33.9 });
+  });
+
+  it("extracts the Wicket sectors URL from the HTML when present", async () => {
+    expect.hasAssertions();
+    const wicketPath = "/en/etf-profile.html?0-1.0-holdingsSection-sectors-loadMoreSectors&isin=IE00B5BMR087&_wicket=1";
+    const html = `${buildHtml()}<script>Wicket.Ajax.ajax({"u":"${wicketPath}","e":"click"});</script>`;
+    const xml = `<?xml version="1.0"?><ajax-response><component><![CDATA[<table data-testid="etf-holdings_sectors_table"><tbody><tr data-testid="etf-holdings_sectors_row"><td data-testid="tl_etf-holdings_sectors_value_name">Technology</td><td><span data-testid="tl_etf-holdings_sectors_value_percentage">42.00%</span></td></tr></tbody></table>]]></component></ajax-response>`;
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(xml) }),
+    );
+    const result = await fetchEtfData("IE00B5BMR087");
+    expect(result.sectorAllocation).toStrictEqual({ technology: 42 });
+  });
+
+  it("falls back to parsed sectors when AJAX endpoint fails", async () => {
+    expect.hasAssertions();
+    const html = buildHtml();
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: false, status: 404 }),
+    );
+    const result = await fetchEtfData("IE00B5BMR087");
+    expect(result.sectorAllocation).toStrictEqual({});
+  });
+
+  it("falls back to parsed sectors when AJAX endpoint returns no recognizable sectors", async () => {
+    expect.hasAssertions();
+    const html = buildHtml();
+    const emptyXml = `<?xml version="1.0"?><ajax-response><component><![CDATA[<a>Show less</a>]]></component></ajax-response>`;
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(emptyXml) }),
+    );
+    const result = await fetchEtfData("IE00B5BMR087");
+    expect(result.sectorAllocation).toStrictEqual({});
   });
 
   it("throws on HTTP error", async () => {

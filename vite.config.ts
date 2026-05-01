@@ -51,7 +51,7 @@ export default defineConfig({
   ],
   test: {
     coverage: {
-      exclude: ["src/main.tsx", "src/router.tsx", "src/app.tsx"],
+      exclude: ["src/bin/**/*", "src/*.tsx"],
       include: ["src/**/*.{ts,tsx}"],
       reporter: [["text", { maxCols: 120 }], "lcov"],
       thresholds: {

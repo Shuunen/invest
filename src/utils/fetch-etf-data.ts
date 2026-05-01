@@ -49,11 +49,13 @@ const GEO_NAME_TO_KEY: Record<string, Country> = {
 };
 
 const SECTOR_NAME_TO_KEY: Record<string, Sector> = {
+  "Basic Materials": "materials",
   "Communication Services": "communicationServices",
   "Consumer Discretionary": "consumerDiscretionary",
   "Consumer Staples": "consumerStaples",
   Energy: "energy",
   Financials: "financials",
+  "Health Care": "healthcare",
   Healthcare: "healthcare",
   Industrials: "industrials",
   Materials: "materials",
@@ -99,6 +101,17 @@ function parsePercentValue(raw: string | undefined): string | undefined {
   return Number.isNaN(num) ? undefined : String(num);
 }
 
+export function parseSectorsFromAjaxXml(xml: string): Partial<Record<Sector, number>> {
+  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(.*?)\]\]>/gs)];
+  for (const match of cdataMatches) {
+    const [, html] = match;
+    if (!html.includes('data-testid="etf-holdings_sectors_table"')) continue;
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    return parseAllocation(doc, { keyMap: SECTOR_NAME_TO_KEY, nameTestId: "tl_etf-holdings_sectors_value_name", pctTestId: "tl_etf-holdings_sectors_value_percentage", rowTestId: "etf-holdings_sectors_row" });
+  }
+  return {};
+}
+
 export function parseEtfHtml(html: string): EtfPrefillData {
   const doc = new DOMParser().parseFromString(html, "text/html");
 
@@ -122,10 +135,31 @@ export function parseEtfHtml(html: string): EtfPrefillData {
 }
 
 export async function fetchEtfData(isin: string): Promise<EtfPrefillData> {
-  const targetUrl = `/en/etf-profile.html?isin=${isin}`;
-  const proxyUrl = `http://localhost:8010/proxy/${targetUrl}`;
-  const response = await fetch(proxyUrl);
+  const proxyBase = "http://localhost:8010/proxy";
+  const response = await fetch(`${proxyBase}/en/etf-profile.html?isin=${isin}`);
   if (!response.ok) throw new Error(`HTTP error ${String(response.status)}`);
   const text = await response.text();
-  return parseEtfHtml(text);
+  const result = parseEtfHtml(text);
+
+  // The page-specific Wicket path (e.g. "0-1.0-holdingsSection-sectors-loadMoreSectors") is
+  // embedded in a JS snippet and changes every session — extract it from the HTML rather than
+  // relying on a hardcoded page ID.
+  const wicketUrlMatch = /"u":"(\/en\/etf-profile\.html\?[^"]*loadMoreSectors[^"]*)"/.exec(text);
+  const sectorsPath = wicketUrlMatch ? wicketUrlMatch[1] : `/en/etf-profile.html?6-1.0-holdingsSection-sectors-loadMoreSectors&isin=${isin}&_wicket=1`;
+
+  const sectorsResponse = await fetch(`${proxyBase}${sectorsPath}&_=${Date.now()}`, {
+    headers: {
+      Accept: "application/xml, text/xml, */*; q=0.01",
+      "wicket-ajax": "true",
+      "wicket-ajax-baseurl": `en/etf-profile.html?isin=${isin}`,
+      "x-requested-with": "XMLHttpRequest",
+    },
+  });
+  if (sectorsResponse.ok) {
+    const xml = await sectorsResponse.text();
+    const expandedSectors = parseSectorsFromAjaxXml(xml);
+    if (Object.keys(expandedSectors).length > 0) result.sectorAllocation = expandedSectors;
+  }
+
+  return result;
 }

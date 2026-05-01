@@ -1,7 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import { invariant } from "es-toolkit";
+import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
+import { TextField } from "../components/form/text-field.tsx";
 import { useAppStore } from "../store/use-app-store.ts";
+import { fetchEtfData } from "../utils/fetch-etf-data.ts";
+import { applyEtfPrefill } from "./edit/apply-etf-prefill.ts";
 import { AssetForm } from "./edit/asset-form.tsx";
 import { buildAssetFromForm, toFormState, type FormState } from "./edit/form-state.ts";
 
@@ -16,6 +20,8 @@ function useAssetEditForm(isin: string) {
     if (asset && !form) setForm(toFormState(asset));
   }, [asset, form]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isFetching, setIsFetching] = useState(false);
+  const [fetchError, setFetchError] = useState<string | undefined>();
 
   function patch<Key extends keyof FormState>(key: Key, value: FormState[Key]) {
     setForm(prev => {
@@ -23,6 +29,18 @@ function useAssetEditForm(isin: string) {
       return { ...prev, [key]: value };
     });
     setErrors(prev => Object.fromEntries(Object.entries(prev).filter(([errKey]) => errKey !== key)));
+  }
+
+  async function handleFetch() {
+    setIsFetching(true);
+    setFetchError(undefined);
+    try {
+      applyEtfPrefill(await fetchEtfData(isin), patch);
+    } catch (error) {
+      setFetchError(error instanceof Error ? error.message : "Failed to fetch ETF data");
+    } finally {
+      setIsFetching(false);
+    }
   }
 
   function handleSave() {
@@ -36,14 +54,14 @@ function useAssetEditForm(isin: string) {
     void navigate({ params: { isin }, to: "/assets/$isin" });
   }
 
-  return { errors, form, handleSave, patch };
+  return { errors, fetchError, form, handleFetch, handleSave, isFetching, patch };
 }
 
 type Props = { isin: string };
 
 export function AssetEditPage({ isin }: Props) {
   const navigate = useNavigate();
-  const { form, errors, patch, handleSave } = useAssetEditForm(isin);
+  const { form, errors, fetchError, patch, handleFetch, handleSave, isFetching } = useAssetEditForm(isin);
 
   if (!form)
     return (
@@ -56,5 +74,32 @@ export function AssetEditPage({ isin }: Props) {
 
   const goBack = () => void navigate({ params: { isin }, replace: true, to: "/assets/$isin" });
 
-  return <AssetForm title="Edit asset" isinDisplay={<p className="mt-1 font-mono text-sm text-base-content">{isin}</p>} errors={errors} form={form} onCancel={goBack} onSave={handleSave} patch={patch} />;
+  return (
+    <AssetForm
+      title="Edit asset"
+      isinDisplay={
+        <div className="mt-3">
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <TextField label="ISIN" name="isin" value={isin} onChange={() => undefined} readOnly />
+            </div>
+            <button type="button" data-testid="fetch-etf-button" className="btn btn-outline btn-sm" disabled={isFetching} onClick={() => void handleFetch()}>
+              {isFetching ? <span className="loading loading-xs loading-spinner" data-testid="fetch-spinner" /> : <RefreshCw size={14} />}
+              Fetch
+            </button>
+          </div>
+          {fetchError !== undefined && (
+            <p className="mt-1 text-xs text-error" data-testid="fetch-error">
+              {fetchError}
+            </p>
+          )}
+        </div>
+      }
+      errors={errors}
+      form={form}
+      onCancel={goBack}
+      onSave={handleSave}
+      patch={patch}
+    />
+  );
 }

@@ -60,6 +60,14 @@
   "plugins": ["import", "jsdoc", "oxc", "promise", "react", "react-perf", "typescript", "unicorn", "vitest"],
   "overrides": [
     {
+      "files": ["src/bin/**/*.ts"],
+      "rules": {
+        "no-nodejs-modules": "off",
+        "no-console": "off",
+        "require-hook": "off"
+      }
+    },
+    {
       "files": ["*.test.{js,ts,tsx}", "vitest.*.ts", "*.mock.ts"],
       "globals": {
         "afterAll": "readonly",
