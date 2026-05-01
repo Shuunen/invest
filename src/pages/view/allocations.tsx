@@ -1,6 +1,7 @@
 import { formatPercent } from "../../components/asset-table-utils.ts";
 import type { Asset } from "../../schemas/index.ts";
 import { maxPercentage } from "../../utils/constants.ts";
+import { ProgressBar } from "./progress-bar.tsx";
 
 const MAX_ABBREVIATION_LENGTH = 2;
 
@@ -27,17 +28,22 @@ type Props = {
 };
 
 export function ViewAllocationsSection({ geoAllocation, sectorAllocation }: Props) {
+  const totalGeo = Object.values(geoAllocation).reduce((sum, val) => sum + val, 0) * maxPercentage;
+  const totalSector = Object.values(sectorAllocation).reduce((sum, val) => sum + val, 0) * maxPercentage;
+
   return (
     <>
       <div className="card">
         <div className="card-body">
           <h2 className="card-title">Geographic allocation</h2>
+          <ProgressBar name="geo-allocation" total={totalGeo} />
           <p data-testid="geo-allocation-text">{renderAllocation(geoAllocation)}</p>
         </div>
       </div>
       <div className="card">
         <div className="card-body">
           <h2 className="card-title">Sector allocation</h2>
+          <ProgressBar name="sector-allocation" total={totalSector} />
           <p data-testid="sector-allocation-text">{renderAllocation(sectorAllocation)}</p>
         </div>
       </div>

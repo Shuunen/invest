@@ -1,7 +1,7 @@
 import { Link, Outlet } from "@tanstack/react-router";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
-import { useHydration } from "./components/asset-table-db.ts";
+import { useDexieSync, useHydration } from "./components/asset-table-db.ts";
 import { CreatePortfolioModal } from "./components/create-portfolio-modal.tsx";
 import { ImportExportButtons } from "./components/import-export-buttons.tsx";
 import { InvestIcon } from "./components/invest-icon.tsx";
@@ -24,6 +24,7 @@ function PortfolioNavLinks() {
 export function App() {
   const [createOpen, setCreateOpen] = useState(false);
   useHydration(0);
+  useDexieSync();
   return (
     <div className="flex min-h-screen flex-col">
       <nav className="navbar sticky top-0 z-50 bg-base-100 px-4 shadow-sm">

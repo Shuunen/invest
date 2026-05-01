@@ -3,6 +3,7 @@ import { invariant } from "es-toolkit";
 import { db } from "../db/db.ts";
 import { computeScore, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { useDexieSync } from "./asset-table-db.ts";
 import { matchesFilter } from "./asset-table-hooks.ts";
 import { quintileClass, formatPercent } from "./asset-table-utils.ts";
 import { AssetTable } from "./asset-table.tsx";
@@ -560,14 +561,19 @@ describe("AssetTable - useHydration", () => {
   });
 });
 
-describe("AssetTable - useDexieSync", () => {
+describe("useDexieSync", () => {
   it("writes data to DB after debounce when store changes", async () => {
     expect.hasAssertions();
     await db.delete();
     await db.open();
 
     useAppStore.setState({ data: makeTestData([makeAsset()]), isLoading: false, loadError: undefined });
-    render(<AssetTable />);
+
+    function DexieSyncWrapper() {
+      useDexieSync();
+      return <span />;
+    }
+    render(<DexieSyncWrapper />);
 
     act(() => {
       useAppStore.getState().setSort({ column: "fees", direction: "asc" });

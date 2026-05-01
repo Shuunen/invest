@@ -6,7 +6,7 @@ import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { type AssetTableMeta, columns, makeAmountColumn, makePriceEditColumn, makeRemoveColumn, makeSelectColumn, makeValueColumn } from "./asset-table-columns.tsx";
-import { useDexieSync, useHydration } from "./asset-table-db.ts";
+import { useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
 import { renderSkeleton } from "./asset-table-skeleton.tsx";
@@ -66,7 +66,6 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
     setRetryKey(prevKey => prevKey + 1);
   };
   useHydration(retryKey);
-  useDexieSync();
   const resolvedVisibility = useMemo(() => ({ ...DEFAULT_COLUMN_VISIBILITY, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
   const activeColumns = buildActiveColumns({ amountMap, onAmountChange, onPriceChange, onRemoveAsset, onToggleSelect });
   const sorting: SortingState = useMemo(() => {
