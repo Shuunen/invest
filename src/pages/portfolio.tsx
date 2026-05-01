@@ -72,7 +72,11 @@ function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDele
     <dialog className="modal-open modal" aria-modal="true">
       <div className="modal-box">
         <ModalHeader title="Remove asset" onClose={onCancel} type="danger" />
-        Remove <span className="font-semibold">{assetName}</span> from this portfolio ? This cannot be undone.
+        Remove{" "}
+        <span data-testid="modal-asset-name" className="font-semibold">
+          {assetName}
+        </span>{" "}
+        from this portfolio? This cannot be undone.
         <ModalActions onCancel={onCancel} onConfirm={onConfirm} confirmText="Remove" type="danger" />
       </div>
       <div className="modal-backdrop" onClick={onCancel} />

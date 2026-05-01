@@ -2,12 +2,22 @@ import { formatPercent } from "../../components/asset-table-utils.ts";
 import type { Asset } from "../../schemas/index.ts";
 import { maxPercentage } from "../../utils/constants.ts";
 
+const MAX_ABBREVIATION_LENGTH = 2;
+
+function formatAllocationKey(key: string): string {
+  const words = key
+    .replaceAll(/([A-Z])/g, " $1")
+    .trim()
+    .split(/\s+/);
+  return words.map(word => (word.length <= MAX_ABBREVIATION_LENGTH ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1))).join(" ");
+}
+
 function renderAllocation(map: Asset["geoAllocation"] | Asset["sectorAllocation"]): string {
   const entries = Object.entries(map);
   if (entries.length === 0) return "—";
   return entries
     .toSorted(([, valueA], [, valueB]) => valueB - valueA)
-    .map(([key, pct]) => `${key}: ${formatPercent(pct * maxPercentage)}`)
+    .map(([key, pct]) => `${formatAllocationKey(key)}: ${formatPercent(pct * maxPercentage)}`)
     .join(" · ");
 }
 

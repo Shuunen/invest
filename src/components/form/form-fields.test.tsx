@@ -8,13 +8,13 @@ describe("NumberField", () => {
   it("renders suffix when provided", () => {
     expect.hasAssertions();
     render(<NumberField label="Fee" name="fees" value="0.2" suffix="%" onChange={() => undefined} />);
-    expect(screen.getByText("%")).toBeInTheDocument();
+    expect(screen.getByTestId("fees-suffix")).toBeInTheDocument();
   });
 
   it("does not render suffix when omitted", () => {
     expect.hasAssertions();
     render(<NumberField label="Fee" name="fees" value="0.2" onChange={() => undefined} />);
-    expect(screen.queryByText("%")).toBeNull();
+    expect(screen.queryByTestId("fees-suffix")).not.toBeInTheDocument();
   });
 
   it("applies horizontal layout classes when isHorizontal is true", () => {
@@ -51,7 +51,7 @@ describe("JsonTextarea", () => {
     expect.hasAssertions();
     render(<JsonTextarea name="geo-allocation" value="{}" onChange={() => undefined} />);
     expect(screen.getByTestId("json-textarea-geo-allocation")).toBeInTheDocument();
-    expect(screen.queryByRole("paragraph")).toBeNull();
+    expect(screen.queryByTestId("json-textarea-geo-allocation-error")).not.toBeInTheDocument();
   });
 
   it("renders error message and error class when error prop is set", () => {

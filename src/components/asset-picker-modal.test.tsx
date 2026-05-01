@@ -57,14 +57,14 @@ describe("AssetPickerModal - with assets", () => {
   it("renders asset rows", () => {
     expect.hasAssertions();
     render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
-    expect(screen.getByTestId("name-LU1234567890")).toBeInTheDocument();
-    expect(screen.getByTestId("isin-LU1234567890")).toBeInTheDocument();
+    expect(screen.getByTestId("name-lu1234567890")).toBeInTheDocument();
+    expect(screen.getByTestId("isin-lu1234567890")).toBeInTheDocument();
   });
 
   it("pre-checks initially selected assets", () => {
     expect.hasAssertions();
     render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
-    expect(screen.getByTestId("select-LU1234567890")).toBeChecked();
+    expect(screen.getByTestId("select-lu1234567890")).toBeChecked();
   });
 
   it("shows selected count", () => {
@@ -76,18 +76,18 @@ describe("AssetPickerModal - with assets", () => {
   it("toggles selection when row is clicked", async () => {
     expect.hasAssertions();
     render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
-    const checkbox = screen.getByTestId("select-LU1234567890");
+    const checkbox = screen.getByTestId("select-lu1234567890");
     expect(checkbox).not.toBeChecked();
     fireEvent.click(screen.getByTestId("asset-row-LU1234567890"));
     await waitFor(() => {
-      expect(screen.getByTestId("select-LU1234567890")).toBeChecked();
+      expect(screen.getByTestId("select-lu1234567890")).toBeChecked();
     });
   });
 
   it("toggles selection when checkbox is clicked directly", () => {
     expect.hasAssertions();
     render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
-    const checkbox = screen.getByTestId("select-LU1234567890");
+    const checkbox = screen.getByTestId("select-lu1234567890");
     expect(checkbox).toBeChecked();
     // click to uncheck (exercises the delete branch)
     fireEvent.click(checkbox);
@@ -101,8 +101,8 @@ describe("AssetPickerModal - with assets", () => {
     expect.hasAssertions();
     render(<AssetPickerModal assets={FILTERED_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     await userEvent.type(screen.getByTestId("input-filter"), "global");
-    expect(screen.getByTestId("name-LU1234567890")).toBeInTheDocument();
-    expect(screen.queryByTestId("name-LU0987654321")).not.toBeInTheDocument();
+    expect(screen.getByTestId("name-lu1234567890")).toBeInTheDocument();
+    expect(screen.queryByTestId("name-lu0987654321")).not.toBeInTheDocument();
   });
 
   it("shows no match message when filter matches nothing", async () => {

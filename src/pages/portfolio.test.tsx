@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { Asset, Portfolio } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { PortfolioPage } from "./portfolio.tsx";
@@ -137,8 +137,8 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByTestId("name-LU1234567890")).toBeInTheDocument();
-    expect(screen.getByTestId("isin-LU1234567890")).toBeInTheDocument();
+    expect(screen.getByTestId("name-lu1234567890")).toBeInTheDocument();
+    expect(screen.getByTestId("isin-lu1234567890")).toBeInTheDocument();
   });
 
   it("shows total portfolio value in header as amount * price", () => {
@@ -188,7 +188,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    fireEvent.click(screen.getByTestId("remove-LU1234567890"));
+    fireEvent.click(screen.getByTestId("remove-lu1234567890"));
     // confirmation modal should appear; deletion is not yet applied
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(1);
     fireEvent.click(screen.getByTestId("confirm-button"));
@@ -207,7 +207,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    const input = screen.getByTestId("amount-input-LU1234567890");
+    const input = screen.getByTestId("amount-input-lu1234567890");
     fireEvent.click(input);
     fireEvent.change(input, { target: { value: "15" } });
     fireEvent.blur(input);
@@ -226,7 +226,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    const input = screen.getByTestId("amount-input-LU1234567890");
+    const input = screen.getByTestId("amount-input-lu1234567890");
     fireEvent.blur(input);
     expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.amount).toBe(5);
   });
@@ -243,7 +243,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    fireEvent.click(screen.getByTestId("remove-LU1234567890"));
+    fireEvent.click(screen.getByTestId("remove-lu1234567890"));
     expect(screen.getByTestId("modal-title")).toBeInTheDocument();
     fireEvent.click(screen.getByTestId("cancel-button"));
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(1);
@@ -262,12 +262,14 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    fireEvent.click(screen.getByTestId("remove-LU1234567890"));
-    useAppStore.setState(prev => ({
-      data: { ...prev.data, assets: [] },
-    }));
+    fireEvent.click(screen.getByTestId("remove-lu1234567890"));
+    act(() => {
+      useAppStore.setState(prev => ({
+        data: { ...prev.data, assets: [] },
+      }));
+    });
     // The modal should still be visible and fall back to displaying the ISIN
-    expect(screen.getByText(asset.isin)).toBeInTheDocument();
+    expect(screen.getByTestId("modal-asset-name")).toHaveTextContent(asset.isin);
   });
 });
 
@@ -284,10 +286,10 @@ describe("PortfolioPage - price editing", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.queryByTestId(`price-input-${asset.isin}`)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(`price-input-${asset.isin.toLowerCase()}`)).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     expect(screen.getByTestId("action-set-prices")).toBeInTheDocument();
-    expect(screen.getByTestId(`price-input-${asset.isin}`)).toBeInTheDocument();
+    expect(screen.getByTestId(`price-input-${asset.isin.toLowerCase()}`)).toBeInTheDocument();
   });
 
   it("price input blur with new value updates asset price in the store", () => {
@@ -303,7 +305,7 @@ describe("PortfolioPage - price editing", () => {
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
-    const input = screen.getByTestId(`price-input-${asset.isin}`);
+    const input = screen.getByTestId(`price-input-${asset.isin.toLowerCase()}`);
     fireEvent.change(input, { target: { value: "99" } });
     fireEvent.blur(input);
     expect(useAppStore.getState().data.assets[0]?.price).toBe(99);

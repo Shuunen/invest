@@ -75,13 +75,16 @@ export const useAppStore = create<AppStore>()(
         data: { ...state.data, settings: { ...state.data.settings, sort } },
       })),
     updateAsset: (isin, asset) =>
-      set(state => ({
-        data: {
-          ...state.data,
-          assets: state.data.assets.map(data => (data.isin === isin ? asset : data)),
-          settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
-        },
-      })),
+      set(state => {
+        if (!state.data.assets.some(data => data.isin === isin)) return state;
+        return {
+          data: {
+            ...state.data,
+            assets: state.data.assets.map(data => (data.isin === isin ? asset : data)),
+            settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
+          },
+        };
+      }),
     updateAssetPrice: (isin, price) =>
       set(state => {
         const asset = state.data.assets.find(en => en.isin === isin);

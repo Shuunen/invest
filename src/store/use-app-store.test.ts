@@ -124,6 +124,19 @@ describe("useAppStore - asset mutations", () => {
     expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
   });
 
+  it("updateAsset does nothing when ISIN does not exist", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [baseAsset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().updateAsset("XX0000000000", baseAsset);
+    expect(useAppStore.getState().data.assets).toHaveLength(1);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before);
+  });
+
   it("updateAssetPrice updates the matching asset price and leaves others unchanged", () => {
     expect.hasAssertions();
     const assetB = { ...baseAsset, isin: "LU0987654321", name: "ETF B", price: 20 };

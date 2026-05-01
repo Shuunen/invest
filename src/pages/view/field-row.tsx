@@ -1,4 +1,4 @@
-import { kebabCase } from "es-toolkit";
+import { kebabCase } from "es-toolkit/string";
 
 type Props = {
   label: string;

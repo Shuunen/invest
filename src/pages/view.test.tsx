@@ -15,7 +15,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
     availableForPlan: true,
     availableOnBroker: true,
     fees: 0.2,
-    geoAllocation: { US: 0.6 },
+    geoAllocation: { us: 0.6 },
     isAccumulating: true,
     isin: "LU1234567890",
     name: "Test ETF",
@@ -27,7 +27,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
     riskReward1y: 1.5,
     riskReward3y: 1.8,
     riskReward5y: 1.6,
-    sectorAllocation: { Technology: 0.4 },
+    sectorAllocation: { technology: 0.4 },
     tickers: ["TST"],
     ...overrides,
   };
@@ -196,7 +196,7 @@ describe("AssetViewPage - not found", () => {
 
   it("renders sorted allocation entries", () => {
     expect.hasAssertions();
-    const asset = makeAsset({ geoAllocation: { EU: 0.3, US: 0.6 } });
+    const asset = makeAsset({ geoAllocation: { eu: 0.3, us: 0.6 } });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,

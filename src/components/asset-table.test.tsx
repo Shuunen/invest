@@ -727,7 +727,7 @@ describe("AssetTable - price editing", () => {
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
-      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).toBeInTheDocument();
     });
   });
 
@@ -737,11 +737,11 @@ describe("AssetTable - price editing", () => {
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
-      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).toBeInTheDocument();
     });
     fireEvent.click(screen.getByTestId("action-done"));
     await waitFor(() => {
-      expect(screen.queryByTestId(`price-input-${PRICE_ASSET.isin}`)).not.toBeInTheDocument();
+      expect(screen.queryByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).not.toBeInTheDocument();
     });
   });
 
@@ -751,9 +751,9 @@ describe("AssetTable - price editing", () => {
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
-      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).toBeInTheDocument();
     });
-    const input = screen.getByTestId(`price-input-${PRICE_ASSET.isin}`);
+    const input = screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`);
     fireEvent.change(input, { target: { value: "75" } });
     fireEvent.blur(input);
     await waitFor(() => {
@@ -769,9 +769,9 @@ describe("AssetTable - price editing", () => {
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
-      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).toBeInTheDocument();
     });
-    fireEvent.blur(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`));
+    fireEvent.blur(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`));
     expect(useAppStore.getState().data.settings.editCount).toBe(editCountBefore);
   });
 
@@ -783,9 +783,9 @@ describe("AssetTable - price editing", () => {
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
-      expect(screen.getByTestId(`price-input-${zeroAsset.isin}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`price-input-${zeroAsset.isin.toLowerCase()}`)).toBeInTheDocument();
     });
-    const input = screen.getByTestId(`price-input-${zeroAsset.isin}`);
+    const input = screen.getByTestId(`price-input-${zeroAsset.isin.toLowerCase()}`);
     fireEvent.change(input, { target: { value: "" } });
     fireEvent.blur(input);
     expect(useAppStore.getState().data.settings.editCount).toBe(editCountBefore);
@@ -797,9 +797,9 @@ describe("AssetTable - price editing", () => {
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
-      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).toBeInTheDocument();
     });
-    expect(() => fireEvent.click(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`))).not.toThrow();
+    expect(() => fireEvent.click(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`))).not.toThrow();
   });
 });
 

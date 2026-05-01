@@ -1,10 +1,11 @@
 import { kebabCase } from "es-toolkit/string";
 import type { Asset } from "../../schemas/index.ts";
+import { cn } from "../../utils/browser-styles.ts";
 import { FieldRow } from "./field-row.tsx";
 
 function booleanBadge(value: boolean, label: string) {
   return (
-    <span aria-label={value ? `${label}: Yes` : `${label}: No`} data-testid={`${kebabCase(label)}-badge`} className={`badge ${value ? "bg-success/40" : "badge-ghost"}`}>
+    <span aria-label={value ? `${label}: Yes` : `${label}: No`} data-testid={`${kebabCase(label)}-badge`} className={cn("badge", { "badge-ghost": !value, "bg-success/40": value })}>
       {value ? "Yes" : "No"}
     </span>
   );

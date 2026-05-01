@@ -1,5 +1,5 @@
 {
   "permissions": {
-    "allow": ["Bash(~/.claude/skills/gstack/bin/*)", "Bash(git *)", "Bash(grep *)", "Bash(node -e *)", "Bash(npx *)", "Bash(pnpm *)", "Bash(sed *)", "Skill(qa)", "Skill(investigate)"]
+    "allow": ["Bash(~/.claude/skills/gstack/bin/*)", "Bash(git *)", "Bash(grep *)", "Bash(node -e *)", "Bash(npx *)", "Bash(pnpm *)", "Bash(sed *)", "Skill(qa)", "Skill(investigate)", "WebFetch(domain:github.com)"]
   }
 }

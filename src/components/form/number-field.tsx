@@ -28,7 +28,11 @@ export function NumberField({ isHorizontal, label, name, onChange, placeholder, 
           value={value}
           onChange={event => onChange(event.target.value)}
         />
-        {suffix !== undefined && <span className="absolute right-2 text-xs text-base-content/60">{suffix}</span>}
+        {suffix !== undefined && (
+          <span data-testid={`${kebabCase(name)}-suffix`} className="absolute right-2 text-xs text-base-content/60">
+            {suffix}
+          </span>
+        )}
       </div>
     </div>
   );

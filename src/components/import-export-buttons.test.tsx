@@ -95,7 +95,7 @@ describe("ImportExportButtons", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
     const clickSpy = vi.spyOn(fileInput, "click");
     fireEvent.click(screen.getByTestId("import-button"));
     expect(clickSpy).toHaveBeenCalledWith();
@@ -105,13 +105,13 @@ describe("ImportExportButtons", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
     fireEvent.change(fileInput);
     expect(screen.queryByTestId("import-error")).not.toBeInTheDocument();
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
-    const fileInputAfter = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInputAfter = screen.getAllByTestId("file-input").at(-1) as HTMLInputElement;
     const file = new File([VALID_IMPORT_JSON], "data.json", { type: "application/json" });
     await userEvent.upload(fileInputAfter, file);
     await waitFor(() => {
@@ -123,7 +123,7 @@ describe("ImportExportButtons", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
     const file = new File(["not valid json {{"], "bad.json", { type: "application/json" });
     await userEvent.upload(fileInput, file);
     await waitFor(() => {
@@ -136,7 +136,7 @@ describe("ImportExportButtons", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
     const file = new File(["not valid json {{"], "bad.json", { type: "application/json" });
     await userEvent.upload(fileInput, file);
     await waitFor(() => {
@@ -150,7 +150,7 @@ describe("ImportExportButtons", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
     const file = new File(["not valid json {{"], "bad.json", { type: "application/json" });
     await userEvent.upload(fileInput, file);
     await waitFor(() => {

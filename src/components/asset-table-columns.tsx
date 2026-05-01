@@ -23,7 +23,7 @@ export type AssetTableMeta = {
 
 function booleanCell(isin: string, field: string, value: boolean) {
   return (
-    <span data-testid={`bool-${field}-${isin}`} aria-label={value ? "Yes" : "No"} className={cn("badge", { "badge-ghost": !value, "bg-success/10": value })}>
+    <span data-testid={`bool-${field}-${isin.toLowerCase()}`} aria-label={value ? "Yes" : "No"} className={cn("badge", { "badge-ghost": !value, "bg-success/10": value })}>
       {value ? "Yes" : "No"}
     </span>
   );
@@ -36,7 +36,7 @@ export function makeSelectColumn(): ColumnDef<Asset> {
       return (
         <input
           type="checkbox"
-          data-testid={`select-${row.original.isin}`}
+          data-testid={`select-${row.original.isin.toLowerCase()}`}
           className="checkbox checkbox-sm checkbox-primary"
           checked={meta?.selectedIsins?.has(row.original.isin) ?? false}
           onChange={() => meta?.onToggleSelect?.(row.original.isin)}
@@ -54,7 +54,7 @@ export function makeSelectColumn(): ColumnDef<Asset> {
 export function makeValueColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
   return {
     accessorFn: row => (amountMap?.get(row.isin) ?? 0) * (row.price ?? 0),
-    cell: ({ getValue, row }) => <span data-testid={`value-${row.original.isin}`}>{`${formatNumber(getValue<number>())} €`}</span>,
+    cell: ({ getValue, row }) => <span data-testid={`value-${row.original.isin.toLowerCase()}`}>{`${formatNumber(getValue<number>())} €`}</span>,
     header: "Value",
     id: "value",
     meta: { center: true, title: "Value : amount * price in €" },
@@ -75,8 +75,8 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
           min={0}
           defaultValue={value}
           key={value}
-          id={`amount-input-${isin}`}
-          data-testid={`amount-input-${isin}`}
+          id={`amount-input-${isin.toLowerCase()}`}
+          data-testid={`amount-input-${isin.toLowerCase()}`}
           aria-label={`Amount for ${row.original.name}`}
           onClick={event => event.stopPropagation()}
           onBlur={event => {
@@ -107,8 +107,8 @@ export function makePriceEditColumn(): ColumnDef<Asset> {
           step={0.01}
           defaultValue={value}
           key={value}
-          id={`price-input-${isin}`}
-          data-testid={`price-input-${isin}`}
+          id={`price-input-${isin.toLowerCase()}`}
+          data-testid={`price-input-${isin.toLowerCase()}`}
           aria-label={`Price for ${row.original.name}`}
           onClick={event => event.stopPropagation()}
           onBlur={event => {
@@ -138,7 +138,7 @@ export const columns: ColumnDef<Asset>[] = [
   {
     accessorKey: "isin",
     cell: ({ getValue }) => (
-      <span className="font-mono text-xs" data-testid={`isin-${getValue<string>()}`}>
+      <span className="font-mono text-xs" data-testid={`isin-${getValue<string>().toLowerCase()}`}>
         {getValue<string>()}
       </span>
     ),
@@ -146,7 +146,7 @@ export const columns: ColumnDef<Asset>[] = [
   },
   {
     accessorKey: "tickers",
-    cell: ({ getValue, row }) => <span data-testid={`tickers-${row.original.isin}`}>{getValue<string[]>().join(", ")}</span>,
+    cell: ({ getValue, row }) => <span data-testid={`tickers-${row.original.isin.toLowerCase()}`}>{getValue<string[]>().join(", ")}</span>,
     header: "Tickers",
     sortingFn: (rowA, rowB) => {
       const tickersA = rowA.original.tickers.join(", ");
@@ -156,13 +156,22 @@ export const columns: ColumnDef<Asset>[] = [
   },
   {
     accessorKey: "name",
-    cell: ({ getValue, row }) => (
-      <Link to="/assets/$isin" params={{ isin: row.original.isin }}>
-        <span className="block max-w-xs link truncate link-primary link-hover" data-testid={`name-${row.original.isin}`} title={getValue<string>()}>
-          {getValue<string>()}
+    cell: ({ getValue, row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      const name = getValue<string>();
+      const { isin } = row.original;
+      const inner = (
+        <span className="block max-w-xs link truncate link-primary link-hover" data-testid={`name-${isin.toLowerCase()}`} title={name}>
+          {name}
         </span>
-      </Link>
-    ),
+      );
+      if (meta?.onToggleSelect) return inner;
+      return (
+        <Link to="/assets/$isin" params={{ isin }}>
+          {inner}
+        </Link>
+      );
+    },
     header: "Name",
   },
   {
@@ -191,7 +200,7 @@ export const columns: ColumnDef<Asset>[] = [
   },
   {
     accessorKey: "performance1y",
-    cell: ({ getValue, row }) => <span data-testid={`performance1y-${row.original.isin}`}>{formatNumber(getValue<number | undefined>())}</span>,
+    cell: ({ getValue, row }) => <span data-testid={`performance1y-${row.original.isin.toLowerCase()}`}>{formatNumber(getValue<number | undefined>())}</span>,
     header: "P1y",
     meta: { center: true, title: "Performance over 1 year" },
   },
@@ -209,7 +218,7 @@ export const columns: ColumnDef<Asset>[] = [
   },
   {
     accessorKey: "riskReward1y",
-    cell: ({ getValue, row }) => <span data-testid={`risk-reward1y-${row.original.isin}`}>{formatNumber(getValue<number | undefined>())}</span>,
+    cell: ({ getValue, row }) => <span data-testid={`risk-reward1y-${row.original.isin.toLowerCase()}`}>{formatNumber(getValue<number | undefined>())}</span>,
     header: "RR1y",
     meta: { center: true, title: "Risk/Reward over 1 year" },
   },
@@ -237,7 +246,7 @@ export const columns: ColumnDef<Asset>[] = [
 export function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
   return {
     cell: ({ row }) => (
-      <button type="button" data-testid={`remove-${row.original.isin}`} className="btn text-error btn-ghost btn-xs" aria-label={`Remove ${row.original.name}`} onClick={() => onRemove(row.original.isin)}>
+      <button type="button" data-testid={`remove-${row.original.isin.toLowerCase()}`} className="btn text-error btn-ghost btn-xs" aria-label={`Remove ${row.original.name}`} onClick={() => onRemove(row.original.isin)}>
         <Trash2 size={14} />
       </button>
     ),
