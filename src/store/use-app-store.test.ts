@@ -161,6 +161,22 @@ describe("useAppStore - asset mutations", () => {
     useAppStore.getState().updateAssetPrice(baseAsset.isin, 42);
     expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
   });
+
+  it("addAsset appends a new asset to the list", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    useAppStore.getState().addAsset(baseAsset);
+    expect(useAppStore.getState().data.assets).toHaveLength(1);
+    expect(useAppStore.getState().data.assets[0]?.isin).toBe(baseAsset.isin);
+  });
+
+  it("addAsset increments editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().addAsset(baseAsset);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
+  });
 });
 
 describe("useAppStore - portfolio mutations", () => {

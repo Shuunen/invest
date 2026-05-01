@@ -2,6 +2,7 @@ import { createRootRoute, createRoute, createRouter } from "@tanstack/react-rout
 import { App } from "./app.tsx";
 import { AboutPage } from "./pages/about.tsx";
 import { IndexPage } from "./pages/assets.tsx";
+import { AssetCreatePage } from "./pages/create.tsx";
 import { AssetEditPage } from "./pages/edit.tsx";
 import { PortfolioPage } from "./pages/portfolio.tsx";
 import { AssetViewPage } from "./pages/view.tsx";
@@ -31,6 +32,12 @@ const portfolioRoute = createRoute({
   path: "/portfolios/$id",
 });
 
+const assetCreateRoute = createRoute({
+  component: AssetCreatePage,
+  getParentRoute: () => rootRoute,
+  path: "/assets/create",
+});
+
 const assetRoute = createRoute({
   component: () => {
     const { isin } = assetRoute.useParams();
@@ -49,6 +56,6 @@ const assetEditRoute = createRoute({
   path: "/assets/$isin/edit",
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, aboutRoute, portfolioRoute, assetRoute, assetEditRoute]);
+const routeTree = rootRoute.addChildren([indexRoute, aboutRoute, portfolioRoute, assetCreateRoute, assetRoute, assetEditRoute]);
 
 export const router = createRouter({ routeTree });

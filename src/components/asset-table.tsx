@@ -1,5 +1,6 @@
+import { useNavigate } from "@tanstack/react-router";
 import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
-import { CheckIcon, PencilLineIcon } from "lucide-react";
+import { CheckIcon, PencilLineIcon, PlusIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
@@ -203,11 +204,15 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
 }
 
 export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap, onPriceChange: propOnPriceChange }: Props = {}) {
+  const navigate = useNavigate();
   const [isPriceEditing, setIsPriceEditing] = useState(false);
   const priceEditActions = useMemo(() => {
     const icon = isPriceEditing ? <CheckIcon size={16} /> : <PencilLineIcon size={16} />;
-    return [{ icon, label: isPriceEditing ? "Done" : "Edit prices", onClick: () => setIsPriceEditing(prev => !prev) }];
-  }, [isPriceEditing]);
+    return [
+      { icon: <PlusIcon size={16} />, label: "Add asset", onClick: () => void navigate({ to: "/assets/create" }) },
+      { icon, label: isPriceEditing ? "Done" : "Edit prices", onClick: () => setIsPriceEditing(prev => !prev) },
+    ];
+  }, [isPriceEditing, navigate]);
   const stablePriceChange = useCallback((isin: string, price: number) => {
     useAppStore.getState().updateAssetPrice(isin, price);
   }, []);

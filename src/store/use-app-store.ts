@@ -16,6 +16,7 @@ export const defaultAppData: AppData = {
 };
 
 type AppStore = {
+  addAsset: (asset: Asset) => void;
   addPortfolio: (portfolio: Portfolio) => void;
   data: AppData;
   deletePortfolio: (id: string) => void;
@@ -37,6 +38,14 @@ type AppStore = {
 export const useAppStore = create<AppStore>()(
   // oxlint-disable-next-line max-lines-per-function
   subscribeWithSelector(set => ({
+    addAsset: asset =>
+      set(state => ({
+        data: {
+          ...state.data,
+          assets: [...state.data.assets, asset],
+          settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
+        },
+      })),
     addPortfolio: portfolio =>
       set(state => {
         if (state.data.portfolios.length >= MAX_PORTFOLIOS) return state;
