@@ -9,6 +9,7 @@
 - show a offline warning
 - add logger and animated toasts
 - make the pwa installable and add icons
+- do the complementary call for the geo allocation like it is already done for the sector allocation
 
 ## Schema hardening
 
