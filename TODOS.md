@@ -1,5 +1,15 @@
 # TODOS
 
+- show the user a before/after diff of the asset edit form, in a modal so they can confirm their changes before saving
+- show the user an animation of the export json button to indicate that the last export was long ago and they should export again to get the latest data
+- add a data completeness col so the user can see at a glance which assets have missing data
+- add a "last updated" timestamp to each asset, and show it in the table and detail view, so the user can see which assets have stale data that needs refreshing
+- add a "last updated" timestamp to each row of a portfolio, so the user can see which entries have stale data that needs refreshing
+- add some predefined filters to the table view, e.g. "only accumulating ETFs", "only distributing ETFs", "only ETFs with performance data", etc
+- show a offline warning
+- add logger and animated toasts
+- make the pwa installable and add icons
+
 ## Schema hardening
 
 ### Enforce uniqueness on isins and portfolio IDs
