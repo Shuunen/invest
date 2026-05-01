@@ -73,17 +73,17 @@ export function ImportExportButtons() {
     <div className="flex flex-col items-end gap-1">
       <div className="flex items-center gap-2">
         <input ref={fileInputRef} type="file" accept=".json,application/json" className="hidden" onChange={handleFileChange} />
-        <button type="button" className="btn btn-soft btn-sm btn-primary" aria-label="Import data" title="Import data" onClick={handleImportClick}>
+        <button type="button" data-testid="import-button" className="btn btn-soft btn-sm btn-primary" aria-label="Import data" title="Import data" onClick={handleImportClick}>
           <Upload size={16} />
         </button>
-        <button type="button" className="btn btn-soft btn-sm btn-primary" aria-label="Export data" title="Export data" disabled={data.assets.length === 0 && data.portfolios.length === 0} onClick={handleExport}>
+        <button type="button" data-testid="export-button" className="btn btn-soft btn-sm btn-primary" aria-label="Export data" title="Export data" disabled={data.assets.length === 0 && data.portfolios.length === 0} onClick={handleExport}>
           <Download size={16} />
         </button>
       </div>
       {importError !== undefined && (
-        <div role="alert" className="alert px-3 py-1 text-sm alert-error">
+        <div role="alert" data-testid="import-error" className="alert px-3 py-1 text-sm alert-error">
           <span>{importError}</span>
-          <button type="button" className="btn btn-ghost btn-xs" aria-label="Dismiss error" onClick={dismissError}>
+          <button type="button" data-testid="dismiss-error-button" className="btn btn-ghost btn-xs" aria-label="Dismiss error" onClick={dismissError}>
             <X size={12} />
           </button>
         </div>

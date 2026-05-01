@@ -1,3 +1,5 @@
+import { kebabCase } from "es-toolkit/string";
+
 export type NumberFieldProps = {
   label: string;
   name: string;
@@ -12,7 +14,7 @@ export function NumberField({ label, name, onChange, placeholder, value }: Numbe
       <label className="label" htmlFor={name}>
         <span className="label-text text-sm text-base-content/60">{label}</span>
       </label>
-      <input id={name} type="number" step="any" className="input-bordered input input-sm w-full" placeholder={placeholder} value={value} onChange={event => onChange(event.target.value)} />
+      <input id={name} data-testid={kebabCase(name)} type="number" step="any" className="input-bordered input input-sm w-full" placeholder={placeholder} value={value} onChange={event => onChange(event.target.value)} />
     </div>
   );
 }

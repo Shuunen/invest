@@ -1,3 +1,4 @@
+import { kebabCase } from "es-toolkit/string";
 import { useMemo } from "react";
 import { computeScore, type Asset } from "../schemas";
 import { formatPercent } from "./asset-table-utils";
@@ -58,13 +59,17 @@ export function PageHeader({ actions, assets, metrics, title, subtitle }: Props)
     <div className="bg-base-100 px-4 pt-5">
       <div className="flex items-center justify-between">
         <div className="mb-4">
-          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-          <p className="mt-1 text-sm text-base-content/60">{subtitle}</p>
+          <h1 data-testid="page-title" className="text-2xl font-bold tracking-tight">
+            {title}
+          </h1>
+          <p data-testid="page-subtitle" className="mt-1 text-sm text-base-content/60">
+            {subtitle}
+          </p>
         </div>
         {actions && actions.length > 0 && (
           <div className="flex gap-2">
             {actions.map(action => (
-              <button key={action.label} type="button" className="btn btn-soft btn-primary" onClick={action.onClick}>
+              <button key={action.label} type="button" data-testid={`action-${kebabCase(action.label)}`} className="btn btn-soft btn-primary" onClick={action.onClick}>
                 {action.label}
                 {action.icon}
               </button>

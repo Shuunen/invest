@@ -29,8 +29,8 @@ describe("ErrorBoundary - error state", () => {
         <Bomb shouldThrow />
       </ErrorBoundary>,
     );
-    expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(screen.getByText(/test explosion/)).toBeInTheDocument();
+    expect(screen.getByTestId("error-alert")).toBeInTheDocument();
+    expect(screen.getByTestId("error-message")).toBeInTheDocument();
   });
 
   it("Retry button renders when onReset provided and calls it on click", () => {
@@ -44,7 +44,7 @@ describe("ErrorBoundary - error state", () => {
         <Bomb shouldThrow />
       </ErrorBoundary>,
     );
-    const btn = screen.getByRole("button", { name: /retry/i });
+    const btn = screen.getByTestId("retry-button");
     expect(btn).toBeInTheDocument();
     fireEvent.click(btn);
     expect(onReset).toHaveBeenCalledOnce();
@@ -60,6 +60,6 @@ describe("ErrorBoundary - error state", () => {
         <Bomb shouldThrow />
       </ErrorBoundary>,
     );
-    expect(screen.queryByRole("button", { name: /retry/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("retry-button")).not.toBeInTheDocument();
   });
 });

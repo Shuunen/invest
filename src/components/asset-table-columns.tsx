@@ -23,7 +23,7 @@ export type AssetTableMeta = {
 
 function booleanCell(value: boolean) {
   return (
-    <span aria-label={value ? "Yes" : "No"} className={`badge ${value ? cn("bg-success/40") : cn("badge-ghost")}`}>
+    <span data-testid={value ? "bool-yes" : "bool-no"} aria-label={value ? "Yes" : "No"} className={`badge ${value ? cn("bg-success/40") : cn("badge-ghost")}`}>
       {value ? "Yes" : "No"}
     </span>
   );
@@ -36,6 +36,7 @@ export function makeSelectColumn(): ColumnDef<Asset> {
       return (
         <input
           type="checkbox"
+          data-testid={`select-${row.original.isin}`}
           className="checkbox checkbox-sm checkbox-primary"
           checked={meta?.selectedIsins?.has(row.original.isin) ?? false}
           onChange={() => meta?.onToggleSelect?.(row.original.isin)}
@@ -53,7 +54,7 @@ export function makeSelectColumn(): ColumnDef<Asset> {
 export function makeValueColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
   return {
     accessorFn: row => (amountMap?.get(row.isin) ?? 0) * (row.price ?? 0),
-    cell: ({ getValue }) => `${formatNumber(getValue<number>())} €`,
+    cell: ({ getValue, row }) => <span data-testid={`value-${row.original.isin}`}>{`${formatNumber(getValue<number>())} €`}</span>,
     header: "Value",
     id: "value",
     meta: { center: true, title: "Value : amount * price in €" },
@@ -136,12 +137,16 @@ export const columns: ColumnDef<Asset>[] = [
   },
   {
     accessorKey: "isin",
-    cell: ({ getValue }) => <span className="font-mono text-xs">{getValue<string>()}</span>,
+    cell: ({ getValue }) => (
+      <span className="font-mono text-xs" data-testid={`isin-${getValue<string>()}`}>
+        {getValue<string>()}
+      </span>
+    ),
     header: "ISIN",
   },
   {
     accessorKey: "tickers",
-    cell: ({ getValue }) => getValue<string[]>().join(", "),
+    cell: ({ getValue, row }) => <span data-testid={`tickers-${row.original.isin}`}>{getValue<string[]>().join(", ")}</span>,
     header: "Tickers",
     sortingFn: (rowA, rowB) => {
       const tickersA = rowA.original.tickers.join(", ");
@@ -153,7 +158,7 @@ export const columns: ColumnDef<Asset>[] = [
     accessorKey: "name",
     cell: ({ getValue, row }) => (
       <Link to="/assets/$isin" params={{ isin: row.original.isin }}>
-        <span className="block max-w-xs link truncate link-primary link-hover" title={getValue<string>()}>
+        <span className="block max-w-xs link truncate link-primary link-hover" data-testid={`name-${row.original.isin}`} title={getValue<string>()}>
           {getValue<string>()}
         </span>
       </Link>
@@ -186,7 +191,7 @@ export const columns: ColumnDef<Asset>[] = [
   },
   {
     accessorKey: "performance1y",
-    cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
+    cell: ({ getValue, row }) => <span data-testid={`performance1y-${row.original.isin}`}>{formatNumber(getValue<number | undefined>())}</span>,
     header: "P1y",
     meta: { center: true, title: "Performance over 1 year" },
   },
@@ -204,7 +209,7 @@ export const columns: ColumnDef<Asset>[] = [
   },
   {
     accessorKey: "riskReward1y",
-    cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
+    cell: ({ getValue, row }) => <span data-testid={`risk-reward1y-${row.original.isin}`}>{formatNumber(getValue<number | undefined>())}</span>,
     header: "RR1y",
     meta: { center: true, title: "Risk/Reward over 1 year" },
   },
@@ -232,7 +237,7 @@ export const columns: ColumnDef<Asset>[] = [
 export function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
   return {
     cell: ({ row }) => (
-      <button type="button" className="btn text-error btn-ghost btn-xs" aria-label={`Remove ${row.original.name}`} onClick={() => onRemove(row.original.isin)}>
+      <button type="button" data-testid={`remove-${row.original.isin}`} className="btn text-error btn-ghost btn-xs" aria-label={`Remove ${row.original.name}`} onClick={() => onRemove(row.original.isin)}>
         <Trash2 size={14} />
       </button>
     ),

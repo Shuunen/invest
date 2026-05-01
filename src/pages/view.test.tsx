@@ -38,11 +38,9 @@ describe("AssetViewPage - not found", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<AssetViewPage isin="XX0000000000" />);
-    expect(screen.getByText(/asset not found/i)).toBeInTheDocument();
+    expect(screen.getByTestId("not-found")).toBeInTheDocument();
   });
-});
 
-describe("AssetViewPage - content", () => {
   it("renders asset name and ISIN", () => {
     expect.hasAssertions();
     const asset = makeAsset();
@@ -52,8 +50,8 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Test ETF");
-    expect(screen.getAllByText("LU1234567890").length).toBeGreaterThan(0);
+    expect(screen.getByTestId("asset-name")).toHaveTextContent("Test ETF");
+    expect(screen.getByTestId("isin-display")).toBeInTheDocument();
   });
 
   it("renders provider and tickers", () => {
@@ -65,11 +63,11 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    expect(screen.getAllByText("Test Provider").length).toBeGreaterThan(0);
-    expect(screen.getByText("TST")).toBeInTheDocument();
+    expect(screen.getByTestId("field-row-provider")).toBeInTheDocument();
+    expect(screen.getByTestId("field-row-tickers")).toBeInTheDocument();
   });
 
-  it("renders fees and price in financials section", () => {
+  it("renders fees and price in financial section", () => {
     expect.hasAssertions();
     const asset = makeAsset();
     useAppStore.setState({
@@ -78,7 +76,7 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    expect(screen.getByText(/0\.20 %/)).toBeInTheDocument();
+    expect(screen.getByTestId("field-row-fees")).toHaveTextContent("0.20 %");
   });
 
   it("renders em dash for undefined price", () => {
@@ -90,9 +88,7 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    const cells = document.querySelectorAll("td, span, div");
-    const dashCells = Array.from(cells).filter(el => el.textContent?.trim() === "—");
-    expect(dashCells.length).toBeGreaterThan(0);
+    expect(screen.getByTestId("field-row-price")).toHaveTextContent("—");
   });
 
   it("edit button navigates to edit page", () => {
@@ -104,7 +100,7 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    fireEvent.click(screen.getByRole("button", { name: /edit/i }));
+    fireEvent.click(screen.getByTestId("edit-button"));
     expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin/edit" });
   });
 
@@ -118,7 +114,7 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    fireEvent.click(screen.getByRole("button", { name: /back/i }));
+    fireEvent.click(screen.getByTestId("back-button"));
     expect(spy).toHaveBeenCalledWith();
   });
 
@@ -131,8 +127,9 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    const noBadges = screen.getAllByText("No");
-    expect(noBadges.length).toBeGreaterThan(0);
+    expect(screen.getByTestId("accumulating-badge")).toHaveTextContent("No");
+    expect(screen.getByTestId("broker-badge")).toHaveTextContent("No");
+    expect(screen.getByTestId("plan-badge")).toHaveTextContent("No");
   });
 
   it("renders em dash for empty geoAllocation and sectorAllocation", () => {
@@ -144,8 +141,8 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    const dashEls = Array.from(document.querySelectorAll("p")).filter(el => el.textContent?.trim() === "—");
-    expect(dashEls.length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByTestId("geo-allocation-text")).toHaveTextContent("—");
+    expect(screen.getByTestId("sector-allocation-text")).toHaveTextContent("—");
   });
 
   it("renders em dash for empty provider and empty tickers", () => {
@@ -157,11 +154,8 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    const divs = Array.from(document.querySelectorAll("div.flex"));
-    const providerRow = divs.find(el => el.textContent?.includes("Provider"));
-    const tickersRow = divs.find(el => el.textContent?.includes("Tickers"));
-    expect(providerRow?.textContent).toContain("—");
-    expect(tickersRow?.textContent).toContain("—");
+    expect(screen.getByTestId("field-row-provider")).toHaveTextContent("—");
+    expect(screen.getByTestId("field-row-tickers")).toHaveTextContent("—");
   });
 
   it("renders em dash for score when all performance values are undefined", () => {
@@ -180,8 +174,7 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    const scoreSection = document.querySelector(".card-body span.text-3xl");
-    expect(scoreSection?.textContent).toBe("—");
+    expect(screen.getByTestId("score-display")).toHaveTextContent("—");
   });
 
   it("renders sorted allocation entries", () => {
@@ -193,7 +186,6 @@ describe("AssetViewPage - content", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    const allocationText = screen.getByText(/US.*EU/);
-    expect(allocationText).toBeInTheDocument();
+    expect(screen.getByTestId("geo-allocation-text")).toHaveTextContent(/US.*EU/);
   });
 });

@@ -1,3 +1,4 @@
+import { kebabCase } from "es-toolkit/string";
 import { cn } from "../utils/browser-styles";
 import { formatNumber } from "./asset-table-utils";
 
@@ -12,6 +13,7 @@ export function Metric({ label, value, color }: MetricItem) {
   return (
     <div className="flex flex-col gap-0.5">
       <span
+        data-testid={`metric-${kebabCase(String(label))}-value`}
         className={cn(`font-mono text-xl font-bold tracking-tight`, {
           "text-danger": color === "danger",
           "text-info": color === "info",
@@ -22,7 +24,9 @@ export function Metric({ label, value, color }: MetricItem) {
       >
         {displayValue}
       </span>
-      <span className="text-[10px] font-medium tracking-widest text-base-content/40 uppercase">{label}</span>
+      <span data-testid={`metric-${kebabCase(String(label))}-label`} className="text-[10px] font-medium tracking-widest text-base-content/40 uppercase">
+        {label}
+      </span>
     </div>
   );
 }

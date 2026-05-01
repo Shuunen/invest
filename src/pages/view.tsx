@@ -14,25 +14,29 @@ export function AssetViewPage({ isin }: Props) {
   if (!asset)
     return (
       <div className="p-8 text-center">
-        <p className="text-base-content/60">Asset not found: {isin}</p>
+        <p data-testid="not-found" className="text-base-content/60">
+          Asset not found: {isin}
+        </p>
       </div>
     );
 
   return (
     <div className="mx-auto max-w-4xl p-6">
       <div className="mb-6 flex items-center justify-between">
-        <button type="button" className="btn gap-1 btn-ghost btn-sm" onClick={() => globalThis.history.back()}>
+        <button type="button" data-testid="back-button" className="btn gap-1 btn-ghost btn-sm" onClick={() => globalThis.history.back()}>
           <ArrowLeft size={16} />
           Back
         </button>
-        <button type="button" className="btn gap-1 btn-soft btn-sm btn-primary" onClick={() => void navigate({ params: { isin }, to: "/assets/$isin/edit" })}>
+        <button type="button" data-testid="edit-button" className="btn gap-1 btn-soft btn-sm btn-primary" onClick={() => void navigate({ params: { isin }, to: "/assets/$isin/edit" })}>
           <Pencil size={14} />
           Edit
         </button>
       </div>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">{asset.name}</h1>
+        <h1 data-testid="asset-name" className="text-2xl font-bold tracking-tight">
+          {asset.name}
+        </h1>
       </div>
 
       <div className="grid grid-cols-1 gap-x-4 md:grid-cols-2">

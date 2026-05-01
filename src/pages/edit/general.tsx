@@ -14,7 +14,11 @@ export function GeneralSection({ form, errors, patch }: Props) {
       <div className="card-body gap-3 p-4">
         <h2 className="card-title text-base">General</h2>
         <TextField label="Name" name="name" value={form.name} onChange={val => patch("name", val)} />
-        {errors.name && <p className="text-xs text-error">{errors.name}</p>}
+        {errors.name && (
+          <p className="text-xs text-error" data-testid="name-error">
+            {errors.name}
+          </p>
+        )}
         <TextField label="Provider" name="provider" value={form.provider} onChange={val => patch("provider", val)} />
         <TextField label="Tickers (comma-separated)" name="tickers" value={form.tickers} onChange={val => patch("tickers", val)} placeholder="e.g. IWDA, SWRD" />
         <h2 className="card-title text-base">Flags</h2>

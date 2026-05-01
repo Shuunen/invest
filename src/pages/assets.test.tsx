@@ -7,6 +7,6 @@ describe("IndexPage", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: { ...defaultAppData, assets: [] }, isLoading: false, loadError: undefined });
     render(<IndexPage />);
-    expect(screen.getByText(/no instruments added yet/i)).toBeInTheDocument();
+    expect(screen.getByTestId("empty-table-message")).toBeInTheDocument();
   });
 });

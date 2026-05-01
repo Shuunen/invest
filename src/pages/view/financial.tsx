@@ -14,16 +14,18 @@ export function ViewFinancialSection({ asset }: Props) {
         <h2 className="mb-3 card-title text-base">Financial</h2>
         <div className="mb-2 flex items-center gap-2">
           <span className="text-sm text-base-content/60">Score</span>
-          <span className="text-3xl font-bold">{score === undefined ? "—" : formatNumber(score)}</span>
+          <span className="text-3xl font-bold" data-testid="score-display">
+            {score === undefined ? "—" : formatNumber(score)}
+          </span>
         </div>
-        <FieldRow label="Fees" value={formatPercent(asset.fees)} />
-        <FieldRow label="Price" value={formatPrice(asset.price)} />
-        <FieldRow label="Performance 1y" value={formatNumber(asset.performance1y)} />
-        <FieldRow label="Performance 3y" value={formatNumber(asset.performance3y)} />
-        <FieldRow label="Performance 5y" value={formatNumber(asset.performance5y)} />
-        <FieldRow label="Risk/Reward 1y" value={formatNumber(asset.riskReward1y)} />
-        <FieldRow label="Risk/Reward 3y" value={formatNumber(asset.riskReward3y)} />
-        <FieldRow label="Risk/Reward 5y" value={formatNumber(asset.riskReward5y)} />
+        <FieldRow label="Fees" value={formatPercent(asset.fees)} name="fees" />
+        <FieldRow label="Price" value={formatPrice(asset.price)} name="price" />
+        <FieldRow label="Performance 1y" value={formatNumber(asset.performance1y)} name="performance-1y" />
+        <FieldRow label="Performance 3y" value={formatNumber(asset.performance3y)} name="performance-3y" />
+        <FieldRow label="Performance 5y" value={formatNumber(asset.performance5y)} name="performance-5y" />
+        <FieldRow label="Risk/Reward 1y" value={formatNumber(asset.riskReward1y)} name="risk-reward-1y" />
+        <FieldRow label="Risk/Reward 3y" value={formatNumber(asset.riskReward3y)} name="risk-reward-3y" />
+        <FieldRow label="Risk/Reward 5y" value={formatNumber(asset.riskReward5y)} name="risk-reward-5y" />
       </div>
     </div>
   );

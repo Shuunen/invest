@@ -22,13 +22,17 @@ export function ViewAllocationsSection({ geoAllocation, sectorAllocation }: Prop
       <div className="card mb-4 border border-base-200 bg-base-100">
         <div className="card-body p-4">
           <h2 className="mb-3 card-title text-base">Geographic allocation</h2>
-          <p className="text-sm leading-relaxed">{renderAllocation(geoAllocation)}</p>
+          <p data-testid="geo-allocation-text" className="text-sm leading-relaxed">
+            {renderAllocation(geoAllocation)}
+          </p>
         </div>
       </div>
       <div className="card border border-base-200 bg-base-100">
         <div className="card-body p-4">
           <h2 className="mb-3 card-title text-base">Sector allocation</h2>
-          <p className="text-sm leading-relaxed">{renderAllocation(sectorAllocation)}</p>
+          <p data-testid="sector-allocation-text" className="text-sm leading-relaxed">
+            {renderAllocation(sectorAllocation)}
+          </p>
         </div>
       </div>
     </>

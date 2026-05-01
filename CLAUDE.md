@@ -111,3 +111,33 @@ All test files use `.test.ts` / `.test.tsx` — both unit (Vitest in `src/`) and
 ### Encoding
 
 Use `"utf8"` (not `"utf-8"`) as the canonical Node.js encoding string.
+
+### Test element selection
+
+**All unit-test element queries must use `screen.getByTestId` / `screen.queryByTestId` / `screen.getAllByTestId`.** Never use `getByRole`, `getByText`, `getByLabel`, `getByDisplayValue`, `querySelector`, `querySelectorAll`, or any other selector in unit tests.
+
+**All interactive or identifiable elements in components must have a `data-testid` attribute.** This is the contract between the component and its tests.
+
+**All `data-testid` values must be kebab-case.** Use descriptive lowercase-hyphenated IDs (e.g., `save-button`, `name-input`, `score-display`). For per-item elements include the item key (e.g., `` `price-input-${isin}` ``). CamelCase or PascalCase IDs are forbidden.
+
+When a `data-testid` is derived from a dynamic string (label, name, etc.), use `kebabCase` from `es-toolkit/string` instead of hand-rolling a converter:
+
+```ts
+import { kebabCase } from "es-toolkit/string";
+
+// bad — fragile, misses edge cases
+const toKebab = (s: string) => s.toLowerCase().replaceAll(/\s+/g, "-");
+
+// good
+data-testid={`metric-${kebabCase(label)}-value`}
+```
+
+```tsx
+// bad
+<button data-testid="saveButton">Save</button>
+<input data-testid="nameInput" />
+
+// good
+<button data-testid="save-button">Save</button>
+<input data-testid="name-input" />
+```

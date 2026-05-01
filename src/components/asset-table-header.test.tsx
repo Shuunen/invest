@@ -9,13 +9,13 @@ describe("renderSearchFilter", () => {
   it("renders search input with placeholder", () => {
     expect.hasAssertions();
     render(renderSearchFilter("", noop));
-    expect(screen.getByPlaceholderText("Search ISIN, name, tickers…")).toBeInTheDocument();
+    expect(screen.getByTestId("input-filter")).toBeInTheDocument();
   });
 
   it("reflects current filter value", () => {
     expect.hasAssertions();
     render(renderSearchFilter("IWDA", noop));
-    const input = screen.getByRole("searchbox") as HTMLInputElement;
+    const input = screen.getByTestId("input-filter") as HTMLInputElement;
     expect(input.value).toBe("IWDA");
   });
 });

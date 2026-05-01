@@ -34,15 +34,15 @@ describe("ImportExportButtons", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
-    expect(screen.getByRole("button", { name: /import/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /export/i })).toBeInTheDocument();
+    expect(screen.getByTestId("import-button")).toBeInTheDocument();
+    expect(screen.getByTestId("export-button")).toBeInTheDocument();
   });
 
   it("Export is disabled when no assets and no portfolios", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
-    expect(screen.getByRole("button", { name: /export/i })).toBeDisabled();
+    expect(screen.getByTestId("export-button")).toBeDisabled();
   });
 
   it("Export is enabled when portfolios exist but no assets", () => {
@@ -56,7 +56,7 @@ describe("ImportExportButtons", () => {
       loadError: undefined,
     });
     render(<ImportExportButtons />);
-    expect(screen.getByRole("button", { name: /export/i })).not.toBeDisabled();
+    expect(screen.getByTestId("export-button")).not.toBeDisabled();
   });
 
   it("Export is enabled when assets exist", () => {
@@ -67,7 +67,7 @@ describe("ImportExportButtons", () => {
       loadError: undefined,
     });
     render(<ImportExportButtons />);
-    expect(screen.getByRole("button", { name: /export/i })).not.toBeDisabled();
+    expect(screen.getByTestId("export-button")).not.toBeDisabled();
   });
 
   it("clicking Export triggers a download and updates lastExportedAt", () => {
@@ -80,7 +80,7 @@ describe("ImportExportButtons", () => {
     const createObjectURLSpy = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock");
     vi.spyOn(URL, "revokeObjectURL");
     render(<ImportExportButtons />);
-    fireEvent.click(screen.getByRole("button", { name: /export/i }));
+    fireEvent.click(screen.getByTestId("export-button"));
     expect(createObjectURLSpy).toHaveBeenCalledWith(expect.any(Blob));
     expect(useAppStore.getState().data.settings.lastExportedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
@@ -91,26 +91,23 @@ describe("ImportExportButtons", () => {
     render(<ImportExportButtons />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     const clickSpy = vi.spyOn(fileInput, "click");
-    fireEvent.click(screen.getByRole("button", { name: /import/i }));
+    fireEvent.click(screen.getByTestId("import-button"));
     expect(clickSpy).toHaveBeenCalledWith();
   });
 
-  it("file change with no file selected does nothing", () => {
+  it("file change with no file selected does nothing", async () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     fireEvent.change(fileInput);
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-  });
-
-  it("importing valid JSON calls loadData", async () => {
+    expect(screen.queryByTestId("import-error")).not.toBeInTheDocument();
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
-    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInputAfter = document.querySelector('input[type="file"]') as HTMLInputElement;
     const file = new File([VALID_IMPORT_JSON], "data.json", { type: "application/json" });
-    await userEvent.upload(fileInput, file);
+    await userEvent.upload(fileInputAfter, file);
     await waitFor(() => {
       expect(useAppStore.getState().data.assets).toHaveLength(0);
     });
@@ -124,9 +121,9 @@ describe("ImportExportButtons", () => {
     const file = new File(["not valid json {{"], "bad.json", { type: "application/json" });
     await userEvent.upload(fileInput, file);
     await waitFor(() => {
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getByTestId("import-error")).toBeInTheDocument();
     });
-    expect(screen.getByText(/invalid json/i)).toBeInTheDocument();
+    expect(screen.getByTestId("import-error")).toHaveTextContent(/invalid json/i);
   });
 
   it("dismissing the error alert removes it", async () => {
@@ -137,10 +134,10 @@ describe("ImportExportButtons", () => {
     const file = new File(["not valid json {{"], "bad.json", { type: "application/json" });
     await userEvent.upload(fileInput, file);
     await waitFor(() => {
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getByTestId("import-error")).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole("button", { name: /dismiss error/i }));
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("dismiss-error-button"));
+    expect(screen.queryByTestId("import-error")).not.toBeInTheDocument();
   });
 
   it("clicking Import clears a previously shown error", async () => {
@@ -151,9 +148,9 @@ describe("ImportExportButtons", () => {
     const file = new File(["not valid json {{"], "bad.json", { type: "application/json" });
     await userEvent.upload(fileInput, file);
     await waitFor(() => {
-      expect(screen.getByRole("alert")).toBeInTheDocument();
+      expect(screen.getByTestId("import-error")).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole("button", { name: /import/i }));
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("import-button"));
+    expect(screen.queryByTestId("import-error")).not.toBeInTheDocument();
   });
 });

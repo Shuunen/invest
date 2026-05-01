@@ -38,7 +38,7 @@ describe("AssetEditPage - not found", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<AssetEditPage isin="XX0000000000" />);
-    expect(screen.getByText(/asset not found/i)).toBeInTheDocument();
+    expect(screen.getByTestId("not-found")).toBeInTheDocument();
   });
 
   it("renders form after store loads asynchronously", async () => {
@@ -46,10 +46,10 @@ describe("AssetEditPage - not found", () => {
     const asset = makeAsset();
     useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
     render(<AssetEditPage isin={asset.isin} />);
-    expect(screen.getByText(/asset not found/i)).toBeInTheDocument();
+    expect(screen.getByTestId("not-found")).toBeInTheDocument();
     useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
     await waitFor(() => {
-      expect(screen.getByDisplayValue("Test ETF")).toBeInTheDocument();
+      expect(screen.getByTestId("name")).toBeInTheDocument();
     });
   });
 });
@@ -64,9 +64,9 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    expect(screen.getByDisplayValue("Test ETF")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Test Provider")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("TST")).toBeInTheDocument();
+    expect(screen.getByTestId("name")).toBeInTheDocument();
+    expect(screen.getByTestId("provider")).toBeInTheDocument();
+    expect(screen.getByTestId("tickers")).toBeInTheDocument();
   });
 
   it("saves valid form and navigates to view page", async () => {
@@ -78,7 +78,7 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    fireEvent.click(screen.getAllByRole("button", { name: /save/i })[0]);
+    fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
     });
@@ -93,9 +93,9 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    const nameInput = screen.getByDisplayValue("Test ETF");
+    const nameInput = screen.getByTestId("name");
     fireEvent.change(nameInput, { target: { value: "Renamed ETF" } });
-    fireEvent.click(screen.getAllByRole("button", { name: /save/i })[0]);
+    fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
       expect(useAppStore.getState().data.assets[0]?.name).toBe("Renamed ETF");
     });
@@ -110,7 +110,7 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    fireEvent.click(screen.getAllByRole("button", { name: /cancel/i })[0]);
+    fireEvent.click(screen.getByTestId("cancel-button"));
     expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
   });
 
@@ -124,13 +124,13 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    fireEvent.change(screen.getByDisplayValue("0.2"), { target: { value: "-1" } });
-    fireEvent.click(screen.getAllByRole("button", { name: /save/i })[0]);
+    fireEvent.change(screen.getByTestId("fees"), { target: { value: "-1" } });
+    fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
       expect(mockNavigate).not.toHaveBeenCalled();
     });
-    fireEvent.change(screen.getByDisplayValue("-1"), { target: { value: "0.5" } });
-    fireEvent.click(screen.getAllByRole("button", { name: /save/i })[0]);
+    fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.5" } });
+    fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
     });
@@ -145,21 +145,21 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    fireEvent.change(screen.getByDisplayValue("0.2"), { target: { value: "0.3" } });
-    fireEvent.change(screen.getByDisplayValue("100"), { target: { value: "110" } });
-    fireEvent.change(screen.getByDisplayValue("10"), { target: { value: "11" } });
-    fireEvent.change(screen.getByDisplayValue("30"), { target: { value: "31" } });
-    fireEvent.change(screen.getByDisplayValue("50"), { target: { value: "51" } });
-    fireEvent.change(screen.getByDisplayValue("1.6"), { target: { value: "1.7" } });
-    fireEvent.change(screen.getByDisplayValue("1.5"), { target: { value: "1.6" } });
-    fireEvent.change(screen.getByDisplayValue("1.8"), { target: { value: "1.9" } });
-    fireEvent.change(screen.getByLabelText(/accumulating/i), { target: { checked: false } });
-    fireEvent.change(screen.getByLabelText(/available on broker/i), { target: { checked: false } });
-    fireEvent.change(screen.getByLabelText(/available for plan/i), { target: { checked: true } });
-    fireEvent.change(document.querySelectorAll("textarea")[1], { target: { value: '{"Tech": 0.5}' } });
-    fireEvent.change(screen.getByDisplayValue("Test Provider"), { target: { value: "New Provider" } });
-    fireEvent.change(screen.getByDisplayValue("TST"), { target: { value: "TST, ABC" } });
-    expect(screen.getByDisplayValue("0.3")).toBeInTheDocument();
+    fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.3" } });
+    fireEvent.change(screen.getByTestId("price"), { target: { value: "110" } });
+    fireEvent.change(screen.getByTestId("performance-1-y"), { target: { value: "11" } });
+    fireEvent.change(screen.getByTestId("performance-3-y"), { target: { value: "31" } });
+    fireEvent.change(screen.getByTestId("performance-5-y"), { target: { value: "51" } });
+    fireEvent.change(screen.getByTestId("risk-reward-5-y"), { target: { value: "1.7" } });
+    fireEvent.change(screen.getByTestId("risk-reward-1-y"), { target: { value: "1.6" } });
+    fireEvent.change(screen.getByTestId("risk-reward-3-y"), { target: { value: "1.9" } });
+    fireEvent.change(screen.getByTestId("is-accumulating"), { target: { checked: false } });
+    fireEvent.change(screen.getByTestId("available-on-broker"), { target: { checked: false } });
+    fireEvent.change(screen.getByTestId("available-for-plan"), { target: { checked: true } });
+    fireEvent.change(screen.getByTestId("json-textarea-sector-allocation"), { target: { value: '{"Tech": 0.5}' } });
+    fireEvent.change(screen.getByTestId("provider"), { target: { value: "New Provider" } });
+    fireEvent.change(screen.getByTestId("tickers"), { target: { value: "TST, ABC" } });
+    expect(screen.getByTestId("fees")).toHaveValue(0.3);
   });
 
   it("clicking checkboxes calls patch for each flag field", () => {
@@ -171,12 +171,12 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    fireEvent.click(screen.getByLabelText(/accumulating/i));
-    fireEvent.click(screen.getByLabelText(/available on broker/i));
-    fireEvent.click(screen.getByLabelText(/available for plan/i));
-    expect(screen.getByLabelText(/accumulating/i)).toBeChecked();
-    expect(screen.getByLabelText(/available on broker/i)).toBeChecked();
-    expect(screen.getByLabelText(/available for plan/i)).toBeChecked();
+    fireEvent.click(screen.getByTestId("is-accumulating"));
+    fireEvent.click(screen.getByTestId("available-on-broker"));
+    fireEvent.click(screen.getByTestId("available-for-plan"));
+    expect(screen.getByTestId("is-accumulating")).toBeChecked();
+    expect(screen.getByTestId("available-on-broker")).toBeChecked();
+    expect(screen.getByTestId("available-for-plan")).toBeChecked();
   });
 
   it("shows name validation error when saving with empty name", async () => {
@@ -189,10 +189,10 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    fireEvent.change(screen.getByDisplayValue("Test ETF"), { target: { value: "" } });
-    fireEvent.click(screen.getAllByRole("button", { name: /save/i })[0]);
+    fireEvent.change(screen.getByTestId("name"), { target: { value: "" } });
+    fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
-      expect(screen.getByText(/name/i)).toBeInTheDocument();
+      expect(screen.getByTestId("name-error")).toBeInTheDocument();
     });
     expect(mockNavigate).not.toHaveBeenCalled();
   });
@@ -207,7 +207,7 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    const [geoTextarea] = document.querySelectorAll("textarea");
+    const geoTextarea = screen.getByTestId("json-textarea-geo-allocation");
     fireEvent.change(geoTextarea, { target: { value: "bad json" } });
     expect(geoTextarea).toBeInTheDocument();
   });
@@ -221,9 +221,9 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
-    const [geoTextarea] = document.querySelectorAll("textarea");
+    const geoTextarea = screen.getByTestId("json-textarea-geo-allocation");
     fireEvent.change(geoTextarea, { target: { value: "not json" } });
-    fireEvent.click(screen.getAllByRole("button", { name: /save/i })[0]);
+    fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
     });

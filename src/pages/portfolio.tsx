@@ -41,7 +41,9 @@ function renderNoAssets() {
   return (
     <div className="p-8 text-center">
       <p className="mb-4 text-4xl">📂</p>
-      <h2 className="mb-2 text-lg font-semibold">No assets yet</h2>
+      <h2 data-testid="no-assets-message" className="mb-2 text-lg font-semibold">
+        No assets yet
+      </h2>
       <p className="mb-4 text-base-content/60">
         Click <strong className="text-primary">Select assets</strong> to add instruments to this portfolio.
       </p>
@@ -52,7 +54,9 @@ function renderNoAssets() {
 function renderNotFound() {
   return (
     <div className="p-8 text-center">
-      <p className="text-base-content/60">Portfolio not found.</p>
+      <p data-testid="not-found" className="text-base-content/60">
+        Portfolio not found.
+      </p>
     </div>
   );
 }

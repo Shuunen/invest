@@ -14,7 +14,14 @@ export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number
           .filter(column => column.columnDef.enableHiding !== false)
           .map(column => (
             <label key={column.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-primary/30">
-              <input type="checkbox" className="checkbox checkbox-sm" checked={column.getIsVisible()} disabled={column.getIsVisible() && visibleLeafCount <= 1} onChange={column.getToggleVisibilityHandler()} />
+              <input
+                data-testid={`toggle-col-${column.id}`}
+                type="checkbox"
+                className="checkbox checkbox-sm"
+                checked={column.getIsVisible()}
+                disabled={column.getIsVisible() && visibleLeafCount <= 1}
+                onChange={column.getToggleVisibilityHandler()}
+              />
               <span className="label-text">{column.columnDef.meta?.title ?? String(column.columnDef.header)}</span>
             </label>
           ))}

@@ -7,14 +7,14 @@ describe("CheckboxField", () => {
   it("renders label and checked state", () => {
     expect.hasAssertions();
     render(<CheckboxField label="Accumulating" name="isAccumulating" value onChange={() => undefined} />);
-    expect(screen.getByLabelText(/accumulating/i)).toBeChecked();
+    expect(screen.getByTestId("is-accumulating")).toBeChecked();
   });
 
   it("calls onChange with toggled value when clicked", () => {
     expect.hasAssertions();
     const onChange = vi.fn<(value: boolean) => void>();
     render(<CheckboxField label="Accumulating" name="isAccumulating" value={false} onChange={onChange} />);
-    fireEvent.click(screen.getByLabelText(/accumulating/i));
+    fireEvent.click(screen.getByTestId("is-accumulating"));
     expect(onChange).toHaveBeenCalledWith(true);
   });
 });
@@ -30,7 +30,7 @@ describe("JsonTextarea", () => {
   it("renders error message and error class when error prop is set", () => {
     expect.hasAssertions();
     render(<JsonTextarea name="geo-allocation" value="bad" onChange={() => undefined} error="Invalid JSON" />);
-    expect(screen.getByText("Invalid JSON")).toBeInTheDocument();
+    expect(screen.getByTestId("json-textarea-geo-allocation-error")).toHaveTextContent("Invalid JSON");
     expect(screen.getByTestId("json-textarea-geo-allocation")).toHaveClass("textarea-error");
   });
 

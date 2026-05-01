@@ -51,7 +51,9 @@ export function AssetEditPage({ isin }: Props) {
   if (!form)
     return (
       <div className="p-8 text-center">
-        <p className="text-base-content/60">Asset not found: {isin}</p>
+        <p data-testid="not-found" className="text-base-content/60">
+          Asset not found: {isin}
+        </p>
       </div>
     );
 
@@ -60,11 +62,11 @@ export function AssetEditPage({ isin }: Props) {
   return (
     <div className="mx-auto max-w-4xl p-6">
       <div className="mb-6 flex items-center justify-between">
-        <button type="button" className="btn gap-1 btn-ghost btn-sm" onClick={goBack}>
+        <button type="button" data-testid="cancel-button" className="btn gap-1 btn-ghost btn-sm" onClick={goBack}>
           <ArrowLeft size={16} />
           Cancel
         </button>
-        <button type="button" className="btn btn-sm btn-primary" onClick={handleSave}>
+        <button type="button" data-testid="save-button" className="btn btn-sm btn-primary" onClick={handleSave}>
           Save
         </button>
       </div>

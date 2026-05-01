@@ -34,7 +34,7 @@ function renderThContent(header: Header<Asset, unknown>) {
   const title = header.column.columnDef.meta?.title;
   if (!header.column.getCanSort()) return <span>{label}</span>;
   return (
-    <button type="button" title={title} className={cn("btn", sorted ? "btn-soft btn-primary" : "btn-ghost")} onClick={header.column.getToggleSortingHandler()}>
+    <button type="button" data-testid={`sort-${header.id}`} title={title} className={cn("btn", sorted ? "btn-soft btn-primary" : "btn-ghost")} onClick={header.column.getToggleSortingHandler()}>
       {label}
       <span className="scale-75">{getSortIndicator(sorted)}</span>
     </button>
@@ -105,9 +105,9 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
 function renderError(error: Error, handleRetry: () => void) {
   return (
     <div className="p-4 text-left">
-      <div role="alert" className="alert alert-error">
-        <span>Failed to load data: {error.message}</span>
-        <button type="button" className="btn btn-sm" onClick={handleRetry}>
+      <div role="alert" data-testid="error-alert" className="alert alert-error">
+        <span data-testid="error-message">Failed to load data: {error.message}</span>
+        <button type="button" data-testid="retry-button" className="btn btn-sm" onClick={handleRetry}>
           Retry
         </button>
       </div>
@@ -119,7 +119,7 @@ function renderEmpty() {
   return (
     <div className="p-8 text-center">
       <p className="mb-4 text-4xl">📊</p>
-      <h2>No instruments added yet</h2>
+      <h2 data-testid="empty-table-message">No instruments added yet</h2>
       <p className="mb-4 text-base-content/60">Use the Import button in the top bar to get started</p>
     </div>
   );
@@ -130,7 +130,9 @@ function renderNoResults(colCount: number, filterText: string) {
     <tbody>
       <tr>
         <td colSpan={colCount} className="p-8 text-center">
-          <p className="mb-4 text-2xl">No results found for &quot;{filterText}&quot;</p>
+          <p data-testid="no-results-message" className="mb-4 text-2xl">
+            No results found for &quot;{filterText}&quot;
+          </p>
           <p className="text-base-content/60">Try adjusting your search criteria</p>
         </td>
       </tr>
