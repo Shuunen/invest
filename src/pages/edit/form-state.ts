@@ -65,12 +65,14 @@ function parseTickers(raw: string): string[] {
     .filter(Boolean);
 }
 
-function parseZodErrors(issues: { message: string; path: unknown[] }[]): Record<string, string> {
+export function parseZodErrors(issues: { message: string; path: unknown[] }[]): Record<string, string> {
   const fieldErrors: Record<string, string> = {};
   for (const issue of issues) {
     const [field] = issue.path;
-    /* v8 ignore next */
-    if (typeof field !== "string") continue;
+    if (typeof field !== "string") {
+      fieldErrors.form = issue.message;
+      continue;
+    }
     fieldErrors[field] = issue.message;
   }
   return fieldErrors;
@@ -91,7 +93,7 @@ export function buildAssetFromForm(isin: string, form: FormState): { data: Asset
   const result = AssetSchema.safeParse({
     availableForPlan: form.availableForPlan,
     availableOnBroker: form.availableOnBroker,
-    fees: Number(form.fees),
+    fees: parseOptionalNumber(form.fees) ?? 0,
     geoAllocation: parseAllocation(form.geoAllocation),
     isAccumulating: form.isAccumulating,
     isin,

@@ -1,6 +1,6 @@
 import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
 import { CheckIcon, PencilLineIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
@@ -208,7 +208,10 @@ export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, 
     const icon = isPriceEditing ? <CheckIcon size={16} /> : <PencilLineIcon size={16} />;
     return [{ icon, label: isPriceEditing ? "Done" : "Edit prices", onClick: () => setIsPriceEditing(prev => !prev) }];
   }, [isPriceEditing]);
-  const internalOnPriceChange: ((isin: string, price: number) => void) | undefined = !propAssets && isPriceEditing ? (isin, price) => useAppStore.getState().updateAssetPrice(isin, price) : undefined;
+  const stablePriceChange = useCallback((isin: string, price: number) => {
+    useAppStore.getState().updateAssetPrice(isin, price);
+  }, []);
+  const internalOnPriceChange = !propAssets && isPriceEditing ? stablePriceChange : undefined;
   const onPriceChange = propOnPriceChange ?? internalOnPriceChange;
   const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({
     amountMap,

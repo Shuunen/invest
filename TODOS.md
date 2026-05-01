@@ -33,6 +33,11 @@
 
 ## Completed
 
+### Asset edit and view pages
+
+**What:** Full asset editing flow — `AssetEditPage` with validated form, `AssetViewPage` read-only detail, inline price editing on `AssetTable`, reusable form components (`NumberField`, `TextField`, `CheckboxField`, `JsonTextarea`), `parseZodErrors` helper, `updateAssetPrice` store action.
+**Completed:** v0.3.0 (2026-05-01)
+
 ### Review Wealthfolio's Dexie schema and import/export
 
 **What:** Read the Dexie table definitions and JSON import/export code in [afadil/wealthfolio](https://github.com/afadil/wealthfolio).

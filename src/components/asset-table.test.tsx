@@ -718,14 +718,14 @@ describe("AssetTable - price editing", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    expect(screen.getByRole("button", { name: /edit prices/i })).toBeInTheDocument();
+    expect(screen.getByTestId("action-edit-prices")).toBeInTheDocument();
   });
 
   it("clicking Edit prices shows price inputs", async () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
       expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
     });
@@ -735,11 +735,11 @@ describe("AssetTable - price editing", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
       expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByRole("button", { name: /done/i }));
+    fireEvent.click(screen.getByTestId("action-done"));
     await waitFor(() => {
       expect(screen.queryByTestId(`price-input-${PRICE_ASSET.isin}`)).not.toBeInTheDocument();
     });
@@ -749,7 +749,7 @@ describe("AssetTable - price editing", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
       expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
     });
@@ -767,7 +767,7 @@ describe("AssetTable - price editing", () => {
     useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
     const editCountBefore = useAppStore.getState().data.settings.editCount;
     render(<AssetTable />);
-    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
       expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
     });
@@ -781,7 +781,7 @@ describe("AssetTable - price editing", () => {
     useAppStore.setState({ data: makeTestData([zeroAsset]), isLoading: false, loadError: undefined });
     const editCountBefore = useAppStore.getState().data.settings.editCount;
     render(<AssetTable />);
-    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
       expect(screen.getByTestId(`price-input-${zeroAsset.isin}`)).toBeInTheDocument();
     });
@@ -795,7 +795,7 @@ describe("AssetTable - price editing", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    fireEvent.click(screen.getByRole("button", { name: /edit prices/i }));
+    fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
       expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin}`)).toBeInTheDocument();
     });

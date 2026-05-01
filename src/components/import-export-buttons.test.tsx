@@ -2,7 +2,13 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { jsonStringify } from "../utils/json.ts";
 import { ImportExportButtons } from "./import-export-buttons.tsx";
+
+vi.mock(import("../utils/json.ts"), async () => {
+  const actual = await import("../utils/json.ts");
+  return { ...actual, jsonStringify: vi.fn<typeof actual.jsonStringify>(actual.jsonStringify) };
+});
 
 const VALID_IMPORT_JSON = JSON.stringify({ assets: [], portfolios: [], settings: {} });
 
@@ -152,5 +158,16 @@ describe("ImportExportButtons", () => {
     });
     fireEvent.click(screen.getByTestId("import-button"));
     expect(screen.queryByTestId("import-error")).not.toBeInTheDocument();
+  });
+
+  it("shows export error when jsonStringify fails", () => {
+    expect.hasAssertions();
+    const asset = makeAsset();
+    useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
+    vi.mocked(jsonStringify).mockReturnValueOnce(undefined);
+    render(<ImportExportButtons />);
+    fireEvent.click(screen.getByTestId("export-button"));
+    expect(screen.getByTestId("export-error")).toBeInTheDocument();
+    expect(screen.getByTestId("export-error")).toHaveTextContent(/export failed/i);
   });
 });

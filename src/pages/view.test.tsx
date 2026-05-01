@@ -104,8 +104,9 @@ describe("AssetViewPage - not found", () => {
     expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin/edit" });
   });
 
-  it("back button calls history.back", () => {
+  it("back button calls history.back when there is prior history", () => {
     expect.hasAssertions();
+    Object.defineProperty(globalThis.history, "length", { configurable: true, value: 2, writable: true });
     const spy = vi.spyOn(globalThis.history, "back").mockReturnValue(undefined);
     const asset = makeAsset();
     useAppStore.setState({
@@ -116,6 +117,21 @@ describe("AssetViewPage - not found", () => {
     render(<AssetViewPage isin={asset.isin} />);
     fireEvent.click(screen.getByTestId("back-button"));
     expect(spy).toHaveBeenCalledWith();
+    Object.defineProperty(globalThis.history, "length", { configurable: true, value: 1, writable: true });
+  });
+
+  it("back button navigates home when opened directly with no history", () => {
+    expect.hasAssertions();
+    Object.defineProperty(globalThis.history, "length", { configurable: true, value: 1, writable: true });
+    const asset = makeAsset();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetViewPage isin={asset.isin} />);
+    fireEvent.click(screen.getByTestId("back-button"));
+    expect(mockNavigate).toHaveBeenCalledWith({ to: "/" });
   });
 
   it("renders boolean badges for false values", () => {

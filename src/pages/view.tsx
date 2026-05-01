@@ -23,7 +23,15 @@ export function AssetViewPage({ isin }: Props) {
   return (
     <div className="mx-auto max-w-4xl p-6">
       <div className="mb-6 flex items-center justify-between">
-        <button type="button" data-testid="back-button" className="btn gap-1 btn-ghost btn-sm" onClick={() => globalThis.history.back()}>
+        <button
+          type="button"
+          data-testid="back-button"
+          className="btn gap-1 btn-ghost btn-sm"
+          onClick={() => {
+            if (globalThis.history.length > 1) globalThis.history.back();
+            else void navigate({ to: "/" });
+          }}
+        >
           <ArrowLeft size={16} />
           Back
         </button>

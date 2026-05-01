@@ -1,6 +1,26 @@
 import { invariant } from "es-toolkit";
 import type { Asset } from "../../schemas/index.ts";
-import { buildAssetFromForm, parseOptionalNumber, toFormState, type FormState } from "./form-state.ts";
+import { buildAssetFromForm, parseOptionalNumber, parseZodErrors, toFormState, type FormState } from "./form-state.ts";
+
+describe("parseZodErrors", () => {
+  it("maps string-path issues to their field name", () => {
+    expect.hasAssertions();
+    const errors = parseZodErrors([{ message: "Required", path: ["name"] }]);
+    expect(errors.name).toBe("Required");
+  });
+
+  it("collects empty-path issues into the 'form' key", () => {
+    expect.hasAssertions();
+    const errors = parseZodErrors([{ message: "Schema-level error", path: [] }]);
+    expect(errors.form).toBe("Schema-level error");
+  });
+
+  it("collects numeric-path issues into the 'form' key", () => {
+    expect.hasAssertions();
+    const errors = parseZodErrors([{ message: "Array error", path: [0] }]);
+    expect(errors.form).toBe("Array error");
+  });
+});
 
 const BASE_ISIN = "LU1234567890";
 
@@ -190,5 +210,12 @@ describe("buildAssetFromForm - Zod validation errors", () => {
     const result = buildAssetFromForm(BASE_ISIN, makeFormState({ fees: "-1" }));
     invariant("errors" in result, "Expected error result");
     expect(result.errors.fees).toBeDefined();
+  });
+
+  it("treats empty fees string as 0 (valid, no fee)", () => {
+    expect.hasAssertions();
+    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ fees: "" }));
+    invariant("data" in result, "Expected success result");
+    expect(result.data.fees).toBe(0);
   });
 });

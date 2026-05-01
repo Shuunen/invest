@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-05-01
+
+### Added
+
+- `AssetEditPage` — full form to create and edit assets, with per-field validation via Zod and inline error display
+- `AssetViewPage` — read-only detail view for a single asset with a back button that uses `history.back()` (falls back to home on deep links)
+- `NumberField`, `TextField`, `CheckboxField`, `JsonTextarea` — reusable controlled form components with `data-testid` generated from field name via `kebabCase`
+- `parseZodErrors` — exported helper that maps Zod issues to a `Record<string, string>` field-error map, routing empty/numeric-path issues to a top-level `"form"` key
+- `buildAssetFromForm` / `toFormState` — bidirectional converters between the `Asset` schema type and the string-based form state
+- `updateAssetPrice` store action — updates a single asset's price in place without touching other fields
+- Price editing mode on `AssetTable` — toggle via "Edit prices" action button; inline `NumberField` per row
+- `PageHeader` component — renders a page title, optional metrics badges, and action buttons with auto-generated `data-testid="action-{label}"` IDs
+- Unique `data-testid` per boolean cell in `AssetTable` (e.g. `bool-is-accumulating-{isin}`)
+- Export error state in `ImportExportButtons` — shown when `jsonStringify` returns `undefined`, with `data-testid="export-error"`
+- `jsonStringify` now returns `string | undefined` and logs the error on failure instead of throwing
+
+### Changed
+
+- `NumberField` uses `step="any"` (was `step="1"`) to accept decimal inputs without browser validation noise
+- Removed `hover:font-bold` from form field wrappers — it caused layout shifts on hover
+- Removed unused `nbDecimals` constant from `src/utils/constants.ts`
+- Navigation to asset edit and view pages uses `{ replace: true }` to avoid cluttering browser history
+- All unit-test element queries migrated to `getByTestId` / `queryByTestId` — no `getByRole` / `getByText` in tests
+
+### Fixed
+
+- Empty `fees` string in the edit form is treated as `0` (free fund) instead of failing validation
+- `history.back()` on the asset view page navigates home when there is no prior history (direct/deep link)
+- `booleanCell` in `AssetTable` used a shared `data-testid="bool-cell"` — each cell now has a unique ID including the ISIN
+
 ## [0.2.0] - 2026-04-23
 
 ### Added

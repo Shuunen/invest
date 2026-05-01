@@ -21,9 +21,9 @@ export type AssetTableMeta = {
   amountMap?: Map<string, number>;
 };
 
-function booleanCell(value: boolean) {
+function booleanCell(isin: string, field: string, value: boolean) {
   return (
-    <span data-testid={value ? "bool-yes" : "bool-no"} aria-label={value ? "Yes" : "No"} className={`badge ${value ? cn("bg-success/10") : cn("badge-ghost")}`}>
+    <span data-testid={`bool-${field}-${isin}`} aria-label={value ? "Yes" : "No"} className={cn("badge", { "badge-ghost": !value, "bg-success/10": value })}>
       {value ? "Yes" : "No"}
     </span>
   );
@@ -167,19 +167,19 @@ export const columns: ColumnDef<Asset>[] = [
   },
   {
     accessorKey: "isAccumulating",
-    cell: ({ getValue }) => booleanCell(getValue<boolean>()),
+    cell: ({ getValue, row }) => booleanCell(row.original.isin, "is-accumulating", getValue<boolean>()),
     header: "Acc",
     meta: { title: "Accumulating" },
   },
   {
     accessorKey: "availableOnBroker",
-    cell: ({ getValue }) => booleanCell(getValue<boolean>()),
+    cell: ({ getValue, row }) => booleanCell(row.original.isin, "available-on-broker", getValue<boolean>()),
     header: "Broker",
     meta: { title: "Broker availability" },
   },
   {
     accessorKey: "availableForPlan",
-    cell: ({ getValue }) => booleanCell(getValue<boolean>()),
+    cell: ({ getValue, row }) => booleanCell(row.original.isin, "available-for-plan", getValue<boolean>()),
     header: "Plan",
     meta: { title: "Plan compatibility" },
   },

@@ -13,7 +13,7 @@ export type NumberFieldProps = {
 
 export function NumberField({ isHorizontal, label, name, onChange, placeholder, suffix, value }: NumberFieldProps) {
   return (
-    <div className={cn("form-control hover:font-bold", { "flex items-center justify-between gap-2": isHorizontal })}>
+    <div className={cn("form-control", { "flex items-center justify-between gap-2": isHorizontal })}>
       <label className={cn("label", { "mb-1": !isHorizontal })} htmlFor={name}>
         <span className="label-text text-sm text-base-content/60">{label}</span>
       </label>
@@ -22,7 +22,7 @@ export function NumberField({ isHorizontal, label, name, onChange, placeholder, 
           id={name}
           data-testid={kebabCase(name)}
           type="number"
-          step="1"
+          step="any"
           className={cn("input-bordered input input-sm", { "pr-8": suffix }, { "w-18 text-center": isHorizontal })}
           placeholder={placeholder}
           value={value}

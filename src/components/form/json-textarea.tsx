@@ -1,3 +1,5 @@
+import { cn } from "../../utils/browser-styles.ts";
+
 export type JsonTextareaProps = {
   error?: string;
   name: string;
@@ -8,7 +10,7 @@ export type JsonTextareaProps = {
 export function JsonTextarea({ error, name, onChange, value }: JsonTextareaProps) {
   return (
     <div className="form-control">
-      <textarea data-testid={`json-textarea-${name}`} id={name} className={`textarea-bordered textarea h-28 font-mono text-xs ${error ? "textarea-error" : ""}`} value={value} onChange={event => onChange(event.target.value)} />
+      <textarea data-testid={`json-textarea-${name}`} id={name} className={cn("textarea-bordered textarea h-28 font-mono text-xs", { "textarea-error": Boolean(error) })} value={value} onChange={event => onChange(event.target.value)} />
       {error !== undefined && (
         <p data-testid={`json-textarea-${name}-error`} className="mt-1 text-xs text-error">
           {error}
