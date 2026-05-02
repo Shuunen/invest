@@ -70,6 +70,28 @@ describe("AssetCreatePage", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
+  it("shows isin error when saving with a duplicate ISIN", async () => {
+    // Regression: ISSUE-002 — duplicate ISIN silently created second entry
+    // Found by /qa on 2025-07-18
+    // Report: .gstack/qa-reports/qa-report-localhost-2025-07-18.md
+    expect.hasAssertions();
+    setup();
+    useAppStore.setState(state => ({
+      data: {
+        ...state.data,
+        assets: [{ availableForPlan: false, availableOnBroker: false, fees: 0, geoAllocation: {}, isAccumulating: false, isin: "IE00B4L5Y983", name: "Existing ETF", sectorAllocation: {}, tickers: [] }],
+      },
+    }));
+    fireEvent.change(screen.getByTestId("isin"), { target: { value: "IE00B4L5Y983" } });
+    fireEvent.change(screen.getByTestId("name"), { target: { value: "Duplicate ETF" } });
+    fireEvent.click(screen.getByTestId("save-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("isin-error")).toHaveTextContent("An asset with this ISIN already exists");
+    });
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(useAppStore.getState().data.assets).toHaveLength(1);
+  });
+
   it("adds asset to store and navigates to / on valid save", async () => {
     expect.hasAssertions();
     setup();
