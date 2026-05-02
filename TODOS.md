@@ -17,7 +17,7 @@
 
 **What:** `AppDataSchema` currently allows two `IsinSchema` entries with the same ISIN code, or two portfolios with the same UUID. Add `superRefine` checks: duplicate ISIN codes → addIssue, duplicate portfolio IDs → addIssue.
 **Why:** The referential-integrity Set keeps the first duplicate, so the second copy's data is silently discarded. Downstream sort/score will use one copy while portfolio entries may reference the other.
-**Priority:** P1
+**Priority:** P1 — create-form guard added by /qa on feature/add-asset (2026-07-15, commit c500fd3). Schema-level `superRefine` still pending.
 
 ### Validate allocation value range
 
