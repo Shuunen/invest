@@ -150,23 +150,25 @@ describe("AssetCreatePage", () => {
     expect(screen.queryByTestId("isin-error")).not.toBeInTheDocument();
   });
 
-  it("prefills form fields after a successful fetch", async () => {
+  const fullPrefill = {
+    fees: "0.07",
+    geoAllocation: {},
+    isAccumulating: true,
+    name: "iShares Core S&P 500",
+    performance1y: "26.14",
+    performance3y: "66.54",
+    performance5y: "87.45",
+    provider: "iShares",
+    riskReward1y: "2.08",
+    riskReward3y: "1.19",
+    riskReward5y: "0.77",
+    sectorAllocation: {},
+    tickers: "SXR8",
+  } as const;
+
+  it("prefills identity fields after a successful fetch", async () => {
     expect.hasAssertions();
-    vi.mocked(fetchEtfData).mockResolvedValue({
-      fees: "0.07",
-      geoAllocation: {},
-      isAccumulating: true,
-      name: "iShares Core S&P 500",
-      performance1y: "26.14",
-      performance3y: "66.54",
-      performance5y: "87.45",
-      provider: "iShares",
-      riskReward1y: "2.08",
-      riskReward3y: "1.19",
-      riskReward5y: "0.77",
-      sectorAllocation: {},
-      tickers: "SXR8",
-    });
+    vi.mocked(fetchEtfData).mockResolvedValue(fullPrefill);
     setup();
     fireEvent.change(screen.getByTestId("isin"), { target: { value: "IE00B5BMR087" } });
     fireEvent.click(screen.getByTestId("fetch-etf-button"));
@@ -175,6 +177,22 @@ describe("AssetCreatePage", () => {
     });
     expect(screen.getByTestId("provider")).toHaveValue("iShares");
     expect(screen.getByTestId("tickers")).toHaveValue("SXR8");
+    expect(screen.getByTestId("is-accumulating")).toBeChecked();
+  });
+
+  it("prefills financial fields after a successful fetch", async () => {
+    expect.hasAssertions();
+    vi.mocked(fetchEtfData).mockResolvedValue(fullPrefill);
+    setup();
+    fireEvent.change(screen.getByTestId("isin"), { target: { value: "IE00B5BMR087" } });
+    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("fees")).toHaveValue(0.07);
+    });
+    expect(screen.getByTestId("performance-1-y")).toHaveValue(26.14);
+    expect(screen.getByTestId("performance-3-y")).toHaveValue(66.54);
+    expect(screen.getByTestId("performance-5-y")).toHaveValue(87.45);
+    expect(screen.getByTestId("risk-reward-1-y")).toHaveValue(2.08);
   });
 
   it("prefills geo and sector allocations after a successful fetch with allocation data", async () => {
@@ -204,6 +222,30 @@ describe("AssetCreatePage", () => {
     expect(screen.getByTestId("fetch-spinner")).toBeInTheDocument();
     await waitFor(() => {
       expect(screen.queryByTestId("fetch-spinner")).not.toBeInTheDocument();
+    });
+  });
+
+  it("disables fetch-etf-button while a fetch is in progress", () => {
+    expect.hasAssertions();
+    vi.mocked(fetchEtfData).mockResolvedValue(emptyPrefill);
+    setup();
+    fireEvent.change(screen.getByTestId("isin"), { target: { value: "IE00B5BMR087" } });
+    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+    expect(screen.getByTestId("fetch-etf-button")).toBeDisabled();
+  });
+
+  it("clears fetch error when a retry succeeds", async () => {
+    expect.hasAssertions();
+    vi.mocked(fetchEtfData).mockRejectedValueOnce(new Error("timeout")).mockResolvedValue(emptyPrefill);
+    setup();
+    fireEvent.change(screen.getByTestId("isin"), { target: { value: "IE00B5BMR087" } });
+    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("fetch-error")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("fetch-error")).not.toBeInTheDocument();
     });
   });
 

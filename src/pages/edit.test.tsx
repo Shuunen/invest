@@ -308,4 +308,26 @@ describe("AssetEditPage - fetch", () => {
       expect(screen.getByTestId("fetch-error")).toHaveTextContent("Failed to fetch ETF data");
     });
   });
+
+  it("disables fetch-etf-button while a fetch is in progress", () => {
+    expect.hasAssertions();
+    vi.mocked(fetchEtfData).mockResolvedValue({
+      fees: undefined,
+      geoAllocation: {},
+      isAccumulating: undefined,
+      name: undefined,
+      performance1y: undefined,
+      performance3y: undefined,
+      performance5y: undefined,
+      provider: undefined,
+      riskReward1y: undefined,
+      riskReward3y: undefined,
+      riskReward5y: undefined,
+      sectorAllocation: {},
+      tickers: undefined,
+    });
+    setup();
+    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+    expect(screen.getByTestId("fetch-etf-button")).toBeDisabled();
+  });
 });

@@ -1,13 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import { invariant } from "es-toolkit";
-import { RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { TextField } from "../components/form/text-field.tsx";
 import { useAppStore } from "../store/use-app-store.ts";
-import { fetchEtfData } from "../utils/fetch-etf-data.ts";
-import { applyEtfPrefill } from "./edit/apply-etf-prefill.ts";
 import { AssetForm } from "./edit/asset-form.tsx";
 import { buildAssetFromForm, toFormState, type FormState } from "./edit/form-state.ts";
+import { IsinFetchRow } from "./edit/isin-fetch-row.tsx";
+import { useEtfFetch } from "./edit/use-etf-fetch.ts";
 
 function useAssetEditForm(isin: string) {
   const navigate = useNavigate();
@@ -20,8 +18,6 @@ function useAssetEditForm(isin: string) {
     if (asset && !form) setForm(toFormState(asset));
   }, [asset, form]);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isFetching, setIsFetching] = useState(false);
-  const [fetchError, setFetchError] = useState<string | undefined>();
 
   function patch<Key extends keyof FormState>(key: Key, value: FormState[Key]) {
     setForm(prev => {
@@ -31,17 +27,7 @@ function useAssetEditForm(isin: string) {
     setErrors(prev => Object.fromEntries(Object.entries(prev).filter(([errKey]) => errKey !== key)));
   }
 
-  async function handleFetch() {
-    setIsFetching(true);
-    setFetchError(undefined);
-    try {
-      applyEtfPrefill(await fetchEtfData(isin), patch);
-    } catch (error) {
-      setFetchError(error instanceof Error ? error.message : "Failed to fetch ETF data");
-    } finally {
-      setIsFetching(false);
-    }
-  }
+  const { fetchError, handleFetch, isFetching } = useEtfFetch(isin, patch);
 
   function handleSave() {
     invariant(form, "Expected form to be defined");
@@ -77,24 +63,7 @@ export function AssetEditPage({ isin }: Props) {
   return (
     <AssetForm
       title="Edit asset"
-      isinDisplay={
-        <div className="mt-3">
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <TextField label="ISIN" name="isin" value={isin} onChange={() => undefined} readOnly />
-            </div>
-            <button type="button" data-testid="fetch-etf-button" className="btn btn-outline btn-sm" disabled={isFetching} onClick={() => void handleFetch()}>
-              {isFetching ? <span className="loading loading-xs loading-spinner" data-testid="fetch-spinner" /> : <RefreshCw size={14} />}
-              Fetch
-            </button>
-          </div>
-          {fetchError !== undefined && (
-            <p className="mt-1 text-xs text-error" data-testid="fetch-error">
-              {fetchError}
-            </p>
-          )}
-        </div>
-      }
+      isinDisplay={<IsinFetchRow isin={isin} isFetching={isFetching} fetchError={fetchError} onFetch={() => void handleFetch()} readOnly />}
       errors={errors}
       form={form}
       onCancel={goBack}
