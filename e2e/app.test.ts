@@ -156,11 +156,11 @@ test("creating an asset with no ISIN or name shows validation errors", async ({ 
 
 test("creating a new asset adds it to the asset table", async ({ page }) => {
   await page.goto("/assets/create");
-  await page.getByTestId("isin").fill("IE00B4L5Y983");
-  await page.getByTestId("name").fill("iShares Core MSCI World ETF");
+  await page.getByTestId("isin").fill("GB00B03MLX29");
+  await page.getByTestId("name").fill("Vanguard FTSE All-World ETF");
   await page.getByTestId("save-button").click();
   await expect(page).toHaveURL("/");
-  await expect(page.getByRole("cell", { exact: true, name: "iShares Core MSCI World ETF" })).toBeVisible();
+  await expect(page.getByRole("cell", { exact: true, name: "Vanguard FTSE All-World ETF" })).toBeVisible();
 });
 
 test("clicking an asset name navigates to the asset view page", async ({ page }) => {
