@@ -182,6 +182,34 @@ describe("parseEtfHtml — invalid values", () => {
     const result = parseEtfHtml(buildHtml({ "etf-profile-header_ter-value": "N/A" }));
     expect(result.fees).toBeUndefined();
   });
+
+  it("parses European comma-decimal performance values (e.g. '1,50%')", () => {
+    expect.hasAssertions();
+    const result = parseEtfHtml(buildHtml({ "etf-returns-section_1year-return": "1,50%" }));
+    expect(result.performance1y).toBe("1.5");
+  });
+
+  it("parses European comma-decimal fees (e.g. '0,07%')", () => {
+    expect.hasAssertions();
+    const result = parseEtfHtml(buildHtml({ "etf-profile-header_ter-value": "0,07%" }));
+    expect(result.fees).toBe("0.07");
+  });
+});
+
+describe("parseEtfHtml — empty text content", () => {
+  it("returns undefined for name when element is present but has empty text", () => {
+    expect.hasAssertions();
+    const html = `<html><body><span data-testid="etf-profile-header_etf-name"></span></body></html>`;
+    const result = parseEtfHtml(html);
+    expect(result.name).toBeUndefined();
+  });
+
+  it("returns undefined for provider when element is present but has only whitespace", () => {
+    expect.hasAssertions();
+    const html = `<html><body><span data-testid="tl_etf-basics_value_fund-provider">   </span></body></html>`;
+    const result = parseEtfHtml(html);
+    expect(result.provider).toBeUndefined();
+  });
 });
 
 describe("parseSectorsFromAjaxXml", () => {

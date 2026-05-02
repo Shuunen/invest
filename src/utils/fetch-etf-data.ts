@@ -137,7 +137,7 @@ export function parseEtfHtml(html: string): EtfPrefillData {
 export async function fetchEtfData(isin: string): Promise<EtfPrefillData> {
   if (!ISIN_REGEX.test(isin)) throw new Error(`Invalid ISIN format: ${isin}`);
   const encodedIsin = encodeURIComponent(isin);
-  const proxyBase = "http://localhost:8010/proxy";
+  const proxyBase = "http://localhost:8010/proxy"; // port must match PORT constant in src/bin/proxy.ts
   const response = await fetch(`${proxyBase}/en/etf-profile.html?isin=${encodedIsin}`);
   if (!response.ok) throw new Error(`HTTP error ${String(response.status)}`);
   const text = await response.text();

@@ -152,6 +152,7 @@ test("creating an asset with no ISIN or name shows validation errors", async ({ 
   await page.goto("/assets/create");
   await page.getByTestId("save-button").click();
   await expect(page.getByTestId("isin-error")).toBeVisible();
+  await expect(page.getByTestId("name-error")).toBeVisible();
 });
 
 test("creating a new asset adds it to the asset table", async ({ page }) => {
