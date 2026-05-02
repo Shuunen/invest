@@ -134,3 +134,85 @@ test("export includes portfolio data", async ({ page }) => {
   expect(exported.portfolios[0].id).toBe(PORTFOLIO_ID);
   expect(exported.portfolios[0].name).toBe(PORTFOLIO_NAME);
 });
+
+test("about page shows the app title and score formula", async ({ page }) => {
+  await page.goto("/about");
+  await expect(page.getByTestId("page-title")).toBeVisible();
+  await expect(page.getByTestId("score-formula")).toContainText("score = perf3y");
+});
+
+test("add asset button navigates to the create asset page", async ({ page }) => {
+  await page.goto("/");
+  await page.getByTestId("action-add-asset").click();
+  await expect(page).toHaveURL("/assets/create");
+  await expect(page.getByRole("heading", { name: "Create asset" })).toBeVisible();
+});
+
+test("creating an asset with no ISIN or name shows validation errors", async ({ page }) => {
+  await page.goto("/assets/create");
+  await page.getByTestId("save-button").click();
+  await expect(page.getByTestId("isin-error")).toBeVisible();
+});
+
+test("creating a new asset adds it to the asset table", async ({ page }) => {
+  await page.goto("/assets/create");
+  await page.getByTestId("isin").fill("IE00B4L5Y983");
+  await page.getByTestId("name").fill("iShares Core MSCI World ETF");
+  await page.getByTestId("save-button").click();
+  await expect(page).toHaveURL("/");
+  await expect(page.getByRole("cell", { exact: true, name: "iShares Core MSCI World ETF" })).toBeVisible();
+});
+
+test("clicking an asset name navigates to the asset view page", async ({ page }) => {
+  await importSampleData(page);
+  const [firstAsset] = PORTFOLIO_ASSETS;
+  await page.goto(`/portfolios/${PORTFOLIO_ID}`);
+  await page.getByTestId(`name-${firstAsset.isin.toLowerCase()}`).click();
+  await expect(page).toHaveURL(new RegExp(`/assets/${firstAsset.isin}`));
+  await expect(page.getByTestId("asset-name")).toHaveText(firstAsset.name);
+});
+
+test("edit button on asset view navigates to the edit form pre-filled", async ({ page }) => {
+  await importSampleData(page);
+  const [firstAsset] = PORTFOLIO_ASSETS;
+  await page.goto(`/assets/${firstAsset.isin}`);
+  await page.getByTestId("edit-button").click();
+  await expect(page).toHaveURL(`/assets/${firstAsset.isin}/edit`);
+  await expect(page.getByTestId("name")).toHaveValue(firstAsset.name);
+});
+
+test("editing an asset and saving reflects the new name on the view page", async ({ page }) => {
+  await importSampleData(page);
+  const [firstAsset] = PORTFOLIO_ASSETS;
+  await page.goto(`/assets/${firstAsset.isin}/edit`);
+  await page.getByTestId("name").fill("My Renamed ETF");
+  await page.getByTestId("save-button").click();
+  await expect(page).toHaveURL(`/assets/${firstAsset.isin}`);
+  await expect(page.getByTestId("asset-name")).toHaveText("My Renamed ETF");
+});
+
+test("navigating to an unknown asset ISIN shows a not-found message", async ({ page }) => {
+  await page.goto("/assets/XX0000000000");
+  await expect(page.getByTestId("not-found")).toBeVisible();
+  await expect(page.getByTestId("not-found")).toContainText("XX0000000000");
+});
+
+test("removing an asset from portfolio shows a confirmation dialog and cancel keeps it", async ({ page }) => {
+  await importSampleData(page);
+  await page.goto(`/portfolios/${PORTFOLIO_ID}`);
+  const [firstAsset] = PORTFOLIO_ASSETS;
+  await page.getByTestId(`remove-${firstAsset.isin.toLowerCase()}`).click();
+  await expect(page.getByTestId("modal-asset-name")).toHaveText(firstAsset.name);
+  await page.getByTestId("cancel-button").click();
+  await expect(page.getByRole("cell", { exact: true, name: firstAsset.name })).toBeVisible();
+});
+
+test("confirming removal deletes the asset from the portfolio", async ({ page }) => {
+  await importSampleData(page);
+  await page.goto(`/portfolios/${PORTFOLIO_ID}`);
+  const [firstAsset] = PORTFOLIO_ASSETS;
+  await page.getByTestId(`remove-${firstAsset.isin.toLowerCase()}`).click();
+  await expect(page.getByTestId("modal-asset-name")).toHaveText(firstAsset.name);
+  await page.getByTestId("confirm-button").click();
+  await expect(page.getByRole("cell", { exact: true, name: firstAsset.name })).not.toBeVisible();
+});
