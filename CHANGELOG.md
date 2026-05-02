@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2026-05-02
+
+### Added
+
+- `IsinFetchRow` — shared component for the ISIN input + Fetch button row, used by both `AssetCreatePage` and `AssetEditPage`
+- `useEtfFetch` — shared hook encapsulating ETF fetch state (`isFetching`, `fetchError`, `handleFetch`); eliminates the duplicated inline logic that existed in both pages
+- `AppDataSchema` now enforces uniqueness of ISINs and portfolio IDs via `superRefine` — duplicate entries produce field-level Zod issues
+- `addAsset` store action rejects duplicate ISINs atomically (reads live state inside `set()`) and enforces the `MAX_ISINS` cap
+- PWA icons — `public/icon-192.png` (192×192), `public/icon-512.png` (512×512), and `public/favicon.svg` (rising chart line, blue #1d4ed8 background)
+- 18 unit tests for `applyEtfPrefill` covering all scalar fields, optional patches, and allocation maps
+
+### Changed
+
+- CORS proxy path guard tightened: only URLs matching `/proxy/…` or exactly `/proxy` are forwarded; `/proxyfoo` now returns 404
+- CORS proxy `buildUpstreamHeaders` strips a leading `/` from `wicket-ajax-baseurl` before building the `Referer` header (prevents `https://host//path` double-slash)
+- CORS proxy `proxyReq` error handler calls `res.destroy(err)` when headers are already sent (was calling `res.end()`, which could corrupt the in-flight response stream)
+
 ## [0.3.0] - 2026-05-01
 
 ### Added
