@@ -1,7 +1,7 @@
 import { invariant } from "es-toolkit";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { MAX_PORTFOLIOS, SettingsSchema, type AppData, type Asset, type Portfolio, type PortfolioEntry, type Settings } from "../schemas/index.ts";
+import { MAX_ISINS, MAX_PORTFOLIOS, SettingsSchema, type AppData, type Asset, type Portfolio, type PortfolioEntry, type Settings } from "../schemas/index.ts";
 
 const defaultSettings: Settings = SettingsSchema.parse({});
 
@@ -39,13 +39,17 @@ export const useAppStore = create<AppStore>()(
   // oxlint-disable-next-line max-lines-per-function
   subscribeWithSelector(set => ({
     addAsset: asset =>
-      set(state => ({
-        data: {
-          ...state.data,
-          assets: [...state.data.assets, asset],
-          settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
-        },
-      })),
+      set(state => {
+        if (state.data.assets.length >= MAX_ISINS) return state;
+        if (state.data.assets.some(existing => existing.isin === asset.isin)) return state;
+        return {
+          data: {
+            ...state.data,
+            assets: [...state.data.assets, asset],
+            settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
+          },
+        };
+      }),
     addPortfolio: portfolio =>
       set(state => {
         if (state.data.portfolios.length >= MAX_PORTFOLIOS) return state;

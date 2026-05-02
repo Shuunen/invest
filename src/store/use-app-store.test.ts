@@ -1,4 +1,4 @@
-import type { Asset } from "../schemas/index.ts";
+import { MAX_ISINS, type Asset } from "../schemas/index.ts";
 import { useAppStore, defaultAppData } from "./use-app-store.ts";
 
 describe("useAppStore - initial state and load", () => {
@@ -176,6 +176,25 @@ describe("useAppStore - asset mutations", () => {
     const before = useAppStore.getState().data.settings.editCount;
     useAppStore.getState().addAsset(baseAsset);
     expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
+  });
+
+  it("addAsset ignores the call when MAX_ISINS is reached", () => {
+    expect.hasAssertions();
+    const maxAssets = Array.from({ length: MAX_ISINS }, (_unused, index) => ({
+      ...baseAsset,
+      isin: `US${String(index).padStart(9, "0")}${index % 10}`,
+    }));
+    useAppStore.setState({ data: { ...defaultAppData, assets: maxAssets }, isLoading: false, loadError: undefined });
+    useAppStore.getState().addAsset({ ...baseAsset, isin: "IE00B4L5Y983" });
+    expect(useAppStore.getState().data.assets).toHaveLength(MAX_ISINS);
+  });
+
+  it("addAsset ignores the call when the ISIN already exists", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: { ...defaultAppData, assets: [baseAsset] }, isLoading: false, loadError: undefined });
+    useAppStore.getState().addAsset({ ...baseAsset, name: "Duplicate ETF" });
+    expect(useAppStore.getState().data.assets).toHaveLength(1);
+    expect(useAppStore.getState().data.assets[0]?.name).toBe("ETF A");
   });
 });
 
