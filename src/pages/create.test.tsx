@@ -79,7 +79,27 @@ describe("AssetCreatePage", () => {
     useAppStore.setState(state => ({
       data: {
         ...state.data,
-        assets: [{ availableForPlan: false, availableOnBroker: false, fees: 0, geoAllocation: {}, isAccumulating: false, isin: "IE00B4L5Y983", name: "Existing ETF", sectorAllocation: {}, tickers: [] }],
+        assets: [
+          {
+            availableForPlan: false,
+            availableOnBroker: false,
+            fees: 0,
+            geoAllocation: {},
+            isAccumulating: false,
+            isin: "IE00B4L5Y983",
+            name: "Existing ETF",
+            performance1y: undefined,
+            performance3y: undefined,
+            performance5y: undefined,
+            price: undefined,
+            provider: "",
+            riskReward1y: undefined,
+            riskReward3y: undefined,
+            riskReward5y: undefined,
+            sectorAllocation: {},
+            tickers: [],
+          },
+        ],
       },
     }));
     fireEvent.change(screen.getByTestId("isin"), { target: { value: "IE00B4L5Y983" } });
