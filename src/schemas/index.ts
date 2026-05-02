@@ -129,10 +129,20 @@ export const AppDataSchema = z
     settings: SettingsSchema,
   })
   .superRefine((data, ctx) => {
-    const knownIsins = new Set(data.assets.map(item => item.isin));
+    // Duplicate ISIN codes
+    const seenIsins = new Set<string>();
+    for (const [ai, asset] of data.assets.entries())
+      if (seenIsins.has(asset.isin)) ctx.addIssue({ code: "custom", message: `Duplicate ISIN: ${asset.isin}`, path: ["assets", ai, "isin"] });
+      else seenIsins.add(asset.isin);
+    // Duplicate portfolio IDs
+    const seenPortfolioIds = new Set<string>();
+    for (const [pi, portfolio] of data.portfolios.entries())
+      if (seenPortfolioIds.has(portfolio.id)) ctx.addIssue({ code: "custom", message: `Duplicate portfolio ID: ${portfolio.id}`, path: ["portfolios", pi, "id"] });
+      else seenPortfolioIds.add(portfolio.id);
+    // Referential integrity: portfolio entries must reference known ISINs
     for (const [pi, portfolio] of data.portfolios.entries())
       for (const [ei, entry] of portfolio.entries.entries())
-        if (!knownIsins.has(entry.isin))
+        if (!seenIsins.has(entry.isin))
           ctx.addIssue({
             code: "custom",
             message: `Portfolio entry[${ei}] references unknown ISIN: ${entry.isin}`,
