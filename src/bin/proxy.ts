@@ -10,6 +10,7 @@ const PATH_PREFIX = "/proxy";
 const HTTP_NO_CONTENT = 204;
 const HTTP_NOT_FOUND = 404;
 const HTTP_BAD_GATEWAY = 502;
+const UPSTREAM_TIMEOUT_MS = 10_000;
 
 /** In-memory cookie jar: name → raw "name=value" string */
 const cookieJar = new Map<string, string>();
@@ -41,26 +42,9 @@ function buildUpstreamHeaders(req: http.IncomingMessage, upstreamPath: string): 
   return headers;
 }
 
-const server = http.createServer((req, res) => {
-  res.setHeader("Access-Control-Allow-Headers", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
-  res.setHeader("Access-Control-Allow-Origin", "*");
-
-  if (req.method === "OPTIONS") {
-    res.writeHead(HTTP_NO_CONTENT);
-    res.end();
-    return;
-  }
-
-  if (!req.url?.startsWith(PATH_PREFIX)) {
-    res.writeHead(HTTP_NOT_FOUND);
-    res.end("Not found");
-    return;
-  }
-
+function handleProxyRequest(req: http.IncomingMessage, res: http.ServerResponse) {
   const upstreamPath = req.url?.slice(PATH_PREFIX.length) || "/";
   const upstreamHeaders = buildUpstreamHeaders(req, upstreamPath);
-
   const options = {
     headers: upstreamHeaders,
     hostname: TARGET_HOST,
@@ -68,26 +52,46 @@ const server = http.createServer((req, res) => {
     path: upstreamPath,
     port: 443,
   };
-
   console.log(`Proxying ${req.method} ${upstreamPath}`);
-
   const proxyReq = https.request(options, proxyRes => {
     storeCookies(proxyRes.headers["set-cookie"]);
     const responseHeaders = Object.fromEntries(Object.entries(proxyRes.headers).filter(([name]) => name !== "set-cookie"));
     responseHeaders["access-control-allow-origin"] = "*";
     res.writeHead(proxyRes.statusCode ?? HTTP_BAD_GATEWAY, responseHeaders);
+    proxyRes.on("error", streamErr => {
+      console.error("Proxy response stream error:", streamErr.message);
+      res.destroy(streamErr);
+    });
     proxyRes.pipe(res);
   });
-
+  proxyReq.setTimeout(UPSTREAM_TIMEOUT_MS, () => {
+    proxyReq.destroy(new Error("Upstream timeout"));
+  });
   proxyReq.on("error", err => {
     console.error("Proxy error:", err.message);
-    res.writeHead(HTTP_BAD_GATEWAY);
-    res.end(err.message);
+    if (!res.headersSent) res.writeHead(HTTP_BAD_GATEWAY);
+    res.end("Upstream connection failed");
   });
-
   req.pipe(proxyReq);
+}
+
+const server = http.createServer((req, res) => {
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  if (req.method === "OPTIONS") {
+    res.writeHead(HTTP_NO_CONTENT);
+    res.end();
+    return;
+  }
+  if (!req.url?.startsWith(PATH_PREFIX)) {
+    res.writeHead(HTTP_NOT_FOUND);
+    res.end("Not found");
+    return;
+  }
+  handleProxyRequest(req, res);
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, "127.0.0.1", () => {
   console.log(`Proxy Active — http://localhost:${PORT}${PATH_PREFIX} → https://${TARGET_HOST}`);
 });

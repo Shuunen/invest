@@ -22,7 +22,7 @@ export const SECTORS = SectorSchema.options satisfies readonly Sector[];
 
 // --- ISIN ---
 
-const ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
+export const ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
 export const MAX_ISINS = 5000;
 export const MAX_PORTFOLIOS = 50;
 export const SCORE_FEE_WEIGHT = 10;

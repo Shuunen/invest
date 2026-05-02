@@ -1,4 +1,4 @@
-import type { Country, Sector } from "../schemas/index.ts";
+import { ISIN_REGEX, type Country, type Sector } from "../schemas/index.ts";
 
 export type EtfPrefillData = {
   fees: string | undefined;
@@ -135,8 +135,10 @@ export function parseEtfHtml(html: string): EtfPrefillData {
 }
 
 export async function fetchEtfData(isin: string): Promise<EtfPrefillData> {
+  if (!ISIN_REGEX.test(isin)) throw new Error(`Invalid ISIN format: ${isin}`);
+  const encodedIsin = encodeURIComponent(isin);
   const proxyBase = "http://localhost:8010/proxy";
-  const response = await fetch(`${proxyBase}/en/etf-profile.html?isin=${isin}`);
+  const response = await fetch(`${proxyBase}/en/etf-profile.html?isin=${encodedIsin}`);
   if (!response.ok) throw new Error(`HTTP error ${String(response.status)}`);
   const text = await response.text();
   const result = parseEtfHtml(text);
@@ -145,13 +147,13 @@ export async function fetchEtfData(isin: string): Promise<EtfPrefillData> {
   // embedded in a JS snippet and changes every session — extract it from the HTML rather than
   // relying on a hardcoded page ID.
   const wicketUrlMatch = /"u":"(\/en\/etf-profile\.html\?[^"]*loadMoreSectors[^"]*)"/.exec(text);
-  const sectorsPath = wicketUrlMatch ? wicketUrlMatch[1] : `/en/etf-profile.html?6-1.0-holdingsSection-sectors-loadMoreSectors&isin=${isin}&_wicket=1`;
+  const sectorsPath = wicketUrlMatch ? wicketUrlMatch[1] : `/en/etf-profile.html?6-1.0-holdingsSection-sectors-loadMoreSectors&isin=${encodedIsin}&_wicket=1`;
 
   const sectorsResponse = await fetch(`${proxyBase}${sectorsPath}&_=${Date.now()}`, {
     headers: {
       Accept: "application/xml, text/xml, */*; q=0.01",
       "wicket-ajax": "true",
-      "wicket-ajax-baseurl": `en/etf-profile.html?isin=${isin}`,
+      "wicket-ajax-baseurl": `en/etf-profile.html?isin=${encodedIsin}`,
       "x-requested-with": "XMLHttpRequest",
     },
   });

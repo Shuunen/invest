@@ -2,8 +2,6 @@ import type { EtfPrefillData } from "../../utils/fetch-etf-data.ts";
 import type { FormState, PatchFn } from "./form-state.ts";
 
 export function applyEtfPrefill(data: EtfPrefillData, patch: PatchFn) {
-  // oxlint-disable-next-line no-console
-  console.log("Applying ETF prefill", data);
   if (data.name !== undefined) patch("name", data.name);
   if (data.provider !== undefined) patch("provider", data.provider);
   if (data.tickers !== undefined) patch("tickers", data.tickers);
