@@ -36,7 +36,7 @@ function buildUpstreamHeaders(req: http.IncomingMessage, upstreamPath: string): 
   const headers: Record<string, string | string[] | undefined> = Object.fromEntries(Object.entries(req.headers).filter(([name]) => !STRIP_HEADERS.has(name.toLowerCase())));
   headers.host = TARGET_HOST;
   const wicketBaseUrl = req.headers["wicket-ajax-baseurl"];
-  headers.referer = wicketBaseUrl ? `https://${TARGET_HOST}/${wicketBaseUrl}` : `https://${TARGET_HOST}${upstreamPath}`;
+  headers.referer = wicketBaseUrl ? `https://${TARGET_HOST}/${String(wicketBaseUrl).replace(/^\//, "")}` : `https://${TARGET_HOST}${upstreamPath}`;
   const storedCookies = buildCookieHeader();
   if (storedCookies) headers.cookie = storedCookies;
   return headers;
@@ -69,8 +69,11 @@ function handleProxyRequest(req: http.IncomingMessage, res: http.ServerResponse)
   });
   proxyReq.on("error", err => {
     console.error("Proxy error:", err.message);
-    if (!res.headersSent) res.writeHead(HTTP_BAD_GATEWAY);
-    res.end("Upstream connection failed");
+    if (res.headersSent) res.destroy(err);
+    else {
+      res.writeHead(HTTP_BAD_GATEWAY);
+      res.end("Upstream connection failed");
+    }
   });
   req.pipe(proxyReq);
 }
@@ -84,7 +87,7 @@ const server = http.createServer((req, res) => {
     res.end();
     return;
   }
-  if (!req.url?.startsWith(PATH_PREFIX)) {
+  if (!req.url?.startsWith(`${PATH_PREFIX}/`) && req.url !== PATH_PREFIX) {
     res.writeHead(HTTP_NOT_FOUND);
     res.end("Not found");
     return;
