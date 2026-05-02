@@ -48,8 +48,8 @@ export const AssetSchema = z.object({
     })
     .default({}),
   isAccumulating: z.boolean(),
-  isin: z.string().regex(ISIN_REGEX),
-  name: z.string().min(1),
+  isin: z.string().regex(ISIN_REGEX, "Invalid ISIN format (e.g. IE00B4L5Y983)"),
+  name: z.string().min(1, "Name is required"),
   performance1y: nullableNumber,
   performance3y: nullableNumber,
   performance5y: nullableNumber,
@@ -90,10 +90,10 @@ export const PortfolioEntrySchema = z.object({
 export type PortfolioEntry = z.infer<typeof PortfolioEntrySchema>;
 
 export const PortfolioSchema = z.object({
-  broker: z.string().min(1),
+  broker: z.string().min(1, "Broker is required"),
   entries: z.array(PortfolioEntrySchema).default([]),
   id: z.uuid(),
-  name: z.string().min(1),
+  name: z.string().min(1, "Name is required"),
 });
 
 export type Portfolio = z.infer<typeof PortfolioSchema>;
