@@ -11,6 +11,7 @@ import { buildAssetFromForm, emptyFormState, type FormState } from "./edit/form-
 function useAssetCreateForm() {
   const navigate = useNavigate();
   const addAsset = useAppStore(state => state.addAsset);
+  const assets = useAppStore(state => state.data.assets);
   const [isin, setIsin] = useState("");
   const [form, setForm] = useState<FormState>(emptyFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -43,6 +44,10 @@ function useAssetCreateForm() {
     const result = buildAssetFromForm(isin, form);
     if ("errors" in result) {
       setErrors(result.errors);
+      return;
+    }
+    if (assets.some(asset => asset.isin === isin)) {
+      setErrors({ isin: "An asset with this ISIN already exists" });
       return;
     }
     addAsset(result.data);
