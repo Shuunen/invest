@@ -167,9 +167,11 @@ export const columns: ColumnDef<Asset>[] = [
       );
       if (meta?.onToggleSelect) return inner;
       return (
-        <Link to="/assets/$isin" params={{ isin }}>
-          {inner}
-        </Link>
+        <div className="flex w-fit">
+          <Link to="/assets/$isin" params={{ isin }}>
+            {inner}
+          </Link>
+        </div>
       );
     },
     header: "Name",
