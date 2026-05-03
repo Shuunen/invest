@@ -26,6 +26,9 @@ importers:
       recharts:
         specifier: ^3.8.1
         version: 3.8.1(@types/react@19.2.14)(react-dom@19.2.5(react@19.2.5))(react-is@19.2.5)(react@19.2.5)(redux@5.0.1)
+      workbox-window:
+        specifier: ^7.4.0
+        version: 7.4.0
       zod:
         specifier: ^4.4.1
         version: 4.4.1

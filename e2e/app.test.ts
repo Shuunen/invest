@@ -40,7 +40,7 @@ test("page loads without uncaught errors", async ({ page }) => {
 
 test("page title is correct", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveTitle("Invest — Portfolio Tracker");
+  await expect(page).toHaveTitle("Invest - Your Portfolio Tracker");
 });
 
 test("root element mounts and renders content", async ({ page }) => {

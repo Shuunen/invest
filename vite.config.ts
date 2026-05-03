@@ -28,14 +28,31 @@ export default defineConfig({
     VitePWA({
       manifest: {
         background_color: "#ffffff",
+        description: "Offline-first, local-persistence investment portfolio manager",
         display: "standalone",
         icons: [
           { sizes: "192x192", src: "/icon-192.png", type: "image/png" },
+          {
+            purpose: "any maskable",
+            sizes: "192x192",
+            src: "/icon-192.png",
+            type: "image/png",
+          },
           { sizes: "512x512", src: "/icon-512.png", type: "image/png" },
+          {
+            purpose: "any maskable",
+            sizes: "512x512",
+            src: "/icon-512.png",
+            type: "image/png",
+          },
         ],
-        name: "Invest — Portfolio Tracker",
+        id: "/",
+        name: "Invest - Your Portfolio Tracker",
+        orientation: "portrait-primary",
+        scope: "/",
         short_name: "Invest",
-        theme_color: "#1d4ed8",
+        start_url: "/",
+        theme_color: "#0084d1",
       },
       registerType: "autoUpdate",
       workbox: {
@@ -51,7 +68,7 @@ export default defineConfig({
   ],
   test: {
     coverage: {
-      exclude: ["src/bin/**/*", "src/*.tsx"],
+      exclude: ["src/bin/**/*", "src/pwa.ts", "src/*.tsx"],
       include: ["src/**/*.{ts,tsx}"],
       reporter: [["text", { maxCols: 120 }], "lcov"],
       thresholds: {
