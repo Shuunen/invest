@@ -24,7 +24,7 @@ describe("CreatePortfolioModal", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
-    fireEvent.click(screen.getByTestId("confirm-button"));
+    fireEvent.click(screen.getByTestId("form-confirm-button"));
     await expect(screen.findByTestId("portfolio-name-error")).resolves.toBeInTheDocument();
   });
 
@@ -33,7 +33,7 @@ describe("CreatePortfolioModal", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
     await userEvent.type(screen.getByTestId("portfolio-name"), "My Fund");
-    fireEvent.click(screen.getByTestId("confirm-button"));
+    fireEvent.click(screen.getByTestId("form-confirm-button"));
     await expect(screen.findByTestId("portfolio-broker-error")).resolves.toBeInTheDocument();
   });
 
@@ -42,7 +42,7 @@ describe("CreatePortfolioModal", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
     render(<CreatePortfolioModal onClose={onClose} />);
-    fireEvent.click(screen.getByTestId("cancel-button"));
+    fireEvent.click(screen.getByTestId("form-cancel-button"));
     expect(onClose).toHaveBeenCalledOnce();
   });
 
@@ -74,7 +74,7 @@ describe("CreatePortfolioModal", () => {
     render(<CreatePortfolioModal onClose={onClose} />);
     await userEvent.type(screen.getByTestId("portfolio-name"), "My Fund");
     await userEvent.type(screen.getByTestId("portfolio-broker"), "Degiro");
-    fireEvent.click(screen.getByTestId("confirm-button"));
+    fireEvent.click(screen.getByTestId("form-confirm-button"));
     expect(useAppStore.getState().data.portfolios).toHaveLength(1);
     expect(useAppStore.getState().data.portfolios[0]?.name).toBe("My Fund");
     expect(useAppStore.getState().data.portfolios[0]?.broker).toBe("Degiro");

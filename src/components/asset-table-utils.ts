@@ -1,12 +1,9 @@
 import type { Row } from "@tanstack/react-table";
 import { computeScore, type Asset } from "../schemas/index.ts";
 
-const maxValueForDecimals = 10;
-const nbDecimals = 2;
 const minRowsForFormatting = 3;
 const QUINTILE_HIGH_THRESHOLD = 0.8;
 const QUINTILE_LOW_THRESHOLD = 0.2;
-const emptyValue = "—";
 export const SCORE_MISSING_VALUE = -100;
 
 export function getAriaSortValue(sorted: "asc" | "desc" | false): "ascending" | "descending" | "none" {
@@ -52,21 +49,6 @@ function quintileClassFromSorted(value: number | undefined, sortedDefined: numbe
   if (pct >= QUINTILE_HIGH_THRESHOLD) return "bg-success/20 text-success-content";
   if (pct < QUINTILE_LOW_THRESHOLD) return "bg-error/20 text-error-content";
   return undefined;
-}
-
-export function formatNumber(val: number | undefined): string {
-  if (val === undefined) return emptyValue;
-  if (Math.abs(val) === 0) return "0";
-  if (Math.abs(val) < maxValueForDecimals) return val.toFixed(nbDecimals);
-  return Math.round(val).toString();
-}
-
-export function formatPrice(val: number | undefined): string {
-  return val === undefined ? emptyValue : `${formatNumber(val)} €`;
-}
-
-export function formatPercent(val: number | undefined): string {
-  return val === undefined ? emptyValue : `${formatNumber(val)} %`;
 }
 
 export function computeQuintileClasses(rows: Row<Asset>[]): Map<string, Map<string, string | undefined>> {

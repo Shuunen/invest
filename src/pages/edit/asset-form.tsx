@@ -5,6 +5,7 @@ import type { FormState, PatchFn } from "./form-state.ts";
 import { GeneralSection } from "./general.tsx";
 
 type Props = {
+  disableSave?: boolean;
   errors: Record<string, string>;
   form: FormState;
   /** Rendered below the title — use a plain text node for edit (shows ISIN) or a form field for create. */
@@ -15,7 +16,7 @@ type Props = {
   title: string;
 };
 
-export function AssetForm({ errors, form, isinDisplay, onCancel, onSave, patch, title }: Props) {
+export function AssetForm({ disableSave = false, errors, form, isinDisplay, onCancel, onSave, patch, title }: Props) {
   return (
     <div className="mx-auto max-w-4xl p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -23,7 +24,7 @@ export function AssetForm({ errors, form, isinDisplay, onCancel, onSave, patch, 
           <ArrowLeft size={16} />
           Cancel
         </button>
-        <button type="button" data-testid="save-button" className="btn btn-sm btn-primary" onClick={onSave}>
+        <button type="button" data-testid="save-button" className="btn btn-sm btn-primary" onClick={onSave} disabled={disableSave}>
           Save
         </button>
       </div>

@@ -3,9 +3,10 @@ import { invariant } from "es-toolkit";
 import { db } from "../db/db.ts";
 import { computeScore, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { formatPercent } from "../utils/format-numbers.ts";
 import { useDexieSync } from "./asset-table-db.ts";
 import { matchesFilter } from "./asset-table-hooks.ts";
-import { quintileClass, formatPercent } from "./asset-table-utils.ts";
+import { quintileClass } from "./asset-table-utils.ts";
 import { AssetTable } from "./asset-table.tsx";
 
 const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>());

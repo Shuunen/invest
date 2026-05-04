@@ -188,6 +188,8 @@ test("editing an asset and saving reflects the new name on the view page", async
   await page.goto(`/assets/${firstAsset.isin}/edit`);
   await page.getByTestId("name").fill("My Renamed ETF");
   await page.getByTestId("save-button").click();
+  await expect(page.getByTestId("confirm-save-modal")).toBeVisible();
+  await page.getByTestId("form-confirm-button").click();
   await expect(page).toHaveURL(`/assets/${firstAsset.isin}`);
   await expect(page.getByTestId("asset-name")).toHaveText("My Renamed ETF");
 });
@@ -204,7 +206,7 @@ test("removing an asset from portfolio shows a confirmation dialog and cancel ke
   const [firstAsset] = PORTFOLIO_ASSETS;
   await page.getByTestId(`remove-${firstAsset.isin.toLowerCase()}`).click();
   await expect(page.getByTestId("modal-asset-name")).toHaveText(firstAsset.name);
-  await page.getByTestId("cancel-button").click();
+  await page.getByTestId("form-cancel-button").click();
   await expect(page.getByRole("cell", { exact: true, name: firstAsset.name })).toBeVisible();
 });
 
@@ -214,6 +216,6 @@ test("confirming removal deletes the asset from the portfolio", async ({ page })
   const [firstAsset] = PORTFOLIO_ASSETS;
   await page.getByTestId(`remove-${firstAsset.isin.toLowerCase()}`).click();
   await expect(page.getByTestId("modal-asset-name")).toHaveText(firstAsset.name);
-  await page.getByTestId("confirm-button").click();
+  await page.getByTestId("form-confirm-button").click();
   await expect(page.getByRole("cell", { exact: true, name: firstAsset.name })).not.toBeVisible();
 });

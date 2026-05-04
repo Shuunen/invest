@@ -116,7 +116,7 @@ describe("AssetPickerModal - with assets", () => {
     expect.hasAssertions();
     const onCancel = vi.fn<() => void>();
     render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
-    await userEvent.click(screen.getByTestId("cancel-button"));
+    await userEvent.click(screen.getByTestId("form-cancel-button"));
     expect(onCancel).toHaveBeenCalledOnce();
   });
 
@@ -142,7 +142,7 @@ describe("AssetPickerModal - with assets", () => {
     expect.hasAssertions();
     const onConfirm = vi.fn<(isins: string[]) => void>();
     render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={onConfirm} title="Select assets" />);
-    await userEvent.click(screen.getByTestId("confirm-button"));
+    await userEvent.click(screen.getByTestId("form-confirm-button"));
     expect(onConfirm).toHaveBeenCalledWith([BASE_ASSET.isin]);
   });
 });

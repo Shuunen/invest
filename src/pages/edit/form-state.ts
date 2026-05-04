@@ -1,5 +1,6 @@
 import { AssetSchema, type Asset, type Country, type Sector } from "../../schemas/index.ts";
 import { maxPercentage } from "../../utils/constants.ts";
+import { maxDecimals } from "../../utils/format-numbers.ts";
 
 export type FormState = {
   availableForPlan: boolean;
@@ -23,7 +24,7 @@ export type FormState = {
 export type PatchFn = <Key extends keyof FormState>(key: Key, value: FormState[Key]) => void;
 
 function toPercentString(decimal: number): string {
-  return String(decimal * maxPercentage);
+  return String(Number((decimal * maxPercentage).toFixed(maxDecimals)));
 }
 
 function fromPercentString(pct: string): number {
