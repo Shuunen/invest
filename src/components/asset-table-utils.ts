@@ -2,13 +2,12 @@ import type { Row } from "@tanstack/react-table";
 import { computeScore, type Asset } from "../schemas/index.ts";
 
 const maxValueForDecimals = 10;
-export const nbDecimals = 2;
-export const minRowsForFormatting = 3;
-export const QUINTILE_HIGH_THRESHOLD = 0.8;
-export const QUINTILE_LOW_THRESHOLD = 0.2;
-export const SCORE_HIGH_THRESHOLD = 4;
+const nbDecimals = 2;
+const minRowsForFormatting = 3;
+const QUINTILE_HIGH_THRESHOLD = 0.8;
+const QUINTILE_LOW_THRESHOLD = 0.2;
+const emptyValue = "—";
 export const SCORE_MISSING_VALUE = -100;
-export const emptyValue = "—";
 
 export function getAriaSortValue(sorted: "asc" | "desc" | false): "ascending" | "descending" | "none" {
   if (sorted === "asc") return "ascending";

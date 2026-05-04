@@ -11,13 +11,9 @@ const CountrySchema = z.enum(["us", "canada", "brazil", "europe", ...CountryEuro
 const SectorSchema = z.enum(["technology", "financials", "healthcare", "consumerDiscretionary", "consumerStaples", "industrials", "energy", "utilities", "materials", "realEstate", "communicationServices"]);
 
 export type Country = z.infer<typeof CountrySchema>;
-export type CountryAsia = z.infer<typeof CountryAsiaSchema>;
-export type CountryEurope = z.infer<typeof CountryEuropeSchema>;
 export type Sector = z.infer<typeof SectorSchema>;
 
 export const COUNTRIES = CountrySchema.options satisfies readonly Country[];
-export const COUNTRIES_ASIA = CountryAsiaSchema.options satisfies readonly CountryAsia[];
-export const COUNTRIES_EUROPE = CountryEuropeSchema.options satisfies readonly CountryEurope[];
 export const SECTORS = SectorSchema.options satisfies readonly Sector[];
 
 // --- ISIN ---
@@ -25,8 +21,8 @@ export const SECTORS = SectorSchema.options satisfies readonly Sector[];
 export const ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
 export const MAX_ISINS = 5000;
 export const MAX_PORTFOLIOS = 50;
-export const SCORE_FEE_WEIGHT = 10;
-export const SCORE_RISK_WEIGHT = 5;
+const SCORE_FEE_WEIGHT = 10;
+const SCORE_RISK_WEIGHT = 5;
 const DEFAULT_SIMILARITY_THRESHOLD = 0.85;
 
 const nullableNumber = z
