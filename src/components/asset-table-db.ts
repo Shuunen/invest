@@ -7,7 +7,7 @@ import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 const DEBOUNCE_MS = 300;
 const seedResult = AppDataSchema.safeParse(sampleJson);
 /* v8 ignore next -- sample.json is always valid; the false branch is unreachable */
-export const seedData: AppData = seedResult.success ? seedResult.data : { ...defaultAppData };
+const seedData: AppData = seedResult.success ? seedResult.data : { ...defaultAppData };
 
 export function useHydration(retryKey: number) {
   useEffect(() => {

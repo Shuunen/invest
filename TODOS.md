@@ -1,12 +1,15 @@
 # TODOS
 
+- show the user a before/after diff of the asset edit form, in a modal so they can confirm their changes before saving
+- show the user an animation of the export json button to indicate that the last export was long ago and they should export again to get the latest data
+- add a data completeness col so the user can see at a glance which assets have missing data
+- add a "last updated" timestamp to each asset, and show it in the table and detail view, so the user can see which assets have stale data that needs refreshing
+- add a "last updated" timestamp to each row of a portfolio, so the user can see which entries have stale data that needs refreshing
+- add some predefined filters to the table view, e.g. "only accumulating ETFs", "only distributing ETFs", "only ETFs with performance data", etc
+- add logger and animated toasts
+- do the complementary call for the geo allocation like it is already done for the sector allocation
+
 ## Schema hardening
-
-### Enforce uniqueness on isins and portfolio IDs
-
-**What:** `AppDataSchema` currently allows two `IsinSchema` entries with the same ISIN code, or two portfolios with the same UUID. Add `superRefine` checks: duplicate ISIN codes → addIssue, duplicate portfolio IDs → addIssue.
-**Why:** The referential-integrity Set keeps the first duplicate, so the second copy's data is silently discarded. Downstream sort/score will use one copy while portfolio entries may reference the other.
-**Priority:** P1
 
 ### Validate allocation value range
 
@@ -15,12 +18,6 @@
 **Priority:** P2
 
 ## Assets
-
-### Add PWA icons and favicon
-
-**What:** Create `public/icon-192.png`, `public/icon-512.png`, and `public/favicon.svg`.
-**Why:** `vite.config.ts` (VitePWA manifest) references these icons, and `index.html` references `favicon.svg`. Without them the app installs without an icon and browsers show a broken favicon.
-**Priority:** P1
 
 ## Pre-implementation (resolve before writing code)
 
@@ -32,6 +29,16 @@
 **Depends on:** Nothing — check your ETF data source (Morningstar, broker platform, ETF factsheet) first.
 
 ## Completed
+
+### Enforce uniqueness on ISINs and portfolio IDs
+
+**What:** Added `superRefine` checks to `AppDataSchema`: duplicate ISIN codes → addIssue, duplicate portfolio IDs → addIssue.
+**Completed:** v0.4.0 (2026-05-02)
+
+### Add PWA icons and favicon
+
+**What:** Created `public/icon-192.png`, `public/icon-512.png`, and `public/favicon.svg` (rising chart icon, blue #0084d1 background).
+**Completed:** v0.4.0 (2026-05-02)
 
 ### Asset edit and view pages
 

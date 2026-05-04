@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { fetchEtfData } from "../utils/fetch-etf-data.ts";
 import { AssetEditPage } from "./edit.tsx";
 
 const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>());
@@ -9,6 +10,8 @@ vi.mock(import("@tanstack/react-router"), async () => {
   const actual = await import("@tanstack/react-router");
   return { ...actual, useNavigate: () => mockNavigate };
 });
+
+vi.mock(import("../utils/fetch-etf-data.ts"));
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
@@ -214,5 +217,117 @@ describe("AssetEditPage - form", () => {
       expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
     });
     expect(useAppStore.getState().data.assets[0]?.geoAllocation).toStrictEqual({ france: 0.4, us: 0.6 });
+  });
+});
+
+describe("AssetEditPage - fetch", () => {
+  function setup() {
+    mockNavigate.mockClear();
+    const asset = makeAsset();
+    useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
+    render(<AssetEditPage isin={asset.isin} />);
+    return asset;
+  }
+
+  it("shows readonly isin input and an enabled fetch button", () => {
+    expect.hasAssertions();
+    setup();
+    expect(screen.getByTestId("isin")).toBeInTheDocument();
+    expect(screen.getByTestId("isin")).toHaveAttribute("readonly");
+    expect(screen.getByTestId("fetch-etf-button")).not.toBeDisabled();
+    fireEvent.change(screen.getByTestId("isin"), { target: { value: "XX9999999999" } });
+    expect(screen.getByTestId("isin")).toHaveValue("LU1234567890");
+  });
+
+  it("prefills form fields after a successful fetch", async () => {
+    expect.hasAssertions();
+    vi.mocked(fetchEtfData).mockResolvedValue({
+      fees: "0.07",
+      geoAllocation: {},
+      isAccumulating: true,
+      name: "iShares Core S&P 500",
+      performance1y: "26.14",
+      performance3y: "66.54",
+      performance5y: "87.45",
+      provider: "iShares",
+      riskReward1y: "2.08",
+      riskReward3y: "1.19",
+      riskReward5y: "0.77",
+      sectorAllocation: {},
+      tickers: "SXR8",
+    });
+    setup();
+    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("name")).toHaveValue("iShares Core S&P 500");
+    });
+    expect(screen.getByTestId("provider")).toHaveValue("iShares");
+  });
+
+  it("shows spinner while fetching then hides it on completion", async () => {
+    expect.hasAssertions();
+    vi.mocked(fetchEtfData).mockResolvedValue({
+      fees: undefined,
+      geoAllocation: {},
+      isAccumulating: undefined,
+      name: undefined,
+      performance1y: undefined,
+      performance3y: undefined,
+      performance5y: undefined,
+      provider: undefined,
+      riskReward1y: undefined,
+      riskReward3y: undefined,
+      riskReward5y: undefined,
+      sectorAllocation: {},
+      tickers: undefined,
+    });
+    setup();
+    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+    expect(screen.getByTestId("fetch-spinner")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByTestId("fetch-spinner")).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows fetch error when fetchEtfData throws an Error", async () => {
+    expect.hasAssertions();
+    vi.mocked(fetchEtfData).mockRejectedValue(new Error("Network error"));
+    setup();
+    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("fetch-error")).toHaveTextContent("Network error");
+    });
+  });
+
+  it("shows generic fetch error when a non-Error is thrown", async () => {
+    expect.hasAssertions();
+    vi.mocked(fetchEtfData).mockRejectedValue("oops");
+    setup();
+    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("fetch-error")).toHaveTextContent("Failed to fetch ETF data");
+    });
+  });
+
+  it("disables fetch-etf-button while a fetch is in progress", () => {
+    expect.hasAssertions();
+    vi.mocked(fetchEtfData).mockResolvedValue({
+      fees: undefined,
+      geoAllocation: {},
+      isAccumulating: undefined,
+      name: undefined,
+      performance1y: undefined,
+      performance3y: undefined,
+      performance5y: undefined,
+      provider: undefined,
+      riskReward1y: undefined,
+      riskReward3y: undefined,
+      riskReward5y: undefined,
+      sectorAllocation: {},
+      tickers: undefined,
+    });
+    setup();
+    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+    expect(screen.getByTestId("fetch-etf-button")).toBeDisabled();
   });
 });

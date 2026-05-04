@@ -2,9 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2026-05-02
+
+### Added in 0.4.0
+
+- `IsinFetchRow` — shared component for the ISIN input + Fetch button row, used by both `AssetCreatePage` and `AssetEditPage`
+- `useEtfFetch` — shared hook encapsulating ETF fetch state (`isFetching`, `fetchError`, `handleFetch`); eliminates the duplicated inline logic that existed in both pages
+- `AppDataSchema` now enforces uniqueness of ISINs and portfolio IDs via `superRefine` — duplicate entries produce field-level Zod issues
+- `addAsset` store action rejects duplicate ISINs atomically (reads live state inside `set()`) and enforces the `MAX_ISINS` cap
+- PWA icons — `public/icon-192.png` (192×192), `public/icon-512.png` (512×512), and `public/favicon.svg` (rising chart line, blue #0084d1 background)
+- 18 unit tests for `applyEtfPrefill` covering all scalar fields, optional patches, and allocation maps
+
+### Changed in 0.4.0
+
+- CORS proxy path guard tightened: only URLs matching `/proxy/…` or exactly `/proxy` are forwarded; `/proxyfoo` now returns 404
+- CORS proxy `buildUpstreamHeaders` strips a leading `/` from `wicket-ajax-baseurl` before building the `Referer` header (prevents `https://host//path` double-slash)
+- CORS proxy `proxyReq` error handler calls `res.destroy(err)` when headers are already sent (was calling `res.end()`, which could corrupt the in-flight response stream)
+
 ## [0.3.0] - 2026-05-01
 
-### Added
+### Added in 0.3.0
 
 - `AssetEditPage` — full form to create and edit assets, with per-field validation via Zod and inline error display
 - `AssetViewPage` — read-only detail view for a single asset with a back button that uses `history.back()` (falls back to home on deep links)
@@ -18,7 +35,7 @@ All notable changes to this project will be documented in this file.
 - Export error state in `ImportExportButtons` — shown when `jsonStringify` returns `undefined`, with `data-testid="export-error"`
 - `jsonStringify` now returns `string | undefined` and logs the error on failure instead of throwing
 
-### Changed
+### Changed in 0.3.0
 
 - `NumberField` uses `step="any"` (was `step="1"`) to accept decimal inputs without browser validation noise
 - Removed `hover:font-bold` from form field wrappers — it caused layout shifts on hover
@@ -26,7 +43,7 @@ All notable changes to this project will be documented in this file.
 - Navigation to asset edit and view pages uses `{ replace: true }` to avoid cluttering browser history
 - All unit-test element queries migrated to `getByTestId` / `queryByTestId` — no `getByRole` / `getByText` in tests
 
-### Fixed
+### Fixed in 0.3.0
 
 - Empty `fees` string in the edit form is treated as `0` (free fund) instead of failing validation
 - `history.back()` on the asset view page navigates home when there is no prior history (direct/deep link)
@@ -34,7 +51,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.2.0] - 2026-04-23
 
-### Added
+### Added in 0.2.0
 
 - Portfolio management: create portfolios with a name and broker, navigate between them via the sidebar
 - `AssetPickerModal` — select and deselect instruments for a portfolio from the full asset table
@@ -47,7 +64,7 @@ All notable changes to this project will be documented in this file.
 - 9 Playwright E2E tests covering portfolio creation, navigation, asset editing, and export
 - `e2e/tsconfig.json` — dedicated TypeScript config for Playwright tests (Node + DOM types)
 
-### Changed
+### Changed in 0.2.0
 
 - `broker` field on `PortfolioSchema` is now required (`min(1)`) — portfolios must always have a broker name
 - `FormControl` `autoFocus` is now an optional prop (default `false`) instead of hardcoded `true`
@@ -61,7 +78,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.1.0] - 2026-04-21
 
-### Added
+### Added in 0.1.0
 
 - Full project scaffold: Vite + React + TypeScript with Tailwind CSS and PWA support
 - Zod v4 data model: `IsinSchema`, `PortfolioSchema`, `SettingsSchema`, and `AppDataSchema` with referential integrity validation
@@ -76,14 +93,14 @@ All notable changes to this project will be documented in this file.
 - oxlint + oxfmt linting and formatting pipeline
 - gstack skill routing and project conventions in CLAUDE.md
 
-### Changed
+### Changed in 0.1.0
 
 - `CountrySchema` now derived from `CountryEuropeSchema` and `CountryAsiaSchema` — single source of truth, no drift
 - `COUNTRIES_EUROPE` and `COUNTRIES_ASIA` arrays derived directly from sub-schema options
 - `Isin` type now uses type-predicate refines for proper `Partial<Record<Country|Sector, number>>` inference — `IsinRaw` workaround removed
 - `safeImportJson` now preserves the original JSON parse error message instead of swallowing it
 
-### Fixed
+### Fixed in 0.1.0
 
 - PWA startup failure (stale service worker serving wrong HTML) now shows a visible error message instead of a blank page
 - Formula test previously used imported weight constants (tautological); now hardcodes expected values to verify the formula independently

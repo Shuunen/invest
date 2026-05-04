@@ -1,10 +1,12 @@
 import { Link, Outlet } from "@tanstack/react-router";
 import { PlusCircle } from "lucide-react";
-import { useState } from "react";
-import { useHydration } from "./components/asset-table-db.ts";
+import { useEffect, useState } from "react";
+import { useDexieSync, useHydration } from "./components/asset-table-db.ts";
 import { CreatePortfolioModal } from "./components/create-portfolio-modal.tsx";
 import { ImportExportButtons } from "./components/import-export-buttons.tsx";
 import { InvestIcon } from "./components/invest-icon.tsx";
+import { OfflineWarning } from "./components/offline-warning.tsx";
+import { setupPwa } from "./pwa.ts";
 import { useAppStore } from "./store/use-app-store.ts";
 import { cn } from "./utils/browser-styles";
 
@@ -21,12 +23,37 @@ function PortfolioNavLinks() {
   ));
 }
 
+function useOfflineStatus() {
+  const [isOffline, setIsOffline] = useState(() => !globalThis.navigator.onLine);
+
+  useEffect(() => {
+    const markOffline = () => setIsOffline(true);
+    const markOnline = () => setIsOffline(false);
+    globalThis.addEventListener("offline", markOffline);
+    globalThis.addEventListener("online", markOnline);
+    return () => {
+      globalThis.removeEventListener("offline", markOffline);
+      globalThis.removeEventListener("online", markOnline);
+    };
+  }, []);
+
+  return isOffline;
+}
+
 export function App() {
   const [createOpen, setCreateOpen] = useState(false);
+  const isOffline = useOfflineStatus();
+
+  useEffect(() => {
+    setupPwa();
+  }, []);
+
   useHydration(0);
+  useDexieSync();
   return (
     <div className="flex min-h-screen flex-col">
-      <nav className="navbar sticky top-0 z-50 px-4 shadow-sm">
+      <OfflineWarning isOffline={isOffline} />
+      <nav className="navbar sticky top-0 z-50 bg-base-100 px-4 shadow-sm">
         <div className="navbar-start">
           <Link to="/">
             <div className="flex items-center gap-3 text-2xl font-bold text-primary">

@@ -8,7 +8,7 @@ export type AppDataRecord = {
 
 const DB_VERSION = 2;
 
-export class AppDataDb extends Dexie {
+class AppDataDb extends Dexie {
   public appdata!: Table<AppDataRecord>;
 
   public constructor() {

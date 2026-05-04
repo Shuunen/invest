@@ -30,6 +30,25 @@ function fromPercentString(pct: string): number {
   return Number(pct) / maxPercentage;
 }
 
+export const emptyFormState: FormState = {
+  availableForPlan: false,
+  availableOnBroker: false,
+  fees: "0",
+  geoAllocation: {},
+  isAccumulating: false,
+  name: "",
+  performance1y: "",
+  performance3y: "",
+  performance5y: "",
+  price: "",
+  provider: "",
+  riskReward1y: "",
+  riskReward3y: "",
+  riskReward5y: "",
+  sectorAllocation: {},
+  tickers: "",
+};
+
 export function toFormState(asset: Asset): FormState {
   return {
     availableForPlan: asset.availableForPlan,

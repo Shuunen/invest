@@ -1,12 +1,11 @@
 import { useNavigate } from "@tanstack/react-router";
 import { invariant } from "es-toolkit";
-import { ArrowLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAppStore } from "../store/use-app-store.ts";
-import { AllocationsSection } from "./edit/allocations.tsx";
-import { FinancialSection } from "./edit/financials.tsx";
+import { AssetForm } from "./edit/asset-form.tsx";
 import { buildAssetFromForm, toFormState, type FormState } from "./edit/form-state.ts";
-import { GeneralSection } from "./edit/general.tsx";
+import { IsinFetchRow } from "./edit/isin-fetch-row.tsx";
+import { useEtfFetch } from "./edit/use-etf-fetch.ts";
 
 function useAssetEditForm(isin: string) {
   const navigate = useNavigate();
@@ -28,6 +27,8 @@ function useAssetEditForm(isin: string) {
     setErrors(prev => Object.fromEntries(Object.entries(prev).filter(([errKey]) => errKey !== key)));
   }
 
+  const { fetchError, handleFetch, isFetching } = useEtfFetch(isin, patch);
+
   function handleSave() {
     invariant(form, "Expected form to be defined");
     const result = buildAssetFromForm(isin, form);
@@ -39,14 +40,14 @@ function useAssetEditForm(isin: string) {
     void navigate({ params: { isin }, to: "/assets/$isin" });
   }
 
-  return { errors, form, handleSave, patch };
+  return { errors, fetchError, form, handleFetch, handleSave, isFetching, patch };
 }
 
 type Props = { isin: string };
 
 export function AssetEditPage({ isin }: Props) {
   const navigate = useNavigate();
-  const { form, errors, patch, handleSave } = useAssetEditForm(isin);
+  const { form, errors, fetchError, patch, handleFetch, handleSave, isFetching } = useAssetEditForm(isin);
 
   if (!form)
     return (
@@ -60,26 +61,14 @@ export function AssetEditPage({ isin }: Props) {
   const goBack = () => void navigate({ params: { isin }, replace: true, to: "/assets/$isin" });
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <button type="button" data-testid="cancel-button" className="btn gap-1 btn-ghost btn-sm" onClick={goBack}>
-          <ArrowLeft size={16} />
-          Cancel
-        </button>
-        <button type="button" data-testid="save-button" className="btn btn-sm btn-primary" onClick={handleSave}>
-          Save
-        </button>
-      </div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Edit asset</h1>
-        <p className="mt-1 font-mono text-sm text-base-content">{isin}</p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-        <GeneralSection form={form} errors={errors} patch={patch} />
-        <FinancialSection form={form} errors={errors} patch={patch} />
-        <AllocationsSection form={form} patch={patch} />
-      </div>
-    </div>
+    <AssetForm
+      title="Edit asset"
+      isinDisplay={<IsinFetchRow isin={isin} isFetching={isFetching} fetchError={fetchError} onFetch={() => void handleFetch()} readOnly />}
+      errors={errors}
+      form={form}
+      onCancel={goBack}
+      onSave={handleSave}
+      patch={patch}
+    />
   );
 }

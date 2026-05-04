@@ -1,0 +1,19 @@
+{
+  "name": "Invest - Your Portfolio Tracker",
+  "short_name": "Invest",
+  "description": "Offline-first, local-persistence investment portfolio manager",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0084d1",
+  "lang": "en",
+  "scope": "/",
+  "icons": [
+    { "sizes": "192x192", "src": "/icon-192.png", "type": "image/png" },
+    { "purpose": "any maskable", "sizes": "192x192", "src": "/icon-192.png", "type": "image/png" },
+    { "sizes": "512x512", "src": "/icon-512.png", "type": "image/png" },
+    { "purpose": "any maskable", "sizes": "512x512", "src": "/icon-512.png", "type": "image/png" }
+  ],
+  "id": "/",
+  "orientation": "portrait-primary"
+}

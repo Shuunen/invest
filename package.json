@@ -5,7 +5,7 @@
     "dexie": "^4.4.2",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "recharts": "^3.8.1",
+    "workbox-window": "^7.4.0",
     "zod": "^4.4.1",
     "zustand": "^5.0.12"
   },
@@ -27,10 +27,10 @@
     "daisyui": "^5.5.19",
     "es-toolkit": "^1.46.1",
     "fake-indexeddb": "^6.2.5",
-    "globals": "^17.5.0",
     "happy-dom": "^20.9.0",
     "knip": "^6.9.0",
     "lucide-react": "^1.14.0",
+    "npm-parallel": "^2.0.1",
     "oxfmt": "^0.47.0",
     "oxlint": "^1.62.0",
     "oxlint-tsgolint": "^0.22.1",
@@ -46,14 +46,17 @@
   "scripts": {
     "build": "tsc -b && vite build",
     "check": "pnpm run lint && pnpm run build && pnpm run test && pnpm run test:e2e && echo check completed successfully",
-    "dev": "vite",
-    "lint": "pnpm run lint:types && pnpm run lint:format && pnpm run lint:issues && echo lint completed successfully",
+    "dev": "parallel start:proxy start:vite",
+    "lint": "pnpm run lint:types && pnpm run lint:format && pnpm run lint:fallow && pnpm run lint:issues && echo lint completed successfully",
+    "lint:fallow": "pnpx fallow --only dead-code,dupes && pnpx fallow health --targets --baseline .fallow-baselines/health.json && echo lint:fallow completed successfully || (echo Please fix lint issues reported by fallow and run pnpm run lint:fallow to check for remaining issues && exit 1)",
     "lint:format": "oxfmt --check && echo lint:format completed successfully || (echo Please run pnpm run lint:format:fix to automatically fix formatting issues && exit 1)",
     "lint:format:fix": "oxfmt --write && echo lint:format:fix completed successfully || (echo Please run pnpm run lint:format to check for remaining formatting issues && exit 1)",
     "lint:issues": "oxlint --type-aware --deny-warnings --report-unused-disable-directives && echo lint:issues completed successfully || (echo Please run pnpm run lint:fix to automatically fix linting issues && exit 1)",
     "lint:issues:fix": "oxlint --fix --fix-suggestions --fix-dangerously --type-aware --deny-warnings --report-unused-disable-directives && echo lint:issues:fix completed successfully || (echo Please run pnpm run lint:issues to check for remaining linting issues && exit 1)",
     "lint:types": "tsgo -p tsconfig.app.json && tsgo -p tsconfig.node.json && echo lint:types completed successfully || (echo Please fix type errors and run pnpm run lint:types to check for remaining type issues && exit 1)",
     "preview": "vite preview",
+    "start:proxy": "bun src/bin/proxy.ts",
+    "start:vite": "vite",
     "test": "vitest run --coverage && echo test completed successfully || (echo Please fix test errors and run pnpm run test to check for remaining test issues && exit 1)",
     "test:e2e": "playwright test && echo test:e2e completed successfully || (echo Please fix e2e test errors and run pnpm run test:e2e to check for remaining e2e test issues && exit 1)",
     "test:ui": "vitest --ui",
@@ -61,5 +64,5 @@
     "up:deps": "pnpm update --recursive --latest && echo up:deps success"
   },
   "type": "module",
-  "version": "0.3.0"
+  "version": "0.4.0"
 }

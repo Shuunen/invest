@@ -11,22 +11,18 @@ const CountrySchema = z.enum(["us", "canada", "brazil", "europe", ...CountryEuro
 const SectorSchema = z.enum(["technology", "financials", "healthcare", "consumerDiscretionary", "consumerStaples", "industrials", "energy", "utilities", "materials", "realEstate", "communicationServices"]);
 
 export type Country = z.infer<typeof CountrySchema>;
-export type CountryAsia = z.infer<typeof CountryAsiaSchema>;
-export type CountryEurope = z.infer<typeof CountryEuropeSchema>;
 export type Sector = z.infer<typeof SectorSchema>;
 
 export const COUNTRIES = CountrySchema.options satisfies readonly Country[];
-export const COUNTRIES_ASIA = CountryAsiaSchema.options satisfies readonly CountryAsia[];
-export const COUNTRIES_EUROPE = CountryEuropeSchema.options satisfies readonly CountryEurope[];
 export const SECTORS = SectorSchema.options satisfies readonly Sector[];
 
 // --- ISIN ---
 
-const ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
+export const ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
 export const MAX_ISINS = 5000;
 export const MAX_PORTFOLIOS = 50;
-export const SCORE_FEE_WEIGHT = 10;
-export const SCORE_RISK_WEIGHT = 5;
+const SCORE_FEE_WEIGHT = 10;
+const SCORE_RISK_WEIGHT = 5;
 const DEFAULT_SIMILARITY_THRESHOLD = 0.85;
 
 const nullableNumber = z
@@ -48,8 +44,8 @@ export const AssetSchema = z.object({
     })
     .default({}),
   isAccumulating: z.boolean(),
-  isin: z.string().regex(ISIN_REGEX),
-  name: z.string().min(1),
+  isin: z.string().regex(ISIN_REGEX, "Invalid ISIN format (e.g. IE00B4L5Y983)"),
+  name: z.string().min(1, "Name is required"),
   performance1y: nullableNumber,
   performance3y: nullableNumber,
   performance5y: nullableNumber,
@@ -90,10 +86,10 @@ export const PortfolioEntrySchema = z.object({
 export type PortfolioEntry = z.infer<typeof PortfolioEntrySchema>;
 
 export const PortfolioSchema = z.object({
-  broker: z.string().min(1),
+  broker: z.string().min(1, "Broker is required"),
   entries: z.array(PortfolioEntrySchema).default([]),
   id: z.uuid(),
-  name: z.string().min(1),
+  name: z.string().min(1, "Name is required"),
 });
 
 export type Portfolio = z.infer<typeof PortfolioSchema>;
@@ -129,10 +125,20 @@ export const AppDataSchema = z
     settings: SettingsSchema,
   })
   .superRefine((data, ctx) => {
-    const knownIsins = new Set(data.assets.map(item => item.isin));
+    // Duplicate ISIN codes
+    const seenIsins = new Set<string>();
+    for (const [ai, asset] of data.assets.entries())
+      if (seenIsins.has(asset.isin)) ctx.addIssue({ code: "custom", message: `Duplicate ISIN: ${asset.isin}`, path: ["assets", ai, "isin"] });
+      else seenIsins.add(asset.isin);
+    // Duplicate portfolio IDs
+    const seenPortfolioIds = new Set<string>();
+    for (const [pi, portfolio] of data.portfolios.entries())
+      if (seenPortfolioIds.has(portfolio.id)) ctx.addIssue({ code: "custom", message: `Duplicate portfolio ID: ${portfolio.id}`, path: ["portfolios", pi, "id"] });
+      else seenPortfolioIds.add(portfolio.id);
+    // Referential integrity: portfolio entries must reference known ISINs
     for (const [pi, portfolio] of data.portfolios.entries())
       for (const [ei, entry] of portfolio.entries.entries())
-        if (!knownIsins.has(entry.isin))
+        if (!seenIsins.has(entry.isin))
           ctx.addIssue({
             code: "custom",
             message: `Portfolio entry[${ei}] references unknown ISIN: ${entry.isin}`,

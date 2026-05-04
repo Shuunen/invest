@@ -3,9 +3,12 @@ import { invariant } from "es-toolkit";
 import { db } from "../db/db.ts";
 import { computeScore, type AppData, type Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { useDexieSync } from "./asset-table-db.ts";
 import { matchesFilter } from "./asset-table-hooks.ts";
 import { quintileClass, formatPercent } from "./asset-table-utils.ts";
 import { AssetTable } from "./asset-table.tsx";
+
+const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>());
 
 const mockLink = vi.hoisted(
   () =>
@@ -15,7 +18,7 @@ const mockLink = vi.hoisted(
 
 vi.mock(import("@tanstack/react-router"), async () => {
   const actual = await import("@tanstack/react-router");
-  return { ...actual, Link: mockLink as unknown as typeof actual.Link };
+  return { ...actual, Link: mockLink as unknown as typeof actual.Link, useNavigate: () => mockNavigate };
 });
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
@@ -558,14 +561,19 @@ describe("AssetTable - useHydration", () => {
   });
 });
 
-describe("AssetTable - useDexieSync", () => {
+describe("useDexieSync", () => {
   it("writes data to DB after debounce when store changes", async () => {
     expect.hasAssertions();
     await db.delete();
     await db.open();
 
     useAppStore.setState({ data: makeTestData([makeAsset()]), isLoading: false, loadError: undefined });
-    render(<AssetTable />);
+
+    function DexieSyncWrapper() {
+      useDexieSync();
+      return <span />;
+    }
+    render(<DexieSyncWrapper />);
 
     act(() => {
       useAppStore.getState().setSort({ column: "fees", direction: "asc" });
@@ -713,6 +721,23 @@ describe("AssetTable - amount column", () => {
 
 describe("AssetTable - price editing", () => {
   const PRICE_ASSET = makeAsset({ isin: "LU9876543210", price: 50 });
+
+  it("shows Add asset and Edit prices buttons in the page header", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    expect(screen.getByTestId("action-add-asset")).toBeInTheDocument();
+    expect(screen.getByTestId("action-edit-prices")).toBeInTheDocument();
+  });
+
+  it("clicking Add asset navigates to /assets/create", () => {
+    expect.hasAssertions();
+    mockNavigate.mockClear();
+    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    fireEvent.click(screen.getByTestId("action-add-asset"));
+    expect(mockNavigate).toHaveBeenCalledWith({ to: "/assets/create" });
+  });
 
   it("shows Edit prices button in the page header", () => {
     expect.hasAssertions();
