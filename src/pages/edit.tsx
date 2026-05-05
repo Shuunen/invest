@@ -23,6 +23,7 @@ type ConfirmAssetSaveParams = {
 function useConfirmAssetSave({ asset, form, isin, navigate, onReset, onValidationError, updateAsset }: ConfirmAssetSaveParams) {
   const [diffRows, setDiffRows] = useState<DiffRow[]>([]);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [snapshotForm, setSnapshotForm] = useState<FormState | undefined>();
 
   function openConfirm() {
     invariant(form, "Expected form to be defined");
@@ -32,18 +33,15 @@ function useConfirmAssetSave({ asset, form, isin, navigate, onReset, onValidatio
       onValidationError(result.errors);
       return;
     }
+    setSnapshotForm(form);
     setDiffRows(buildDiffRows(toFormState(asset), form));
     setIsConfirmOpen(true);
   }
 
   function confirmSave() {
-    invariant(form, "Expected form to be defined");
-    const result = buildAssetFromForm(isin, form);
-    if ("errors" in result) {
-      onValidationError(result.errors);
-      setIsConfirmOpen(false);
-      return;
-    }
+    invariant(snapshotForm, "Expected snapshot form to be defined");
+    // Snapshot was validated at openConfirm time — error path is unreachable
+    const result = buildAssetFromForm(isin, snapshotForm) as { data: Asset };
     setIsConfirmOpen(false);
     updateAsset(isin, result.data);
     void navigate({ params: { isin }, to: "/assets/$isin" });

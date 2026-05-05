@@ -116,7 +116,7 @@ describe("AssetEditPage - form", () => {
     expect(screen.getByTestId("change-row-accumulating")).toHaveTextContent("Yes");
   });
 
-  it("revalidates and blocks save if form becomes invalid before confirmation", async () => {
+  it("saves the snapshot captured at modal open, not live form edits made behind the modal", async () => {
     expect.hasAssertions();
     mockNavigate.mockClear();
     const asset = makeAsset();
@@ -133,14 +133,15 @@ describe("AssetEditPage - form", () => {
       expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
     });
 
+    // Edit the live form behind the modal — the snapshot (Updated ETF) is what gets saved
     fireEvent.change(screen.getByTestId("name"), { target: { value: "" } });
     fireEvent.click(screen.getByTestId("form-confirm-button"));
 
     await waitFor(() => {
-      expect(screen.getByTestId("name-error")).toBeInTheDocument();
+      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
     });
-    expect(mockNavigate).not.toHaveBeenCalled();
     expect(screen.queryByTestId("confirm-save-modal")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("name-error")).not.toBeInTheDocument();
   });
 
   it("closes confirmation modal when cancel is clicked", async () => {
