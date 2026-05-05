@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { invariant } from "es-toolkit";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { AssetForm } from "./edit/asset-form.tsx";
@@ -89,7 +89,7 @@ function useAssetEditForm(isin: string) {
   }
 
   const { fetchError, handleFetch, isFetching } = useEtfFetch(isin, patch);
-  const hasChanges = asset && form ? buildDiffRows(toFormState(asset), form).length > 0 : false;
+  const hasChanges = useMemo(() => (asset && form ? buildDiffRows(toFormState(asset), form).length > 0 : false), [asset, form]);
   const { closeConfirm, confirmSave, diffRows, isConfirmOpen, openConfirm, resetAndClose } = useConfirmAssetSave({
     asset,
     form,

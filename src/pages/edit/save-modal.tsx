@@ -25,8 +25,8 @@ function renderDiffRowsTable(diffRows: DiffRow[]) {
           {diffRows.map(row => (
             <tr key={row.field} data-testid={`change-row-${kebabCase(row.field)}`}>
               <td>{row.field}</td>
-              <td className="font-mono text-xs">{row.before}</td>
-              <td className="font-mono text-xs">{row.after}</td>
+              <td className="font-mono text-sm">{row.before}</td>
+              <td className="font-mono text-sm">{row.after}</td>
             </tr>
           ))}
         </tbody>

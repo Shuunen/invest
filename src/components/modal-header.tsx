@@ -19,7 +19,7 @@ export function ModalHeader({ title, subtitle, onClose, type = "default" }: Moda
         <h3 data-testid="modal-title" className="text-lg font-bold">
           {title}
         </h3>
-        {subtitle && <p className="text-base-content">{subtitle}</p>}
+        {subtitle && <p className="text-sm text-base-content/70">{subtitle}</p>}
       </div>
       <button type="button" data-testid="modal-close-button" className="btn btn-circle btn-ghost btn-sm" aria-label="Close" onClick={onClose}>
         <XIcon size={16} />
