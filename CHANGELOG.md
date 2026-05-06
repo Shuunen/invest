@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.0] - 2026-05-06
+
+### Added in 0.6.0
+
+- `computeDataScore` — data quality score (0–100) based on field completeness and freshness; constants `DATA_SCORE_PERCENT` (100) and `DATA_SCORE_WARN_THRESHOLD` (75) exported from schemas
+- `updatedAt` (ISO datetime) field on `AssetSchema` — populated automatically when ETF data is fetched
+- `makeDataScoreColumn` — "Data" table column with a colored dot indicator (green / yellow / red) showing data quality per asset
+- `makeAmountUpdatedAtColumn` — "Amt. updated" portfolio column tracking when each position's amount was last changed
+- `Updated` column in the asset table rendering the `updatedAt` date for each asset
+- `amountUpdatedAt` timestamp on portfolio entries, set automatically via `updatePortfolioEntryAmount` store action
+- `formatDate` utility for displaying ISO dates in a human-readable format
+- `parseCountriesFromAjaxXml` — parses country allocation data from ETF AJAX XML responses (alongside the existing sector parser)
+- ISIN is now editable on the asset edit page; renaming an ISIN automatically cascades to all portfolio entries that reference it
+- `react-hot-toast` — toast notification system; success toasts now appear after creating a portfolio, importing, and exporting data
+
+### Changed in 0.6.0
+
+- `resolveWicketPath` helper refactored out of `fetchEtfData` and reused for both sector and country AJAX paths
+- Progress bar thresholds updated
+- Primary color darkened from `sky-600` to `sky-700`; theme meta color updated to `#0069a8`; main layout uses `bg-base-200` (taupe-50) background; navbar is no longer sticky
+- Amount input `step` changed to `0.1`; price input `step` changed to `1`
+
 ## [0.5.0] - 2026-05-06
 
 ### Added in 0.5.0
