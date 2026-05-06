@@ -1,6 +1,6 @@
 export function InvestIcon({ size = 24 }: { size?: number }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#0084d1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#0069a8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 16v5" />
       <path d="M16 14v7" />
       <path d="M20 10v11" />

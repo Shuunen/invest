@@ -25,7 +25,7 @@ All notable changes to this project will be documented in this file.
 - `useEtfFetch` — shared hook encapsulating ETF fetch state (`isFetching`, `fetchError`, `handleFetch`); eliminates the duplicated inline logic that existed in both pages
 - `AppDataSchema` now enforces uniqueness of ISINs and portfolio IDs via `superRefine` — duplicate entries produce field-level Zod issues
 - `addAsset` store action rejects duplicate ISINs atomically (reads live state inside `set()`) and enforces the `MAX_ISINS` cap
-- PWA icons — `public/icon-192.png` (192×192), `public/icon-512.png` (512×512), and `public/favicon.svg` (rising chart line, blue #0084d1 background)
+- PWA icons — `public/icon-192.png` (192×192), `public/icon-512.png` (512×512), and `public/favicon.svg` (rising chart line, blue #0069a8 background)
 - 18 unit tests for `applyEtfPrefill` covering all scalar fields, optional patches, and allocation maps
 
 ### Changed in 0.4.0

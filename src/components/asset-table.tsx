@@ -158,7 +158,7 @@ function renderAssetsHeader(assets: Asset[], actions: { icon: React.ReactNode; l
 
 function renderTableHeader(table: Table<Asset>) {
   return (
-    <thead className="sticky top-0 z-10 bg-base-100">
+    <thead className="sticky top-12 z-10 bg-base-200">
       {table.getHeaderGroups().map(headerGroup => (
         <tr key={headerGroup.id}>
           {headerGroup.headers.map(header => (
@@ -246,8 +246,8 @@ export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, 
   return (
     <>
       {!propAssets && renderAssetsHeader(data.assets, priceEditActions)}
-      <div className="relative p-4 text-left">
-        <div className="sticky top-5 z-20 flex gap-4">
+      <div className="relative p-4 pt-0 text-left">
+        <div className="sticky top-0 z-20 flex gap-4 bg-base-200 pt-4">
           {renderSearchFilter(filterText, setFilterText)}
           {renderColumnFilter(table, visibleLeafCount)}
         </div>

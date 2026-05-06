@@ -50,9 +50,9 @@ export function App() {
   useHydration(0);
   useDexieSync();
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-base-200">
       <OfflineWarning isOffline={isOffline} />
-      <nav className="navbar sticky top-0 z-50 bg-base-100 px-4 shadow-sm">
+      <nav className="navbar px-4 shadow-sm">
         <div className="navbar-start">
           <Link to="/">
             <div className="flex items-center gap-3 text-2xl font-bold text-primary">

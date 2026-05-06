@@ -52,7 +52,7 @@ export default defineConfig({
         scope: "/",
         short_name: "Invest",
         start_url: "/",
-        theme_color: "#0084d1",
+        theme_color: "#0069a8",
       },
       registerType: "autoUpdate",
       workbox: {

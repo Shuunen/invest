@@ -50,7 +50,7 @@ export function AssetPickerModal({ assets, initialSelected, onCancel, onConfirm,
   const { handleConfirm, selected, toggle } = useAssetPicker(initialSelected, onConfirm);
   return (
     <dialog className="modal-open modal" aria-modal="true">
-      <div className="modal-box max-w-none">
+      <div className="modal-box max-w-none bg-base-200">
         <ModalHeader title={title} onClose={onCancel} />
         <div className="max-h-144 overflow-y-auto rounded-box border border-base-200">{renderPickerList({ assets, selected, toggle })}</div>
         <p data-testid="selected-count" className="mt-2 text-sm text-base-content/60">
