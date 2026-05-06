@@ -1,6 +1,6 @@
-import { kebabCase } from "es-toolkit";
-import { formatPercent } from "../../components/asset-table-utils";
+import { kebabCase } from "es-toolkit/string";
 import { cn } from "../../utils/browser-styles";
+import { formatPercent } from "../../utils/format-numbers";
 
 const errorUntil = 33;
 const warningUntil = 66;

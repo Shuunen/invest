@@ -2,13 +2,13 @@ import { invariant } from "es-toolkit";
 import { CheckIcon, ListIcon, PencilLineIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AssetPickerModal } from "../components/asset-picker-modal.tsx";
-import { formatPrice } from "../components/asset-table-utils.ts";
 import { AssetTable } from "../components/asset-table.tsx";
 import { ModalActions } from "../components/modal-actions.tsx";
 import { ModalHeader } from "../components/modal-header.tsx";
 import { PageHeader } from "../components/page-header.tsx";
 import type { Asset, PortfolioEntry } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
+import { formatPrice } from "../utils/format-numbers.ts";
 
 function usePriceEditing() {
   const [isPriceEditing, setIsPriceEditing] = useState(false);

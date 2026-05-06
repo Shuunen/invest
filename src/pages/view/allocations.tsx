@@ -1,6 +1,6 @@
-import { formatPercent } from "../../components/asset-table-utils.ts";
 import type { Asset } from "../../schemas/index.ts";
 import { maxPercentage } from "../../utils/constants.ts";
+import { formatPercent } from "../../utils/format-numbers.ts";
 import { ProgressBar } from "./progress-bar.tsx";
 
 const MAX_ABBREVIATION_LENGTH = 2;

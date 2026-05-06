@@ -1,7 +1,7 @@
 import { kebabCase } from "es-toolkit/string";
 import { useMemo } from "react";
 import { computeScore, type Asset } from "../schemas";
-import { formatPercent } from "./asset-table-utils";
+import { formatPercent } from "../utils/format-numbers";
 import type { MetricItem } from "./metric";
 import { Metrics } from "./metrics";
 

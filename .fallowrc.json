@@ -1,9 +1,29 @@
 {
   "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
-  "ignorePatterns": ["**/*.d.ts"],
-  "ignoreDependencies": ["bun"],
-  "dynamicallyLoaded": ["src/test/setup.ts"],
   "duplicates": {
     "ignore": ["**/*.test.{ts,tsx}"]
+  },
+  "dynamicallyLoaded": ["src/test/setup.ts"],
+  "ignoreDependencies": ["bun"],
+  "ignorePatterns": ["**/*.d.ts"],
+  "rules": {
+    "boundary-violation": "error",
+    "circular-dependencies": "error",
+    "coverage-gaps": "off",
+    "duplicate-exports": "error",
+    "private-type-leaks": "off",
+    "stale-suppressions": "error",
+    "test-only-dependencies": "error",
+    "type-only-dependencies": "error",
+    "unlisted-dependencies": "error",
+    "unresolved-imports": "error",
+    "unused-class-members": "error",
+    "unused-dependencies": "error",
+    "unused-dev-dependencies": "error",
+    "unused-enum-members": "error",
+    "unused-exports": "error",
+    "unused-files": "error",
+    "unused-optional-dependencies": "error",
+    "unused-types": "error"
   }
 }

@@ -3,7 +3,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
 import { computeScore, type Asset } from "../schemas/index.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { formatNumber, formatPercent, formatPrice, SCORE_MISSING_VALUE } from "./asset-table-utils.ts";
+import { formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
+import { SCORE_MISSING_VALUE } from "./asset-table-utils.ts";
 
 declare module "@tanstack/react-table" {
   // oxlint-disable-next-line typescript-eslint/consistent-type-definitions

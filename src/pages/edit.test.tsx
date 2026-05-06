@@ -81,10 +81,145 @@ describe("AssetEditPage - form", () => {
       loadError: undefined,
     });
     render(<AssetEditPage isin={asset.isin} />);
+    fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
     fireEvent.click(screen.getByTestId("save-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId("form-confirm-button"));
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
     });
+  });
+
+  it("shows before/after diff rows in confirmation modal", async () => {
+    expect.hasAssertions();
+    const asset = makeAsset();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+
+    render(<AssetEditPage isin={asset.isin} />);
+    fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
+    fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.4" } });
+    fireEvent.click(screen.getByTestId("is-accumulating"));
+    fireEvent.click(screen.getByTestId("save-button"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("confirm-save-diff-table")).toBeInTheDocument();
+    });
+    expect(screen.getByTestId("change-row-name")).toBeInTheDocument();
+    expect(screen.getByTestId("change-row-fees")).toBeInTheDocument();
+    expect(screen.getByTestId("change-row-accumulating")).toHaveTextContent("No");
+    expect(screen.getByTestId("change-row-accumulating")).toHaveTextContent("Yes");
+  });
+
+  it("saves the snapshot captured at modal open, not live form edits made behind the modal", async () => {
+    expect.hasAssertions();
+    mockNavigate.mockClear();
+    const asset = makeAsset();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+
+    render(<AssetEditPage isin={asset.isin} />);
+    fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
+    fireEvent.click(screen.getByTestId("save-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
+    });
+
+    // Edit the live form behind the modal — the snapshot (Updated ETF) is what gets saved
+    fireEvent.change(screen.getByTestId("name"), { target: { value: "" } });
+    fireEvent.click(screen.getByTestId("form-confirm-button"));
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
+    });
+    expect(screen.queryByTestId("confirm-save-modal")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("name-error")).not.toBeInTheDocument();
+  });
+
+  it("closes confirmation modal when cancel is clicked", async () => {
+    expect.hasAssertions();
+    mockNavigate.mockClear();
+    const asset = makeAsset();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+
+    render(<AssetEditPage isin={asset.isin} />);
+    fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
+    fireEvent.click(screen.getByTestId("save-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("form-cancel-button"));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("confirm-save-modal")).not.toBeInTheDocument();
+    });
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("disables save button when there are no changes", () => {
+    expect.hasAssertions();
+    const asset = makeAsset();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+
+    render(<AssetEditPage isin={asset.isin} />);
+    expect(screen.getByTestId("save-button")).toBeDisabled();
+  });
+
+  it("enables save button after a form change", () => {
+    expect.hasAssertions();
+    const asset = makeAsset();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+
+    render(<AssetEditPage isin={asset.isin} />);
+    fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
+    expect(screen.getByTestId("save-button")).not.toBeDisabled();
+  });
+
+  it("reset button restores original values and closes the modal", async () => {
+    expect.hasAssertions();
+    mockNavigate.mockClear();
+    const asset = makeAsset();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+
+    render(<AssetEditPage isin={asset.isin} />);
+    fireEvent.change(screen.getByTestId("name"), { target: { value: "Changed Name" } });
+    fireEvent.click(screen.getByTestId("save-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("form-reset-button"));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("confirm-save-modal")).not.toBeInTheDocument();
+    });
+    expect(screen.getByTestId("name")).toHaveValue(asset.name);
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 
   it("updates asset in store on save", async () => {
@@ -99,6 +234,10 @@ describe("AssetEditPage - form", () => {
     const nameInput = screen.getByTestId("name");
     fireEvent.change(nameInput, { target: { value: "Renamed ETF" } });
     fireEvent.click(screen.getByTestId("save-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId("form-confirm-button"));
     await waitFor(() => {
       expect(useAppStore.getState().data.assets[0]?.name).toBe("Renamed ETF");
     });
@@ -134,6 +273,10 @@ describe("AssetEditPage - form", () => {
     });
     fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.5" } });
     fireEvent.click(screen.getByTestId("save-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId("form-confirm-button"));
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
     });
@@ -213,6 +356,10 @@ describe("AssetEditPage - form", () => {
     fireEvent.change(screen.getByTestId("geo-allocation-us"), { target: { value: "60" } });
     fireEvent.change(screen.getByTestId("geo-allocation-france"), { target: { value: "40" } });
     fireEvent.click(screen.getByTestId("save-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByTestId("form-confirm-button"));
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
     });

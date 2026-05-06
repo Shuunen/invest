@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2026-05-06
+
+### Added in 0.5.0
+
+- `SaveModal` — confirmation modal on the asset edit page that shows a diff table of all changed fields before committing the save; user can confirm, reset to original, or dismiss
+- `buildDiffRows` — computes a flat list of `DiffRow` records comparing two `FormState` snapshots across all scalar fields and allocations (geo + sector)
+- `useConfirmAssetSave` — hook encapsulating modal open/close state, diff computation, and snapshot-based save logic; snapshot is captured at modal-open time so edits made behind the open modal are never silently saved
+- Allocation keys in diff and allocation displays are formatted with `startCase` for readability
+
+### Changed in 0.5.0
+
+- `hasChanges` in `useAssetEditForm` is now computed via `useMemo` instead of recomputing on every render
+- `ModalHeader` subtitle now renders at `text-sm text-base-content/70` for better visual hierarchy
+- Save confirmation diff table uses `text-sm` (was `text-xs`) for improved readability
+
 ## [0.4.0] - 2026-05-02
 
 ### Added in 0.4.0

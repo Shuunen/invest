@@ -1,11 +1,64 @@
 import { useNavigate } from "@tanstack/react-router";
 import { invariant } from "es-toolkit";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { AssetForm } from "./edit/asset-form.tsx";
+import { buildDiffRows, type DiffRow } from "./edit/form-diff.ts";
 import { buildAssetFromForm, toFormState, type FormState } from "./edit/form-state.ts";
 import { IsinFetchRow } from "./edit/isin-fetch-row.tsx";
+import { SaveModal } from "./edit/save-modal.tsx";
 import { useEtfFetch } from "./edit/use-etf-fetch.ts";
+
+type ConfirmAssetSaveParams = {
+  asset: Asset | undefined;
+  form: FormState | undefined;
+  isin: string;
+  navigate: ReturnType<typeof useNavigate>;
+  onReset: () => void;
+  onValidationError: (errors: Record<string, string>) => void;
+  updateAsset: (isin: string, asset: Asset) => void;
+};
+
+function useConfirmAssetSave({ asset, form, isin, navigate, onReset, onValidationError, updateAsset }: ConfirmAssetSaveParams) {
+  const [diffRows, setDiffRows] = useState<DiffRow[]>([]);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [snapshotForm, setSnapshotForm] = useState<FormState | undefined>();
+
+  function openConfirm() {
+    invariant(form, "Expected form to be defined");
+    invariant(asset, "Expected asset to be defined");
+    const result = buildAssetFromForm(isin, form);
+    if ("errors" in result) {
+      onValidationError(result.errors);
+      return;
+    }
+    setSnapshotForm(form);
+    setDiffRows(buildDiffRows(toFormState(asset), form));
+    setIsConfirmOpen(true);
+  }
+
+  function confirmSave() {
+    invariant(snapshotForm, "Expected snapshot form to be defined");
+    // Snapshot was validated at openConfirm time — error path is unreachable
+    const result = buildAssetFromForm(isin, snapshotForm) as { data: Asset };
+    setIsConfirmOpen(false);
+    updateAsset(isin, result.data);
+    void navigate({ params: { isin }, to: "/assets/$isin" });
+  }
+
+  return {
+    closeConfirm: () => setIsConfirmOpen(false),
+    confirmSave,
+    diffRows,
+    isConfirmOpen,
+    openConfirm,
+    resetAndClose: () => {
+      onReset();
+      setIsConfirmOpen(false);
+    },
+  };
+}
 
 function useAssetEditForm(isin: string) {
   const navigate = useNavigate();
@@ -27,27 +80,32 @@ function useAssetEditForm(isin: string) {
     setErrors(prev => Object.fromEntries(Object.entries(prev).filter(([errKey]) => errKey !== key)));
   }
 
-  const { fetchError, handleFetch, isFetching } = useEtfFetch(isin, patch);
-
-  function handleSave() {
-    invariant(form, "Expected form to be defined");
-    const result = buildAssetFromForm(isin, form);
-    if ("errors" in result) {
-      setErrors(result.errors);
-      return;
-    }
-    updateAsset(isin, result.data);
-    void navigate({ params: { isin }, to: "/assets/$isin" });
+  function resetForm() {
+    invariant(asset, "Expected asset to be defined when resetting");
+    setForm(toFormState(asset));
+    setErrors({});
   }
 
-  return { errors, fetchError, form, handleFetch, handleSave, isFetching, patch };
+  const { fetchError, handleFetch, isFetching } = useEtfFetch(isin, patch);
+  const hasChanges = useMemo(() => (asset && form ? buildDiffRows(toFormState(asset), form).length > 0 : false), [asset, form]);
+  const { closeConfirm, confirmSave, diffRows, isConfirmOpen, openConfirm, resetAndClose } = useConfirmAssetSave({
+    asset,
+    form,
+    isin,
+    navigate,
+    onReset: resetForm,
+    onValidationError: setErrors,
+    updateAsset,
+  });
+
+  return { closeConfirm, confirmSave, diffRows, errors, fetchError, form, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, patch, resetAndClose };
 }
 
 type Props = { isin: string };
 
 export function AssetEditPage({ isin }: Props) {
   const navigate = useNavigate();
-  const { form, errors, fetchError, patch, handleFetch, handleSave, isFetching } = useAssetEditForm(isin);
+  const { closeConfirm, confirmSave, diffRows, form, errors, fetchError, patch, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, resetAndClose } = useAssetEditForm(isin);
 
   if (!form)
     return (
@@ -61,14 +119,18 @@ export function AssetEditPage({ isin }: Props) {
   const goBack = () => void navigate({ params: { isin }, replace: true, to: "/assets/$isin" });
 
   return (
-    <AssetForm
-      title="Edit asset"
-      isinDisplay={<IsinFetchRow isin={isin} isFetching={isFetching} fetchError={fetchError} onFetch={() => void handleFetch()} readOnly />}
-      errors={errors}
-      form={form}
-      onCancel={goBack}
-      onSave={handleSave}
-      patch={patch}
-    />
+    <>
+      <AssetForm
+        title="Edit asset"
+        isinDisplay={<IsinFetchRow isin={isin} isFetching={isFetching} fetchError={fetchError} onFetch={() => void handleFetch()} readOnly />}
+        errors={errors}
+        form={form}
+        onCancel={goBack}
+        onSave={openConfirm}
+        patch={patch}
+        disableSave={!hasChanges}
+      />
+      {isConfirmOpen && <SaveModal diffRows={diffRows} onClose={closeConfirm} onConfirm={confirmSave} onReset={resetAndClose} />}
+    </>
   );
 }

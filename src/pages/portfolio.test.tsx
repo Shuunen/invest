@@ -191,7 +191,7 @@ describe("PortfolioPage - empty portfolio", () => {
     fireEvent.click(screen.getByTestId("remove-lu1234567890"));
     // confirmation modal should appear; deletion is not yet applied
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(1);
-    fireEvent.click(screen.getByTestId("confirm-button"));
+    fireEvent.click(screen.getByTestId("form-confirm-button"));
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(0);
   });
 
@@ -245,7 +245,7 @@ describe("PortfolioPage - empty portfolio", () => {
     render(<PortfolioPage portfolioId={portfolio.id} />);
     fireEvent.click(screen.getByTestId("remove-lu1234567890"));
     expect(screen.getByTestId("modal-title")).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId("cancel-button"));
+    fireEvent.click(screen.getByTestId("form-cancel-button"));
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(1);
     expect(screen.queryByTestId("modal-title")).not.toBeInTheDocument();
   });
@@ -337,7 +337,7 @@ describe("PortfolioPage - asset picker modal", () => {
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
     fireEvent.click(screen.getByTestId("action-select-assets"));
-    fireEvent.click(screen.getByTestId("cancel-button"));
+    fireEvent.click(screen.getByTestId("form-cancel-button"));
     expect(screen.queryByTestId("modal-title")).not.toBeInTheDocument();
   });
 
@@ -356,7 +356,7 @@ describe("PortfolioPage - asset picker modal", () => {
     fireEvent.click(screen.getByTestId("action-select-assets"));
     // Click ETF B row to select it (it starts unselected)
     fireEvent.click(screen.getByTestId("asset-row-LU0987654321"));
-    fireEvent.click(screen.getByTestId("confirm-button"));
+    fireEvent.click(screen.getByTestId("form-confirm-button"));
     const updatedEntries = useAppStore.getState().data.portfolios[0]?.entries;
     expect(updatedEntries?.some(en => en.isin === asset2.isin)).toBe(true);
     // existing entry data is preserved for asset1

@@ -1,4 +1,4 @@
 {
   "runtime_coverage_findings": [],
-  "target_keys": ["src/components/asset-table-utils.ts:high impact", "src/store/use-app-store.ts:high impact"]
+  "target_keys": ["src/components/asset-table-utils.ts:high impact", "src/store/use-app-store.ts:high impact", "src/utils/format-numbers.ts:high impact", "src/pages/edit/form-diff.ts:high impact"]
 }

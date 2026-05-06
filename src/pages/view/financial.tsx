@@ -1,5 +1,5 @@
-import { formatNumber, formatPercent, formatPrice } from "../../components/asset-table-utils.ts";
 import type { Asset } from "../../schemas/index.ts";
+import { formatNumber, formatPercent, formatPrice } from "../../utils/format-numbers.ts";
 import { FieldRow } from "./field-row.tsx";
 
 type Props = {

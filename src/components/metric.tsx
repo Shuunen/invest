@@ -1,6 +1,6 @@
 import { kebabCase } from "es-toolkit/string";
 import { cn } from "../utils/browser-styles";
-import { formatNumber } from "./asset-table-utils";
+import { formatNumber } from "../utils/format-numbers";
 
 export type MetricItem = {
   color: "success" | "neutral" | "danger" | "warning" | "info";
