@@ -1,18 +1,8 @@
+import { startCase } from "es-toolkit";
 import { NumberField } from "../../components/form/number-field.tsx";
 import { COUNTRIES, SECTORS, type Country, type Sector } from "../../schemas/index.ts";
 import { ProgressBar } from "../view/progress-bar.tsx";
 import type { FormState, PatchFn } from "./form-state.ts";
-
-const MAX_ABBREV_LENGTH = 2;
-
-function formatAllocKey(key: string): string {
-  const words = key
-    .replaceAll(/([A-Z])/g, " $1")
-    .trim()
-    .split(/\s+/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1));
-  return words.map(word => (word.length <= MAX_ABBREV_LENGTH ? word.toUpperCase() : word)).join(" ");
-}
 
 type Props = {
   form: FormState;
@@ -39,7 +29,7 @@ export function AllocationsSection({ form, patch }: Props) {
           <ProgressBar name="geo-allocation" total={totalGeo} />
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
             {COUNTRIES.map(country => (
-              <NumberField key={country} label={formatAllocKey(country)} isHorizontal name={`geo-allocation-${country}`} suffix="%" value={form.geoAllocation[country] ?? ""} onChange={value => patchGeo(country, value)} />
+              <NumberField key={country} label={startCase(country)} isHorizontal name={`geo-allocation-${country}`} suffix="%" value={form.geoAllocation[country] ?? ""} onChange={value => patchGeo(country, value)} />
             ))}
           </div>
         </div>
@@ -50,7 +40,7 @@ export function AllocationsSection({ form, patch }: Props) {
           <ProgressBar name="sector-allocation" total={totalSector} />
           <div className="grid gap-x-4 gap-y-2">
             {SECTORS.map(sector => (
-              <NumberField key={sector} label={formatAllocKey(sector)} isHorizontal name={`sector-allocation-${sector}`} suffix="%" value={form.sectorAllocation[sector] ?? ""} onChange={value => patchSector(sector, value)} />
+              <NumberField key={sector} label={startCase(sector)} isHorizontal name={`sector-allocation-${sector}`} suffix="%" value={form.sectorAllocation[sector] ?? ""} onChange={value => patchSector(sector, value)} />
             ))}
           </div>
         </div>

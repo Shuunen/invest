@@ -1,17 +1,8 @@
+import { startCase } from "es-toolkit";
 import { COUNTRIES, SECTORS } from "../../schemas/index.ts";
 import type { FormState } from "./form-state.ts";
 
 const EMPTY_VALUE = "-";
-const MAX_ABBREV_LENGTH = 2;
-
-function formatAllocKey(key: string): string {
-  const words = key
-    .replaceAll(/([A-Z])/g, " $1")
-    .trim()
-    .split(/\s+/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1));
-  return words.map(word => (word.length <= MAX_ABBREV_LENGTH ? word.toUpperCase() : word)).join(" ");
-}
 
 type ComparableValue = boolean | string;
 
@@ -57,7 +48,7 @@ function buildAllocationDiffRows({ current, initial, keys, prefix }: { current: 
     makeDiffRow({
       after: current[key] ?? "",
       before: initial[key] ?? "",
-      field: `${prefix} ${formatAllocKey(key)} (%)`,
+      field: `${prefix} ${startCase(key)} (%)`,
     }),
   );
 }
