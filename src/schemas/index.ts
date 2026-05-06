@@ -18,7 +18,6 @@ export const SECTORS = SectorSchema.options satisfies readonly Sector[];
 
 // --- ISIN ---
 
-export const ISIN_REGEX = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;
 export const MAX_ISINS = 5000;
 export const MAX_PORTFOLIOS = 50;
 const SCORE_FEE_WEIGHT = 10;
@@ -44,13 +43,14 @@ export const AssetSchema = z.object({
     })
     .default({}),
   isAccumulating: z.boolean(),
-  isin: z.string().regex(ISIN_REGEX, "Invalid ISIN format (e.g. IE00B4L5Y983)"),
+  isin: z.string().min(1, "ISIN or identifier is required"),
   name: z.string().min(1, "Name is required"),
   performance1y: nullableNumber,
   performance3y: nullableNumber,
   performance5y: nullableNumber,
   price: nullableNumber,
   provider: z.string().default(""),
+  // Sharpe ratios over 1, 3, and 5 years
   riskReward1y: nullableNumber,
   riskReward3y: nullableNumber,
   riskReward5y: nullableNumber,
@@ -112,7 +112,7 @@ export const PortfolioEntrySchema = z.object({
   amount: z.number().nonnegative().default(0),
   amountUpdatedAt: z.iso.datetime().optional(),
   inPEA: z.boolean().default(false),
-  isin: z.string().regex(ISIN_REGEX),
+  isin: z.string().min(1),
   notes: z.string().default(""),
   positionValue: z.number().nonnegative(),
   targetAmount: z.number().nonnegative(),

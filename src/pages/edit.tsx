@@ -13,14 +13,14 @@ import { useEtfFetch } from "./edit/use-etf-fetch.ts";
 type ConfirmAssetSaveParams = {
   asset: Asset | undefined;
   form: FormState | undefined;
-  isin: string;
   navigate: ReturnType<typeof useNavigate>;
   onReset: () => void;
   onValidationError: (errors: Record<string, string>) => void;
+  originalIsin: string;
   updateAsset: (isin: string, asset: Asset) => void;
 };
 
-function useConfirmAssetSave({ asset, form, isin, navigate, onReset, onValidationError, updateAsset }: ConfirmAssetSaveParams) {
+function useConfirmAssetSave({ asset, form, navigate, onReset, onValidationError, originalIsin, updateAsset }: ConfirmAssetSaveParams) {
   const [diffRows, setDiffRows] = useState<DiffRow[]>([]);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [snapshotForm, setSnapshotForm] = useState<FormState | undefined>();
@@ -28,7 +28,7 @@ function useConfirmAssetSave({ asset, form, isin, navigate, onReset, onValidatio
   function openConfirm() {
     invariant(form, "Expected form to be defined");
     invariant(asset, "Expected asset to be defined");
-    const result = buildAssetFromForm(isin, form);
+    const result = buildAssetFromForm(form);
     if ("errors" in result) {
       onValidationError(result.errors);
       return;
@@ -41,10 +41,10 @@ function useConfirmAssetSave({ asset, form, isin, navigate, onReset, onValidatio
   function confirmSave() {
     invariant(snapshotForm, "Expected snapshot form to be defined");
     // Snapshot was validated at openConfirm time — error path is unreachable
-    const result = buildAssetFromForm(isin, snapshotForm) as { data: Asset };
+    const result = buildAssetFromForm(snapshotForm) as { data: Asset };
     setIsConfirmOpen(false);
-    updateAsset(isin, result.data);
-    void navigate({ params: { isin }, replace: true, to: "/assets/$isin" });
+    updateAsset(originalIsin, result.data);
+    void navigate({ params: { isin: snapshotForm.isin }, replace: true, to: "/assets/$isin" });
   }
 
   return {
@@ -60,9 +60,9 @@ function useConfirmAssetSave({ asset, form, isin, navigate, onReset, onValidatio
   };
 }
 
-function useAssetEditForm(isin: string) {
+function useAssetEditForm(originalIsin: string) {
   const navigate = useNavigate();
-  const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === isin));
+  const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === originalIsin));
   const updateAsset = useAppStore(state => state.updateAsset);
 
   const [form, setForm] = useState<FormState | undefined>(() => (asset ? toFormState(asset) : undefined));
@@ -86,15 +86,15 @@ function useAssetEditForm(isin: string) {
     setErrors({});
   }
 
-  const { fetchError, handleFetch, isFetching } = useEtfFetch(isin, patch, form ?? emptyFormState);
+  const { fetchError, handleFetch, isFetching } = useEtfFetch((form ?? emptyFormState).isin, patch, form ?? emptyFormState);
   const hasChanges = useMemo(() => (asset && form ? buildDiffRows(toFormState(asset), form).length > 0 : false), [asset, form]);
   const { closeConfirm, confirmSave, diffRows, isConfirmOpen, openConfirm, resetAndClose } = useConfirmAssetSave({
     asset,
     form,
-    isin,
     navigate,
     onReset: resetForm,
     onValidationError: setErrors,
+    originalIsin,
     updateAsset,
   });
 
@@ -103,26 +103,26 @@ function useAssetEditForm(isin: string) {
 
 type Props = { isin: string };
 
-export function AssetEditPage({ isin }: Props) {
+export function AssetEditPage({ isin: originalIsin }: Props) {
   const navigate = useNavigate();
-  const { closeConfirm, confirmSave, diffRows, form, errors, fetchError, patch, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, resetAndClose } = useAssetEditForm(isin);
+  const { closeConfirm, confirmSave, diffRows, form, errors, fetchError, patch, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, resetAndClose } = useAssetEditForm(originalIsin);
 
   if (!form)
     return (
       <div className="p-8 text-center">
         <p data-testid="not-found" className="text-base-content/60">
-          Asset not found: {isin}
+          Asset not found: {originalIsin}
         </p>
       </div>
     );
 
-  const goBack = () => void navigate({ params: { isin }, replace: true, to: "/assets/$isin" });
+  const goBack = () => void navigate({ params: { isin: originalIsin }, replace: true, to: "/assets/$isin" });
 
   return (
     <>
       <AssetForm
         title="Edit asset"
-        isinDisplay={<IsinFetchRow isin={isin} isFetching={isFetching} fetchError={fetchError} onFetch={() => void handleFetch()} readOnly />}
+        isinDisplay={<IsinFetchRow isin={form.isin} isFetching={isFetching} fetchError={fetchError} isinError={errors.isin} onFetch={() => void handleFetch()} onIsinChange={value => patch("isin", value)} />}
         errors={errors}
         form={form}
         onCancel={goBack}

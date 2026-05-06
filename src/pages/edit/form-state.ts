@@ -8,6 +8,7 @@ export type FormState = {
   fees: string;
   geoAllocation: Partial<Record<Country, string>>;
   isAccumulating: boolean;
+  isin: string;
   name: string;
   performance1y: string;
   performance3y: string;
@@ -37,6 +38,7 @@ export const emptyFormState: FormState = {
   fees: "0",
   geoAllocation: {},
   isAccumulating: false,
+  isin: "",
   name: "",
   performance1y: "",
   performance3y: "",
@@ -57,6 +59,7 @@ export function toFormState(asset: Asset): FormState {
     fees: String(asset.fees),
     geoAllocation: Object.fromEntries(Object.entries(asset.geoAllocation).map(([key, val]) => [key, toPercentString(val)])) as Partial<Record<Country, string>>,
     isAccumulating: asset.isAccumulating,
+    isin: asset.isin,
     name: asset.name,
     performance1y: asset.performance1y === undefined ? "" : String(asset.performance1y),
     performance3y: asset.performance3y === undefined ? "" : String(asset.performance3y),
@@ -109,14 +112,14 @@ function parseAllocation(record: Partial<Record<string, string>>): Record<string
   );
 }
 
-export function buildAssetFromForm(isin: string, form: FormState): { data: Asset } | { errors: Record<string, string> } {
+export function buildAssetFromForm(form: FormState): { data: Asset } | { errors: Record<string, string> } {
   const result = AssetSchema.safeParse({
     availableForPlan: form.availableForPlan,
     availableOnBroker: form.availableOnBroker,
     fees: parseOptionalNumber(form.fees) ?? 0,
     geoAllocation: parseAllocation(form.geoAllocation),
     isAccumulating: form.isAccumulating,
-    isin,
+    isin: form.isin,
     name: form.name,
     performance1y: parseOptionalNumber(form.performance1y),
     performance3y: parseOptionalNumber(form.performance3y),

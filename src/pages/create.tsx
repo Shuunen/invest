@@ -10,7 +10,6 @@ function useAssetCreateForm() {
   const navigate = useNavigate();
   const addAsset = useAppStore(state => state.addAsset);
   const assets = useAppStore(state => state.data.assets);
-  const [isin, setIsin] = useState("");
   const [form, setForm] = useState<FormState>(emptyFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -19,20 +18,15 @@ function useAssetCreateForm() {
     setErrors(prev => Object.fromEntries(Object.entries(prev).filter(([errKey]) => errKey !== key)));
   }
 
-  function patchIsin(value: string) {
-    setIsin(value);
-    setErrors(prev => Object.fromEntries(Object.entries(prev).filter(([errKey]) => errKey !== "isin")));
-  }
-
-  const { fetchError, handleFetch, isFetching } = useEtfFetch(isin, patch, form);
+  const { fetchError, handleFetch, isFetching } = useEtfFetch(form.isin, patch, form);
 
   function handleSave() {
-    const result = buildAssetFromForm(isin, form);
+    const result = buildAssetFromForm(form);
     if ("errors" in result) {
       setErrors(result.errors);
       return;
     }
-    if (assets.some(asset => asset.isin === isin)) {
+    if (assets.some(asset => asset.isin === form.isin)) {
       setErrors({ isin: "An asset with this ISIN already exists" });
       return;
     }
@@ -42,16 +36,16 @@ function useAssetCreateForm() {
 
   const goBack = () => void navigate({ to: "/" });
 
-  return { errors, fetchError, form, goBack, handleFetch, handleSave, isFetching, isin, patch, patchIsin };
+  return { errors, fetchError, form, goBack, handleFetch, handleSave, isFetching, patch };
 }
 
 export function AssetCreatePage() {
-  const { errors, fetchError, form, goBack, handleFetch, handleSave, isFetching, isin, patch, patchIsin } = useAssetCreateForm();
+  const { errors, fetchError, form, goBack, handleFetch, handleSave, isFetching, patch } = useAssetCreateForm();
 
   return (
     <AssetForm
       title="Create asset"
-      isinDisplay={<IsinFetchRow isin={isin} isFetching={isFetching} fetchError={fetchError} isinError={errors.isin} onFetch={() => void handleFetch()} onIsinChange={patchIsin} />}
+      isinDisplay={<IsinFetchRow isin={form.isin} isFetching={isFetching} fetchError={fetchError} isinError={errors.isin} onFetch={() => void handleFetch()} onIsinChange={value => patch("isin", value)} />}
       errors={errors}
       form={form}
       onCancel={goBack}

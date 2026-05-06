@@ -14,9 +14,9 @@ const validAsset = {
 // --- AssetSchema: rejection paths ---
 
 describe("AssetSchema rejections", () => {
-  it("rejects an ISIN code with invalid format", () => {
+  it("rejects an empty isin", () => {
     expect.hasAssertions();
-    const result = AssetSchema.safeParse({ ...validAsset, isin: "INVALID" });
+    const result = AssetSchema.safeParse({ ...validAsset, isin: "" });
     expect(result.success).toBe(false);
   });
 
@@ -85,9 +85,9 @@ describe("PortfolioEntrySchema", () => {
     targetAmount: 500,
   };
 
-  it("rejects an ISIN code with invalid format", () => {
+  it("rejects an empty isin", () => {
     expect.hasAssertions();
-    const result = PortfolioEntrySchema.safeParse({ ...validEntry, isin: "bad-isin" });
+    const result = PortfolioEntrySchema.safeParse({ ...validEntry, isin: "" });
     expect(result.success).toBe(false);
   });
 

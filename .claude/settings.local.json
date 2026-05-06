@@ -12,7 +12,8 @@
       "Bash(xargs -r ps -p)",
       "Skill(investigate)",
       "Skill(qa)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

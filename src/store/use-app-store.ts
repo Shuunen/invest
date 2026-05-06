@@ -94,10 +94,19 @@ export const useAppStore = create<AppStore>()(
     updateAsset: (isin, asset) =>
       set(state => {
         if (!state.data.assets.some(data => data.isin === isin)) return state;
+        const newIsin = asset.isin;
+        const portfolios =
+          isin === newIsin
+            ? state.data.portfolios
+            : state.data.portfolios.map(portfolio => ({
+                ...portfolio,
+                entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, isin: newIsin } : entry)),
+              }));
         return {
           data: {
             ...state.data,
             assets: state.data.assets.map(data => (data.isin === isin ? { ...asset, updatedAt: new Date().toISOString() } : data)),
+            portfolios,
             settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
           },
         };

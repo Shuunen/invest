@@ -77,6 +77,10 @@ describe("useAppStore - settings mutations", () => {
   });
 });
 
+function makePortfolioEntry(isin: string) {
+  return { amount: 100, amountUpdatedAt: "2024-01-01T00:00:00.000Z", inPEA: false, isin, notes: "", positionValue: 0, targetAmount: 0 };
+}
+
 describe("useAppStore - asset mutations", () => {
   const baseAsset: Asset = {
     availableForPlan: false,
@@ -135,6 +139,26 @@ describe("useAppStore - asset mutations", () => {
     useAppStore.getState().updateAsset("XX0000000000", baseAsset);
     expect(useAppStore.getState().data.assets).toHaveLength(1);
     expect(useAppStore.getState().data.settings.editCount).toBe(before);
+  });
+
+  it("updateAsset cascades ISIN rename into portfolio entries", () => {
+    expect.hasAssertions();
+    const portfolio = {
+      broker: "Broker",
+      entries: [makePortfolioEntry(baseAsset.isin), makePortfolioEntry("LU0987654321")],
+      id: "00000000-0000-4000-8000-000000000001",
+      name: "My Portfolio",
+    };
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [baseAsset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const renamed = { ...baseAsset, isin: "LU9999999999" };
+    useAppStore.getState().updateAsset(baseAsset.isin, renamed);
+    const entries = useAppStore.getState().data.portfolios[0]?.entries;
+    expect(entries?.[0]?.isin).toBe("LU9999999999");
+    expect(entries?.[1]?.isin).toBe("LU0987654321");
   });
 
   it("updateAssetPrice updates the matching asset price and leaves others unchanged", () => {

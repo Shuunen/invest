@@ -344,6 +344,26 @@ describe("AssetEditPage - form", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
+  it("shows isin validation error when saving with empty isin, clears error on typing", async () => {
+    expect.hasAssertions();
+    mockNavigate.mockClear();
+    const asset = makeAsset();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetEditPage isin={asset.isin} />);
+    fireEvent.change(screen.getByTestId("isin"), { target: { value: "" } });
+    fireEvent.click(screen.getByTestId("save-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("isin-error")).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByTestId("isin"), { target: { value: "IE00B4L5Y983" } });
+    expect(screen.queryByTestId("isin-error")).not.toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
   it("saves geo allocation from percentage inputs and stores as decimals", async () => {
     expect.hasAssertions();
     const asset = makeAsset();
@@ -376,14 +396,14 @@ describe("AssetEditPage - fetch", () => {
     return asset;
   }
 
-  it("shows readonly isin input and an enabled fetch button", () => {
+  it("shows editable isin input and an enabled fetch button", () => {
     expect.hasAssertions();
     setup();
     expect(screen.getByTestId("isin")).toBeInTheDocument();
-    expect(screen.getByTestId("isin")).toHaveAttribute("readonly");
+    expect(screen.getByTestId("isin")).not.toHaveAttribute("readonly");
     expect(screen.getByTestId("fetch-etf-button")).not.toBeDisabled();
     fireEvent.change(screen.getByTestId("isin"), { target: { value: "XX9999999999" } });
-    expect(screen.getByTestId("isin")).toHaveValue("LU1234567890");
+    expect(screen.getByTestId("isin")).toHaveValue("XX9999999999");
   });
 
   it("prefills form fields after a successful fetch", async () => {
