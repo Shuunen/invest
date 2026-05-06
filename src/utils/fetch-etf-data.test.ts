@@ -1,4 +1,4 @@
-import { cleanAssetName, cleanProviderName, fetchEtfData, parseEtfHtml, parseSectorsFromAjaxXml } from "./fetch-etf-data.ts";
+import { cleanAssetName, cleanProviderName, fetchEtfData, parseCountriesFromAjaxXml, parseEtfHtml, parseSectorsFromAjaxXml } from "./fetch-etf-data.ts";
 import sampleHtml from "./fetch-etf-sample.html?raw";
 
 function buildHtml(overrides: Record<string, string> = {}): string {
@@ -336,7 +336,31 @@ describe("parseSectorsFromAjaxXml", () => {
   });
 });
 
+describe("parseCountriesFromAjaxXml", () => {
+  const sampleXml = `<?xml version="1.0" encoding="UTF-8"?><ajax-response><component id="id1" ><![CDATA[<a id="id1" state="active">Show less</a>]]></component><component id="id2" ><![CDATA[<table class="table mb-0" data-testid="etf-holdings_countries_table" id="id2"><tbody><tr data-testid="etf-holdings_countries_row"><td data-testid="tl_etf-holdings_countries_value_name">United States</td><td><div class="right"><span data-testid="tl_etf-holdings_countries_value_percentage">35.28%</span></div></td></tr><tr data-testid="etf-holdings_countries_row"><td data-testid="tl_etf-holdings_countries_value_name">Japan</td><td><div class="right"><span data-testid="tl_etf-holdings_countries_value_percentage">8.74%</span></div></td></tr><tr data-testid="etf-holdings_countries_row"><td data-testid="tl_etf-holdings_countries_value_name">France</td><td><div class="right"><span data-testid="tl_etf-holdings_countries_value_percentage">2.07%</span></div></td></tr><tr data-testid="etf-holdings_countries_row"><td data-testid="tl_etf-holdings_countries_value_name">Other</td><td><div class="right"><span data-testid="tl_etf-holdings_countries_value_percentage">31.71%</span></div></td></tr></tbody></table>]]></component></ajax-response>`;
+
+  it("parses all known countries from the AJAX XML response", () => {
+    expect.hasAssertions();
+    const result = parseCountriesFromAjaxXml(sampleXml);
+    expect(result).toStrictEqual({ france: 2.07, japan: 8.74, us: 35.28 });
+  });
+
+  it("skips the Other row since it has no mapped key", () => {
+    expect.hasAssertions();
+    const result = parseCountriesFromAjaxXml(sampleXml);
+    expect(Object.keys(result)).not.toContain("other");
+  });
+
+  it("returns empty object when XML has no countries table", () => {
+    expect.hasAssertions();
+    const result = parseCountriesFromAjaxXml(`<?xml version="1.0"?><ajax-response><component><![CDATA[<a>Show less</a>]]></component></ajax-response>`);
+    expect(result).toStrictEqual({});
+  });
+});
+
 describe("fetchEtfData", () => {
+  const noCountriesXml = `<?xml version="1.0"?><ajax-response><component><![CDATA[<a>Show less</a>]]></component></ajax-response>`;
+
   it("fetches and parses ETF data successfully", async () => {
     expect.hasAssertions();
     const html = buildHtml();
@@ -345,6 +369,7 @@ describe("fetchEtfData", () => {
       vi
         .fn()
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
         .mockResolvedValueOnce({ ok: false, status: 404 }),
     );
     const result = await fetchEtfData("IE00B5BMR087");
@@ -361,10 +386,27 @@ describe("fetchEtfData", () => {
       vi
         .fn()
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(xml) }),
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(xml) })
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(noCountriesXml) }),
     );
     const result = await fetchEtfData("IE00B5BMR087");
     expect(result.sectorAllocation).toStrictEqual({ healthcare: 9.31, technology: 33.9 });
+  });
+
+  it("uses expanded countries from AJAX endpoint when available", async () => {
+    expect.hasAssertions();
+    const html = buildHtml();
+    const countriesXml = `<?xml version="1.0"?><ajax-response><component><![CDATA[<table data-testid="etf-holdings_countries_table"><tbody><tr data-testid="etf-holdings_countries_row"><td data-testid="tl_etf-holdings_countries_value_name">Japan</td><td><span data-testid="tl_etf-holdings_countries_value_percentage">8.74%</span></td></tr><tr data-testid="etf-holdings_countries_row"><td data-testid="tl_etf-holdings_countries_value_name">France</td><td><span data-testid="tl_etf-holdings_countries_value_percentage">2.07%</span></td></tr></tbody></table>]]></component></ajax-response>`;
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(countriesXml) }),
+    );
+    const result = await fetchEtfData("IE00B5BMR087");
+    expect(result.geoAllocation).toStrictEqual({ france: 2.07, japan: 8.74 });
   });
 
   it("extracts the Wicket sectors URL from the HTML when present", async () => {
@@ -377,7 +419,8 @@ describe("fetchEtfData", () => {
       vi
         .fn()
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(xml) }),
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(xml) })
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(noCountriesXml) }),
     );
     const result = await fetchEtfData("IE00B5BMR087");
     expect(result.sectorAllocation).toStrictEqual({ technology: 42 });
@@ -391,6 +434,7 @@ describe("fetchEtfData", () => {
       vi
         .fn()
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
         .mockResolvedValueOnce({ ok: false, status: 404 }),
     );
     const result = await fetchEtfData("IE00B5BMR087");
@@ -406,6 +450,7 @@ describe("fetchEtfData", () => {
       vi
         .fn()
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(emptyXml) })
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(emptyXml) }),
     );
     const result = await fetchEtfData("IE00B5BMR087");

@@ -133,6 +133,17 @@ export function parseSectorsFromAjaxXml(xml: string): Partial<Record<Sector, num
   return {};
 }
 
+export function parseCountriesFromAjaxXml(xml: string): Partial<Record<Country, number>> {
+  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(.*?)\]\]>/gs)];
+  for (const match of cdataMatches) {
+    const [, html] = match;
+    if (!html.includes('data-testid="etf-holdings_countries_table"')) continue;
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    return parseAllocation(doc, { keyMap: GEO_NAME_TO_KEY, nameTestId: "tl_etf-holdings_countries_value_name", pctTestId: "tl_etf-holdings_countries_value_percentage", rowTestId: "etf-holdings_countries_row" });
+  }
+  return {};
+}
+
 export function parseEtfHtml(html: string): EtfPrefillData {
   const doc = new DOMParser().parseFromString(html, "text/html");
 
@@ -157,6 +168,13 @@ export function parseEtfHtml(html: string): EtfPrefillData {
   };
 }
 
+// The page-specific Wicket paths are embedded in JS snippets and change every session —
+// extract them from the HTML rather than relying on hardcoded page IDs.
+function resolveWicketPath(text: string, keyword: string, fallback: string): string {
+  const pattern = new RegExp(`"u":"(\\/en\\/etf-profile\\.html\\?[^"]*${keyword}[^"]*)"`);
+  return pattern.exec(text)?.[1] ?? fallback;
+}
+
 export async function fetchEtfData(isin: string): Promise<EtfPrefillData> {
   const encodedIsin = encodeURIComponent(isin);
   const proxyBase = "http://localhost:8010/proxy"; // port must match PORT constant in src/bin/proxy.ts
@@ -165,24 +183,29 @@ export async function fetchEtfData(isin: string): Promise<EtfPrefillData> {
   const text = await response.text();
   const result = parseEtfHtml(text);
 
-  // The page-specific Wicket path (e.g. "0-1.0-holdingsSection-sectors-loadMoreSectors") is
-  // embedded in a JS snippet and changes every session — extract it from the HTML rather than
-  // relying on a hardcoded page ID.
-  const wicketUrlMatch = /"u":"(\/en\/etf-profile\.html\?[^"]*loadMoreSectors[^"]*)"/.exec(text);
-  const sectorsPath = wicketUrlMatch ? wicketUrlMatch[1] : `/en/etf-profile.html?6-1.0-holdingsSection-sectors-loadMoreSectors&isin=${encodedIsin}&_wicket=1`;
+  const sectorsPath = resolveWicketPath(text, "loadMoreSectors", `/en/etf-profile.html?6-1.0-holdingsSection-sectors-loadMoreSectors&isin=${encodedIsin}&_wicket=1`);
 
-  const sectorsResponse = await fetch(`${proxyBase}${sectorsPath}&_=${Date.now()}`, {
-    headers: {
-      Accept: "application/xml, text/xml, */*; q=0.01",
-      "wicket-ajax": "true",
-      "wicket-ajax-baseurl": `en/etf-profile.html?isin=${encodedIsin}`,
-      "x-requested-with": "XMLHttpRequest",
-    },
-  });
+  const countriesPath = resolveWicketPath(text, "loadMoreCountries", `/en/etf-profile.html?6-1.0-holdingsSection-countries-loadMoreCountries&isin=${encodedIsin}&_wicket=1`);
+
+  const wicketHeaders = {
+    Accept: "application/xml, text/xml, */*; q=0.01",
+    "wicket-ajax": "true",
+    "wicket-ajax-baseurl": `en/etf-profile.html?isin=${encodedIsin}`,
+    "x-requested-with": "XMLHttpRequest",
+  };
+
+  const [sectorsResponse, countriesResponse] = await Promise.all([fetch(`${proxyBase}${sectorsPath}&_=${Date.now()}`, { headers: wicketHeaders }), fetch(`${proxyBase}${countriesPath}&_=${Date.now()}`, { headers: wicketHeaders })]);
+
   if (sectorsResponse.ok) {
     const xml = await sectorsResponse.text();
     const expandedSectors = parseSectorsFromAjaxXml(xml);
     if (Object.keys(expandedSectors).length > 0) result.sectorAllocation = expandedSectors;
+  }
+
+  if (countriesResponse.ok) {
+    const xml = await countriesResponse.text();
+    const expandedCountries = parseCountriesFromAjaxXml(xml);
+    if (Object.keys(expandedCountries).length > 0) result.geoAllocation = expandedCountries;
   }
 
   return result;

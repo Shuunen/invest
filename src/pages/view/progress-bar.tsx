@@ -2,8 +2,8 @@ import { kebabCase } from "es-toolkit/string";
 import { cn } from "../../utils/browser-styles";
 import { formatPercent } from "../../utils/format-numbers";
 
-const errorUntil = 33;
-const warningUntil = 66;
+const errorUntil = 40;
+const warningUntil = 70;
 const errorAfter = 100;
 
 export function ProgressBar({ name, total }: { name: string; total: number }) {
