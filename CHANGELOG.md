@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - `SaveModal` — confirmation modal on the asset edit page that shows a diff table of all changed fields before committing the save; user can confirm, reset to original, or dismiss
 - `buildDiffRows` — computes a flat list of `DiffRow` records comparing two `FormState` snapshots across all scalar fields and allocations (geo + sector)
 - `useConfirmAssetSave` — hook encapsulating modal open/close state, diff computation, and snapshot-based save logic; snapshot is captured at modal-open time so edits made behind the open modal are never silently saved
-- `formatAllocKey` in `form-diff.ts` and `allocations.tsx` — correctly uppercases 2-letter country codes (e.g. `US`, `UK`) that `startCase` from es-toolkit rendered as `Us`/`Uk`
+- Allocation keys in diff and allocation displays are formatted with `startCase` for readability
 
 ### Changed in 0.5.0
 
