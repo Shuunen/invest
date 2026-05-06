@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 import { useAppStore } from "../store/use-app-store.ts";
 import { AssetForm } from "./edit/asset-form.tsx";
 import { buildAssetFromForm, emptyFormState, type FormState } from "./edit/form-state.ts";
@@ -31,6 +32,7 @@ function useAssetCreateForm() {
       return;
     }
     addAsset(result.data);
+    toast.success("Asset created");
     void navigate({ to: "/" });
   }
 

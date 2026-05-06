@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { invariant } from "es-toolkit";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-hot-toast";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { AssetForm } from "./edit/asset-form.tsx";
@@ -44,6 +45,7 @@ function useConfirmAssetSave({ asset, form, navigate, onReset, onValidationError
     const result = buildAssetFromForm(snapshotForm) as { data: Asset };
     setIsConfirmOpen(false);
     updateAsset(originalIsin, result.data);
+    toast.success("Asset saved");
     void navigate({ params: { isin: snapshotForm.isin }, replace: true, to: "/assets/$isin" });
   }
 

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { toast } from "react-hot-toast";
 import type { Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { jsonStringify } from "../utils/json.ts";
@@ -107,8 +108,6 @@ describe("ImportExportButtons", () => {
     render(<ImportExportButtons />);
     const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
     fireEvent.change(fileInput);
-    expect(screen.queryByTestId("import-error")).not.toBeInTheDocument();
-    expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     const fileInputAfter = screen.getAllByTestId("file-input").at(-1) as HTMLInputElement;
@@ -119,55 +118,29 @@ describe("ImportExportButtons", () => {
     });
   });
 
-  it("importing invalid JSON shows an error alert", async () => {
+  it("importing invalid JSON shows a toast error", async () => {
     expect.hasAssertions();
+    const errorSpy = vi.spyOn(toast, "error").mockReturnValue("");
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
     const file = new File(["not valid json {{"], "bad.json", { type: "application/json" });
     await userEvent.upload(fileInput, file);
     await waitFor(() => {
-      expect(screen.getByTestId("import-error")).toBeInTheDocument();
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/invalid json/i));
     });
-    expect(screen.getByTestId("import-error")).toHaveTextContent(/invalid json/i);
+    vi.restoreAllMocks();
   });
 
-  it("dismissing the error alert removes it", async () => {
+  it("shows export toast error when jsonStringify fails", () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<ImportExportButtons />);
-    const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
-    const file = new File(["not valid json {{"], "bad.json", { type: "application/json" });
-    await userEvent.upload(fileInput, file);
-    await waitFor(() => {
-      expect(screen.getByTestId("import-error")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByTestId("dismiss-error-button"));
-    expect(screen.queryByTestId("import-error")).not.toBeInTheDocument();
-  });
-
-  it("clicking Import clears a previously shown error", async () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<ImportExportButtons />);
-    const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
-    const file = new File(["not valid json {{"], "bad.json", { type: "application/json" });
-    await userEvent.upload(fileInput, file);
-    await waitFor(() => {
-      expect(screen.getByTestId("import-error")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByTestId("import-button"));
-    expect(screen.queryByTestId("import-error")).not.toBeInTheDocument();
-  });
-
-  it("shows export error when jsonStringify fails", () => {
-    expect.hasAssertions();
+    const errorSpy = vi.spyOn(toast, "error").mockReturnValue("");
     const asset = makeAsset();
     useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
     vi.mocked(jsonStringify).mockReturnValueOnce(undefined);
     render(<ImportExportButtons />);
     fireEvent.click(screen.getByTestId("export-button"));
-    expect(screen.getByTestId("export-error")).toBeInTheDocument();
-    expect(screen.getByTestId("export-error")).toHaveTextContent(/export failed/i);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/export failed/i));
+    vi.restoreAllMocks();
   });
 });

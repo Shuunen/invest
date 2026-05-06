@@ -1,6 +1,7 @@
 import { Link, Outlet } from "@tanstack/react-router";
 import { PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Toaster } from "react-hot-toast";
 import { useDexieSync, useHydration } from "./components/asset-table-db.ts";
 import { CreatePortfolioModal } from "./components/create-portfolio-modal.tsx";
 import { ImportExportButtons } from "./components/import-export-buttons.tsx";
@@ -44,9 +45,7 @@ export function App() {
   const [createOpen, setCreateOpen] = useState(false);
   const isOffline = useOfflineStatus();
 
-  useEffect(() => {
-    setupPwa();
-  }, []);
+  useEffect(setupPwa, []);
 
   useHydration(0);
   useDexieSync();
@@ -87,6 +86,7 @@ export function App() {
         <Outlet />
       </main>
       {createOpen && <CreatePortfolioModal onClose={() => setCreateOpen(false)} />}
+      <Toaster />
     </div>
   );
 }
