@@ -1,4 +1,4 @@
-import { ISIN_REGEX, type Country, type Sector } from "../schemas/index.ts";
+import type { Country, Sector } from "../schemas/index.ts";
 
 export type EtfPrefillData = {
   fees: string | undefined;
@@ -158,7 +158,6 @@ export function parseEtfHtml(html: string): EtfPrefillData {
 }
 
 export async function fetchEtfData(isin: string): Promise<EtfPrefillData> {
-  if (!ISIN_REGEX.test(isin)) throw new Error(`Invalid ISIN format: ${isin}`);
   const encodedIsin = encodeURIComponent(isin);
   const proxyBase = "http://localhost:8010/proxy"; // port must match PORT constant in src/bin/proxy.ts
   const response = await fetch(`${proxyBase}/en/etf-profile.html?isin=${encodedIsin}`);

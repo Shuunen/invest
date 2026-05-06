@@ -18,6 +18,7 @@ export type DiffRow = {
 };
 
 const SCALAR_FIELDS: DiffConfig[] = [
+  { field: "ISIN", getValue: form => form.isin },
   { field: "Name", getValue: form => form.name },
   { field: "Provider", getValue: form => form.provider },
   { field: "Tickers", getValue: form => form.tickers },

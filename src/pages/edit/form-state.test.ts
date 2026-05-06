@@ -54,6 +54,7 @@ function makeFormState(overrides: Partial<FormState> = {}): FormState {
     fees: "0.20",
     geoAllocation: {},
     isAccumulating: true,
+    isin: BASE_ISIN,
     name: "Test ETF",
     performance1y: "10",
     performance3y: "30",
@@ -155,7 +156,7 @@ describe("toFormState", () => {
 describe("buildAssetFromForm - success", () => {
   it("returns parsed Asset on valid form data", () => {
     expect.hasAssertions();
-    const result = buildAssetFromForm(BASE_ISIN, makeFormState());
+    const result = buildAssetFromForm(makeFormState());
     invariant("data" in result, "Expected success result");
     expect(result.data.name).toBe("Test ETF");
     expect(result.data.isin).toBe(BASE_ISIN);
@@ -163,35 +164,35 @@ describe("buildAssetFromForm - success", () => {
 
   it("parses tickers from comma-separated string", () => {
     expect.hasAssertions();
-    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ tickers: "TST, ABC" }));
+    const result = buildAssetFromForm(makeFormState({ tickers: "TST, ABC" }));
     invariant("data" in result, "Expected success result");
     expect(result.data.tickers).toStrictEqual(["TST", "ABC"]);
   });
 
   it("maps empty performance string to undefined", () => {
     expect.hasAssertions();
-    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ performance1y: "" }));
+    const result = buildAssetFromForm(makeFormState({ performance1y: "" }));
     invariant("data" in result, "Expected success result");
     expect(result.data.performance1y).toBeUndefined();
   });
 
   it("converts geo allocation percentages to decimals", () => {
     expect.hasAssertions();
-    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ geoAllocation: { france: "40", us: "60" } }));
+    const result = buildAssetFromForm(makeFormState({ geoAllocation: { france: "40", us: "60" } }));
     invariant("data" in result, "Expected success result");
     expect(result.data.geoAllocation).toStrictEqual({ france: 0.4, us: 0.6 });
   });
 
   it("converts sector allocation percentages to decimals", () => {
     expect.hasAssertions();
-    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ sectorAllocation: { financials: "50", technology: "50" } }));
+    const result = buildAssetFromForm(makeFormState({ sectorAllocation: { financials: "50", technology: "50" } }));
     invariant("data" in result, "Expected success result");
     expect(result.data.sectorAllocation).toStrictEqual({ financials: 0.5, technology: 0.5 });
   });
 
   it("omits zero and empty geo allocation entries", () => {
     expect.hasAssertions();
-    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ geoAllocation: { france: "0", germany: "", us: "60" } }));
+    const result = buildAssetFromForm(makeFormState({ geoAllocation: { france: "0", germany: "", us: "60" } }));
     invariant("data" in result, "Expected success result");
     expect(result.data.geoAllocation).toStrictEqual({ us: 0.6 });
   });
@@ -200,21 +201,21 @@ describe("buildAssetFromForm - success", () => {
 describe("buildAssetFromForm - Zod validation errors", () => {
   it("returns name error when name is empty", () => {
     expect.hasAssertions();
-    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ name: "" }));
+    const result = buildAssetFromForm(makeFormState({ name: "" }));
     invariant("errors" in result, "Expected error result");
     expect(result.errors.name).toBeDefined();
   });
 
   it("returns fees error when fees is negative", () => {
     expect.hasAssertions();
-    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ fees: "-1" }));
+    const result = buildAssetFromForm(makeFormState({ fees: "-1" }));
     invariant("errors" in result, "Expected error result");
     expect(result.errors.fees).toBeDefined();
   });
 
   it("treats empty fees string as 0 (valid, no fee)", () => {
     expect.hasAssertions();
-    const result = buildAssetFromForm(BASE_ISIN, makeFormState({ fees: "" }));
+    const result = buildAssetFromForm(makeFormState({ fees: "" }));
     invariant("data" in result, "Expected success result");
     expect(result.data.fees).toBe(0);
   });

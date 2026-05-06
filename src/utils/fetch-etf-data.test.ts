@@ -412,11 +412,6 @@ describe("fetchEtfData", () => {
     expect(result.sectorAllocation).toStrictEqual({});
   });
 
-  it("throws on invalid ISIN format", async () => {
-    expect.hasAssertions();
-    await expect(fetchEtfData("INVALID")).rejects.toThrow("Invalid ISIN format: INVALID");
-  });
-
   it("throws on HTTP error", async () => {
     expect.hasAssertions();
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 503 }));
