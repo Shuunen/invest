@@ -65,6 +65,25 @@ const SECTOR_NAME_TO_KEY: Record<string, Sector> = {
   Utilities: "utilities",
 };
 
+const PROVIDER_WORDS_TO_STRIP = [" ETF"];
+
+export function cleanProviderName(provider: string | undefined): string | undefined {
+  if (provider === undefined) return undefined;
+  let cleaned = provider;
+  for (const word of PROVIDER_WORDS_TO_STRIP) cleaned = cleaned.replaceAll(word, "");
+  cleaned = cleaned.replaceAll(/\s+/g, " ").trim();
+  return cleaned || undefined;
+}
+
+export function cleanAssetName(name: string | undefined, provider: string | undefined): string | undefined {
+  if (name === undefined) return undefined;
+  if (provider === undefined) return name;
+  const [firstWord] = provider.split(/\s+/);
+  if (!firstWord) return name;
+  const cleaned = name.replaceAll(provider.trim(), "").replaceAll(firstWord, "").replaceAll(/\s+/g, " ").trim();
+  return cleaned || undefined;
+}
+
 function getTestIdText(doc: Document, testId: string): string | undefined {
   const text = doc.querySelector(`[data-testid="${testId}"]`)?.textContent?.replaceAll(/\s+/g, " ").trim();
   return text !== "" && text !== undefined ? text : undefined;
@@ -92,7 +111,9 @@ function getRiskTableValue(doc: Document, label: string): string | undefined {
   if (!panel) return undefined;
   const labelCell = Array.from(panel.querySelectorAll("td.vallabel")).find(cell => cell.textContent?.trim() === label);
   const value = (labelCell?.nextElementSibling as HTMLElement | null)?.textContent?.trim();
-  return value !== "" && value !== undefined ? value : undefined;
+  if (value === "" || value === undefined) return undefined;
+  const num = Number.parseFloat(value.replace(",", "."));
+  return Number.isNaN(num) ? undefined : String(num);
 }
 
 function parsePercentValue(raw: string | undefined): string | undefined {
@@ -116,16 +137,18 @@ export function parseEtfHtml(html: string): EtfPrefillData {
   const doc = new DOMParser().parseFromString(html, "text/html");
 
   const rawDistribution = getTestIdText(doc, "tl_etf-basics_value_distribution-policy");
+  const provider = cleanProviderName(getTestIdText(doc, "tl_etf-basics_value_fund-provider"));
+  const rawName = getTestIdText(doc, "etf-profile-header_etf-name");
 
   return {
     fees: parsePercentValue(getTestIdText(doc, "etf-profile-header_ter-value")),
     geoAllocation: parseAllocation(doc, { keyMap: GEO_NAME_TO_KEY, nameTestId: "tl_etf-holdings_countries_value_name", pctTestId: "tl_etf-holdings_countries_value_percentage", rowTestId: "etf-holdings_countries_row" }),
     isAccumulating: rawDistribution === undefined ? undefined : rawDistribution.toLowerCase().includes("accum"),
-    name: getTestIdText(doc, "etf-profile-header_etf-name"),
+    name: cleanAssetName(rawName, provider),
     performance1y: parsePercentValue(getTestIdText(doc, "etf-returns-section_1year-return")),
     performance3y: parsePercentValue(getTestIdText(doc, "etf-returns-section_3year-return")),
     performance5y: parsePercentValue(getTestIdText(doc, "etf-returns-section_5year-return")),
-    provider: getTestIdText(doc, "tl_etf-basics_value_fund-provider"),
+    provider,
     riskReward1y: getRiskTableValue(doc, "Return per risk 1 year"),
     riskReward3y: getRiskTableValue(doc, "Return per risk 3 years"),
     riskReward5y: getRiskTableValue(doc, "Return per risk 5 years"),

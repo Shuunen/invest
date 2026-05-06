@@ -328,6 +328,7 @@ describe("AssetTable - column visibility guard", () => {
     const colsAllHidden: Record<string, boolean> = {
       availableForPlan: false,
       availableOnBroker: false,
+      "data-score": false,
       fees: false,
       isAccumulating: false,
       isin: false,
@@ -826,6 +827,34 @@ describe("AssetTable - price editing", () => {
       expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).toBeInTheDocument();
     });
     expect(() => fireEvent.click(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`))).not.toThrow();
+  });
+});
+
+describe("AssetTable - updatedAt column", () => {
+  it("shows the formatted date when updatedAt is set and column is visible", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1234567890", updatedAt: "2025-06-15T00:00:00.000Z" });
+    useAppStore.setState({
+      data: { ...makeTestData([asset]), settings: { ...defaultAppData.settings, columnVisibility: { updatedAt: true }, sort: { column: "score", direction: "desc" } } },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetTable />);
+    const cell = screen.getByTestId("updated-at-lu1234567890");
+    expect(cell).toBeInTheDocument();
+    expect(cell.textContent).not.toBe("—");
+  });
+
+  it("shows — when updatedAt is undefined and column is visible", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1234567890" });
+    useAppStore.setState({
+      data: { ...makeTestData([asset]), settings: { ...defaultAppData.settings, columnVisibility: { updatedAt: true }, sort: { column: "score", direction: "desc" } } },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetTable />);
+    expect(screen.getByTestId("updated-at-lu1234567890").textContent).toBe("—");
   });
 });
 

@@ -1,4 +1,4 @@
-import { fetchEtfData, parseEtfHtml, parseSectorsFromAjaxXml } from "./fetch-etf-data.ts";
+import { cleanAssetName, cleanProviderName, fetchEtfData, parseEtfHtml, parseSectorsFromAjaxXml } from "./fetch-etf-data.ts";
 import sampleHtml from "./fetch-etf-sample.html?raw";
 
 function buildHtml(overrides: Record<string, string> = {}): string {
@@ -19,11 +19,85 @@ function buildHtml(overrides: Record<string, string> = {}): string {
   return `<html><body>${elements}</body></html>`;
 }
 
+describe("cleanProviderName", () => {
+  it("returns undefined when provider is undefined", () => {
+    expect.hasAssertions();
+    expect(cleanProviderName(undefined)).toBeUndefined();
+  });
+
+  it("removes ' ETF' suffix from provider name", () => {
+    expect.hasAssertions();
+    expect(cleanProviderName("Amundi ETF")).toBe("Amundi");
+  });
+
+  it("removes all occurrences of ' ETF' in the provider name", () => {
+    expect.hasAssertions();
+    expect(cleanProviderName("Amundi ETF Global ETF")).toBe("Amundi Global");
+  });
+
+  it("returns provider unchanged when no noise words are present", () => {
+    expect.hasAssertions();
+    expect(cleanProviderName("iShares")).toBe("iShares");
+  });
+
+  it("collapses extra whitespace after removal", () => {
+    expect.hasAssertions();
+    expect(cleanProviderName("Amundi  ETF")).toBe("Amundi");
+  });
+
+  it("returns undefined when removing noise words leaves an empty string", () => {
+    expect.hasAssertions();
+    expect(cleanProviderName(" ETF")).toBeUndefined();
+  });
+});
+
+describe("cleanAssetName", () => {
+  it("returns undefined when name is undefined", () => {
+    expect.hasAssertions();
+    expect(cleanAssetName(undefined, "iShares")).toBeUndefined();
+  });
+
+  it("returns name unchanged when provider is undefined", () => {
+    expect.hasAssertions();
+    expect(cleanAssetName("iShares Core S&P 500 UCITS ETF", undefined)).toBe("iShares Core S&P 500 UCITS ETF");
+  });
+
+  it("removes the first word of provider from the name", () => {
+    expect.hasAssertions();
+    expect(cleanAssetName("iShares Core S&P 500 UCITS ETF USD (Acc)", "iShares")).toBe("Core S&P 500 UCITS ETF USD (Acc)");
+  });
+
+  it("uses only the first word when provider has multiple words", () => {
+    expect.hasAssertions();
+    expect(cleanAssetName("Amundi MSCI World UCITS ETF", "Amundi Asset Management")).toBe("MSCI World UCITS ETF");
+  });
+
+  it("removes all occurrences of the first provider word in the name", () => {
+    expect.hasAssertions();
+    expect(cleanAssetName("Xtrackers MSCI World Xtrackers UCITS ETF", "Xtrackers")).toBe("MSCI World UCITS ETF");
+  });
+
+  it("collapses extra whitespace left by removal", () => {
+    expect.hasAssertions();
+    expect(cleanAssetName("iShares Core ETF", "iShares")).toBe("Core ETF");
+  });
+
+  it("returns name unchanged when provider starts with whitespace (no usable first word)", () => {
+    expect.hasAssertions();
+    expect(cleanAssetName("iShares Core ETF", "  ")).toBe("iShares Core ETF");
+  });
+
+  it("returns undefined when removing provider word leaves an empty name", () => {
+    expect.hasAssertions();
+    expect(cleanAssetName("iShares", "iShares")).toBeUndefined();
+  });
+});
+
 describe("parseEtfHtml — identity fields", () => {
   it("parses name, provider, tickers and accumulating flag", () => {
     expect.hasAssertions();
     const result = parseEtfHtml(sampleHtml);
-    expect(result.name).toBe("iShares Core S&P 500 UCITS ETF USD (Acc)");
+    expect(result.name).toBe("Core S&P 500 UCITS ETF USD (Acc)");
     expect(result.provider).toBe("iShares");
     expect(result.tickers).toBe("SXR8");
     expect(result.isAccumulating).toBe(true);
@@ -162,6 +236,20 @@ describe("parseEtfHtml — missing elements", () => {
     const result = parseEtfHtml(html);
     expect(result.riskReward1y).toBeUndefined();
   });
+
+  it("normalizes trailing zeros in risk/reward values to avoid false diffs (1.20 → 1.2)", () => {
+    expect.hasAssertions();
+    const html = `<html><body><div data-testid="etf-risk_table_panel"><table><tbody><tr><td class="vallabel">Return per risk 3 years</td><td class="val">1.20</td></tr></tbody></table></div></body></html>`;
+    const result = parseEtfHtml(html);
+    expect(result.riskReward3y).toBe("1.2");
+  });
+
+  it("returns undefined for return per risk when value is not a valid number", () => {
+    expect.hasAssertions();
+    const html = `<html><body><div data-testid="etf-risk_table_panel"><table><tbody><tr><td class="vallabel">Return per risk 1 year</td><td class="val">N/A</td></tr></tbody></table></div></body></html>`;
+    const result = parseEtfHtml(html);
+    expect(result.riskReward1y).toBeUndefined();
+  });
 });
 
 describe("parseEtfHtml — invalid values", () => {
@@ -260,7 +348,7 @@ describe("fetchEtfData", () => {
         .mockResolvedValueOnce({ ok: false, status: 404 }),
     );
     const result = await fetchEtfData("IE00B5BMR087");
-    expect(result.name).toBe("iShares Core S&P 500 UCITS ETF USD (Acc)");
+    expect(result.name).toBe("Core S&P 500 UCITS ETF USD (Acc)");
     expect(result.tickers).toBe("SXR8");
   });
 

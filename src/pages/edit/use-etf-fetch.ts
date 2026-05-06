@@ -5,7 +5,7 @@ import type { FormState } from "./form-state.ts";
 
 type PatchFn = <Key extends keyof FormState>(key: Key, value: FormState[Key]) => void;
 
-export function useEtfFetch(isin: string, patch: PatchFn) {
+export function useEtfFetch(isin: string, patch: PatchFn, form: FormState) {
   const [isFetching, setIsFetching] = useState(false);
   const [fetchError, setFetchError] = useState<string | undefined>();
 
@@ -13,7 +13,7 @@ export function useEtfFetch(isin: string, patch: PatchFn) {
     setIsFetching(true);
     setFetchError(undefined);
     try {
-      applyEtfPrefill(await fetchEtfData(isin), patch);
+      applyEtfPrefill(await fetchEtfData(isin), patch, form);
     } catch (error) {
       setFetchError(error instanceof Error ? error.message : "Failed to fetch ETF data");
     } finally {

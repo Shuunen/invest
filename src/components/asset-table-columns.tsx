@@ -1,9 +1,10 @@
+// oxlint-disable max-lines
 import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
-import { computeScore, type Asset } from "../schemas/index.ts";
+import { computeDataScore, computeScore, DATA_SCORE_PERCENT, DATA_SCORE_WARN_THRESHOLD, type Asset } from "../schemas/index.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
+import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
 import { SCORE_MISSING_VALUE } from "./asset-table-utils.ts";
 
 declare module "@tanstack/react-table" {
@@ -20,6 +21,7 @@ export type AssetTableMeta = {
   onToggleSelect?: (isin: string) => void;
   selectedIsins?: Set<string>;
   amountMap?: Map<string, number>;
+  amountUpdatedAtMap?: Map<string, string>;
 };
 
 function booleanCell(isin: string, field: string, value: boolean) {
@@ -72,9 +74,10 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
       return (
         <input
           type="number"
-          className="input input-xs w-12 text-center"
+          className="input input-xs w-14 text-center"
           min={0}
           defaultValue={value}
+          step={0.1}
           key={value}
           id={`amount-input-${isin.toLowerCase()}`}
           data-testid={`amount-input-${isin.toLowerCase()}`}
@@ -105,7 +108,7 @@ export function makePriceEditColumn(): ColumnDef<Asset> {
           type="number"
           className="input input-xs w-20 text-center"
           min={0}
-          step={0.01}
+          step={1}
           defaultValue={value}
           key={value}
           id={`price-input-${isin.toLowerCase()}`}
@@ -244,7 +247,45 @@ export const columns: ColumnDef<Asset>[] = [
     id: "price",
     meta: { center: true, title: "Price of one asset in €" },
   },
+  {
+    accessorKey: "updatedAt",
+    cell: ({ getValue, row }) => <span data-testid={`updated-at-${row.original.isin.toLowerCase()}`}>{formatDate(getValue<string | undefined>())}</span>,
+    header: "Updated",
+    meta: { center: true, title: "Asset last updated" },
+  },
 ];
+
+export function makeDataScoreColumn(amountUpdatedAtMap?: Map<string, string>): ColumnDef<Asset> {
+  const isPortfolio = amountUpdatedAtMap !== undefined;
+  return {
+    accessorFn: row => computeDataScore(row, amountUpdatedAtMap?.get(row.isin), isPortfolio),
+    cell: ({ getValue, row }) => {
+      const score = getValue<number>();
+      let dotClass = "bg-error";
+      if (score === DATA_SCORE_PERCENT) dotClass = "bg-success";
+      else if (score >= DATA_SCORE_WARN_THRESHOLD) dotClass = "bg-warning";
+      return (
+        <span className="flex items-center gap-1.5" data-testid={`data-score-${row.original.isin.toLowerCase()}`}>
+          <span className={cn("inline-block h-2 w-2 shrink-0 rounded-full", dotClass)} />
+          <span className="w-8 text-center">{score}%</span>
+        </span>
+      );
+    },
+    header: "Data",
+    id: "data-score",
+    meta: { center: true, title: "Data quality: completeness and freshness" },
+  };
+}
+export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string> | undefined): ColumnDef<Asset> {
+  return {
+    accessorFn: row => amountUpdatedAtMap?.get(row.isin),
+    cell: ({ getValue, row }) => <span data-testid={`amount-updated-at-${row.original.isin.toLowerCase()}`}>{formatDate(getValue<string | undefined>())}</span>,
+    enableHiding: false,
+    header: "Amt. updated",
+    id: "amount-updated-at",
+    meta: { center: true, title: "Date the portfolio amount was last changed" },
+  };
+}
 
 export function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
   return {

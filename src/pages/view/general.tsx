@@ -1,6 +1,7 @@
 import { kebabCase } from "es-toolkit/string";
 import type { Asset } from "../../schemas/index.ts";
 import { cn } from "../../utils/browser-styles.ts";
+import { formatDate } from "../../utils/format-numbers.ts";
 import { FieldRow } from "./field-row.tsx";
 
 function booleanBadge(value: boolean, label: string) {
@@ -24,6 +25,7 @@ export function ViewGeneralSection({ asset }: Props) {
         <FieldRow label="Accumulating" value={booleanBadge(asset.isAccumulating, "Accumulating")} name="accumulating" />
         <FieldRow label="Broker availability" value={booleanBadge(asset.availableOnBroker, "Broker")} name="broker-availability" />
         <FieldRow label="Plan compatibility" value={booleanBadge(asset.availableForPlan, "Plan")} name="plan-compatibility" />
+        <FieldRow label="Last updated" value={formatDate(asset.updatedAt)} name="updated-at" />
       </div>
     </div>
   );

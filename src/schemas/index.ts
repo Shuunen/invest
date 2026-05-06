@@ -61,6 +61,7 @@ export const AssetSchema = z.object({
     })
     .default({}),
   tickers: z.array(z.string()).default([]),
+  updatedAt: z.iso.datetime().optional(),
 });
 
 export type Asset = z.infer<typeof AssetSchema>;
@@ -72,10 +73,44 @@ export function computeScore(asset: Asset): number | undefined {
   return performance3y + riskReward3y * SCORE_RISK_WEIGHT - fees * SCORE_FEE_WEIGHT;
 }
 
+const DATA_FRESHNESS_DAYS = 30;
+const AMOUNT_FRESHNESS_DAYS = 90;
+const MS_PER_DAY = 86_400_000;
+const DATA_SCORE_BASE_FIELDS = 8;
+const DATA_SCORE_PORTFOLIO_FIELDS = 9;
+const DATA_SCORE_STALE_WEIGHT = 0.5;
+export const DATA_SCORE_PERCENT = 100;
+export const DATA_SCORE_WARN_THRESHOLD = 75;
+
+function toAgeDays(isoDate: string): number {
+  return (Date.now() - new Date(isoDate).getTime()) / MS_PER_DAY;
+}
+
+// data quality score (0-100): completeness + freshness of asset data fields
+// pass isPortfolio=true to include amountUpdatedAt freshness in the denominator
+export function computeDataScore(asset: Asset, amountUpdatedAt?: string, isPortfolio = false): number {
+  let score = 0;
+  const total = isPortfolio ? DATA_SCORE_PORTFOLIO_FIELDS : DATA_SCORE_BASE_FIELDS;
+
+  if (asset.price !== undefined) score += 1;
+  if (asset.performance1y !== undefined) score += 1;
+  if (asset.performance3y !== undefined) score += 1;
+  if (asset.performance5y !== undefined) score += 1;
+  if (asset.riskReward1y !== undefined) score += 1;
+  if (asset.riskReward3y !== undefined) score += 1;
+  if (asset.riskReward5y !== undefined) score += 1;
+
+  if (asset.updatedAt !== undefined) score += toAgeDays(asset.updatedAt) <= DATA_FRESHNESS_DAYS ? 1 : DATA_SCORE_STALE_WEIGHT;
+  if (isPortfolio && amountUpdatedAt !== undefined) score += toAgeDays(amountUpdatedAt) <= AMOUNT_FRESHNESS_DAYS ? 1 : DATA_SCORE_STALE_WEIGHT;
+
+  return Math.round((score / total) * DATA_SCORE_PERCENT);
+}
+
 // --- Portfolio ---
 
 export const PortfolioEntrySchema = z.object({
   amount: z.number().nonnegative().default(0),
+  amountUpdatedAt: z.iso.datetime().optional(),
   inPEA: z.boolean().default(false),
   isin: z.string().regex(ISIN_REGEX),
   notes: z.string().default(""),

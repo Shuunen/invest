@@ -25,6 +25,7 @@ export const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
   performance1y: false,
   riskReward1y: false,
   tickers: false,
+  updatedAt: false,
 };
 
 const NUMERIC_COL_IDS = ["fees", "performance1y", "performance3y", "performance5y", "riskReward1y", "riskReward3y", "riskReward5y", "score"];

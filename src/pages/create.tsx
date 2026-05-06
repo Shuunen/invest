@@ -24,7 +24,7 @@ function useAssetCreateForm() {
     setErrors(prev => Object.fromEntries(Object.entries(prev).filter(([errKey]) => errKey !== "isin")));
   }
 
-  const { fetchError, handleFetch, isFetching } = useEtfFetch(isin, patch);
+  const { fetchError, handleFetch, isFetching } = useEtfFetch(isin, patch, form);
 
   function handleSave() {
     const result = buildAssetFromForm(isin, form);

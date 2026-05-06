@@ -1,6 +1,7 @@
 /**
  * CORS proxy
  */
+import { execSync } from "node:child_process";
 import http from "node:http";
 import https from "node:https";
 
@@ -94,6 +95,13 @@ const server = http.createServer((req, res) => {
   }
   handleProxyRequest(req, res);
 });
+
+try {
+  execSync(`fuser -k ${PORT}/tcp`, { stdio: "ignore" });
+  console.log(`Killed existing process on port ${PORT}`);
+} catch {
+  // no process was using the port
+}
 
 server.listen(PORT, "127.0.0.1", () => {
   console.log(`Proxy Active — http://localhost:${PORT}${PATH_PREFIX} → https://${TARGET_HOST}`);
