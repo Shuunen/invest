@@ -88,7 +88,7 @@ describe("AssetEditPage - form", () => {
     });
     fireEvent.click(screen.getByTestId("form-confirm-button"));
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
+      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
     });
   });
 
@@ -138,7 +138,7 @@ describe("AssetEditPage - form", () => {
     fireEvent.click(screen.getByTestId("form-confirm-button"));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
+      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
     });
     expect(screen.queryByTestId("confirm-save-modal")).not.toBeInTheDocument();
     expect(screen.queryByTestId("name-error")).not.toBeInTheDocument();
@@ -278,7 +278,7 @@ describe("AssetEditPage - form", () => {
     });
     fireEvent.click(screen.getByTestId("form-confirm-button"));
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
+      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
     });
   });
 
@@ -361,7 +361,7 @@ describe("AssetEditPage - form", () => {
     });
     fireEvent.click(screen.getByTestId("form-confirm-button"));
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, to: "/assets/$isin" });
+      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
     });
     expect(useAppStore.getState().data.assets[0]?.geoAllocation).toStrictEqual({ france: 0.4, us: 0.6 });
   });

@@ -262,6 +262,22 @@ describe("useAppStore - portfolio mutations", () => {
     expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.isin).toBe("LU1234567890");
   });
 
+  it("setPortfolioAssets stamps amountUpdatedAt on new entries and preserves it on existing ones", () => {
+    expect.hasAssertions();
+    const existingEntry = { amount: 2, amountUpdatedAt: "2024-01-01T00:00:00.000Z", inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    const newEntry = { amount: 0, inPEA: false, isin: "LU0987654321", notes: "", positionValue: 0, targetAmount: 0 };
+    useAppStore.setState({
+      data: { ...defaultAppData, portfolios: [basePortfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    useAppStore.getState().setPortfolioAssets(basePortfolio.id, [existingEntry, newEntry]);
+    const entries = useAppStore.getState().data.portfolios[0]?.entries;
+    expect(entries?.[0]?.amountUpdatedAt).toBe("2024-01-01T00:00:00.000Z");
+    expect(entries?.[1]?.amountUpdatedAt).toBeTypeOf("string");
+    expect(entries?.[1]?.amountUpdatedAt).not.toBe("2024-01-01T00:00:00.000Z");
+  });
+
   it("setPortfolioAssets does not affect other portfolios", () => {
     expect.hasAssertions();
     const other = { ...basePortfolio, id: "00000000-0000-4000-8000-000000000002", name: "Other" };

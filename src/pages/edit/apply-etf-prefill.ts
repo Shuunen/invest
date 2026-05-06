@@ -1,10 +1,21 @@
 import type { EtfPrefillData } from "../../utils/fetch-etf-data.ts";
 import type { FormState, PatchFn } from "./form-state.ts";
 
-export function applyEtfPrefill(data: EtfPrefillData, patch: PatchFn) {
+export function applyEtfPrefill(data: EtfPrefillData, patch: PatchFn, currentForm: FormState) {
   if (data.name !== undefined) patch("name", data.name);
   if (data.provider !== undefined) patch("provider", data.provider);
-  if (data.tickers !== undefined) patch("tickers", data.tickers);
+  if (data.tickers !== undefined) {
+    const existing = currentForm.tickers
+      .split(",")
+      .map(ticker => ticker.trim())
+      .filter(Boolean);
+    const incoming = data.tickers
+      .split(",")
+      .map(ticker => ticker.trim())
+      .filter(Boolean);
+    const merged = [...new Set([...existing, ...incoming])].toSorted((left, right) => left.localeCompare(right));
+    patch("tickers", merged.join(", "));
+  }
   if (data.isAccumulating !== undefined) patch("isAccumulating", data.isAccumulating);
   if (data.fees !== undefined) patch("fees", data.fees);
   if (data.performance1y !== undefined) patch("performance1y", data.performance1y);

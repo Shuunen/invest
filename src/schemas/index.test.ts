@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { invariant } from "es-toolkit";
 import { jsonParse } from "../utils/json";
-import { safeImportJson, parseAppData, computeScore, AppDataSchema, SettingsSchema, type AppData } from "./index";
+import { safeImportJson, parseAppData, computeScore, computeDataScore, AppDataSchema, SettingsSchema, type AppData, type Asset } from "./index";
 
 const sampleRaw = readFileSync(join(process.cwd(), "data/sample.json"), "utf8");
 
@@ -84,6 +84,80 @@ describe("SettingsSchema", () => {
     // JSON payloads use null for absent values; the schema must coerce to undefined
     const result = SettingsSchema.parse(jsonParse('{"lastExportedAt":null}'));
     expect(result.lastExportedAt).toBeUndefined();
+  });
+});
+
+const baseAsset: Asset = {
+  availableForPlan: true,
+  availableOnBroker: true,
+  fees: 0.2,
+  geoAllocation: {},
+  isAccumulating: true,
+  isin: "IE00B4L5Y983",
+  name: "Test Asset",
+  performance1y: undefined,
+  performance3y: undefined,
+  performance5y: undefined,
+  price: undefined,
+  provider: "",
+  riskReward1y: undefined,
+  riskReward3y: undefined,
+  riskReward5y: undefined,
+  sectorAllocation: {},
+  tickers: [],
+};
+
+const fullAsset: Asset = {
+  ...baseAsset,
+  performance1y: 10,
+  performance3y: 20,
+  performance5y: 30,
+  price: 100,
+  riskReward1y: 1,
+  riskReward3y: 1.5,
+  riskReward5y: 2,
+};
+
+describe("computeDataScore", () => {
+  it("returns 0 when no optional fields are populated", () => {
+    expect.hasAssertions();
+    expect(computeDataScore(baseAsset)).toBe(0);
+  });
+
+  it("returns 100 when all 7 data fields are defined and updatedAt is fresh", () => {
+    expect.hasAssertions();
+    const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString(); // 1 hour ago
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate })).toBe(100);
+  });
+
+  it("returns partial score when updatedAt is stale (older than 30 days)", () => {
+    expect.hasAssertions();
+    const staleDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString(); // 60 days ago
+    // 7 data fields (all defined) + 0.5 (stale updatedAt) = 7.5/8 = 93.75 → rounds to 94
+    expect(computeDataScore({ ...fullAsset, updatedAt: staleDate })).toBe(94);
+  });
+
+  it("includes amountUpdatedAt in total when isPortfolio=true", () => {
+    expect.hasAssertions();
+    const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
+    const freshAmount = new Date(Date.now() - 1000 * 60 * 60).toISOString();
+    // 7 data fields + 1 (fresh updatedAt) + 1 (fresh amountUpdatedAt) = 9/9 = 100
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, freshAmount, true)).toBe(100);
+  });
+
+  it("penalizes missing amountUpdatedAt in portfolio context", () => {
+    expect.hasAssertions();
+    const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
+    // 7 data fields + 1 (fresh updatedAt) + 0 (no amountUpdatedAt) = 8/9 = 88.88 → rounds to 89
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, undefined, true)).toBe(89);
+  });
+
+  it("gives partial credit for stale amountUpdatedAt in portfolio context", () => {
+    expect.hasAssertions();
+    const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
+    const staleAmount = new Date(Date.now() - 1000 * 60 * 60 * 24 * 120).toISOString(); // 120 days ago
+    // 7 data fields + 1 (fresh updatedAt) + 0.5 (stale amountUpdatedAt) = 8.5/9 = 94.44 → rounds to 94
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, staleAmount, true)).toBe(94);
   });
 });
 

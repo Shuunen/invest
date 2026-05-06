@@ -6,7 +6,8 @@ import { MAX_ISINS, MAX_PORTFOLIOS, SettingsSchema, type AppData, type Asset, ty
 const defaultSettings: Settings = SettingsSchema.parse({});
 
 function patchPortfolioEntryAmount(portfolios: Portfolio[], { amount, isin, portfolioId }: { amount: number; isin: string; portfolioId: string }): Portfolio[] {
-  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, amount } : entry)) } : portfolio));
+  const now = new Date().toISOString();
+  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, amount, amountUpdatedAt: now } : entry)) } : portfolio));
 }
 
 export const defaultAppData: AppData = {
@@ -45,7 +46,7 @@ export const useAppStore = create<AppStore>()(
         return {
           data: {
             ...state.data,
-            assets: [...state.data.assets, asset],
+            assets: [...state.data.assets, { ...asset, updatedAt: new Date().toISOString() }],
             settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
           },
         };
@@ -77,12 +78,15 @@ export const useAppStore = create<AppStore>()(
       })),
     setLoadError: loadError => set({ isLoading: false, loadError }),
     setPortfolioAssets: (portfolioId, entries) =>
-      set(state => ({
-        data: {
-          ...state.data,
-          portfolios: state.data.portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries } : portfolio)),
-        },
-      })),
+      set(state => {
+        const now = new Date().toISOString();
+        return {
+          data: {
+            ...state.data,
+            portfolios: state.data.portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: entries.map(entry => (entry.amountUpdatedAt ? entry : { ...entry, amountUpdatedAt: now })) } : portfolio)),
+          },
+        };
+      }),
     setSort: sort =>
       set(state => ({
         data: { ...state.data, settings: { ...state.data.settings, sort } },
@@ -93,7 +97,7 @@ export const useAppStore = create<AppStore>()(
         return {
           data: {
             ...state.data,
-            assets: state.data.assets.map(data => (data.isin === isin ? asset : data)),
+            assets: state.data.assets.map(data => (data.isin === isin ? { ...asset, updatedAt: new Date().toISOString() } : data)),
             settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
           },
         };
@@ -105,7 +109,7 @@ export const useAppStore = create<AppStore>()(
         return {
           data: {
             ...state.data,
-            assets: state.data.assets.map(data => (data.isin === isin ? { ...asset, price } : data)),
+            assets: state.data.assets.map(data => (data.isin === isin ? { ...asset, price, updatedAt: new Date().toISOString() } : data)),
             settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
           },
         };

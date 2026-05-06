@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { type AssetTableMeta, columns, makeAmountColumn, makePriceEditColumn, makeRemoveColumn, makeSelectColumn, makeValueColumn } from "./asset-table-columns.tsx";
+import { type AssetTableMeta, columns, makeAmountColumn, makeAmountUpdatedAtColumn, makeDataScoreColumn, makePriceEditColumn, makeRemoveColumn, makeSelectColumn, makeValueColumn } from "./asset-table-columns.tsx";
 import { useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
@@ -21,6 +21,7 @@ type Props = {
   onToggleSelect?: (isin: string) => void;
   selectedIsins?: Set<string>;
   amountMap?: Map<string, number>;
+  amountUpdatedAtMap?: Map<string, string>;
 };
 
 function getSortIndicator(sorted: "asc" | "desc" | false): string {
@@ -42,18 +43,29 @@ function renderThContent(header: Header<Asset, unknown>) {
   );
 }
 
-function buildActiveColumns({ onToggleSelect, onRemoveAsset, onAmountChange, onPriceChange, amountMap }: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onPriceChange" | "amountMap">): ColumnDef<Asset>[] {
+function buildActiveColumns({
+  onToggleSelect,
+  onRemoveAsset,
+  onAmountChange,
+  onPriceChange,
+  amountMap,
+  amountUpdatedAtMap,
+}: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onPriceChange" | "amountMap" | "amountUpdatedAtMap">): ColumnDef<Asset>[] {
   const baseCols = onPriceChange ? columns.filter(col => col.id !== "price") : columns;
+  // Insert data-score right after the first column (Score) so the two quality indicators sit together
+  const colsWithDataScore = [baseCols[0], makeDataScoreColumn(amountUpdatedAtMap), ...baseCols.slice(1)];
   return [
     ...(onToggleSelect ? [makeSelectColumn()] : []),
-    ...baseCols,
+    ...colsWithDataScore,
     ...(onPriceChange ? [makePriceEditColumn()] : []),
-    ...(onAmountChange ? [makeAmountColumn(amountMap), makeValueColumn(amountMap)] : []),
+    ...(onAmountChange ? [makeAmountColumn(amountMap)] : []),
+    ...(amountUpdatedAtMap ? [makeAmountUpdatedAtColumn(amountUpdatedAtMap)] : []),
+    ...(onAmountChange ? [makeValueColumn(amountMap)] : []),
     ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : []),
   ];
 }
 
-function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onPriceChange, onToggleSelect, selectedIsins, amountMap }: Props = {}) {
+function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onPriceChange, onToggleSelect, selectedIsins, amountMap, amountUpdatedAtMap }: Props = {}) {
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
@@ -67,7 +79,7 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
   };
   useHydration(retryKey);
   const resolvedVisibility = useMemo(() => ({ ...DEFAULT_COLUMN_VISIBILITY, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
-  const activeColumns = buildActiveColumns({ amountMap, onAmountChange, onPriceChange, onRemoveAsset, onToggleSelect });
+  const activeColumns = buildActiveColumns({ amountMap, amountUpdatedAtMap, onAmountChange, onPriceChange, onRemoveAsset, onToggleSelect });
   const sorting: SortingState = useMemo(() => {
     const { column, direction } = data.settings.sort;
     if (column === "amount" && !onAmountChange) return [];
@@ -78,7 +90,7 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
     if (!lower) return propAssets ?? data.assets;
     return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
   }, [data.assets, filterText, propAssets]);
-  const meta: AssetTableMeta | undefined = (onToggleSelect ?? onAmountChange ?? onPriceChange) ? { amountMap, onAmountChange, onPriceChange, onToggleSelect, selectedIsins } : undefined;
+  const meta: AssetTableMeta | undefined = (onToggleSelect ?? onAmountChange ?? onPriceChange ?? amountUpdatedAtMap) ? { amountMap, amountUpdatedAtMap, onAmountChange, onPriceChange, onToggleSelect, selectedIsins } : undefined;
   const table = useTableInstance({
     columns: activeColumns,
     filteredAssets,
@@ -202,7 +214,7 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
   );
 }
 
-export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap, onPriceChange: propOnPriceChange }: Props = {}) {
+export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap, amountUpdatedAtMap, onPriceChange: propOnPriceChange }: Props = {}) {
   const navigate = useNavigate();
   const [isPriceEditing, setIsPriceEditing] = useState(false);
   const priceEditActions = useMemo(() => {
@@ -219,6 +231,7 @@ export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, 
   const onPriceChange = propOnPriceChange ?? internalOnPriceChange;
   const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({
     amountMap,
+    amountUpdatedAtMap,
     assets: propAssets,
     onAmountChange,
     onPriceChange,

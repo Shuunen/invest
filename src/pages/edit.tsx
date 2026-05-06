@@ -5,7 +5,7 @@ import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { AssetForm } from "./edit/asset-form.tsx";
 import { buildDiffRows, type DiffRow } from "./edit/form-diff.ts";
-import { buildAssetFromForm, toFormState, type FormState } from "./edit/form-state.ts";
+import { buildAssetFromForm, emptyFormState, toFormState, type FormState } from "./edit/form-state.ts";
 import { IsinFetchRow } from "./edit/isin-fetch-row.tsx";
 import { SaveModal } from "./edit/save-modal.tsx";
 import { useEtfFetch } from "./edit/use-etf-fetch.ts";
@@ -44,7 +44,7 @@ function useConfirmAssetSave({ asset, form, isin, navigate, onReset, onValidatio
     const result = buildAssetFromForm(isin, snapshotForm) as { data: Asset };
     setIsConfirmOpen(false);
     updateAsset(isin, result.data);
-    void navigate({ params: { isin }, to: "/assets/$isin" });
+    void navigate({ params: { isin }, replace: true, to: "/assets/$isin" });
   }
 
   return {
@@ -86,7 +86,7 @@ function useAssetEditForm(isin: string) {
     setErrors({});
   }
 
-  const { fetchError, handleFetch, isFetching } = useEtfFetch(isin, patch);
+  const { fetchError, handleFetch, isFetching } = useEtfFetch(isin, patch, form ?? emptyFormState);
   const hasChanges = useMemo(() => (asset && form ? buildDiffRows(toFormState(asset), form).length > 0 : false), [asset, form]);
   const { closeConfirm, confirmSave, diffRows, isConfirmOpen, openConfirm, resetAndClose } = useConfirmAssetSave({
     asset,

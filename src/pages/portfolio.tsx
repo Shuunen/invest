@@ -21,9 +21,14 @@ function usePortfolioData(portfolioId: string) {
   const assets = useAppStore(state => state.data.assets);
   const portfolioAssets = useMemo(() => (portfolio?.entries ?? []).map(entry => assets.find(ast => ast.isin === entry.isin)).filter((ast): ast is Asset => ast !== undefined), [assets, portfolio]);
   const amountMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.amount])), [portfolio]);
+  const amountUpdatedAtMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const entry of portfolio?.entries ?? []) if (entry.amountUpdatedAt !== undefined) map.set(entry.isin, entry.amountUpdatedAt);
+    return map;
+  }, [portfolio]);
   const totalValue = useTotalValue(portfolio?.entries ?? [], assets);
   const headerMetrics = useMemo(() => [{ color: "success" as const, label: "Total Value", value: formatPrice(totalValue) }], [totalValue]);
-  return { amountMap, assets, headerMetrics, portfolio, portfolioAssets };
+  return { amountMap, amountUpdatedAtMap, assets, headerMetrics, portfolio, portfolioAssets };
 }
 
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
@@ -95,12 +100,26 @@ function useTotalValue(entries: PortfolioEntry[], assets: Asset[]) {
   }, [entries, assets]);
 }
 
+type RenderPortfolioContentOptions = {
+  amountMap: Map<string, number>;
+  amountUpdatedAtMap: Map<string, string>;
+  onAmountChange: (isin: string, amount: number) => void;
+  onPriceChange: ((isin: string, price: number) => void) | undefined;
+  onRemoveAsset: (isin: string) => void;
+  portfolioAssets: Asset[];
+};
+
+function renderPortfolioContent({ portfolioAssets, amountMap, amountUpdatedAtMap, onRemoveAsset, onAmountChange, onPriceChange }: RenderPortfolioContentOptions) {
+  if (portfolioAssets.length === 0) return renderNoAssets();
+  return <AssetTable assets={portfolioAssets} onRemoveAsset={onRemoveAsset} onAmountChange={onAmountChange} onPriceChange={onPriceChange} amountMap={amountMap} amountUpdatedAtMap={amountUpdatedAtMap} />;
+}
+
 type Props = {
   portfolioId: string;
 };
 
 export function PortfolioPage({ portfolioId }: Props) {
-  const { amountMap, assets, headerMetrics, portfolio, portfolioAssets } = usePortfolioData(portfolioId);
+  const { amountMap, amountUpdatedAtMap, assets, headerMetrics, portfolio, portfolioAssets } = usePortfolioData(portfolioId);
   const setPortfolioAssets = useAppStore(state => state.setPortfolioAssets);
   const updatePortfolioEntryAmount = useAppStore(state => state.updatePortfolioEntryAmount);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -134,11 +153,7 @@ export function PortfolioPage({ portfolioId }: Props) {
   return (
     <div className="flex flex-col">
       <PageHeader title={name} subtitle={`Broker : ${broker}`} assets={portfolioAssets} metrics={headerMetrics} actions={actions} />
-      {portfolioAssets.length === 0 ? (
-        renderNoAssets()
-      ) : (
-        <AssetTable assets={portfolioAssets} onRemoveAsset={setIsinToDelete} onAmountChange={(isin, amount) => updatePortfolioEntryAmount(portfolioId, isin, amount)} onPriceChange={onPriceChange} amountMap={amountMap} />
-      )}
+      {renderPortfolioContent({ amountMap, amountUpdatedAtMap, onAmountChange: (isin, amount) => updatePortfolioEntryAmount(portfolioId, isin, amount), onPriceChange, onRemoveAsset: setIsinToDelete, portfolioAssets })}
       {pickerOpen && <AssetPickerModal assets={assets} initialSelected={selectedIsins} onCancel={() => setPickerOpen(false)} onConfirm={handlePickerConfirm} title={`${name} portfolio assets`} />}
       {isinToDelete !== undefined &&
         renderDeleteConfirmModal({
