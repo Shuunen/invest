@@ -1,4 +1,4 @@
-import { kebabCase } from "es-toolkit";
+import { kebabCase } from "es-toolkit/string";
 import { cn } from "../../utils/browser-styles";
 import { formatPercent } from "../../utils/format-numbers";
 
