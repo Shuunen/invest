@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { invariant } from "es-toolkit";
 import { STALENESS_TIER_PRESETS } from "../components/import-export-utils.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { formatDate } from "../utils/format-numbers.ts";
@@ -70,9 +71,13 @@ describe("AboutPage", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<AboutPage />);
+    const criticalPreset = STALENESS_TIER_PRESETS.find(preset => preset.tier === "5-critical");
+    const lowPreset = STALENESS_TIER_PRESETS.find(preset => preset.tier === "2-low");
+    invariant(criticalPreset, "Expected 5-critical preset to exist");
+    invariant(lowPreset, "Expected 2-low preset to exist");
     fireEvent.click(screen.getByTestId("set-edit-count-5-critical"));
-    expect(screen.getByTestId("unexported-edit-count")).toHaveTextContent("20");
+    expect(screen.getByTestId("unexported-edit-count")).toHaveTextContent(String(criticalPreset.editCount));
     fireEvent.click(screen.getByTestId("set-edit-count-2-low"));
-    expect(screen.getByTestId("unexported-edit-count")).toHaveTextContent("5");
+    expect(screen.getByTestId("unexported-edit-count")).toHaveTextContent(String(lowPreset.editCount));
   });
 });

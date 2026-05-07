@@ -15,16 +15,16 @@ const ISO_TIME_END = 16;
 function renderStalenessDecoration(tier: Exclude<StalenessTier, "1-ok">, unexportedChanges: number) {
   if (tier === "2-low")
     return (
-      <span data-testid="staleness-dot" data-staleness-tier={tier} className="pointer-events-none absolute inset-0">
+      <span aria-hidden="true" data-testid="staleness-dot" data-staleness-tier={tier} className="pointer-events-none absolute inset-0">
         <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-warning shadow-[0_0_0_3px_oklch(var(--b1))]" />
         <span className="absolute -top-2 -right-2 h-4 w-4 animate-ping rounded-full border border-warning/80" />
       </span>
     );
 
-  if (tier === "3-medium" || tier === "4-high") {
-    const showLabel = tier === "4-high";
+  if (tier === "3-medium" || tier === "4-high")
     return (
       <span
+        aria-hidden="true"
         data-testid="staleness-dot"
         data-staleness-tier={tier}
         className={cn("pointer-events-none absolute -top-2 -right-3 z-10 flex h-6 min-w-6 items-center justify-center rounded-full px-1.5 text-[10px] leading-none font-bold text-white shadow-lg shadow-error/30", {
@@ -33,14 +33,11 @@ function renderStalenessDecoration(tier: Exclude<StalenessTier, "1-ok">, unexpor
         })}
       >
         {unexportedChanges}
-        <span className="sr-only">un-exported changes</span>
-        <span className="sr-only">{showLabel ? "high export reminder" : "medium export reminder"}</span>
       </span>
     );
-  }
 
   return (
-    <span data-testid="staleness-dot" data-staleness-tier={tier} className="pointer-events-none absolute top-3 -left-2 animate-bounce">
+    <span aria-hidden="true" data-testid="staleness-dot" data-staleness-tier={tier} className="pointer-events-none absolute top-3 -left-2 animate-bounce">
       <span className="absolute inset-1 rounded-xl bg-error/15 blur-md" />
       <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-error shadow-[0_0_18px_var(--color-error)]" />
       <span className="absolute -top-3 -right-3 h-7 w-7 animate-ping rounded-full border-2 border-error/50" />

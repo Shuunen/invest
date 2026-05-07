@@ -91,7 +91,7 @@ export const useAppStore = create<AppStore>()(
       set(state => ({
         data: {
           ...state.data,
-          settings: { ...state.data.settings, editCount },
+          settings: { ...state.data.settings, editCount: Math.max(0, Math.round(editCount)) },
         },
       })),
     setLastExportedAt: lastExportedAt =>

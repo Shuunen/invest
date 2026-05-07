@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added in 0.6.1
 
 - Staleness tier system for export/import buttons — tracks data freshness with visual feedback (fresh, warning, stale)
-- Edit count management for portfolios — stores and displays how many times a portfolio has been edited
+- Edit count tracking — global counter of un-exported changes across assets and portfolios; resets on export
 - Enhanced about page with detailed export button staleness tier information and visual indicators
 - New `import-export-utils.ts` — shared utilities for export button state determination
 
