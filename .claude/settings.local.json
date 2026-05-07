@@ -7,6 +7,7 @@
       "Bash(node -e *)",
       "Bash(npx *)",
       "Bash(pnpm *)",
+      "Bash(pnpx *)",
       "Bash(ps *)",
       "Bash(python3 -c ' *)",
       "Bash(sed *)",
