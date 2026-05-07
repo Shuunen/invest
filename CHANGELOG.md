@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.1] - 2026-05-07
+
+### Added in 0.6.1
+
+- Staleness tier system for export/import buttons — tracks data freshness with visual feedback (fresh, warning, stale)
+- Edit count management for portfolios — stores and displays how many times a portfolio has been edited
+- Enhanced about page with detailed export button staleness tier information and visual indicators
+- New `import-export-utils.ts` — shared utilities for export button state determination
+
+### Changed in 0.6.1
+
+- Export button now displays staleness tier (fresh/warning/stale) instead of just a timestamp
+- Import/export button styling refined with tier-aware visual states
+- Portfolio store now tracks edit counts for improved UX feedback
+
 ## [0.6.0] - 2026-05-06
 
 ### Added in 0.6.0
