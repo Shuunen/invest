@@ -55,12 +55,30 @@ describe("useAppStore - settings mutations", () => {
     expect(useAppStore.getState().data.settings.columnOrder).toStrictEqual(["score", "name", "fees"]);
   });
 
+  it("setEditCount updates settings.editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    useAppStore.getState().setEditCount(15);
+    expect(useAppStore.getState().data.settings.editCount).toBe(15);
+  });
+
   it("setLastExportedAt updates settings.lastExportedAt", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const ts = "2026-04-23T12:00:00.000Z";
     useAppStore.getState().setLastExportedAt(ts);
     expect(useAppStore.getState().data.settings.lastExportedAt).toBe(ts);
+  });
+
+  it("setLastExportedAt resets editCount to 0", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: { ...defaultAppData, settings: { ...defaultAppData.settings, editCount: 7 } },
+      isLoading: false,
+      loadError: undefined,
+    });
+    useAppStore.getState().setLastExportedAt(new Date().toISOString());
+    expect(useAppStore.getState().data.settings.editCount).toBe(0);
   });
 
   it("subscribeWithSelector fires subscriber on mutation", () => {
@@ -238,6 +256,14 @@ describe("useAppStore - portfolio mutations", () => {
     expect(useAppStore.getState().data.portfolios[0]?.name).toBe("My Portfolio");
   });
 
+  it("addPortfolio increments editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().addPortfolio(basePortfolio);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
+  });
+
   it("addPortfolio ignores the call when MAX_PORTFOLIOS is reached", () => {
     expect.hasAssertions();
     const maxPortfolios = Array.from({ length: 50 }, (_unused, index) => ({
@@ -260,6 +286,18 @@ describe("useAppStore - portfolio mutations", () => {
     expect(useAppStore.getState().data.portfolios).toHaveLength(0);
   });
 
+  it("deletePortfolio increments editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: { ...defaultAppData, portfolios: [basePortfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().deletePortfolio(basePortfolio.id);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
+  });
+
   it("updatePortfolio patches name and broker", () => {
     expect.hasAssertions();
     useAppStore.setState({
@@ -273,6 +311,18 @@ describe("useAppStore - portfolio mutations", () => {
     expect(updated?.broker).toBe("New Broker");
   });
 
+  it("updatePortfolio increments editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: { ...defaultAppData, portfolios: [basePortfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().updatePortfolio(basePortfolio.id, { name: "Updated" });
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
+  });
+
   it("setPortfolioAssets replaces entries for the given portfolio", () => {
     expect.hasAssertions();
     const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
@@ -284,6 +334,19 @@ describe("useAppStore - portfolio mutations", () => {
     useAppStore.getState().setPortfolioAssets(basePortfolio.id, [entry]);
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(1);
     expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.isin).toBe("LU1234567890");
+  });
+
+  it("setPortfolioAssets increments editCount", () => {
+    expect.hasAssertions();
+    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    useAppStore.setState({
+      data: { ...defaultAppData, portfolios: [basePortfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().setPortfolioAssets(basePortfolio.id, [entry]);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
   });
 
   it("setPortfolioAssets stamps amountUpdatedAt on new entries and preserves it on existing ones", () => {
@@ -338,6 +401,20 @@ describe("useAppStore - portfolio mutations", () => {
     });
     useAppStore.getState().updatePortfolioEntryAmount(portfolio.id, "LU1234567890", 42);
     expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.amount).toBe(42);
+  });
+
+  it("updatePortfolioEntryAmount increments editCount", () => {
+    expect.hasAssertions();
+    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    const portfolio = { ...basePortfolio, entries: [entry] };
+    useAppStore.setState({
+      data: { ...defaultAppData, portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().updatePortfolioEntryAmount(portfolio.id, "LU1234567890", 42);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
   });
 
   it("updatePortfolioEntryAmount does not affect other entries or portfolios", () => {
