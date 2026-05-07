@@ -70,7 +70,7 @@ export default defineConfig({
     coverage: {
       exclude: ["src/bin/**/*", "src/pwa.ts", "src/*.tsx"],
       include: ["src/**/*.{ts,tsx}"],
-      reporter: [["text", { maxCols: 120 }], "lcov"],
+      reporter: ["lcov"],
       thresholds: {
         100: true,
       },
@@ -79,7 +79,7 @@ export default defineConfig({
     exclude: ["e2e/**", "node_modules/**"],
     globals: true,
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
-    reporters: ["dot"],
+    reporters: ["minimal"],
     restoreMocks: true,
     setupFiles: ["./src/test/setup.ts"],
     silent: true,
