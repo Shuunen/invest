@@ -5,6 +5,7 @@ import type { Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { jsonStringify } from "../utils/json.ts";
 import { ImportExportButtons } from "./import-export-buttons.tsx";
+import { getStalenessTier } from "./import-export-utils.ts";
 
 vi.mock(import("../utils/json.ts"), async () => {
   const actual = await import("../utils/json.ts");
@@ -92,6 +93,47 @@ describe("ImportExportButtons", () => {
     expect(useAppStore.getState().data.settings.lastExportedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
+  it("export button title includes the number of un-exported changes", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: {
+        ...defaultAppData,
+        assets: [makeAsset()],
+        settings: { ...defaultAppData.settings, editCount: 12 },
+      },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<ImportExportButtons />);
+    expect(screen.getByTestId("export-button")).toHaveAttribute("title", "Export data (12 un-exported changes)");
+  });
+
+  it("export button title stays simple when there are no un-exported changes", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [makeAsset()] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<ImportExportButtons />);
+    expect(screen.getByTestId("export-button")).toHaveAttribute("title", "Export data");
+  });
+
+  it("export button title uses singular wording for one un-exported change", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: {
+        ...defaultAppData,
+        assets: [makeAsset()],
+        settings: { ...defaultAppData.settings, editCount: 1 },
+      },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<ImportExportButtons />);
+    expect(screen.getByTestId("export-button")).toHaveAttribute("title", "Export data (1 un-exported change)");
+  });
+
   it("clicking Import triggers the hidden file input click", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
@@ -142,5 +184,134 @@ describe("ImportExportButtons", () => {
     fireEvent.click(screen.getByTestId("export-button"));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/export failed/i));
     vi.restoreAllMocks();
+  });
+});
+
+describe("getStalenessTier", () => {
+  it("returns 1-ok for 0 unexported edits", () => {
+    expect.hasAssertions();
+    expect(getStalenessTier(0)).toBe("1-ok");
+  });
+
+  it("returns 1-ok for 4 unexported edits (below low threshold)", () => {
+    expect.hasAssertions();
+    expect(getStalenessTier(4)).toBe("1-ok");
+  });
+
+  it("returns 2-low for exactly 5 unexported edits", () => {
+    expect.hasAssertions();
+    expect(getStalenessTier(5)).toBe("2-low");
+  });
+
+  it("returns 2-low for 9 unexported edits (below medium threshold)", () => {
+    expect.hasAssertions();
+    expect(getStalenessTier(9)).toBe("2-low");
+  });
+
+  it("returns 3-medium for exactly 10 unexported edits", () => {
+    expect.hasAssertions();
+    expect(getStalenessTier(10)).toBe("3-medium");
+  });
+
+  it("returns 3-medium for 14 unexported edits (below high threshold)", () => {
+    expect.hasAssertions();
+    expect(getStalenessTier(14)).toBe("3-medium");
+  });
+
+  it("returns 4-high for exactly 15 unexported edits", () => {
+    expect.hasAssertions();
+    expect(getStalenessTier(15)).toBe("4-high");
+  });
+
+  it("returns 4-high for 19 unexported edits (below critical threshold)", () => {
+    expect.hasAssertions();
+    expect(getStalenessTier(19)).toBe("4-high");
+  });
+
+  it("returns 5-critical for exactly 20 unexported edits", () => {
+    expect.hasAssertions();
+    expect(getStalenessTier(20)).toBe("5-critical");
+  });
+
+  it("returns 5-critical for values beyond 20", () => {
+    expect.hasAssertions();
+    expect(getStalenessTier(100)).toBe("5-critical");
+  });
+});
+
+describe("ImportExportButtons staleness dot", () => {
+  function renderWithEdits(editCount: number) {
+    useAppStore.setState({
+      data: {
+        ...defaultAppData,
+        assets: [makeAsset()],
+        settings: { ...defaultAppData.settings, editCount },
+      },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<ImportExportButtons />);
+  }
+
+  it("shows no staleness dot when unexported edits < 5 (tier 0)", () => {
+    expect.hasAssertions();
+    renderWithEdits(4);
+    expect(screen.queryByTestId("staleness-dot")).toBeNull();
+  });
+
+  it("shows tier 1 dot for 5 unexported edits", () => {
+    expect.hasAssertions();
+    renderWithEdits(5);
+    const dot = screen.getByTestId("staleness-dot");
+    expect(dot).toBeInTheDocument();
+    expect(dot).toHaveAttribute("data-staleness-tier", "2-low");
+    expect(screen.getByTestId("export-button")).not.toHaveTextContent("Export");
+  });
+
+  it("shows tier 2 dot for 10 unexported edits", () => {
+    expect.hasAssertions();
+    renderWithEdits(10);
+    const dot = screen.getByTestId("staleness-dot");
+    expect(dot).toBeInTheDocument();
+    expect(dot).toHaveAttribute("data-staleness-tier", "3-medium");
+    expect(dot).toHaveTextContent("10");
+    expect(screen.getByTestId("export-button")).not.toHaveTextContent("Export");
+  });
+
+  it("shows tier 3 dot for 15 unexported edits", () => {
+    expect.hasAssertions();
+    renderWithEdits(15);
+    const dot = screen.getByTestId("staleness-dot");
+    expect(dot).toBeInTheDocument();
+    expect(dot).toHaveAttribute("data-staleness-tier", "4-high");
+    expect(dot).toHaveTextContent("15");
+    expect(screen.getByTestId("export-button")).toHaveTextContent("Export");
+  });
+
+  it("shows tier 4 dot for 20 unexported edits", () => {
+    expect.hasAssertions();
+    renderWithEdits(20);
+    const dot = screen.getByTestId("staleness-dot");
+    expect(dot).toBeInTheDocument();
+    expect(dot).toHaveAttribute("data-staleness-tier", "5-critical");
+    expect(screen.getByTestId("export-button")).toHaveTextContent("Export");
+    expect(dot).not.toHaveTextContent("20");
+  });
+
+  it("uses editCount directly as the number of un-exported changes", () => {
+    expect.hasAssertions();
+    renderWithEdits(5);
+    expect(screen.getByTestId("staleness-dot")).toHaveAttribute("data-staleness-tier", "2-low");
+  });
+
+  it("export resets staleness dot to tier 0", () => {
+    expect.hasAssertions();
+    renderWithEdits(20);
+    expect(screen.getByTestId("staleness-dot")).toHaveAttribute("data-staleness-tier", "5-critical");
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock");
+    vi.spyOn(URL, "revokeObjectURL");
+    fireEvent.click(screen.getByTestId("export-button"));
+    expect(screen.queryByTestId("staleness-dot")).toBeNull();
+    expect(useAppStore.getState().data.settings.editCount).toBe(0);
   });
 });

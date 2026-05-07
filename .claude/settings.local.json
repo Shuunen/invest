@@ -8,12 +8,13 @@
       "Bash(npx *)",
       "Bash(pnpm *)",
       "Bash(ps *)",
+      "Bash(python3 -c ' *)",
       "Bash(sed *)",
       "Bash(xargs -r ps -p)",
       "Skill(investigate)",
       "Skill(qa)",
-      "WebFetch(domain:github.com)",
-      "Bash(python3 -c ' *)"
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

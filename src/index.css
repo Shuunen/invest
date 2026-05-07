@@ -12,7 +12,7 @@
   --color-base-content: var(--color-gray-900);
   --color-success: var(--color-green-600);
   --color-info: var(--color-primary);
-  --color-warning: var(--color-yellow-500);
+  --color-warning: var(--color-orange-600);
 }
 
 .btn-primary:hover {

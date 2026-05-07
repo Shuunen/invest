@@ -5,6 +5,10 @@ import { MAX_ISINS, MAX_PORTFOLIOS, SettingsSchema, type AppData, type Asset, ty
 
 const defaultSettings: Settings = SettingsSchema.parse({});
 
+function incrementEditCount(settings: Settings): Settings {
+  return { ...settings, editCount: settings.editCount + 1 };
+}
+
 function patchPortfolioEntryAmount(portfolios: Portfolio[], { amount, isin, portfolioId }: { amount: number; isin: string; portfolioId: string }): Portfolio[] {
   const now = new Date().toISOString();
   return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, amount, amountUpdatedAt: now } : entry)) } : portfolio));
@@ -26,6 +30,7 @@ type AppStore = {
   loadError: Error | undefined;
   setColumnOrder: (order: string[]) => void;
   setColumnVisibility: (cv: Record<string, boolean>) => void;
+  setEditCount: (count: number) => void;
   setLastExportedAt: (date: string) => void;
   setLoadError: (error: Error) => void;
   setPortfolioAssets: (portfolioId: string, entries: PortfolioEntry[]) => void;
@@ -47,19 +52,29 @@ export const useAppStore = create<AppStore>()(
           data: {
             ...state.data,
             assets: [...state.data.assets, { ...asset, updatedAt: new Date().toISOString() }],
-            settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
+            settings: incrementEditCount(state.data.settings),
           },
         };
       }),
     addPortfolio: portfolio =>
       set(state => {
         if (state.data.portfolios.length >= MAX_PORTFOLIOS) return state;
-        return { data: { ...state.data, portfolios: [...state.data.portfolios, portfolio] } };
+        return {
+          data: {
+            ...state.data,
+            portfolios: [...state.data.portfolios, portfolio],
+            settings: incrementEditCount(state.data.settings),
+          },
+        };
       }),
     data: defaultAppData,
     deletePortfolio: id =>
       set(state => ({
-        data: { ...state.data, portfolios: state.data.portfolios.filter(portfolio => portfolio.id !== id) },
+        data: {
+          ...state.data,
+          portfolios: state.data.portfolios.filter(portfolio => portfolio.id !== id),
+          settings: incrementEditCount(state.data.settings),
+        },
       })),
     isLoading: true,
     loadData: data => set({ data, isLoading: false, loadError: undefined }),
@@ -72,9 +87,19 @@ export const useAppStore = create<AppStore>()(
       set(state => ({
         data: { ...state.data, settings: { ...state.data.settings, columnVisibility } },
       })),
+    setEditCount: editCount =>
+      set(state => ({
+        data: {
+          ...state.data,
+          settings: { ...state.data.settings, editCount: Math.max(0, Math.round(editCount)) },
+        },
+      })),
     setLastExportedAt: lastExportedAt =>
       set(state => ({
-        data: { ...state.data, settings: { ...state.data.settings, lastExportedAt } },
+        data: {
+          ...state.data,
+          settings: { ...state.data.settings, editCount: 0, lastExportedAt },
+        },
       })),
     setLoadError: loadError => set({ isLoading: false, loadError }),
     setPortfolioAssets: (portfolioId, entries) =>
@@ -84,6 +109,7 @@ export const useAppStore = create<AppStore>()(
           data: {
             ...state.data,
             portfolios: state.data.portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: entries.map(entry => (entry.amountUpdatedAt ? entry : { ...entry, amountUpdatedAt: now })) } : portfolio)),
+            settings: incrementEditCount(state.data.settings),
           },
         };
       }),
@@ -107,7 +133,7 @@ export const useAppStore = create<AppStore>()(
             ...state.data,
             assets: state.data.assets.map(data => (data.isin === isin ? { ...asset, updatedAt: new Date().toISOString() } : data)),
             portfolios,
-            settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
+            settings: incrementEditCount(state.data.settings),
           },
         };
       }),
@@ -119,7 +145,7 @@ export const useAppStore = create<AppStore>()(
           data: {
             ...state.data,
             assets: state.data.assets.map(data => (data.isin === isin ? { ...asset, price, updatedAt: new Date().toISOString() } : data)),
-            settings: { ...state.data.settings, editCount: state.data.settings.editCount + 1 },
+            settings: incrementEditCount(state.data.settings),
           },
         };
       }),
@@ -128,11 +154,16 @@ export const useAppStore = create<AppStore>()(
         data: {
           ...state.data,
           portfolios: state.data.portfolios.map(portfolio => (portfolio.id === id ? { ...portfolio, ...patch } : portfolio)),
+          settings: incrementEditCount(state.data.settings),
         },
       })),
     updatePortfolioEntryAmount: (portfolioId, isin, amount) =>
       set(state => ({
-        data: { ...state.data, portfolios: patchPortfolioEntryAmount(state.data.portfolios, { amount, isin, portfolioId }) },
+        data: {
+          ...state.data,
+          portfolios: patchPortfolioEntryAmount(state.data.portfolios, { amount, isin, portfolioId }),
+          settings: incrementEditCount(state.data.settings),
+        },
       })),
   })),
 );
