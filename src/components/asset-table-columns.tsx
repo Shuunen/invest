@@ -1,10 +1,10 @@
 // oxlint-disable max-lines
-import { Link } from "@tanstack/react-router";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
 import { computeDataScore, computeScore, DATA_SCORE_PERCENT, DATA_SCORE_WARN_THRESHOLD, type Asset } from "../schemas/index.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
+import { Link000 } from "./animated-links.tsx";
 import { SCORE_MISSING_VALUE } from "./asset-table-utils.ts";
 
 declare module "@tanstack/react-table" {
@@ -150,7 +150,11 @@ export const columns: ColumnDef<Asset>[] = [
   },
   {
     accessorKey: "tickers",
-    cell: ({ getValue, row }) => <span data-testid={`tickers-${row.original.isin.toLowerCase()}`}>{getValue<string[]>().join(", ")}</span>,
+    cell: ({ getValue, row }) => (
+      <span className="text-xs whitespace-nowrap" data-testid={`tickers-${row.original.isin.toLowerCase()}`}>
+        {getValue<string[]>().join(", ")}
+      </span>
+    ),
     header: "Tickers",
     sortingFn: (rowA, rowB) => {
       const tickersA = rowA.original.tickers.join(", ");
@@ -164,18 +168,16 @@ export const columns: ColumnDef<Asset>[] = [
       const meta = table.options.meta as AssetTableMeta | undefined;
       const name = getValue<string>();
       const { isin } = row.original;
-      const inner = (
-        <span className={cn("block max-w-xs truncate", { "link link-primary link-hover": !meta?.onToggleSelect })} data-testid={`name-${isin.toLowerCase()}`} title={name}>
-          {name}
-        </span>
-      );
-      if (meta?.onToggleSelect) return inner;
+      if (meta?.onToggleSelect)
+        return (
+          <span className="block max-w-xs truncate" data-testid={`name-${isin.toLowerCase()}`} title={name}>
+            {name}
+          </span>
+        );
       return (
-        <div className="flex w-fit">
-          <Link to="/assets/$isin" params={{ isin }}>
-            {inner}
-          </Link>
-        </div>
+        <Link000 data-testid={`name-${isin.toLowerCase()}`} to={`/assets/${isin}`}>
+          {name}
+        </Link000>
       );
     },
     header: "Name",
