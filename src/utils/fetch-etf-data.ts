@@ -71,21 +71,21 @@ export function cleanProviderName(provider: string | undefined): string | undefi
   if (provider === undefined) return undefined;
   let cleaned = provider;
   for (const word of PROVIDER_WORDS_TO_STRIP) cleaned = cleaned.replaceAll(word, "");
-  cleaned = cleaned.replaceAll(/\s+/g, " ").trim();
+  cleaned = cleaned.replaceAll(/\s+/gu, " ").trim();
   return cleaned || undefined;
 }
 
 export function cleanAssetName(name: string | undefined, provider: string | undefined): string | undefined {
   if (name === undefined) return undefined;
   if (provider === undefined) return name;
-  const [firstWord] = provider.split(/\s+/);
+  const [firstWord] = provider.split(/\s+/u);
   if (!firstWord) return name;
-  const cleaned = name.replaceAll(provider.trim(), "").replaceAll(firstWord, "").replaceAll(/\s+/g, " ").trim();
+  const cleaned = name.replaceAll(provider.trim(), "").replaceAll(firstWord, "").replaceAll(/\s+/gu, " ").trim();
   return cleaned || undefined;
 }
 
 function getTestIdText(doc: Document, testId: string): string | undefined {
-  const text = doc.querySelector(`[data-testid="${testId}"]`)?.textContent?.replaceAll(/\s+/g, " ").trim();
+  const text = doc.querySelector(`[data-testid="${testId}"]`)?.textContent?.replaceAll(/\s+/gu, " ").trim();
   return text !== "" && text !== undefined ? text : undefined;
 }
 
@@ -123,7 +123,7 @@ function parsePercentValue(raw: string | undefined): string | undefined {
 }
 
 export function parseSectorsFromAjaxXml(xml: string): Partial<Record<Sector, number>> {
-  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(.*?)\]\]>/gs)];
+  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(.*?)\]\]>/gsu)];
   for (const match of cdataMatches) {
     const [, html] = match;
     if (!html.includes('data-testid="etf-holdings_sectors_table"')) continue;
@@ -134,7 +134,7 @@ export function parseSectorsFromAjaxXml(xml: string): Partial<Record<Sector, num
 }
 
 export function parseCountriesFromAjaxXml(xml: string): Partial<Record<Country, number>> {
-  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(.*?)\]\]>/gs)];
+  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(.*?)\]\]>/gsu)];
   for (const match of cdataMatches) {
     const [, html] = match;
     if (!html.includes('data-testid="etf-holdings_countries_table"')) continue;
@@ -171,7 +171,7 @@ export function parseEtfHtml(html: string): EtfPrefillData {
 // The page-specific Wicket paths are embedded in JS snippets and change every session —
 // extract them from the HTML rather than relying on hardcoded page IDs.
 function resolveWicketPath(text: string, keyword: string, fallback: string): string {
-  const pattern = new RegExp(`"u":"(\\/en\\/etf-profile\\.html\\?[^"]*${keyword}[^"]*)"`);
+  const pattern = new RegExp(`"u":"(\\/en\\/etf-profile\\.html\\?[^"]*${keyword}[^"]*)"`, "u");
   return pattern.exec(text)?.[1] ?? fallback;
 }
 

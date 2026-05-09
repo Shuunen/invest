@@ -169,7 +169,7 @@ test("clicking an asset name navigates to the asset view page", async ({ page })
   const [firstAsset] = PORTFOLIO_ASSETS;
   await page.goto(`/portfolios/${PORTFOLIO_ID}`);
   await page.getByTestId(`name-${firstAsset.isin.toLowerCase()}`).click();
-  await expect(page).toHaveURL(new RegExp(`/assets/${firstAsset.isin}`));
+  await expect(page).toHaveURL(new RegExp(`/assets/${firstAsset.isin}`, "u"));
   await expect(page.getByTestId("asset-name")).toHaveText(firstAsset.name);
 });
 

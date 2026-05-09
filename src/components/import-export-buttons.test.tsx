@@ -90,7 +90,7 @@ describe("ImportExportButtons", () => {
     render(<ImportExportButtons />);
     fireEvent.click(screen.getByTestId("export-button"));
     expect(createObjectURLSpy).toHaveBeenCalledWith(expect.any(Blob));
-    expect(useAppStore.getState().data.settings.lastExportedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(useAppStore.getState().data.settings.lastExportedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/u);
   });
 
   it("export button title includes the number of un-exported changes", () => {
@@ -169,7 +169,7 @@ describe("ImportExportButtons", () => {
     const file = new File(["not valid json {{"], "bad.json", { type: "application/json" });
     await userEvent.upload(fileInput, file);
     await waitFor(() => {
-      expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/invalid json/i));
+      expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/invalid json/iu));
     });
     vi.restoreAllMocks();
   });
@@ -182,7 +182,7 @@ describe("ImportExportButtons", () => {
     vi.mocked(jsonStringify).mockReturnValueOnce(undefined);
     render(<ImportExportButtons />);
     fireEvent.click(screen.getByTestId("export-button"));
-    expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/export failed/i));
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/export failed/iu));
     vi.restoreAllMocks();
   });
 });

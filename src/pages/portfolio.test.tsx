@@ -78,7 +78,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByTestId("page-subtitle")).toHaveTextContent(/broker : interactive brokers/i);
+    expect(screen.getByTestId("page-subtitle")).toHaveTextContent(/broker : interactive brokers/iu);
   });
 
   it("shows 0 assets count in header", () => {

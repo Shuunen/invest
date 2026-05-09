@@ -7,9 +7,9 @@ const MAX_ABBREVIATION_LENGTH = 2;
 
 function formatAllocationKey(key: string): string {
   const words = key
-    .replaceAll(/([A-Z])/g, " $1")
+    .replaceAll(/([A-Z])/gu, " $1")
     .trim()
-    .split(/\s+/);
+    .split(/\s+/u);
   return words.map(word => (word.length <= MAX_ABBREVIATION_LENGTH ? word.toUpperCase() : word.charAt(0).toUpperCase() + word.slice(1))).join(" ");
 }
 

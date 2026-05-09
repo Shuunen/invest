@@ -6,6 +6,14 @@
   "dynamicallyLoaded": ["src/test/setup.ts"],
   "ignoreDependencies": ["bun"],
   "ignorePatterns": ["**/*.d.ts"],
+  "overrides": [
+    {
+      "files": ["**/*.test.{ts,tsx}"],
+      "rules": {
+        "unresolved-imports": "off"
+      }
+    }
+  ],
   "rules": {
     "boundary-violation": "error",
     "circular-dependencies": "error",

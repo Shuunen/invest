@@ -14,7 +14,7 @@ export default defineConfig({
           groups: [
             {
               name: "react",
-              test: /react/,
+              test: /react/u,
             },
           ],
         },
@@ -60,7 +60,7 @@ export default defineConfig({
         runtimeCaching: [
           {
             handler: "NetworkFirst",
-            urlPattern: /^https:\/\//,
+            urlPattern: /^https:\/\//u,
           },
         ],
       },
