@@ -5,8 +5,7 @@ import { PortfolioPage } from "./portfolio.tsx";
 
 const mockLink = vi.hoisted(
   () =>
-    ({ children }: { children: React.ReactNode }): React.ReactElement =>
-      children as React.ReactElement,
+    ({ children, to: _to, ...rest }: { children: React.ReactNode; to?: string }): React.ReactElement => <span {...(rest as React.HTMLAttributes<HTMLSpanElement>)}>{children}</span>,
 );
 
 vi.mock(import("@tanstack/react-router"), async () => {
@@ -79,7 +78,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByTestId("page-subtitle")).toHaveTextContent(/broker : interactive brokers/i);
+    expect(screen.getByTestId("page-subtitle")).toHaveTextContent(/broker : interactive brokers/iu);
   });
 
   it("shows 0 assets count in header", () => {

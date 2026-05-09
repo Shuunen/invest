@@ -1,4 +1,5 @@
 .gstack/
+.turbo/
 coverage
 dist
 node_modules

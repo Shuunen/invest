@@ -37,7 +37,7 @@ function buildUpstreamHeaders(req: http.IncomingMessage, upstreamPath: string): 
   const headers: Record<string, string | string[] | undefined> = Object.fromEntries(Object.entries(req.headers).filter(([name]) => !STRIP_HEADERS.has(name.toLowerCase())));
   headers.host = TARGET_HOST;
   const wicketBaseUrl = req.headers["wicket-ajax-baseurl"];
-  headers.referer = wicketBaseUrl ? `https://${TARGET_HOST}/${String(wicketBaseUrl).replace(/^\//, "")}` : `https://${TARGET_HOST}${upstreamPath}`;
+  headers.referer = wicketBaseUrl ? `https://${TARGET_HOST}/${String(wicketBaseUrl).replace(/^\//u, "")}` : `https://${TARGET_HOST}${upstreamPath}`;
   const storedCookies = buildCookieHeader();
   if (storedCookies) headers.cookie = storedCookies;
   return headers;
@@ -103,6 +103,7 @@ try {
   // no process was using the port
 }
 
+// oxlint-disable-next-line vitest/require-hook
 server.listen(PORT, "127.0.0.1", () => {
   console.log(`Proxy Active — http://localhost:${PORT}${PATH_PREFIX} → https://${TARGET_HOST}`);
 });

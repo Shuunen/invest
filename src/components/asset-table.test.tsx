@@ -157,8 +157,8 @@ describe("AssetTable - loading and error states", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: new Error("DB failed") });
     render(<AssetTable />);
     expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(screen.getByText(/DB failed/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /retry/i })).toBeInTheDocument();
+    expect(screen.getByText(/DB failed/u)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /retry/iu })).toBeInTheDocument();
   });
 
   it("retry button clears the error state", () => {
@@ -166,7 +166,7 @@ describe("AssetTable - loading and error states", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: new Error("DB failed") });
     render(<AssetTable />);
     expect(screen.getByRole("alert")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /retry/i }));
+    fireEvent.click(screen.getByRole("button", { name: /retry/iu }));
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });
@@ -176,7 +176,7 @@ describe("AssetTable - data display", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    expect(screen.getByText(/no instruments added yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/no instruments added yet/iu)).toBeInTheDocument();
   });
 
   it("renders all ISIN rows", () => {
@@ -277,7 +277,7 @@ describe("AssetTable - sorting", () => {
     const assets = [makeAsset({ isin: "LU1234567890", name: "Zebra ETF" }), makeAsset({ isin: "FR0000000001", name: "Apple ETF" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    fireEvent.click(screen.getByRole("button", { name: /name/i }));
+    fireEvent.click(screen.getByRole("button", { name: /name/iu }));
     await waitFor(() => {
       expect(useAppStore.getState().data.settings.sort.column).toBe("name");
     });
@@ -289,7 +289,7 @@ describe("AssetTable - sorting", () => {
     const assets = [makeAsset({ isin: "LU1234567890" }), makeAsset({ isin: "FR0000000001" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const nameBtn = screen.getByRole("button", { name: /name/i });
+    const nameBtn = screen.getByRole("button", { name: /name/iu });
     fireEvent.click(nameBtn);
     await waitFor(() => {
       expect(useAppStore.getState().data.settings.sort.column).toBe("name");
@@ -369,7 +369,7 @@ describe("AssetTable - filter", () => {
     const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "ProviderA", tickers: ["ALP"] }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "ProviderB", tickers: ["BET"] })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const input = screen.getByPlaceholderText(/search/i);
+    const input = screen.getByPlaceholderText(/search/iu);
     fireEvent.change(input, { target: { value: "Alpha" } });
     await waitFor(() => {
       expect(screen.getByText("Alpha ETF")).toBeInTheDocument();
@@ -382,7 +382,7 @@ describe("AssetTable - filter", () => {
     const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF" }), makeAsset({ isin: "FR0000000001", name: "Beta ETF" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const input = screen.getByPlaceholderText(/search/i);
+    const input = screen.getByPlaceholderText(/search/iu);
     fireEvent.change(input, { target: { value: "LU1234" } });
     await waitFor(() => {
       expect(screen.queryByText("Beta ETF")).not.toBeInTheDocument();
@@ -394,7 +394,7 @@ describe("AssetTable - filter", () => {
     const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi" }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", provider: "Lyxor" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const input = screen.getByPlaceholderText(/search/i);
+    const input = screen.getByPlaceholderText(/search/iu);
     fireEvent.change(input, { target: { value: "Amundi" } });
     await waitFor(() => {
       expect(screen.queryByText("Beta ETF")).not.toBeInTheDocument();
@@ -406,7 +406,7 @@ describe("AssetTable - filter", () => {
     const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", tickers: ["IWDA"] }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", tickers: ["VWRL"] })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const input = screen.getByPlaceholderText(/search/i);
+    const input = screen.getByPlaceholderText(/search/iu);
     fireEvent.change(input, { target: { value: "IWDA" } });
     await waitFor(() => {
       expect(screen.queryByText("Beta ETF")).not.toBeInTheDocument();
@@ -474,7 +474,7 @@ describe("AssetTable - tickers column", () => {
       loadError: undefined,
     });
     render(<AssetTable />);
-    fireEvent.click(screen.getByRole("button", { name: /tickers/i }));
+    fireEvent.click(screen.getByRole("button", { name: /tickers/iu }));
     await waitFor(() => {
       expect(useAppStore.getState().data.settings.sort.column).toBe("tickers");
     });
@@ -509,7 +509,7 @@ describe("AssetTable - sort clearing", () => {
     const assets = [makeAsset({ isin: "LU1234567890" }), makeAsset({ isin: "FR0000000001" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const nameBtn = screen.getByRole("button", { name: /name/i });
+    const nameBtn = screen.getByRole("button", { name: /name/iu });
     fireEvent.click(nameBtn); // asc
     await waitFor(() => expect(useAppStore.getState().data.settings.sort.column).toBe("name"));
     fireEvent.click(nameBtn); // desc
@@ -616,7 +616,7 @@ describe("AssetTable - value column", () => {
   it("sorts by value column with undefined price uses 0 fallback", () => {
     expect.hasAssertions();
     render(<AssetTable assets={VALUE_SORT_ASSETS_NO_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
-    const valueHeader = screen.getByRole("button", { name: /value/i });
+    const valueHeader = screen.getByRole("button", { name: /value/iu });
     fireEvent.click(valueHeader);
     expect(screen.getByText("0 €")).toBeInTheDocument();
   });
@@ -625,7 +625,7 @@ describe("AssetTable - value column", () => {
     expect.hasAssertions();
     const emptyAmountMap = new Map<string, number>();
     render(<AssetTable assets={VALUE_SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={emptyAmountMap} />);
-    const valueHeader = screen.getByRole("button", { name: /value/i });
+    const valueHeader = screen.getByRole("button", { name: /value/iu });
     fireEvent.click(valueHeader);
     expect(screen.getAllByText("0 €").length).toBeGreaterThan(0);
   });
@@ -637,7 +637,7 @@ describe("AssetTable - value column", () => {
       [SORT_ASSET_2.isin, 5],
     ]);
     render(<AssetTable assets={VALUE_SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
-    const valueHeader = screen.getByRole("button", { name: /value/i });
+    const valueHeader = screen.getByRole("button", { name: /value/iu });
     fireEvent.click(valueHeader);
     expect(screen.getByText("200 €")).toBeInTheDocument();
     expect(screen.getByText("150 €")).toBeInTheDocument();
@@ -650,7 +650,7 @@ describe("AssetTable - amount column", () => {
     useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
     render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
-    const input = screen.getByRole("spinbutton", { name: /amount for test etf/i });
+    const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
     expect(input).toHaveValue(0);
   });
 
@@ -659,7 +659,7 @@ describe("AssetTable - amount column", () => {
     useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
     render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
-    const input = screen.getByRole("spinbutton", { name: /amount for test etf/i });
+    const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
     fireEvent.change(input, { target: { value: "7" } });
     fireEvent.blur(input);
     expect(onAmountChange).toHaveBeenCalledWith(AMOUNT_ASSET.isin, 7);
@@ -671,7 +671,7 @@ describe("AssetTable - amount column", () => {
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
     const amountMap = new Map([[AMOUNT_ASSET.isin, 3]]);
     render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} amountMap={amountMap} />);
-    const input = screen.getByRole("spinbutton", { name: /amount for test etf/i });
+    const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
     fireEvent.blur(input);
     expect(onAmountChange).not.toHaveBeenCalled();
   });
@@ -681,7 +681,7 @@ describe("AssetTable - amount column", () => {
     useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
     render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
-    const input = screen.getByRole("spinbutton", { name: /amount for test etf/i });
+    const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
     fireEvent.change(input, { target: { value: "" } });
     fireEvent.blur(input);
     expect(onAmountChange).not.toHaveBeenCalled();
@@ -694,7 +694,7 @@ describe("AssetTable - amount column", () => {
       [SORT_ASSET_2.isin, 2],
     ]);
     render(<AssetTable assets={SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
-    const amountHeader = screen.getByRole("button", { name: /amount/i });
+    const amountHeader = screen.getByRole("button", { name: /amount/iu });
     fireEvent.click(amountHeader);
     const inputs = screen.getAllByRole("spinbutton");
     expect(inputs[0]).toHaveValue(2);
@@ -704,7 +704,7 @@ describe("AssetTable - amount column", () => {
   it("sorts by amount column using accessorFn without amountMap", () => {
     expect.hasAssertions();
     render(<AssetTable assets={SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
-    const amountHeader = screen.getByRole("button", { name: /amount/i });
+    const amountHeader = screen.getByRole("button", { name: /amount/iu });
     fireEvent.click(amountHeader);
     const inputs = screen.getAllByRole("spinbutton");
     expect(inputs[0]).toHaveValue(0);

@@ -39,7 +39,7 @@ describe("AssetSchema rejections", () => {
     invariant(result.error, "Expected validation to fail");
     const [firstIssue] = result.error.issues;
     invariant(firstIssue, "Expected at least one issue");
-    expect(firstIssue.message).toMatch(/unknown country/i);
+    expect(firstIssue.message).toMatch(/unknown country/iu);
   });
 
   it("rejects sectorAllocation with unknown sector key", () => {
@@ -49,7 +49,7 @@ describe("AssetSchema rejections", () => {
     invariant(result.error, "Expected validation to fail");
     const [firstIssue] = result.error.issues;
     invariant(firstIssue, "Expected at least one issue");
-    expect(firstIssue.message).toMatch(/unknown sector/i);
+    expect(firstIssue.message).toMatch(/unknown sector/iu);
   });
 });
 
@@ -221,7 +221,7 @@ describe("safeImportJson error message format", () => {
     const { error } = result as { error: string };
     // Should contain at least two lines (newline-separated)
     expect(error.split("\n").length).toBeGreaterThanOrEqual(2);
-    expect(error).toMatch(/Schema error at/);
+    expect(error).toMatch(/Schema error at/u);
   });
 });
 

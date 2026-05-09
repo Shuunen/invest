@@ -17,14 +17,14 @@ describe("AppDataSchema", () => {
     expect.hasAssertions();
     const result = safeImportJson("not json");
     expect(result).toHaveProperty("error");
-    expect((result as { error: string }).error).toMatch(/Invalid JSON/);
+    expect((result as { error: string }).error).toMatch(/Invalid JSON/u);
   });
 
   it("rejects empty string", () => {
     expect.hasAssertions();
     const result = safeImportJson("");
     expect(result).toHaveProperty("error");
-    expect((result as { error: string }).error).toMatch(/Invalid JSON/);
+    expect((result as { error: string }).error).toMatch(/Invalid JSON/u);
   });
 
   it("rejects portfolio entry referencing unknown ISIN", () => {
@@ -47,7 +47,7 @@ describe("AppDataSchema", () => {
     invariant(result.error, "Expected validation to fail");
     const [firstIssue] = result.error.issues;
     invariant(firstIssue, "Expected at least one issue");
-    expect(firstIssue.message).toMatch(/unknown ISIN/);
+    expect(firstIssue.message).toMatch(/unknown ISIN/u);
   });
 });
 
@@ -57,7 +57,7 @@ describe("safeImportJson", () => {
     // theme must be "light" or "dark" — passing an invalid enum value triggers Zod failure
     const result = safeImportJson(JSON.stringify({ assets: [], portfolios: [], settings: { theme: "invalid" } }));
     expect(result).toHaveProperty("error");
-    expect((result as { error: string }).error).toMatch(/Schema error at/);
+    expect((result as { error: string }).error).toMatch(/Schema error at/u);
   });
 });
 
@@ -74,7 +74,7 @@ describe("parseAppData", () => {
   it("throws for invalid input", () => {
     expect.hasAssertions();
     // theme must be "light" or "dark" — passing an invalid enum value triggers a Zod throw
-    expect(() => parseAppData({ assets: [], portfolios: [], settings: { theme: "invalid" } })).toThrow(/invalid_value/);
+    expect(() => parseAppData({ assets: [], portfolios: [], settings: { theme: "invalid" } })).toThrow(/invalid_value/u);
   });
 });
 

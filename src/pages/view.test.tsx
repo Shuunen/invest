@@ -203,6 +203,6 @@ describe("AssetViewPage - not found", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    expect(screen.getByTestId("geo-allocation-text")).toHaveTextContent(/US.*EU/);
+    expect(screen.getByTestId("geo-allocation-text")).toHaveTextContent(/US.*EU/u);
   });
 });

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "globalDependencies": ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"],
+  "tasks": {
+    "build:tsc": {
+      "inputs": ["src/**", "tsconfig*.json"]
+    },
+    "build:vite": {
+      "dependsOn": ["build:tsc"],
+      "inputs": ["src/**", "index.html", "public/**", "tsconfig*.json", "vite.config.ts"],
+      "outputs": ["dist/**"]
+    },
+    "lint:types": {
+      "inputs": ["src/**/*.{ts,tsx}", "tsconfig*.json"]
+    },
+    "lint:format": {
+      "inputs": ["src/**", "e2e/**", ".github/**", ".oxfmtrc.jsonc", "*.{ts,js,json,md,yaml,yml}"]
+    },
+    "lint:fallow": {
+      "inputs": ["src/**", ".fallow-baselines/**", ".fallowrc.json"]
+    },
+    "lint:issues": {
+      "inputs": ["src/**/*.{ts,tsx}", "e2e/**/*.ts", ".oxlintrc.json", "tsconfig*.json"]
+    },
+    "test:unit": {
+      "inputs": ["src/**/*.{ts,tsx}", "vite.config.ts"],
+      "outputs": ["coverage/**"]
+    },
+    "test:e2e": {
+      "inputs": ["e2e/**", "playwright.config.ts", "src/**"],
+      "outputs": ["playwright-report/**", "test-results/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:proxy": {
+      "cache": false,
+      "persistent": true
+    },
+    "start:vite": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

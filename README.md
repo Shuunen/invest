@@ -8,12 +8,12 @@ Portfolio Tracker PWA — offline-first, local-persistence investment portfolio 
 - **TanStack Router** — type-safe routing
 - **Zustand** — runtime state
 - **Dexie.js** — IndexedDB persistence
-- **Recharts** — allocation charts
 - **Zod** — schema validation + import safety
 - **TailwindCSS + DaisyUI** — styling
 - **Vitest** — unit/integration tests
 - **Playwright** — E2E tests (including offline/PWA)
 - **vite-plugin-pwa** — PWA support
+- **Turborepo** — task caching and parallel build orchestration
 
 ## Dev
 
