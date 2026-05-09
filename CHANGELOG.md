@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.6.2] - 2026-05-09
+
+### Added in 0.6.2
+
+- Turborepo build caching — all lint, build, and test tasks are now cached by content hash; repeat runs skip unchanged work entirely
+- Custom Playwright summary reporter — E2E runs print a compact pass/skip/fail summary instead of verbose output
+- Animated link component (`Link000`) — asset names in the table now show a sliding underline animation on hover
+
+### Changed in 0.6.2
+
+- Dependency bumps: React 19.2.6, TanStack Router 1.169.2, Zod 4.4.3, Zustand 5.0.13, Tailwind 4.3.0, Vite 8.0.11, Vitest 4.1.5, TypeScript 6.0.3, and many others
+- CI no longer pins a specific pnpm version — the `packageManager` field in `package.json` drives selection
+- Turbo task graph: `build:vite` now runs after `build:tsc` to prevent caching stale artifacts during parallel type errors
+- `lint:fallow` inputs now include `.fallowrc.json` so lint-rule changes properly invalidate cache
+- Coverage reporter simplified to `lcov` only (used by CI); human-readable text output removed from local runs
+
 ## [0.6.1] - 2026-05-07
 
 ### Added in 0.6.1
