@@ -14,7 +14,7 @@
       "inputs": ["src/**/*.{ts,tsx}", "tsconfig*.json"]
     },
     "lint:format": {
-      "inputs": ["src/**", "e2e/**", "*.{ts,js,json,md,yaml,yml}"]
+      "inputs": ["src/**", "e2e/**", ".github/**", ".oxfmtrc.jsonc", "*.{ts,js,json,md,yaml,yml}"]
     },
     "lint:fallow": {
       "inputs": ["src/**", ".fallow-baselines/**", ".fallowrc.json"]
