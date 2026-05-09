@@ -175,7 +175,7 @@ export const columns: ColumnDef<Asset>[] = [
           </span>
         );
       return (
-        <Link000 data-testid={`name-${isin.toLowerCase()}`} to={`/assets/${isin}`}>
+        <Link000 data-testid={`name-${isin.toLowerCase()}`} params={{ isin }} to="/assets/$isin">
           {name}
         </Link000>
       );
