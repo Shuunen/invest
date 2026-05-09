@@ -1,6 +1,6 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
-  "globalDependencies": ["package.json", "pnpm-lock.yaml"],
+  "globalDependencies": ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"],
   "tasks": {
     "build:tsc": {
       "inputs": ["src/**", "tsconfig*.json"]
