@@ -6,6 +6,7 @@
       "inputs": ["src/**", "tsconfig*.json"]
     },
     "build:vite": {
+      "dependsOn": ["build:tsc"],
       "inputs": ["src/**", "index.html", "public/**", "tsconfig*.json", "vite.config.ts"],
       "outputs": ["dist/**"]
     },
@@ -16,7 +17,7 @@
       "inputs": ["src/**", "e2e/**", "*.{ts,js,json,md,yaml,yml}"]
     },
     "lint:fallow": {
-      "inputs": ["src/**", ".fallow-baselines/**"]
+      "inputs": ["src/**", ".fallow-baselines/**", ".fallowrc.json"]
     },
     "lint:issues": {
       "inputs": ["src/**/*.{ts,tsx}", "e2e/**/*.ts", ".oxlintrc.json", "tsconfig*.json"]
