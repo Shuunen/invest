@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Asset } from "../schemas/index.ts";
+import { AllocationPreviewChart } from "./allocation-preview-chart.tsx";
 import { AssetTable } from "./asset-table.tsx";
 import { ModalActions } from "./modal-actions.tsx";
 import { ModalHeader } from "./modal-header.tsx";
@@ -36,6 +37,27 @@ function useAssetPicker(initialSelected: Set<string>, onConfirm: (selectedIsins:
 
 type RenderListArgs = { assets: Asset[]; selected: Set<string>; toggle: (isin: string) => void };
 
+function averageAllocation(maps: Array<Partial<Record<string, number>>>): Partial<Record<string, number>> {
+  if (maps.length === 0) return {};
+  const totals = new Map<string, number>();
+
+  for (const allocationMap of maps)
+    for (const [key, value] of Object.entries(allocationMap)) {
+      if (value === undefined) continue;
+      totals.set(key, (totals.get(key) ?? 0) + value);
+    }
+
+  return Object.fromEntries(Array.from(totals.entries()).map(([key, value]) => [key, value / maps.length]));
+}
+
+function buildProjectedAllocations(assets: Asset[], selectedIsins: Set<string>) {
+  const selectedAssets = assets.filter(asset => selectedIsins.has(asset.isin));
+  return {
+    geo: averageAllocation(selectedAssets.map(asset => asset.geoAllocation)),
+    sector: averageAllocation(selectedAssets.map(asset => asset.sectorAllocation)),
+  };
+}
+
 function renderPickerList({ assets, selected, toggle }: RenderListArgs) {
   if (assets.length === 0)
     return (
@@ -48,10 +70,20 @@ function renderPickerList({ assets, selected, toggle }: RenderListArgs) {
 
 export function AssetPickerModal({ assets, initialSelected, onCancel, onConfirm, title }: Props) {
   const { handleConfirm, selected, toggle } = useAssetPicker(initialSelected, onConfirm);
+  const beforeAllocations = useMemo(() => buildProjectedAllocations(assets, initialSelected), [assets, initialSelected]);
+  const afterAllocations = useMemo(() => buildProjectedAllocations(assets, selected), [assets, selected]);
+
   return (
     <dialog className="modal-open modal" aria-modal="true">
-      <div className="modal-box max-w-none bg-base-200">
+      <div className="modal-box w-11/12 max-w-none bg-base-200">
         <ModalHeader title={title} onClose={onCancel} />
+        <div className="mb-3 flex justify-between pb-2" data-testid="allocation-preview-row">
+          <AllocationPreviewChart data={beforeAllocations.geo} title="Current geography" name="before-geo-allocation" />
+          <AllocationPreviewChart data={afterAllocations.geo} title="Selected geography" name="after-geo-allocation" />
+          <div className="w-32 bg-transparent" />
+          <AllocationPreviewChart data={beforeAllocations.sector} title="Current sectors" name="before-sector-allocation" />
+          <AllocationPreviewChart data={afterAllocations.sector} title="Selected sectors" name="after-sector-allocation" />
+        </div>
         <div className="max-h-144 overflow-y-auto rounded-box border border-base-200">{renderPickerList({ assets, selected, toggle })}</div>
         <p data-testid="selected-count" className="mt-2 text-sm text-base-content/60">
           {selected.size} selected
