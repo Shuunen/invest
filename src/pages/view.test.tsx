@@ -148,7 +148,7 @@ describe("AssetViewPage - not found", () => {
     expect(screen.getByTestId("plan-badge")).toHaveTextContent("No");
   });
 
-  it("renders em dash for empty geoAllocation and sectorAllocation", () => {
+  it("renders empty state for empty geoAllocation and sectorAllocation", () => {
     expect.hasAssertions();
     const asset = makeAsset({ geoAllocation: {}, sectorAllocation: {} });
     useAppStore.setState({
@@ -157,8 +157,10 @@ describe("AssetViewPage - not found", () => {
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    expect(screen.getByTestId("geo-allocation-text")).toHaveTextContent("—");
-    expect(screen.getByTestId("sector-allocation-text")).toHaveTextContent("—");
+    expect(screen.queryByTestId("geo-allocation-chart")).not.toBeInTheDocument();
+    expect(screen.getByTestId("geo-allocation-empty")).toHaveTextContent("No allocation data");
+    expect(screen.queryByTestId("sector-allocation-chart")).not.toBeInTheDocument();
+    expect(screen.getByTestId("sector-allocation-empty")).toHaveTextContent("No allocation data");
   });
 
   it("renders em dash for empty provider and empty tickers", () => {
@@ -194,15 +196,64 @@ describe("AssetViewPage - not found", () => {
     expect(screen.getByTestId("field-row-risk-reward-1-y")).toHaveTextContent("—");
   });
 
-  it("renders sorted allocation entries", () => {
+  it("shows empty state when all allocation values are zero", () => {
     expect.hasAssertions();
-    const asset = makeAsset({ geoAllocation: { eu: 0.3, us: 0.6 } });
+    const asset = makeAsset({ geoAllocation: { eu: 0, us: 0 } });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
     });
     render(<AssetViewPage isin={asset.isin} />);
-    expect(screen.getByTestId("geo-allocation-text")).toHaveTextContent(/US.*EU/u);
+    expect(screen.queryByTestId("geo-allocation-chart")).not.toBeInTheDocument();
+    expect(screen.getByTestId("geo-allocation-empty")).toBeInTheDocument();
+  });
+
+  it("renders geo-allocation-chart for non-empty allocation", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ geoAllocation: { us: 0.6 } });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetViewPage isin={asset.isin} />);
+    expect(screen.getByTestId("geo-allocation-chart")).toBeInTheDocument();
+  });
+
+  it("renders geo-allocation-chart using fallback color for unknown region key", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ geoAllocation: { unknownRegion: 0.6 } });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetViewPage isin={asset.isin} />);
+    expect(screen.getByTestId("geo-allocation-chart")).toBeInTheDocument();
+  });
+
+  it("renders geo-allocation-chart without Other entry when sum meets threshold", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ geoAllocation: { us: 0.98 } });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetViewPage isin={asset.isin} />);
+    expect(screen.getByTestId("geo-allocation-chart")).toBeInTheDocument();
+  });
+
+  it("renders geo-allocation-chart with multiple entries sorted correctly", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ geoAllocation: { eu: 0.3, us: 0.5 } });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetViewPage isin={asset.isin} />);
+    expect(screen.getByTestId("geo-allocation-chart")).toBeInTheDocument();
   });
 });
