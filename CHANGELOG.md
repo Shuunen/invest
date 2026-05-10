@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2026-05-10
+
+### Added in 0.7.0
+
+- Allocation pie charts — geo and sector breakdowns now show interactive pie charts on the view and portfolio pages, with hover tooltips and a dashed ring on the hovered slice
+- Balance score — each allocation chart shows how evenly distributed the holdings are (0–100%, where 100% = perfectly balanced)
+- Stock price fetching — the proxy can now scrape live prices from logical-invest.com via FlareSolverr for assets not covered by JustETF
+- ETF price fetching — JustETF proxy extended to fetch the latest quoted price alongside existing ETF data
+- Data score metric on portfolio page — shows average completeness of asset data (price, allocations, performance) across all portfolio holdings
+- Before/after allocation preview in the asset picker — opening the portfolio asset selector now shows current vs. projected geo and sector charts side by side so you can see the impact of your selection before confirming
+
+### Changed in 0.7.0
+
+- Removed 5-year performance from the data score calculation — only fields available on most assets are counted
+- Entries with zero amount are treated as absent for data scoring purposes
+- All module-level constants converted to camelCase throughout the codebase
+
+### Fixed in 0.7.0
+
+- Allocation "Other" slice can no longer have a negative value when allocations sum exceeds 100%
+- Before-state allocation chart in asset picker modal now freezes at open time instead of recomputing when the parent passes a new Set reference
+
 ## [0.6.2] - 2026-05-09
 
 ### Added in 0.6.2
