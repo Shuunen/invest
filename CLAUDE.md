@@ -147,6 +147,32 @@ data-testid={`metric-${kebabCase(label)}-value`}
 <input data-testid="name-input" />
 ```
 
+### Avoid redundant `toBeInTheDocument()` assertions
+
+Never use `toBeInTheDocument()` alone after `getByTestId()`, `getByRole()`, or similar queries — these queries throw if the element doesn't exist, making the assertion redundant.
+
+Instead:
+
+- Use `toHaveTextContent()` to verify both presence AND content
+- Use `toHaveClass()` to verify both presence AND styling
+- Use `toHaveAttribute()` to verify both presence AND attribute values
+- Use `.not.toBeInTheDocument()` with `queryByTestId()` / `queryByRole()` to verify absence (this is NOT redundant)
+
+```ts
+// bad — getByTestId throws if missing, toBeInTheDocument is redundant
+expect(screen.getByTestId("save-button")).toBeInTheDocument();
+
+// bad — checking same element twice, first is redundant
+expect(screen.getByTestId("value-cell")).toBeInTheDocument();
+expect(screen.getByTestId("value-cell")).toHaveTextContent("€100");
+
+// good — presence verified by toHaveTextContent + content verified
+expect(screen.getByTestId("value-cell")).toHaveTextContent("€100");
+
+// good — verifies absence with queryByTestId (NOT redundant)
+expect(screen.queryByTestId("error-banner")).not.toBeInTheDocument();
+```
+
 ### Use `cn` for dynamic classNames, never ternaries
 
 Import `cn` from `../../utils/browser-styles.ts` (adjust relative path as needed). Pass conditional classes as bare strings with a boolean guard — never build class strings with ternary operators or template literals.
