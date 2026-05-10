@@ -3,9 +3,9 @@ import { maxPercentage } from "../utils/constants";
 
 // --- Geography ---
 
-const CountryEuropeSchema = z.enum(["uk", "switzerland", "france", "germany", "netherlands", "norway", "sweden", "austria", "finland", "italy", "poland", "spain", "belgium", "ireland", "denmark"]);
+const CountryEuropeSchema = z.enum(["uk", "switzerland", "france", "germany", "netherlands", "norway", "sweden", "austria", "finland", "italy", "poland", "spain", "belgium", "ireland", "denmark", "luxembourg"]);
 
-const CountryAsiaSchema = z.enum(["china", "japan", "taiwan", "hongKong", "southKorea", "malaysia", "indonesia", "thailand"]);
+const CountryAsiaSchema = z.enum(["china", "japan", "taiwan", "hongKong", "southKorea", "malaysia", "indonesia", "thailand", "israel"]);
 
 const CountrySchema = z.enum(["us", "canada", "brazil", "europe", ...CountryEuropeSchema.options, "asia", ...CountryAsiaSchema.options, "india", "saudiArabia", "australia", "africa"]);
 
