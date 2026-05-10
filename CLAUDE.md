@@ -40,6 +40,11 @@ Run `pnpm check` to verify the full pipeline: types, formatting, lint, build, an
 
 ## Code practices
 
+### Constants must be camelCase
+
+Use camelCase for all constants, including module-level and exported constants.
+Do not use UPPER_SNAKE_CASE for constants in this codebase.
+
 ### Prefer `undefined` over `null`
 
 Never use `null` in application types. Use `undefined` for absent values.

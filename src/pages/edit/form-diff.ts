@@ -1,8 +1,8 @@
 import { startCase } from "es-toolkit";
-import { COUNTRIES, SECTORS } from "../../schemas/index.ts";
+import { countries, sectors } from "../../schemas/index.ts";
 import type { FormState } from "./form-state.ts";
 
-const EMPTY_VALUE = "-";
+const emptyValue = "-";
 
 type ComparableValue = boolean | string;
 
@@ -17,7 +17,7 @@ export type DiffRow = {
   field: string;
 };
 
-const SCALAR_FIELDS: DiffConfig[] = [
+const scalarFields: DiffConfig[] = [
   { field: "ISIN", getValue: form => form.isin },
   { field: "Name", getValue: form => form.name },
   { field: "Provider", getValue: form => form.provider },
@@ -37,7 +37,7 @@ const SCALAR_FIELDS: DiffConfig[] = [
 
 function formatValue(value: ComparableValue): string {
   if (typeof value === "boolean") return value ? "Yes" : "No";
-  return value.trim() === "" ? EMPTY_VALUE : value;
+  return value.trim() === "" ? emptyValue : value;
 }
 
 function makeDiffRow({ after, before, field }: { after: ComparableValue; before: ComparableValue; field: string }): DiffRow[] {
@@ -55,9 +55,9 @@ function buildAllocationDiffRows({ current, initial, keys, prefix }: { current: 
 }
 
 export function buildDiffRows(initialForm: FormState, currentForm: FormState): DiffRow[] {
-  const scalarRows = SCALAR_FIELDS.flatMap(config => makeDiffRow({ after: config.getValue(currentForm), before: config.getValue(initialForm), field: config.field }));
-  const geoRows = buildAllocationDiffRows({ current: currentForm.geoAllocation, initial: initialForm.geoAllocation, keys: COUNTRIES, prefix: "Geo" });
-  const sectorRows = buildAllocationDiffRows({ current: currentForm.sectorAllocation, initial: initialForm.sectorAllocation, keys: SECTORS, prefix: "Sector" });
+  const scalarRows = scalarFields.flatMap(config => makeDiffRow({ after: config.getValue(currentForm), before: config.getValue(initialForm), field: config.field }));
+  const geoRows = buildAllocationDiffRows({ current: currentForm.geoAllocation, initial: initialForm.geoAllocation, keys: countries, prefix: "Geo" });
+  const sectorRows = buildAllocationDiffRows({ current: currentForm.sectorAllocation, initial: initialForm.sectorAllocation, keys: sectors, prefix: "Sector" });
 
   return [...scalarRows, ...geoRows, ...sectorRows];
 }

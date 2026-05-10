@@ -22,7 +22,7 @@ describe("parseZodErrors", () => {
   });
 });
 
-const BASE_ISIN = "LU1234567890";
+const baseIsin = "LU1234567890";
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
@@ -31,7 +31,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
     fees: 0.2,
     geoAllocation: {},
     isAccumulating: true,
-    isin: BASE_ISIN,
+    isin: baseIsin,
     name: "Test ETF",
     performance1y: 10,
     performance3y: 30,
@@ -54,7 +54,7 @@ function makeFormState(overrides: Partial<FormState> = {}): FormState {
     fees: "0.20",
     geoAllocation: {},
     isAccumulating: true,
-    isin: BASE_ISIN,
+    isin: baseIsin,
     name: "Test ETF",
     performance1y: "10",
     performance3y: "30",
@@ -159,7 +159,7 @@ describe("buildAssetFromForm - success", () => {
     const result = buildAssetFromForm(makeFormState());
     invariant("data" in result, "Expected success result");
     expect(result.data.name).toBe("Test ETF");
-    expect(result.data.isin).toBe(BASE_ISIN);
+    expect(result.data.isin).toBe(baseIsin);
   });
 
   it("parses tickers from comma-separated string", () => {

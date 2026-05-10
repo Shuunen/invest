@@ -38,26 +38,26 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
   };
 }
 
-const NO_ASSETS: Asset[] = [];
-const BASE_ASSET = makeAsset();
-const SINGLE_ASSET_LIST = [BASE_ASSET];
-const ASSET_A = makeAsset({ isin: "LU1234567890", name: "Global ETF" });
-const ASSET_B = makeAsset({ isin: "LU0987654321", name: "Bond Fund" });
-const FILTERED_LIST = [ASSET_A, ASSET_B];
-const ASSET_WITH_ALLOCATION = makeAsset({ geoAllocation: { us: 1 }, sectorAllocation: { technology: 1 } });
-const ASSET_WITH_ALLOCATION_LIST = [ASSET_WITH_ALLOCATION];
-const ASSET_WITH_ALLOCATION_SELECTED = new Set([ASSET_WITH_ALLOCATION.isin]);
-const ASSET_WITH_UNDEFINED_ALLOCATION = makeAsset({
+const noAssets: Asset[] = [];
+const baseAsset = makeAsset();
+const singleAssetList = [baseAsset];
+const assetA = makeAsset({ isin: "LU1234567890", name: "Global ETF" });
+const assetB = makeAsset({ isin: "LU0987654321", name: "Bond Fund" });
+const filteredList = [assetA, assetB];
+const assetWithAllocation = makeAsset({ geoAllocation: { us: 1 }, sectorAllocation: { technology: 1 } });
+const assetWithAllocationList = [assetWithAllocation];
+const assetWithAllocationSelected = new Set([assetWithAllocation.isin]);
+const assetWithUndefinedAllocation = makeAsset({
   geoAllocation: { us: undefined as unknown as number },
   sectorAllocation: { technology: undefined as unknown as number },
 });
-const ASSET_WITH_UNDEFINED_ALLOCATION_LIST = [ASSET_WITH_UNDEFINED_ALLOCATION];
-const ASSET_WITH_UNDEFINED_ALLOCATION_SELECTED = new Set([ASSET_WITH_UNDEFINED_ALLOCATION.isin]);
+const assetWithUndefinedAllocationList = [assetWithUndefinedAllocation];
+const assetWithUndefinedAllocationSelected = new Set([assetWithUndefinedAllocation.isin]);
 
 describe("AssetPickerModal - no assets", () => {
   it("shows empty message when assets list is empty", () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={noAssets} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     expect(screen.getByTestId("no-assets-message")).toBeInTheDocument();
   });
 });
@@ -65,7 +65,7 @@ describe("AssetPickerModal - no assets", () => {
 describe("AssetPickerModal - with assets", () => {
   it("renders four allocation preview charts in a single row", () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={ASSET_WITH_ALLOCATION_LIST} initialSelected={ASSET_WITH_ALLOCATION_SELECTED} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={assetWithAllocationList} initialSelected={assetWithAllocationSelected} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
 
     expect(screen.getByTestId("allocation-preview-row")).toBeInTheDocument();
     expect(screen.getByTestId("before-geo-allocation-chart")).toBeInTheDocument();
@@ -76,7 +76,7 @@ describe("AssetPickerModal - with assets", () => {
 
   it("keeps before charts and updates after charts when selections change", async () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={ASSET_WITH_ALLOCATION_LIST} initialSelected={ASSET_WITH_ALLOCATION_SELECTED} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={assetWithAllocationList} initialSelected={assetWithAllocationSelected} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
 
     expect(screen.getByTestId("before-geo-allocation-chart")).toBeInTheDocument();
     expect(screen.getByTestId("after-geo-allocation-chart")).toBeInTheDocument();
@@ -94,7 +94,7 @@ describe("AssetPickerModal - with assets", () => {
 
   it("ignores undefined allocation values when building projected charts", () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={ASSET_WITH_UNDEFINED_ALLOCATION_LIST} initialSelected={ASSET_WITH_UNDEFINED_ALLOCATION_SELECTED} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={assetWithUndefinedAllocationList} initialSelected={assetWithUndefinedAllocationSelected} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
 
     expect(screen.getByTestId("before-geo-allocation-empty")).toBeInTheDocument();
     expect(screen.getByTestId("after-geo-allocation-empty")).toBeInTheDocument();
@@ -102,26 +102,26 @@ describe("AssetPickerModal - with assets", () => {
 
   it("renders asset rows", () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={singleAssetList} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     expect(screen.getByTestId("name-lu1234567890")).toBeInTheDocument();
     expect(screen.getByTestId("isin-lu1234567890")).toBeInTheDocument();
   });
 
   it("pre-checks initially selected assets", () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={singleAssetList} initialSelected={new Set([baseAsset.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     expect(screen.getByTestId("select-lu1234567890")).toBeChecked();
   });
 
   it("shows selected count", () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={singleAssetList} initialSelected={new Set([baseAsset.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     expect(screen.getByTestId("selected-count")).toBeInTheDocument();
   });
 
   it("toggles selection when row is clicked", async () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={singleAssetList} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     const checkbox = screen.getByTestId("select-lu1234567890");
     expect(checkbox).not.toBeChecked();
     fireEvent.click(screen.getByTestId("asset-row-LU1234567890"));
@@ -132,7 +132,7 @@ describe("AssetPickerModal - with assets", () => {
 
   it("toggles selection when checkbox is clicked directly", () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={singleAssetList} initialSelected={new Set([baseAsset.isin])} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     const checkbox = screen.getByTestId("select-lu1234567890");
     expect(checkbox).toBeChecked();
     // click to uncheck (exercises the delete branch)
@@ -145,7 +145,7 @@ describe("AssetPickerModal - with assets", () => {
 
   it("filters assets by name", async () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={FILTERED_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={filteredList} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     await userEvent.type(screen.getByTestId("input-filter"), "global");
     expect(screen.getByTestId("name-lu1234567890")).toBeInTheDocument();
     expect(screen.queryByTestId("name-lu0987654321")).not.toBeInTheDocument();
@@ -153,7 +153,7 @@ describe("AssetPickerModal - with assets", () => {
 
   it("shows no match message when filter matches nothing", async () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={singleAssetList} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     await userEvent.type(screen.getByTestId("input-filter"), "zzznomatch");
     expect(screen.getByTestId("no-results-message")).toBeInTheDocument();
   });
@@ -161,7 +161,7 @@ describe("AssetPickerModal - with assets", () => {
   it("calls onCancel when Cancel button is clicked", async () => {
     expect.hasAssertions();
     const onCancel = vi.fn<() => void>();
-    render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={noAssets} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     await userEvent.click(screen.getByTestId("form-cancel-button"));
     expect(onCancel).toHaveBeenCalledOnce();
   });
@@ -169,7 +169,7 @@ describe("AssetPickerModal - with assets", () => {
   it("calls onCancel when X button is clicked", async () => {
     expect.hasAssertions();
     const onCancel = vi.fn<() => void>();
-    render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(<AssetPickerModal assets={noAssets} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     await userEvent.click(screen.getByTestId("modal-close-button"));
     expect(onCancel).toHaveBeenCalledOnce();
   });
@@ -177,7 +177,7 @@ describe("AssetPickerModal - with assets", () => {
   it("calls onCancel when backdrop is clicked", async () => {
     expect.hasAssertions();
     const onCancel = vi.fn<() => void>();
-    const { container } = render(<AssetPickerModal assets={NO_ASSETS} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    const { container } = render(<AssetPickerModal assets={noAssets} initialSelected={new Set<string>()} onCancel={onCancel} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     const backdrop = container.querySelector(".modal-backdrop");
     invariant(backdrop, "Expected backdrop element to exist");
     await userEvent.click(backdrop);
@@ -187,8 +187,8 @@ describe("AssetPickerModal - with assets", () => {
   it("calls onConfirm with selected isins when Confirm is clicked", async () => {
     expect.hasAssertions();
     const onConfirm = vi.fn<(isins: string[]) => void>();
-    render(<AssetPickerModal assets={SINGLE_ASSET_LIST} initialSelected={new Set([BASE_ASSET.isin])} onCancel={vi.fn<() => void>()} onConfirm={onConfirm} title="Select assets" />);
+    render(<AssetPickerModal assets={singleAssetList} initialSelected={new Set([baseAsset.isin])} onCancel={vi.fn<() => void>()} onConfirm={onConfirm} title="Select assets" />);
     await userEvent.click(screen.getByTestId("form-confirm-button"));
-    expect(onConfirm).toHaveBeenCalledWith([BASE_ASSET.isin]);
+    expect(onConfirm).toHaveBeenCalledWith([baseAsset.isin]);
   });
 });

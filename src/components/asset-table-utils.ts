@@ -2,9 +2,9 @@ import type { Row } from "@tanstack/react-table";
 import { computeScore, type Asset } from "../schemas/index.ts";
 
 const minRowsForFormatting = 3;
-const QUINTILE_HIGH_THRESHOLD = 0.8;
-const QUINTILE_LOW_THRESHOLD = 0.2;
-export const SCORE_MISSING_VALUE = -100;
+const quintileHighThreshold = 0.8;
+const quintileLowThreshold = 0.2;
+export const scoreMissingValue = -100;
 
 export function getAriaSortValue(sorted: "asc" | "desc" | false): "ascending" | "descending" | "none" {
   if (sorted === "asc") return "ascending";
@@ -18,7 +18,7 @@ export function getScoreDotClass(qClass: string | undefined): string {
   return "bg-warning";
 }
 
-export const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
+export const defaultColumnVisibility: Record<string, boolean> = {
   availableForPlan: false,
   availableOnBroker: false,
   isAccumulating: false,
@@ -28,7 +28,7 @@ export const DEFAULT_COLUMN_VISIBILITY: Record<string, boolean> = {
   updatedAt: false,
 };
 
-const NUMERIC_COL_IDS = ["fees", "performance1y", "performance3y", "performance5y", "riskReward1y", "riskReward3y", "riskReward5y", "score"];
+const numericColIds = ["fees", "performance1y", "performance3y", "performance5y", "riskReward1y", "riskReward3y", "riskReward5y", "score"];
 
 export function quintileClass(value: number | undefined, allValues: (number | undefined)[]): string | undefined {
   if (value === undefined) return undefined;
@@ -36,8 +36,8 @@ export function quintileClass(value: number | undefined, allValues: (number | un
   if (defined.length < minRowsForFormatting) return undefined;
   const below = defined.filter(num => num < value).length;
   const pct = below / defined.length;
-  if (pct >= QUINTILE_HIGH_THRESHOLD) return "bg-success/20 text-success-content";
-  if (pct < QUINTILE_LOW_THRESHOLD) return "bg-error/20 text-error-content";
+  if (pct >= quintileHighThreshold) return "bg-success/20 text-success-content";
+  if (pct < quintileLowThreshold) return "bg-error/20 text-error-content";
   return undefined;
 }
 
@@ -47,8 +47,8 @@ function quintileClassFromSorted(value: number | undefined, sortedDefined: numbe
   if (sortedDefined.length < minRowsForFormatting) return undefined;
   const below = sortedDefined.filter(val => val < value).length;
   const pct = below / sortedDefined.length;
-  if (pct >= QUINTILE_HIGH_THRESHOLD) return "bg-success/20 text-success-content";
-  if (pct < QUINTILE_LOW_THRESHOLD) return "bg-error/20 text-error-content";
+  if (pct >= quintileHighThreshold) return "bg-success/20 text-success-content";
+  if (pct < quintileLowThreshold) return "bg-error/20 text-error-content";
   return undefined;
 }
 
@@ -56,7 +56,7 @@ export function computeQuintileClasses(rows: Row<Asset>[]): Map<string, Map<stri
   // Pre-compute scores once per row to avoid redundant calls in the score column
   const scoreCache = new Map(rows.map(row => [row.id, computeScore(row.original)]));
   return new Map(
-    NUMERIC_COL_IDS.map(colId => {
+    numericColIds.map(colId => {
       const allValues = rows.map((row): number | undefined => (colId === "score" ? scoreCache.get(row.id) : (row.original[colId as keyof Asset] as number | undefined)));
       // Pre-filter undefined values once per column so quintileClassFromSorted can skip that work per-row
       const definedValues = allValues.filter((val): val is number => val !== undefined);

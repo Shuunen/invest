@@ -1,5 +1,5 @@
 import { version as APP_VERSION } from "../../package.json";
-import { STALENESS_TIER_PRESETS } from "../components/import-export-utils.ts";
+import { stalenessTierPresets } from "../components/import-export-utils.ts";
 import { InvestIcon } from "../components/invest-icon.tsx";
 import { useAppStore } from "../store/use-app-store.ts";
 import { formatDate } from "../utils/format-numbers.ts";
@@ -21,7 +21,7 @@ function renderExportStatusSection({ editCount, lastExportedAt, setEditCount }: 
       <div className="mt-4">
         <h3 className="mb-2 text-sm font-semibold text-base-content/70">Test reminder tiers</h3>
         <div className="flex flex-wrap gap-2">
-          {STALENESS_TIER_PRESETS.map(({ editCount: presetEditCount, label, tier }) => (
+          {stalenessTierPresets.map(({ editCount: presetEditCount, label, tier }) => (
             <button key={tier} type="button" data-testid={`set-edit-count-${tier}`} className="btn btn-soft btn-xs btn-primary" onClick={() => setEditCount(presetEditCount)}>
               {label}
             </button>

@@ -1,11 +1,11 @@
 // oxlint-disable max-lines
 import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
-import { computeDataScore, computeScore, DATA_SCORE_PERCENT, DATA_SCORE_WARN_THRESHOLD, type Asset } from "../schemas/index.ts";
+import { computeDataScore, computeScore, dataScorePercent, dataScoreWarnThreshold, type Asset } from "../schemas/index.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
 import { Link000 } from "./animated-links.tsx";
-import { SCORE_MISSING_VALUE } from "./asset-table-utils.ts";
+import { scoreMissingValue } from "./asset-table-utils.ts";
 
 declare module "@tanstack/react-table" {
   // oxlint-disable-next-line typescript-eslint/consistent-type-definitions
@@ -130,7 +130,7 @@ export function makePriceEditColumn(): ColumnDef<Asset> {
 
 export const columns: ColumnDef<Asset>[] = [
   {
-    accessorFn: row => computeScore(row) ?? SCORE_MISSING_VALUE,
+    accessorFn: row => computeScore(row) ?? scoreMissingValue,
     cell: ({ getValue }) => formatNumber(getValue<number>()),
     header: "Score",
     id: "score",
@@ -264,8 +264,8 @@ export function makeDataScoreColumn(amountUpdatedAtMap?: Map<string, string>): C
     cell: ({ getValue, row }) => {
       const score = getValue<number>();
       let dotClass = "bg-error";
-      if (score === DATA_SCORE_PERCENT) dotClass = "bg-success";
-      else if (score >= DATA_SCORE_WARN_THRESHOLD) dotClass = "bg-warning";
+      if (score === dataScorePercent) dotClass = "bg-success";
+      else if (score >= dataScoreWarnThreshold) dotClass = "bg-warning";
       return (
         <span className="flex items-center gap-1.5" data-testid={`data-score-${row.original.isin.toLowerCase()}`}>
           <span className={cn("inline-block h-2 w-2 shrink-0 rounded-full", dotClass)} />

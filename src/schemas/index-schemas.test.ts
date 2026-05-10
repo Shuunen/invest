@@ -1,5 +1,5 @@
 import { invariant } from "es-toolkit";
-import { AppDataSchema, AssetSchema, MAX_ISINS, MAX_PORTFOLIOS, PortfolioEntrySchema, PortfolioSchema, SettingsSchema, safeImportJson } from "./index";
+import { AppDataSchema, AssetSchema, maxIsins, maxPortfolios, PortfolioEntrySchema, PortfolioSchema, SettingsSchema, safeImportJson } from "./index";
 
 // Shared minimal ISIN fixture — all optional fields omitted (they have defaults or are nullable)
 const validAsset = {
@@ -268,9 +268,9 @@ describe("AppDataSchema uniqueness constraints", () => {
 // --- AppDataSchema: array length limits ---
 
 describe("AppDataSchema limits", () => {
-  it("rejects more than MAX_PORTFOLIOS portfolios", () => {
+  it("rejects more than maxPortfolios portfolios", () => {
     expect.hasAssertions();
-    const tooManyPortfolios = Array.from({ length: MAX_PORTFOLIOS + 1 }, (_val, idx) => ({
+    const tooManyPortfolios = Array.from({ length: maxPortfolios + 1 }, (_val, idx) => ({
       broker: "Broker",
       entries: [],
       id: `87b67f15-e6f2-480b-${String(idx).padStart(4, "0")}-5440cc1c7423`,
@@ -280,9 +280,9 @@ describe("AppDataSchema limits", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects more than MAX_ISINS ISINs", () => {
+  it("rejects more than maxIsins ISINs", () => {
     expect.hasAssertions();
-    const tooManyIsins = Array.from({ length: MAX_ISINS + 1 }, (_val, idx) => ({
+    const tooManyIsins = Array.from({ length: maxIsins + 1 }, (_val, idx) => ({
       availableForPlan: false,
       availableOnBroker: false,
       fees: 0,

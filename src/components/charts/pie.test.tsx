@@ -2,25 +2,25 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { invariant } from "es-toolkit";
 import { PieChart } from "./pie.tsx";
 
-const EMPTY_ENTRIES: { fill: string; label: string; value: number }[] = [];
+const emptyEntries: { fill: string; label: string; value: number }[] = [];
 
-const TEST_ENTRIES = [
+const testEntries = [
   { fill: "#0072B2", label: "US", value: 0.6 },
   { fill: "#E69F00", label: "EU", value: 0.4 },
 ];
 
-const ZERO_ENTRIES: { fill: string; label: string; value: number }[] = [{ fill: "#f00", label: "X", value: 0 }];
+const zeroEntries: { fill: string; label: string; value: number }[] = [{ fill: "#f00", label: "X", value: 0 }];
 
-const SINGLE_ENTRY: { fill: string; label: string; value: number }[] = [{ fill: "#0072B2", label: "US", value: 1 }];
+const singleEntry: { fill: string; label: string; value: number }[] = [{ fill: "#0072B2", label: "US", value: 1 }];
 
-const SINGLE_LARGE_ENTRY: { fill: string; label: string; value: number }[] = [{ fill: "#0072B2", label: "US", value: 10 }];
+const singleLargeEntry: { fill: string; label: string; value: number }[] = [{ fill: "#0072B2", label: "US", value: 10 }];
 
-const MIXED_ENTRIES = [
+const mixedEntries = [
   { fill: "#0072B2", label: "US", value: 0.95 },
   { fill: "#E69F00", label: "EU", value: 0.05 },
 ];
 
-const ZERO_TOTAL_WITH_LABEL_ENTRIES = [
+const zeroTotalWithLabelEntries = [
   { fill: "#0072B2", label: "US", value: 10 },
   { fill: "#E69F00", label: "EU", value: -10 },
 ];
@@ -28,31 +28,31 @@ const ZERO_TOTAL_WITH_LABEL_ENTRIES = [
 describe("PieChart", () => {
   it("renders chart container with the given name", () => {
     expect.hasAssertions();
-    render(<PieChart entries={TEST_ENTRIES} name="test" />);
+    render(<PieChart entries={testEntries} name="test" />);
     expect(screen.getByTestId("test-chart")).toBeInTheDocument();
   });
 
   it("renders with empty entries without crashing", () => {
     expect.hasAssertions();
-    render(<PieChart entries={EMPTY_ENTRIES} name="test" />);
+    render(<PieChart entries={emptyEntries} name="test" />);
     expect(screen.getByTestId("test-chart")).toBeInTheDocument();
   });
 
   it("renders with all-zero values (total === 0) without crashing", () => {
     expect.hasAssertions();
-    render(<PieChart entries={ZERO_ENTRIES} name="zero" />);
+    render(<PieChart entries={zeroEntries} name="zero" />);
     expect(screen.getByTestId("zero-chart")).toBeInTheDocument();
   });
 
   it("renders a full-circle slice when a single entry takes 100%", () => {
     expect.hasAssertions();
-    render(<PieChart entries={SINGLE_ENTRY} name="single" />);
+    render(<PieChart entries={singleEntry} name="single" />);
     expect(screen.getByTestId("single-chart")).toBeInTheDocument();
   });
 
   it("shows popover with label on slice hover and hides it on mouse leave", () => {
     expect.hasAssertions();
-    render(<PieChart entries={MIXED_ENTRIES} name="hover" />);
+    render(<PieChart entries={mixedEntries} name="hover" />);
 
     expect(screen.queryByTestId("pie-popover")).not.toBeInTheDocument();
 
@@ -72,7 +72,7 @@ describe("PieChart", () => {
 
   it("shows popover for the full-circle single-entry slice on hover", () => {
     expect.hasAssertions();
-    render(<PieChart entries={SINGLE_ENTRY} name="full" />);
+    render(<PieChart entries={singleEntry} name="full" />);
 
     fireEvent.mouseEnter(screen.getByTestId("slice-us"));
 
@@ -82,14 +82,14 @@ describe("PieChart", () => {
 
   it("renders full-circle inner label when value meets threshold", () => {
     expect.hasAssertions();
-    render(<PieChart entries={SINGLE_LARGE_ENTRY} name="full-label" />);
+    render(<PieChart entries={singleLargeEntry} name="full-label" />);
 
     expect(screen.getByTestId("slice-label-us")).toBeInTheDocument();
   });
 
   it("hides inner labels below threshold while keeping hover popover", () => {
     expect.hasAssertions();
-    render(<PieChart entries={MIXED_ENTRIES} name="threshold" />);
+    render(<PieChart entries={mixedEntries} name="threshold" />);
 
     expect(screen.getByTestId("slice-label-us")).toBeInTheDocument();
     expect(screen.queryByTestId("slice-label-eu")).not.toBeInTheDocument();
@@ -103,7 +103,7 @@ describe("PieChart", () => {
 
   it("uses bold text for hovered inner label", () => {
     expect.hasAssertions();
-    render(<PieChart entries={MIXED_ENTRIES} name="hover-label" />);
+    render(<PieChart entries={mixedEntries} name="hover-label" />);
 
     fireEvent.mouseEnter(screen.getByTestId("slice-us"));
 
@@ -112,14 +112,14 @@ describe("PieChart", () => {
 
   it("renders eligible inner labels when total is zero", () => {
     expect.hasAssertions();
-    render(<PieChart entries={ZERO_TOTAL_WITH_LABEL_ENTRIES} name="zero-total-label" />);
+    render(<PieChart entries={zeroTotalWithLabelEntries} name="zero-total-label" />);
 
     expect(screen.getByTestId("slice-label-us")).toBeInTheDocument();
   });
 
   it("updates popover position on mouse move", () => {
     expect.hasAssertions();
-    render(<PieChart entries={MIXED_ENTRIES} name="move" />);
+    render(<PieChart entries={mixedEntries} name="move" />);
 
     fireEvent.mouseEnter(screen.getByTestId("slice-eu"));
 
