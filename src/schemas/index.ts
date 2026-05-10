@@ -37,6 +37,7 @@ const knownSectors = new Set<string>(SectorSchema.options);
 export const AssetSchema = z.object({
   availableForPlan: z.boolean(),
   availableOnBroker: z.boolean(),
+  dismissedSimilarities: z.array(z.string()).default([]),
   fees: z.number().nonnegative(),
   geoAllocation: z
     .record(z.string(), z.number())

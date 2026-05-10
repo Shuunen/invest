@@ -82,6 +82,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPlan: false,
     availableOnBroker: true,
+    dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: {},
     isAccumulating: true,
@@ -207,5 +208,21 @@ describe("computeMaxSimilarity", () => {
     expect.hasAssertions();
     const asset = makeAsset({ geoAllocation: { us: 1 }, isin: "LU0000000001" });
     expect(computeMaxSimilarity(asset, [asset])).toBeUndefined();
+  });
+
+  it("excludes isins in the excludeIsins list", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ geoAllocation: { us: 1 }, isin: "LU0000000001" });
+    const excluded = makeAsset({ geoAllocation: { us: 1 }, isin: "LU0000000002" });
+    const other = makeAsset({ geoAllocation: { eu: 1 }, isin: "LU0000000003" });
+    const result = computeMaxSimilarity(asset, [excluded, other], ["LU0000000002"]);
+    expect(result?.matchedIsin).toBe("LU0000000003");
+  });
+
+  it("returns undefined when all candidates are excluded", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ geoAllocation: { us: 1 }, isin: "LU0000000001" });
+    const other = makeAsset({ geoAllocation: { us: 1 }, isin: "LU0000000002" });
+    expect(computeMaxSimilarity(asset, [other], ["LU0000000002"])).toBeUndefined();
   });
 });

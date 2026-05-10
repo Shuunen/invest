@@ -2,12 +2,13 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
 import { computeDataScore, computeScore, dataScoreWarnThreshold, type Asset, type PortfolioEntry } from "../schemas/index.ts";
-import { computeMaxSimilarity, similarityErrorThreshold, similarityWarningThreshold } from "../utils/asset-similarity.ts";
+import { computeMaxSimilarity } from "../utils/asset-similarity.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { maxPercentage } from "../utils/constants.ts";
 import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
 import { AnimatedLink } from "./animations/link.tsx";
 import { scoreMissingValue } from "./asset-table-utils.ts";
+import { SimilarityCell } from "./similarity-cell.tsx";
 
 declare module "@tanstack/react-table" {
   // oxlint-disable-next-line typescript-eslint/consistent-type-definitions
@@ -302,34 +303,10 @@ export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string
   };
 }
 
-export function makeSimilarityColumn(assets: Asset[]): ColumnDef<Asset> {
+export function makeSimilarityColumn(assets: Asset[], onDismiss?: (isin: string, matchedIsin: string) => void): ColumnDef<Asset> {
   return {
-    accessorFn: row => computeMaxSimilarity(row, assets)?.score,
-    cell: ({ getValue, row }) => {
-      const score = getValue<number | undefined>();
-      const { isin } = row.original;
-      if (score === undefined)
-        return (
-          <span data-testid={`similarity-${isin.toLowerCase()}`} className="flex items-center justify-center">
-            –
-          </span>
-        );
-      const pct = `${Math.round(score * maxPercentage)}%`;
-      const isError = score > similarityErrorThreshold;
-      const isWarning = score > similarityWarningThreshold;
-      const dotClass = isError ? "bg-error" : "bg-warning";
-      /* v8 ignore next -- score defined → computeMaxSimilarity non-null; matchedIsin always in assets */
-      const matchedResult = computeMaxSimilarity(row.original, assets);
-      /* v8 ignore next -- matchedAsset always found since matchedIsin comes from the same assets list */
-      const tipText = matchedResult ? `${pct} similar to ${(assets.find(candidate => candidate.isin === matchedResult.matchedIsin) ?? { name: "" }).name}` : pct;
-      if (!isWarning) return undefined;
-      return (
-        <span data-testid={`similarity-${isin.toLowerCase()}`} data-tip={tipText} className="tooltip flex items-center gap-1.5">
-          <span className={cn("inline-block h-2 w-2 shrink-0 rounded-full", dotClass)} />
-          <span className="w-8 text-center">{pct}</span>
-        </span>
-      );
-    },
+    accessorFn: row => computeMaxSimilarity(row, assets, row.dismissedSimilarities)?.score,
+    cell: ({ row }) => <SimilarityCell asset={row.original} assets={assets} onDismiss={onDismiss} />,
     header: "Similarity",
     id: "similarity",
     meta: { title: "Similarity geo/sector" },

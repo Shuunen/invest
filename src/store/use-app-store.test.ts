@@ -103,6 +103,7 @@ describe("useAppStore - asset mutations", () => {
   const baseAsset: Asset = {
     availableForPlan: false,
     availableOnBroker: true,
+    dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: {},
     isAccumulating: true,
@@ -431,5 +432,80 @@ describe("useAppStore - portfolio mutations", () => {
     useAppStore.getState().updatePortfolioEntryAmount(portfolio.id, "LU1234567890", 10);
     expect(useAppStore.getState().data.portfolios[0]?.entries[1]?.amount).toBe(5);
     expect(useAppStore.getState().data.portfolios[1]?.entries[0]?.amount).toBe(5);
+  });
+});
+
+describe("useAppStore - similarity dismiss", () => {
+  const assetA: Asset = {
+    availableForPlan: false,
+    availableOnBroker: true,
+    dismissedSimilarities: [],
+    fees: 0.2,
+    geoAllocation: {},
+    isAccumulating: true,
+    isin: "LU0000000001",
+    name: "ETF A",
+    performance1y: 10,
+    performance3y: 30,
+    performance5y: 50,
+    price: 100,
+    provider: "P",
+    riskReward1y: 1.5,
+    riskReward3y: 1.8,
+    riskReward5y: 1.6,
+    sectorAllocation: {},
+    tickers: [],
+  };
+  const isinB = "LU0000000002";
+
+  it("dismissSimilarity adds matchedIsin to the asset's dismissedSimilarities", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: { ...defaultAppData, assets: [assetA] }, isLoading: false, loadError: undefined });
+    useAppStore.getState().dismissSimilarity(assetA.isin, isinB);
+    expect(useAppStore.getState().data.assets[0]?.dismissedSimilarities).toContain(isinB);
+  });
+
+  it("dismissSimilarity is idempotent when called twice", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: { ...defaultAppData, assets: [assetA] }, isLoading: false, loadError: undefined });
+    useAppStore.getState().dismissSimilarity(assetA.isin, isinB);
+    useAppStore.getState().dismissSimilarity(assetA.isin, isinB);
+    expect(useAppStore.getState().data.assets[0]?.dismissedSimilarities).toHaveLength(1);
+  });
+
+  it("dismissSimilarity increments editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: { ...defaultAppData, assets: [assetA] }, isLoading: false, loadError: undefined });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().dismissSimilarity(assetA.isin, isinB);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
+  });
+
+  it("unDismissSimilarity removes matchedIsin from dismissedSimilarities", () => {
+    expect.hasAssertions();
+    const assetWithDismissed = { ...assetA, dismissedSimilarities: [isinB] };
+    useAppStore.setState({ data: { ...defaultAppData, assets: [assetWithDismissed] }, isLoading: false, loadError: undefined });
+    useAppStore.getState().unDismissSimilarity(assetA.isin, isinB);
+    expect(useAppStore.getState().data.assets[0]?.dismissedSimilarities).not.toContain(isinB);
+  });
+
+  it("unDismissSimilarity increments editCount", () => {
+    expect.hasAssertions();
+    const assetWithDismissed = { ...assetA, dismissedSimilarities: [isinB] };
+    useAppStore.setState({ data: { ...defaultAppData, assets: [assetWithDismissed] }, isLoading: false, loadError: undefined });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().unDismissSimilarity(assetA.isin, isinB);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
+  });
+
+  it("unDismissSimilarity does not modify other assets", () => {
+    expect.hasAssertions();
+    const other = { ...assetA, isin: isinB, name: "ETF B" };
+    const assetWithDismissed = { ...assetA, dismissedSimilarities: [isinB] };
+    useAppStore.setState({ data: { ...defaultAppData, assets: [assetWithDismissed, other] }, isLoading: false, loadError: undefined });
+
+    useAppStore.getState().unDismissSimilarity(assetA.isin, isinB);
+
+    expect(useAppStore.getState().data.assets[1]?.dismissedSimilarities).toHaveLength(0);
   });
 });

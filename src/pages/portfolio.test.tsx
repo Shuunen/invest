@@ -17,6 +17,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPlan: false,
     availableOnBroker: true,
+    dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: {},
     isAccumulating: true,

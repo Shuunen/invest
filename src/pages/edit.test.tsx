@@ -19,6 +19,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPlan: false,
     availableOnBroker: true,
+    dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: {},
     isAccumulating: true,
@@ -196,6 +197,21 @@ describe("AssetEditPage - form", () => {
     render(<AssetEditPage isin={asset.isin} />);
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
     expect(screen.getByTestId("save-button")).not.toBeDisabled();
+  });
+
+  it("renders dismissed similarities section when the asset has dismissed entries", () => {
+    expect.hasAssertions();
+    const otherIsin = "FR0000000001";
+    const other = makeAsset({ isin: otherIsin, name: "Other Fund" });
+    const asset = makeAsset({ dismissedSimilarities: [otherIsin] });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset, other] },
+      isLoading: false,
+      loadError: undefined,
+    });
+
+    render(<AssetEditPage isin={asset.isin} />);
+    expect(screen.getByTestId("dismissed-similarities-card")).toHaveTextContent("Other Fund");
   });
 
   it("reset button restores original values and closes the modal", async () => {

@@ -84,6 +84,7 @@ describe("AssetCreatePage", () => {
           {
             availableForPlan: false,
             availableOnBroker: false,
+            dismissedSimilarities: [],
             fees: 0,
             geoAllocation: {},
             isAccumulating: false,

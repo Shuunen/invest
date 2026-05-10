@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { invariant } from "es-toolkit";
 import { db } from "../db/db.ts";
 import { computeScore, type AppData, type Asset } from "../schemas/index.ts";
@@ -26,6 +27,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPlan: false,
     availableOnBroker: true,
+    dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: {},
     isAccumulating: true,
@@ -905,12 +907,15 @@ describe("AssetTable - similarity column", () => {
     expect(dot).toBeInTheDocument();
   });
 
-  it("sets data-tip with matched asset name on warning/error badge", () => {
+  it("shows popover with matched asset name on hover", async () => {
     expect.hasAssertions();
     render(<AssetTable assets={simErrorAssets} onAmountChange={onAmountChange} />);
     const cell = screen.getByTestId(`similarity-${simIsinA.toLowerCase()}`);
-    expect(cell).toHaveAttribute("data-tip");
-    expect(cell.dataset.tip).toMatch(/100% similar to Duplicate ETF/u);
+    const wrapper = cell.closest("[class*=relative]") as HTMLElement;
+    invariant(wrapper, "Expected wrapper element to exist");
+    await userEvent.hover(wrapper);
+    const popover = screen.getByTestId(`similarity-popover-${simIsinA.toLowerCase()}`);
+    expect(popover).toHaveTextContent(/100% similar to Duplicate ETF/u);
   });
 
   it("renders similarity column when onAmountChange is provided", () => {

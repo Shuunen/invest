@@ -1,6 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { useAppStore } from "../store/use-app-store.ts";
+import { DismissedSimilaritiesSection } from "./edit/dismissed-similarities.tsx";
 import { ViewAllocationsSection } from "./view/allocations.tsx";
 import { ViewFinancialSection } from "./view/financial.tsx";
 import { ViewGeneralSection } from "./view/general.tsx";
@@ -10,6 +11,7 @@ type Props = { isin: string };
 export function AssetViewPage({ isin }: Props) {
   const navigate = useNavigate();
   const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === isin));
+  const allAssets = useAppStore(state => state.data.assets);
 
   if (!asset)
     return (
@@ -51,6 +53,7 @@ export function AssetViewPage({ isin }: Props) {
         <ViewGeneralSection asset={asset} />
         <ViewFinancialSection asset={asset} />
         <ViewAllocationsSection geoAllocation={asset.geoAllocation} sectorAllocation={asset.sectorAllocation} />
+        <DismissedSimilaritiesSection asset={asset} allAssets={allAssets} />
       </div>
     </div>
   );

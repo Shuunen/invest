@@ -66,7 +66,8 @@ function usePortfolioData(portfolioId: string) {
       ] satisfies MetricItem[],
     [averageDataScore, averageDataScoreColor, totalValue],
   );
-  return { amountMap, amountUpdatedAtMap, assets, headerMetrics, portfolio, portfolioAssets };
+  const dismissSimilarity = useAppStore(state => state.dismissSimilarity);
+  return { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, headerMetrics, portfolio, portfolioAssets };
 }
 
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
@@ -142,14 +143,17 @@ type RenderPortfolioContentOptions = {
   amountMap: Map<string, number>;
   amountUpdatedAtMap: Map<string, string>;
   onAmountChange: (isin: string, amount: number) => void;
+  onDismissSimilarity: (isin: string, matchedIsin: string) => void;
   onPriceChange: ((isin: string, price: number) => void) | undefined;
   onRemoveAsset: (isin: string) => void;
   portfolioAssets: Asset[];
 };
 
-function renderPortfolioContent({ portfolioAssets, amountMap, amountUpdatedAtMap, onRemoveAsset, onAmountChange, onPriceChange }: RenderPortfolioContentOptions) {
+function renderPortfolioContent({ portfolioAssets, amountMap, amountUpdatedAtMap, onRemoveAsset, onAmountChange, onDismissSimilarity, onPriceChange }: RenderPortfolioContentOptions) {
   if (portfolioAssets.length === 0) return renderNoAssets();
-  return <AssetTable assets={portfolioAssets} onRemoveAsset={onRemoveAsset} onAmountChange={onAmountChange} onPriceChange={onPriceChange} amountMap={amountMap} amountUpdatedAtMap={amountUpdatedAtMap} />;
+  return (
+    <AssetTable assets={portfolioAssets} onRemoveAsset={onRemoveAsset} onAmountChange={onAmountChange} onDismissSimilarity={onDismissSimilarity} onPriceChange={onPriceChange} amountMap={amountMap} amountUpdatedAtMap={amountUpdatedAtMap} />
+  );
 }
 
 type Props = {
@@ -157,7 +161,7 @@ type Props = {
 };
 
 export function PortfolioPage({ portfolioId }: Props) {
-  const { amountMap, amountUpdatedAtMap, assets, headerMetrics, portfolio, portfolioAssets } = usePortfolioData(portfolioId);
+  const { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, headerMetrics, portfolio, portfolioAssets } = usePortfolioData(portfolioId);
   const setPortfolioAssets = useAppStore(state => state.setPortfolioAssets);
   const updatePortfolioEntryAmount = useAppStore(state => state.updatePortfolioEntryAmount);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -189,11 +193,12 @@ export function PortfolioPage({ portfolioId }: Props) {
   }
 
   const assetToDelete = isinToDelete === undefined ? undefined : assets.find(asset => asset.isin === isinToDelete);
+  const onAmountChange = (isin: string, amount: number) => updatePortfolioEntryAmount(portfolioId, isin, amount);
 
   return (
     <div className="flex flex-col">
       <PageHeader title={name} subtitle={`Broker : ${broker}`} assets={portfolioAssets} metrics={headerMetrics} actions={actions} />
-      {renderPortfolioContent({ amountMap, amountUpdatedAtMap, onAmountChange: (isin, amount) => updatePortfolioEntryAmount(portfolioId, isin, amount), onPriceChange, onRemoveAsset: setIsinToDelete, portfolioAssets })}
+      {renderPortfolioContent({ amountMap, amountUpdatedAtMap, onAmountChange, onDismissSimilarity: dismissSimilarity, onPriceChange, onRemoveAsset: setIsinToDelete, portfolioAssets })}
       {pickerOpen && <AssetPickerModal assets={assets} initialSelected={selectedIsins} onCancel={() => setPickerOpen(false)} onConfirm={handlePickerConfirm} title={`${name} portfolio assets`} />}
       {isinToDelete !== undefined &&
         renderDeleteConfirmModal({
