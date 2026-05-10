@@ -370,6 +370,7 @@ describe("fetchEtfData", () => {
         .fn()
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
         .mockResolvedValueOnce({ ok: false, status: 404 })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
         .mockResolvedValueOnce({ ok: false, status: 404 }),
     );
     const result = await fetchEtfData("IE00B5BMR087");
@@ -387,7 +388,8 @@ describe("fetchEtfData", () => {
         .fn()
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(xml) })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(noCountriesXml) }),
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(noCountriesXml) })
+        .mockResolvedValueOnce({ ok: false, status: 404 }),
     );
     const result = await fetchEtfData("IE00B5BMR087");
     expect(result.sectorAllocation).toStrictEqual({ healthcare: 9.31, technology: 33.9 });
@@ -403,7 +405,8 @@ describe("fetchEtfData", () => {
         .fn()
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
         .mockResolvedValueOnce({ ok: false, status: 404 })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(countriesXml) }),
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(countriesXml) })
+        .mockResolvedValueOnce({ ok: false, status: 404 }),
     );
     const result = await fetchEtfData("IE00B5BMR087");
     expect(result.geoAllocation).toStrictEqual({ france: 2.07, japan: 8.74 });
@@ -420,7 +423,8 @@ describe("fetchEtfData", () => {
         .fn()
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(xml) })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(noCountriesXml) }),
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(noCountriesXml) })
+        .mockResolvedValueOnce({ ok: false, status: 404 }),
     );
     const result = await fetchEtfData("IE00B5BMR087");
     expect(result.sectorAllocation).toStrictEqual({ technology: 42 });
@@ -434,6 +438,7 @@ describe("fetchEtfData", () => {
       vi
         .fn()
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
         .mockResolvedValueOnce({ ok: false, status: 404 })
         .mockResolvedValueOnce({ ok: false, status: 404 }),
     );
@@ -451,10 +456,75 @@ describe("fetchEtfData", () => {
         .fn()
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
         .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(emptyXml) })
-        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(emptyXml) }),
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(emptyXml) })
+        .mockResolvedValueOnce({ ok: false, status: 404 }),
     );
     const result = await fetchEtfData("IE00B5BMR087");
     expect(result.sectorAllocation).toStrictEqual({});
+  });
+
+  it("uses latestQuote.raw from quote endpoint as price", async () => {
+    expect.hasAssertions();
+    const html = buildHtml();
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
+        .mockResolvedValueOnce({ json: () => Promise.resolve({ latestQuote: { raw: 43.03 } }), ok: true }),
+    );
+    const result = await fetchEtfData("IE00B5BMR087");
+    expect(result.price).toBe("43.03");
+  });
+
+  it("keeps price undefined when quote payload is missing latestQuote.raw", async () => {
+    expect.hasAssertions();
+    const html = buildHtml();
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
+        .mockResolvedValueOnce({ json: () => Promise.resolve({ latestQuote: {} }), ok: true }),
+    );
+    const result = await fetchEtfData("IE00B5BMR087");
+    expect(result.price).toBeUndefined();
+  });
+
+  it("keeps price undefined when quote payload is not an object", async () => {
+    expect.hasAssertions();
+    const html = buildHtml();
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
+        .mockResolvedValueOnce({ json: () => Promise.resolve("invalid"), ok: true }),
+    );
+    const result = await fetchEtfData("IE00B5BMR087");
+    expect(result.price).toBeUndefined();
+  });
+
+  it("keeps price undefined when latestQuote is not an object", async () => {
+    expect.hasAssertions();
+    const html = buildHtml();
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce({ ok: true, text: () => Promise.resolve(html) })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
+        .mockResolvedValueOnce({ ok: false, status: 404 })
+        .mockResolvedValueOnce({ json: () => Promise.resolve({ latestQuote: "invalid" }), ok: true }),
+    );
+    const result = await fetchEtfData("IE00B5BMR087");
+    expect(result.price).toBeUndefined();
   });
 
   it("throws on HTTP error", async () => {

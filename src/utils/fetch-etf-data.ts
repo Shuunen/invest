@@ -123,6 +123,38 @@ function parsePercentValue(raw: string | undefined): string | undefined {
   return Number.isNaN(num) ? undefined : String(num);
 }
 
+function parseQuotePrice(payload: unknown): string | undefined {
+  if (typeof payload !== "object" || payload === null) return undefined;
+  const { latestQuote } = payload as { latestQuote?: unknown };
+  if (typeof latestQuote !== "object" || latestQuote === null) return undefined;
+  const { raw } = latestQuote as { raw?: unknown };
+  if (typeof raw !== "number") return undefined;
+  return String(raw);
+}
+
+async function fetchExpandedSectors(proxyBase: string, sectorsPath: string, wicketHeaders: Record<string, string>): Promise<Partial<Record<Sector, number>> | undefined> {
+  const response = await fetch(`${proxyBase}${sectorsPath}&_=${Date.now()}`, { headers: wicketHeaders });
+  if (!response.ok) return undefined;
+  const xml = await response.text();
+  const expandedSectors = parseSectorsFromAjaxXml(xml);
+  return Object.keys(expandedSectors).length > 0 ? expandedSectors : undefined;
+}
+
+async function fetchExpandedCountries(proxyBase: string, countriesPath: string, wicketHeaders: Record<string, string>): Promise<Partial<Record<Country, number>> | undefined> {
+  const response = await fetch(`${proxyBase}${countriesPath}&_=${Date.now()}`, { headers: wicketHeaders });
+  if (!response.ok) return undefined;
+  const xml = await response.text();
+  const expandedCountries = parseCountriesFromAjaxXml(xml);
+  return Object.keys(expandedCountries).length > 0 ? expandedCountries : undefined;
+}
+
+async function fetchQuotePrice(proxyBase: string, quotePath: string): Promise<string | undefined> {
+  const response = await fetch(`${proxyBase}${quotePath}`);
+  if (!response.ok) return undefined;
+  const quote = (await response.json()) as unknown;
+  return parseQuotePrice(quote);
+}
+
 export function parseSectorsFromAjaxXml(xml: string): Partial<Record<Sector, number>> {
   const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(.*?)\]\]>/gsu)];
   for (const match of cdataMatches) {
@@ -188,6 +220,7 @@ export async function fetchEtfData(isin: string): Promise<EtfPrefillData> {
   const sectorsPath = resolveWicketPath(text, "loadMoreSectors", `/en/etf-profile.html?6-1.0-holdingsSection-sectors-loadMoreSectors&isin=${encodedIsin}&_wicket=1`);
 
   const countriesPath = resolveWicketPath(text, "loadMoreCountries", `/en/etf-profile.html?6-1.0-holdingsSection-countries-loadMoreCountries&isin=${encodedIsin}&_wicket=1`);
+  const quotePath = `/api/etfs/${encodedIsin}/quote?currency=EUR&locale=en`;
 
   const wicketHeaders = {
     Accept: "application/xml, text/xml, */*; q=0.01",
@@ -196,19 +229,15 @@ export async function fetchEtfData(isin: string): Promise<EtfPrefillData> {
     "x-requested-with": "XMLHttpRequest",
   };
 
-  const [sectorsResponse, countriesResponse] = await Promise.all([fetch(`${proxyBase}${sectorsPath}&_=${Date.now()}`, { headers: wicketHeaders }), fetch(`${proxyBase}${countriesPath}&_=${Date.now()}`, { headers: wicketHeaders })]);
+  const [expandedSectors, expandedCountries, quotePrice] = await Promise.all([
+    fetchExpandedSectors(proxyBase, sectorsPath, wicketHeaders),
+    fetchExpandedCountries(proxyBase, countriesPath, wicketHeaders),
+    fetchQuotePrice(proxyBase, quotePath),
+  ]);
 
-  if (sectorsResponse.ok) {
-    const xml = await sectorsResponse.text();
-    const expandedSectors = parseSectorsFromAjaxXml(xml);
-    if (Object.keys(expandedSectors).length > 0) result.sectorAllocation = expandedSectors;
-  }
-
-  if (countriesResponse.ok) {
-    const xml = await countriesResponse.text();
-    const expandedCountries = parseCountriesFromAjaxXml(xml);
-    if (Object.keys(expandedCountries).length > 0) result.geoAllocation = expandedCountries;
-  }
+  if (expandedSectors !== undefined) result.sectorAllocation = expandedSectors;
+  if (expandedCountries !== undefined) result.geoAllocation = expandedCountries;
+  if (quotePrice !== undefined) result.price = quotePrice;
 
   return result;
 }
