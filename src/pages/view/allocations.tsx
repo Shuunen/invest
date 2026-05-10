@@ -1,5 +1,5 @@
+import { AllocationChart } from "../../components/charts/allocation.tsx";
 import type { Asset } from "../../schemas/index.ts";
-import { AllocationCard } from "./allocation-card.tsx";
 
 type Props = {
   geoAllocation: Asset["geoAllocation"];
@@ -9,8 +9,8 @@ type Props = {
 export function ViewAllocationsSection({ geoAllocation, sectorAllocation }: Props) {
   return (
     <>
-      <AllocationCard name="geo-allocation" data={geoAllocation} title="Geographic allocation" />
-      <AllocationCard name="sector-allocation" data={sectorAllocation} title="Sector allocation" />
+      <AllocationChart card name="geo-allocation" data={geoAllocation} title="Geographic allocation" size={300} />
+      <AllocationChart card name="sector-allocation" data={sectorAllocation} title="Sector allocation" size={300} />
     </>
   );
 }
