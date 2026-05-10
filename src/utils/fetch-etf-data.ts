@@ -16,7 +16,7 @@ export type EtfPrefillData = {
   tickers: string | undefined;
 };
 
-const GEO_NAME_TO_KEY: Record<string, Country> = {
+const geoNameToKey: Record<string, Country> = {
   Australia: "australia",
   Austria: "austria",
   Belgium: "belgium",
@@ -48,7 +48,7 @@ const GEO_NAME_TO_KEY: Record<string, Country> = {
   "United States": "us",
 };
 
-const SECTOR_NAME_TO_KEY: Record<string, Sector> = {
+const sectorNameToKey: Record<string, Sector> = {
   "Basic Materials": "materials",
   "Communication Services": "communicationServices",
   "Consumer Discretionary": "consumerDiscretionary",
@@ -65,12 +65,12 @@ const SECTOR_NAME_TO_KEY: Record<string, Sector> = {
   Utilities: "utilities",
 };
 
-const PROVIDER_WORDS_TO_STRIP = [" ETF"];
+const providerWordsToStrip = [" ETF"];
 
 export function cleanProviderName(provider: string | undefined): string | undefined {
   if (provider === undefined) return undefined;
   let cleaned = provider;
-  for (const word of PROVIDER_WORDS_TO_STRIP) cleaned = cleaned.replaceAll(word, "");
+  for (const word of providerWordsToStrip) cleaned = cleaned.replaceAll(word, "");
   cleaned = cleaned.replaceAll(/\s+/gu, " ").trim();
   return cleaned || undefined;
 }
@@ -128,7 +128,7 @@ export function parseSectorsFromAjaxXml(xml: string): Partial<Record<Sector, num
     const [, html] = match;
     if (!html.includes('data-testid="etf-holdings_sectors_table"')) continue;
     const doc = new DOMParser().parseFromString(html, "text/html");
-    return parseAllocation(doc, { keyMap: SECTOR_NAME_TO_KEY, nameTestId: "tl_etf-holdings_sectors_value_name", pctTestId: "tl_etf-holdings_sectors_value_percentage", rowTestId: "etf-holdings_sectors_row" });
+    return parseAllocation(doc, { keyMap: sectorNameToKey, nameTestId: "tl_etf-holdings_sectors_value_name", pctTestId: "tl_etf-holdings_sectors_value_percentage", rowTestId: "etf-holdings_sectors_row" });
   }
   return {};
 }
@@ -139,7 +139,7 @@ export function parseCountriesFromAjaxXml(xml: string): Partial<Record<Country, 
     const [, html] = match;
     if (!html.includes('data-testid="etf-holdings_countries_table"')) continue;
     const doc = new DOMParser().parseFromString(html, "text/html");
-    return parseAllocation(doc, { keyMap: GEO_NAME_TO_KEY, nameTestId: "tl_etf-holdings_countries_value_name", pctTestId: "tl_etf-holdings_countries_value_percentage", rowTestId: "etf-holdings_countries_row" });
+    return parseAllocation(doc, { keyMap: geoNameToKey, nameTestId: "tl_etf-holdings_countries_value_name", pctTestId: "tl_etf-holdings_countries_value_percentage", rowTestId: "etf-holdings_countries_row" });
   }
   return {};
 }
@@ -153,7 +153,7 @@ export function parseEtfHtml(html: string): EtfPrefillData {
 
   return {
     fees: parsePercentValue(getTestIdText(doc, "etf-profile-header_ter-value")),
-    geoAllocation: parseAllocation(doc, { keyMap: GEO_NAME_TO_KEY, nameTestId: "tl_etf-holdings_countries_value_name", pctTestId: "tl_etf-holdings_countries_value_percentage", rowTestId: "etf-holdings_countries_row" }),
+    geoAllocation: parseAllocation(doc, { keyMap: geoNameToKey, nameTestId: "tl_etf-holdings_countries_value_name", pctTestId: "tl_etf-holdings_countries_value_percentage", rowTestId: "etf-holdings_countries_row" }),
     isAccumulating: rawDistribution === undefined ? undefined : rawDistribution.toLowerCase().includes("accum"),
     name: cleanAssetName(rawName, provider),
     performance1y: parsePercentValue(getTestIdText(doc, "etf-returns-section_1year-return")),
@@ -163,7 +163,7 @@ export function parseEtfHtml(html: string): EtfPrefillData {
     riskReward1y: getRiskTableValue(doc, "Return per risk 1 year"),
     riskReward3y: getRiskTableValue(doc, "Return per risk 3 years"),
     riskReward5y: getRiskTableValue(doc, "Return per risk 5 years"),
-    sectorAllocation: parseAllocation(doc, { keyMap: SECTOR_NAME_TO_KEY, nameTestId: "tl_etf-holdings_sectors_value_name", pctTestId: "tl_etf-holdings_sectors_value_percentage", rowTestId: "etf-holdings_sectors_row" }),
+    sectorAllocation: parseAllocation(doc, { keyMap: sectorNameToKey, nameTestId: "tl_etf-holdings_sectors_value_name", pctTestId: "tl_etf-holdings_sectors_value_percentage", rowTestId: "etf-holdings_sectors_row" }),
     tickers: getTestIdText(doc, "etf-profile-header_identifier-value-ticker"),
   };
 }
@@ -177,7 +177,7 @@ function resolveWicketPath(text: string, keyword: string, fallback: string): str
 
 export async function fetchEtfData(isin: string): Promise<EtfPrefillData> {
   const encodedIsin = encodeURIComponent(isin);
-  const proxyBase = "http://localhost:8010/proxy"; // port must match PORT constant in src/bin/proxy.ts
+  const proxyBase = "http://localhost:8010/proxy"; // port must match port constant in src/bin/proxy.ts
   const response = await fetch(`${proxyBase}/en/etf-profile.html?isin=${encodedIsin}`);
   if (!response.ok) throw new Error(`HTTP error ${String(response.status)}`);
   const text = await response.text();

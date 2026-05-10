@@ -10,7 +10,7 @@ import { useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
 import { renderSkeleton } from "./asset-table-skeleton.tsx";
-import { computeQuintileClasses, DEFAULT_COLUMN_VISIBILITY, getAriaSortValue, getScoreDotClass } from "./asset-table-utils.ts";
+import { computeQuintileClasses, defaultColumnVisibility, getAriaSortValue, getScoreDotClass } from "./asset-table-utils.ts";
 import { PageHeader } from "./page-header.tsx";
 
 type Props = {
@@ -78,7 +78,7 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
     setRetryKey(prevKey => prevKey + 1);
   };
   useHydration(retryKey);
-  const resolvedVisibility = useMemo(() => ({ ...DEFAULT_COLUMN_VISIBILITY, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
+  const resolvedVisibility = useMemo(() => ({ ...defaultColumnVisibility, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
   const activeColumns = buildActiveColumns({ amountMap, amountUpdatedAtMap, onAmountChange, onPriceChange, onRemoveAsset, onToggleSelect });
   const sorting: SortingState = useMemo(() => {
     const { column, direction } = data.settings.sort;

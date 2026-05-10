@@ -28,24 +28,24 @@ type PieSliceProps = {
 
 type SliceGeometryArgs = { end: number; fraction?: number; inset?: number; mid: number; size: number; start: number };
 
-const CHART_PADDING = 10;
-const FULL_CIRCLE_THRESHOLD = 359.999;
-const SLICE_HOVER_INSET = 6;
-const HOVER_RING_GAP = 5;
-const HOVER_DASH_PATTERN = "8 4";
-const HOVER_DASH_CYCLE = 12;
+const chartPadding = 10;
+const fullCircleThreshold = 359.999;
+const sliceHoverInset = 6;
+const hoverRingGap = 5;
+const hoverDashPattern = "8 4";
+const hoverDashCycle = 12;
 
 function deriveSliceGeometry({ end, fraction = 0, inset = 0, mid, size, start }: SliceGeometryArgs) {
   const cx = size / 2;
   const cy = size / 2;
-  const outerR = size / 2 - CHART_PADDING - inset;
+  const outerR = size / 2 - chartPadding - inset;
   const normalizedFraction = Math.min(1, Math.max(0, fraction));
   const labelOffset = 12 + 88 * normalizedFraction ** 1.15;
   const labelR = outerR - labelOffset;
   const center = { x: cx, y: cy };
   const lp = point(labelR, mid, center);
 
-  if (end - start >= FULL_CIRCLE_THRESHOLD) return { arcPath: "", cx, cy, fullCircle: true, lp, outerR, path: "" };
+  if (end - start >= fullCircleThreshold) return { arcPath: "", cx, cy, fullCircle: true, lp, outerR, path: "" };
 
   const startPt = point(outerR, start, center);
   const endPt = point(outerR, end, center);
@@ -60,7 +60,7 @@ type PieSliceFillProps = Pick<PieSliceProps, "end" | "fill" | "isHovered" | "lab
 
 function PieSliceFill({ end, fill, isHovered, label, onEnter, size, start }: PieSliceFillProps) {
   const { cx, cy, fullCircle, outerR, path } = deriveSliceGeometry({ end, mid: 0, size, start });
-  const { arcPath: hoverArcPath } = deriveSliceGeometry({ end, inset: SLICE_HOVER_INSET, mid: 0, size, start });
+  const { arcPath: hoverArcPath } = deriveSliceGeometry({ end, inset: sliceHoverInset, mid: 0, size, start });
   const testId = `slice-${kebabCase(label)}`;
   const fillHoverStyle = {
     filter: isHovered ? "brightness(1.15)" : "brightness(1)",
@@ -75,14 +75,14 @@ function PieSliceFill({ end, fill, isHovered, label, onEnter, size, start }: Pie
     return (
       <g onMouseEnter={onEnter} data-testid={testId}>
         <circle cx={cx} cy={cy} fill={fill} r={outerR} stroke="white" strokeWidth="2" style={fillHoverStyle} />
-        <circle cx={cx} cy={cy} r={outerR - HOVER_RING_GAP} fill="none" stroke="white" strokeWidth="2" strokeDasharray={HOVER_DASH_PATTERN} className="pie-dash" style={hoverRingStyle} />
+        <circle cx={cx} cy={cy} r={outerR - hoverRingGap} fill="none" stroke="white" strokeWidth="2" strokeDasharray={hoverDashPattern} className="pie-dash" style={hoverRingStyle} />
       </g>
     );
 
   return (
     <g onMouseEnter={onEnter} data-testid={testId}>
       <path d={path} fill={fill} stroke="white" strokeWidth="2" style={fillHoverStyle} />
-      <path d={hoverArcPath} fill="none" stroke="white" strokeWidth="2" strokeDasharray={HOVER_DASH_PATTERN} strokeLinecap="round" className="pie-dash" style={hoverRingStyle} />
+      <path d={hoverArcPath} fill="none" stroke="white" strokeWidth="2" strokeDasharray={hoverDashPattern} strokeLinecap="round" className="pie-dash" style={hoverRingStyle} />
     </g>
   );
 }
@@ -127,7 +127,7 @@ type PieChartProps = {
   size?: number;
 };
 
-const POPOVER_OFFSET = 14;
+const popoverOffset = 14;
 const hideInnerLabelBelowPercents = 7;
 
 function usePieState(entries: Entry[]) {
@@ -154,8 +154,8 @@ function usePieState(entries: Entry[]) {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     setPopoverPos({
-      left: event.clientX - rect.left + POPOVER_OFFSET,
-      top: event.clientY - rect.top + POPOVER_OFFSET,
+      left: event.clientX - rect.left + popoverOffset,
+      top: event.clientY - rect.top + popoverOffset,
     });
   }, []);
 
@@ -179,7 +179,7 @@ export function PieChart({ entries, name, size = 300 }: PieChartProps) {
     >
       <svg height={`${size}px`} viewBox={`0 0 ${size} ${size}`} width="100%" data-testid={kebabCase(`${name}-chart`)}>
         <defs>
-          <style>{`@keyframes pie-dash { to { stroke-dashoffset: -${HOVER_DASH_CYCLE}; } } .pie-dash { animation: pie-dash 1s linear infinite; }`}</style>
+          <style>{`@keyframes pie-dash { to { stroke-dashoffset: -${hoverDashCycle}; } } .pie-dash { animation: pie-dash 1s linear infinite; }`}</style>
         </defs>
         {slices.map(slice => (
           <PieSliceFill key={slice.label} {...slice} isHovered={hovered === slice.label} onEnter={() => setHovered(slice.label)} size={size} />

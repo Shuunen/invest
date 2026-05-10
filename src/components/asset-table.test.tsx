@@ -53,25 +53,25 @@ function makeTestData(assets: Asset[]): AppData {
   };
 }
 
-const SELECT_ASSET = makeAsset({ isin: "LU1234567890" });
-const SELECT_ASSETS = [SELECT_ASSET];
+const selectAsset = makeAsset({ isin: "LU1234567890" });
+const selectAssets = [selectAsset];
 
-const AMOUNT_ASSET = makeAsset();
-const AMOUNT_ASSETS = [AMOUNT_ASSET];
-const VALUE_ASSET_NO_PRICE = makeAsset({ isin: "LU1234567890", price: undefined });
-const VALUE_ASSETS_NO_PRICE = [VALUE_ASSET_NO_PRICE];
-const VALUE_ASSET_WITH_PRICE = makeAsset({ isin: "LU1234567890", price: 100 });
-const VALUE_ASSETS_WITH_PRICE = [VALUE_ASSET_WITH_PRICE];
-const VALUE_ASSET_PRICE_50 = makeAsset({ isin: "LU1234567890", price: 50 });
-const VALUE_ASSETS_PRICE_50 = [VALUE_ASSET_PRICE_50];
-const SORT_ASSET_1 = makeAsset({ isin: "LU0000000001", name: "ETF One" });
-const SORT_ASSET_2 = makeAsset({ isin: "LU0000000002", name: "ETF Two" });
-const SORT_ASSETS = [SORT_ASSET_1, SORT_ASSET_2];
-const VALUE_SORT_ASSET_1 = makeAsset({ isin: SORT_ASSET_1.isin, name: "ETF One", price: 20 });
-const VALUE_SORT_ASSET_2 = makeAsset({ isin: SORT_ASSET_2.isin, name: "ETF Two", price: 30 });
-const VALUE_SORT_ASSETS = [VALUE_SORT_ASSET_1, VALUE_SORT_ASSET_2];
-const VALUE_SORT_ASSET_NO_PRICE = makeAsset({ isin: SORT_ASSET_1.isin, name: "ETF One", price: undefined });
-const VALUE_SORT_ASSETS_NO_PRICE = [VALUE_SORT_ASSET_NO_PRICE];
+const amountAsset = makeAsset();
+const amountAssets = [amountAsset];
+const valueAssetNoPrice = makeAsset({ isin: "LU1234567890", price: undefined });
+const valueAssetsNoPrice = [valueAssetNoPrice];
+const valueAssetWithPrice = makeAsset({ isin: "LU1234567890", price: 100 });
+const valueAssetsWithPrice = [valueAssetWithPrice];
+const valueAssetPrice50 = makeAsset({ isin: "LU1234567890", price: 50 });
+const valueAssetsPrice50 = [valueAssetPrice50];
+const sortAsset1 = makeAsset({ isin: "LU0000000001", name: "ETF One" });
+const sortAsset2 = makeAsset({ isin: "LU0000000002", name: "ETF Two" });
+const sortAssets = [sortAsset1, sortAsset2];
+const valueSortAsset1 = makeAsset({ isin: sortAsset1.isin, name: "ETF One", price: 20 });
+const valueSortAsset2 = makeAsset({ isin: sortAsset2.isin, name: "ETF Two", price: 30 });
+const valueSortAssets = [valueSortAsset1, valueSortAsset2];
+const valueSortAssetNoPrice = makeAsset({ isin: sortAsset1.isin, name: "ETF One", price: undefined });
+const valueSortAssetsNoPrice = [valueSortAssetNoPrice];
 
 describe("matchesFilter", () => {
   const asset = makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi", tickers: ["IWDA"] });
@@ -205,8 +205,8 @@ describe("AssetTable - data display", () => {
 describe("AssetTable - select column", () => {
   it("renders unchecked select checkbox when onToggleSelect is set but no selectedIsins", () => {
     expect.hasAssertions();
-    render(<AssetTable assets={SELECT_ASSETS} onToggleSelect={vi.fn<(isin: string) => void>()} />);
-    const row = screen.getByText(SELECT_ASSET.name).closest("tr");
+    render(<AssetTable assets={selectAssets} onToggleSelect={vi.fn<(isin: string) => void>()} />);
+    const row = screen.getByText(selectAsset.name).closest("tr");
     invariant(row, "Expected table row to exist");
     expect(within(row).getByRole("checkbox", { hidden: true })).not.toBeChecked();
   });
@@ -595,27 +595,27 @@ describe("useDexieSync", () => {
 describe("AssetTable - value column", () => {
   it("shows 0 € when price is undefined", () => {
     expect.hasAssertions();
-    const amountMap = new Map([[VALUE_ASSET_NO_PRICE.isin, 5]]);
-    render(<AssetTable assets={VALUE_ASSETS_NO_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    const amountMap = new Map([[valueAssetNoPrice.isin, 5]]);
+    render(<AssetTable assets={valueAssetsNoPrice} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
     expect(screen.getByText("0 €")).toBeInTheDocument();
   });
 
   it("shows computed value when price and amount are set", () => {
     expect.hasAssertions();
-    const amountMap = new Map([[VALUE_ASSET_WITH_PRICE.isin, 3]]);
-    render(<AssetTable assets={VALUE_ASSETS_WITH_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    const amountMap = new Map([[valueAssetWithPrice.isin, 3]]);
+    render(<AssetTable assets={valueAssetsWithPrice} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
     expect(screen.getByText("300 €")).toBeInTheDocument();
   });
 
   it("shows 0 € when no amountMap entry exists", () => {
     expect.hasAssertions();
-    render(<AssetTable assets={VALUE_ASSETS_PRICE_50} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
+    render(<AssetTable assets={valueAssetsPrice50} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
     expect(screen.getByText("0 €")).toBeInTheDocument();
   });
 
   it("sorts by value column with undefined price uses 0 fallback", () => {
     expect.hasAssertions();
-    render(<AssetTable assets={VALUE_SORT_ASSETS_NO_PRICE} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
+    render(<AssetTable assets={valueSortAssetsNoPrice} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
     const valueHeader = screen.getByRole("button", { name: /value/iu });
     fireEvent.click(valueHeader);
     expect(screen.getByText("0 €")).toBeInTheDocument();
@@ -624,7 +624,7 @@ describe("AssetTable - value column", () => {
   it("sorts by value column with defined amountMap missing ISIN entry uses 0 fallback", () => {
     expect.hasAssertions();
     const emptyAmountMap = new Map<string, number>();
-    render(<AssetTable assets={VALUE_SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={emptyAmountMap} />);
+    render(<AssetTable assets={valueSortAssets} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={emptyAmountMap} />);
     const valueHeader = screen.getByRole("button", { name: /value/iu });
     fireEvent.click(valueHeader);
     expect(screen.getAllByText("0 €").length).toBeGreaterThan(0);
@@ -633,10 +633,10 @@ describe("AssetTable - value column", () => {
   it("sorts by value column using accessorFn", () => {
     expect.hasAssertions();
     const amountMap = new Map([
-      [SORT_ASSET_1.isin, 10],
-      [SORT_ASSET_2.isin, 5],
+      [sortAsset1.isin, 10],
+      [sortAsset2.isin, 5],
     ]);
-    render(<AssetTable assets={VALUE_SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    render(<AssetTable assets={valueSortAssets} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
     const valueHeader = screen.getByRole("button", { name: /value/iu });
     fireEvent.click(valueHeader);
     expect(screen.getByText("200 €")).toBeInTheDocument();
@@ -647,30 +647,30 @@ describe("AssetTable - value column", () => {
 describe("AssetTable - amount column", () => {
   it("renders shares column with default 0 when no amountMap is provided", () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData(amountAssets), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
-    render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
+    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} />);
     const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
     expect(input).toHaveValue(0);
   });
 
   it("calls onAmountChange when input value changes and blurs", () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData(amountAssets), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
-    render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
+    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} />);
     const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
     fireEvent.change(input, { target: { value: "7" } });
     fireEvent.blur(input);
-    expect(onAmountChange).toHaveBeenCalledWith(AMOUNT_ASSET.isin, 7);
+    expect(onAmountChange).toHaveBeenCalledWith(amountAsset.isin, 7);
   });
 
   it("does not call onAmountChange when value is unchanged on blur", () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData(amountAssets), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
-    const amountMap = new Map([[AMOUNT_ASSET.isin, 3]]);
-    render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} amountMap={amountMap} />);
+    const amountMap = new Map([[amountAsset.isin, 3]]);
+    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} amountMap={amountMap} />);
     const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
     fireEvent.blur(input);
     expect(onAmountChange).not.toHaveBeenCalled();
@@ -678,9 +678,9 @@ describe("AssetTable - amount column", () => {
 
   it("clamps NaN input (empty string) to 0 and does not update when initial value is also 0", () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: makeTestData(AMOUNT_ASSETS), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData(amountAssets), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
-    render(<AssetTable assets={AMOUNT_ASSETS} onAmountChange={onAmountChange} />);
+    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} />);
     const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
     fireEvent.change(input, { target: { value: "" } });
     fireEvent.blur(input);
@@ -690,10 +690,10 @@ describe("AssetTable - amount column", () => {
   it("sorts by amount column using accessorFn with amountMap", () => {
     expect.hasAssertions();
     const amountMap = new Map([
-      [SORT_ASSET_1.isin, 5],
-      [SORT_ASSET_2.isin, 2],
+      [sortAsset1.isin, 5],
+      [sortAsset2.isin, 2],
     ]);
-    render(<AssetTable assets={SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    render(<AssetTable assets={sortAssets} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
     const amountHeader = screen.getByRole("button", { name: /amount/iu });
     fireEvent.click(amountHeader);
     const inputs = screen.getAllByRole("spinbutton");
@@ -703,7 +703,7 @@ describe("AssetTable - amount column", () => {
 
   it("sorts by amount column using accessorFn without amountMap", () => {
     expect.hasAssertions();
-    render(<AssetTable assets={SORT_ASSETS} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
+    render(<AssetTable assets={sortAssets} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
     const amountHeader = screen.getByRole("button", { name: /amount/iu });
     fireEvent.click(amountHeader);
     const inputs = screen.getAllByRole("spinbutton");
@@ -714,19 +714,19 @@ describe("AssetTable - amount column", () => {
   it("ignores stored amount sort when rendered without onAmountChange", () => {
     expect.hasAssertions();
     act(() => {
-      useAppStore.setState({ data: makeTestData(SORT_ASSETS) });
+      useAppStore.setState({ data: makeTestData(sortAssets) });
       useAppStore.getState().setSort({ column: "amount", direction: "desc" });
     });
-    expect(() => render(<AssetTable assets={SORT_ASSETS} />)).not.toThrow();
+    expect(() => render(<AssetTable assets={sortAssets} />)).not.toThrow();
   });
 });
 
 describe("AssetTable - price editing", () => {
-  const PRICE_ASSET = makeAsset({ isin: "LU9876543210", price: 50 });
+  const priceAsset = makeAsset({ isin: "LU9876543210", price: 50 });
 
   it("shows Add asset and Edit prices buttons in the page header", () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     expect(screen.getByTestId("action-add-asset")).toBeInTheDocument();
     expect(screen.getByTestId("action-edit-prices")).toBeInTheDocument();
@@ -735,7 +735,7 @@ describe("AssetTable - price editing", () => {
   it("clicking Add asset navigates to /assets/create", () => {
     expect.hasAssertions();
     mockNavigate.mockClear();
-    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-add-asset"));
     expect(mockNavigate).toHaveBeenCalledWith({ to: "/assets/create" });
@@ -743,62 +743,62 @@ describe("AssetTable - price editing", () => {
 
   it("shows Edit prices button in the page header", () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     expect(screen.getByTestId("action-edit-prices")).toBeInTheDocument();
   });
 
   it("clicking Edit prices shows price inputs", async () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
-      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`price-input-${priceAsset.isin.toLowerCase()}`)).toBeInTheDocument();
     });
   });
 
   it("clicking Done hides price inputs", async () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
-      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`price-input-${priceAsset.isin.toLowerCase()}`)).toBeInTheDocument();
     });
     fireEvent.click(screen.getByTestId("action-done"));
     await waitFor(() => {
-      expect(screen.queryByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).not.toBeInTheDocument();
+      expect(screen.queryByTestId(`price-input-${priceAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
     });
   });
 
   it("blurring price input with a new value updates the asset price in store", async () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
-      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`price-input-${priceAsset.isin.toLowerCase()}`)).toBeInTheDocument();
     });
-    const input = screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`);
+    const input = screen.getByTestId(`price-input-${priceAsset.isin.toLowerCase()}`);
     fireEvent.change(input, { target: { value: "75" } });
     fireEvent.blur(input);
     await waitFor(() => {
-      const updated = useAppStore.getState().data.assets.find(entry => entry.isin === PRICE_ASSET.isin);
+      const updated = useAppStore.getState().data.assets.find(entry => entry.isin === priceAsset.isin);
       expect(updated?.price).toBe(75);
     });
   });
 
   it("blurring price input with unchanged value does not update the store", async () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
     const editCountBefore = useAppStore.getState().data.settings.editCount;
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
-      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`price-input-${priceAsset.isin.toLowerCase()}`)).toBeInTheDocument();
     });
-    fireEvent.blur(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`));
+    fireEvent.blur(screen.getByTestId(`price-input-${priceAsset.isin.toLowerCase()}`));
     expect(useAppStore.getState().data.settings.editCount).toBe(editCountBefore);
   });
 
@@ -820,13 +820,13 @@ describe("AssetTable - price editing", () => {
 
   it("clicking price input stops event propagation", async () => {
     expect.hasAssertions();
-    useAppStore.setState({ data: makeTestData([PRICE_ASSET]), isLoading: false, loadError: undefined });
+    useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
     fireEvent.click(screen.getByTestId("action-edit-prices"));
     await waitFor(() => {
-      expect(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`)).toBeInTheDocument();
+      expect(screen.getByTestId(`price-input-${priceAsset.isin.toLowerCase()}`)).toBeInTheDocument();
     });
-    expect(() => fireEvent.click(screen.getByTestId(`price-input-${PRICE_ASSET.isin.toLowerCase()}`))).not.toThrow();
+    expect(() => fireEvent.click(screen.getByTestId(`price-input-${priceAsset.isin.toLowerCase()}`))).not.toThrow();
   });
 });
 

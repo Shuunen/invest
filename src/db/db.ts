@@ -6,7 +6,7 @@ export type AppDataRecord = {
   id: number;
 };
 
-const DB_VERSION = 2;
+const dbVersion = 2;
 
 class AppDataDb extends Dexie {
   public appdata!: Table<AppDataRecord>;
@@ -14,7 +14,7 @@ class AppDataDb extends Dexie {
   public constructor() {
     super("invest-app");
     this.version(1).stores({ appdata: "id" });
-    this.version(DB_VERSION)
+    this.version(dbVersion)
       .stores({ appdata: "id" })
       /* v8 ignore start */
       .upgrade(tx =>

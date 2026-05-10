@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { invariant } from "es-toolkit";
-import { STALENESS_TIER_PRESETS } from "../components/import-export-utils.ts";
+import { stalenessTierPresets } from "../components/import-export-utils.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { formatDate } from "../utils/format-numbers.ts";
 import { AboutPage } from "./about.tsx";
@@ -64,15 +64,15 @@ describe("AboutPage", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<AboutPage />);
-    for (const preset of STALENESS_TIER_PRESETS) expect(screen.getByTestId(`set-edit-count-${preset.tier}`)).toBeInTheDocument();
+    for (const preset of stalenessTierPresets) expect(screen.getByTestId(`set-edit-count-${preset.tier}`)).toBeInTheDocument();
   });
 
   it("tier preset buttons update the un-exported edit count", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<AboutPage />);
-    const criticalPreset = STALENESS_TIER_PRESETS.find(preset => preset.tier === "5-critical");
-    const lowPreset = STALENESS_TIER_PRESETS.find(preset => preset.tier === "2-low");
+    const criticalPreset = stalenessTierPresets.find(preset => preset.tier === "5-critical");
+    const lowPreset = stalenessTierPresets.find(preset => preset.tier === "2-low");
     invariant(criticalPreset, "Expected 5-critical preset to exist");
     invariant(lowPreset, "Expected 2-low preset to exist");
     fireEvent.click(screen.getByTestId("set-edit-count-5-critical"));

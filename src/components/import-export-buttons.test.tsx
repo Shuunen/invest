@@ -12,7 +12,7 @@ vi.mock(import("../utils/json.ts"), async () => {
   return { ...actual, jsonStringify: vi.fn<typeof actual.jsonStringify>(actual.jsonStringify) };
 });
 
-const VALID_IMPORT_JSON = JSON.stringify({ assets: [], portfolios: [], settings: {} });
+const validImportJson = JSON.stringify({ assets: [], portfolios: [], settings: {} });
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
@@ -153,7 +153,7 @@ describe("ImportExportButtons", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<ImportExportButtons />);
     const fileInputAfter = screen.getAllByTestId("file-input").at(-1) as HTMLInputElement;
-    const file = new File([VALID_IMPORT_JSON], "data.json", { type: "application/json" });
+    const file = new File([validImportJson], "data.json", { type: "application/json" });
     await userEvent.upload(fileInputAfter, file);
     await waitFor(() => {
       expect(useAppStore.getState().data.assets).toHaveLength(0);

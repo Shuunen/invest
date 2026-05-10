@@ -1,4 +1,4 @@
-import { MAX_ISINS, type Asset } from "../schemas/index.ts";
+import { maxIsins, type Asset } from "../schemas/index.ts";
 import { useAppStore, defaultAppData } from "./use-app-store.ts";
 
 describe("useAppStore - initial state and load", () => {
@@ -220,15 +220,15 @@ describe("useAppStore - asset mutations", () => {
     expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
   });
 
-  it("addAsset ignores the call when MAX_ISINS is reached", () => {
+  it("addAsset ignores the call when maxIsins is reached", () => {
     expect.hasAssertions();
-    const maxAssets = Array.from({ length: MAX_ISINS }, (_unused, index) => ({
+    const maxAssets = Array.from({ length: maxIsins }, (_unused, index) => ({
       ...baseAsset,
       isin: `US${String(index).padStart(9, "0")}${index % 10}`,
     }));
     useAppStore.setState({ data: { ...defaultAppData, assets: maxAssets }, isLoading: false, loadError: undefined });
     useAppStore.getState().addAsset({ ...baseAsset, isin: "IE00B4L5Y983" });
-    expect(useAppStore.getState().data.assets).toHaveLength(MAX_ISINS);
+    expect(useAppStore.getState().data.assets).toHaveLength(maxIsins);
   });
 
   it("addAsset ignores the call when the ISIN already exists", () => {
@@ -264,7 +264,7 @@ describe("useAppStore - portfolio mutations", () => {
     expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
   });
 
-  it("addPortfolio ignores the call when MAX_PORTFOLIOS is reached", () => {
+  it("addPortfolio ignores the call when maxPortfolios is reached", () => {
     expect.hasAssertions();
     const maxPortfolios = Array.from({ length: 50 }, (_unused, index) => ({
       ...basePortfolio,

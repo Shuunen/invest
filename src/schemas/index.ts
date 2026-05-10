@@ -13,24 +13,24 @@ const SectorSchema = z.enum(["technology", "financials", "healthcare", "consumer
 export type Country = z.infer<typeof CountrySchema>;
 export type Sector = z.infer<typeof SectorSchema>;
 
-export const COUNTRIES = CountrySchema.options satisfies readonly Country[];
-export const SECTORS = SectorSchema.options satisfies readonly Sector[];
+export const countries = CountrySchema.options satisfies readonly Country[];
+export const sectors = SectorSchema.options satisfies readonly Sector[];
 
 // --- ISIN ---
 
-export const MAX_ISINS = 5000;
-export const MAX_PORTFOLIOS = 50;
-const SCORE_FEE_WEIGHT = 10;
-const SCORE_RISK_WEIGHT = 5;
-const DEFAULT_SIMILARITY_THRESHOLD = 0.85;
+export const maxIsins = 5000;
+export const maxPortfolios = 50;
+const scoreFeeWeight = 10;
+const scoreRiskWeight = 5;
+const defaultSimilarityThreshold = 0.85;
 
 const nullableNumber = z
   .number()
   .nullish()
   .transform(num => num ?? undefined);
 
-const KNOWN_COUNTRIES = new Set<string>(CountrySchema.options);
-const KNOWN_SECTORS = new Set<string>(SectorSchema.options);
+const knownCountries = new Set<string>(CountrySchema.options);
+const knownSectors = new Set<string>(SectorSchema.options);
 
 export const AssetSchema = z.object({
   availableForPlan: z.boolean(),
@@ -38,7 +38,7 @@ export const AssetSchema = z.object({
   fees: z.number().nonnegative(),
   geoAllocation: z
     .record(z.string(), z.number())
-    .refine((obj): obj is Partial<Record<Country, number>> => Object.keys(obj).every(key => KNOWN_COUNTRIES.has(key)), {
+    .refine((obj): obj is Partial<Record<Country, number>> => Object.keys(obj).every(key => knownCountries.has(key)), {
       message: "geoAllocation contains unknown country keys",
     })
     .default({}),
@@ -56,7 +56,7 @@ export const AssetSchema = z.object({
   riskReward5y: nullableNumber,
   sectorAllocation: z
     .record(z.string(), z.number())
-    .refine((obj): obj is Partial<Record<Sector, number>> => Object.keys(obj).every(key => KNOWN_SECTORS.has(key)), {
+    .refine((obj): obj is Partial<Record<Sector, number>> => Object.keys(obj).every(key => knownSectors.has(key)), {
       message: "sectorAllocation contains unknown sector keys",
     })
     .default({}),
@@ -70,27 +70,27 @@ export type Asset = z.infer<typeof AssetSchema>;
 export function computeScore(asset: Asset): number | undefined {
   const { performance3y, riskReward3y, fees } = asset;
   if (performance3y === undefined || riskReward3y === undefined) return undefined;
-  return performance3y + riskReward3y * SCORE_RISK_WEIGHT - fees * SCORE_FEE_WEIGHT;
+  return performance3y + riskReward3y * scoreRiskWeight - fees * scoreFeeWeight;
 }
 
-const DATA_FRESHNESS_DAYS = 30;
-const AMOUNT_FRESHNESS_DAYS = 90;
-const MS_PER_DAY = 86_400_000;
-const DATA_SCORE_BASE_FIELDS = 6;
-const DATA_SCORE_PORTFOLIO_FIELDS = 7;
-const DATA_SCORE_STALE_WEIGHT = 0.5;
-export const DATA_SCORE_PERCENT = 100;
-export const DATA_SCORE_WARN_THRESHOLD = 75;
+const dataFreshnessDays = 30;
+const amountFreshnessDays = 90;
+const msPerDay = 86_400_000;
+const dataScoreBaseFields = 6;
+const dataScorePortfolioFields = 7;
+const dataScoreStaleWeight = 0.5;
+export const dataScorePercent = 100;
+export const dataScoreWarnThreshold = 75;
 
 function toAgeDays(isoDate: string): number {
-  return (Date.now() - new Date(isoDate).getTime()) / MS_PER_DAY;
+  return (Date.now() - new Date(isoDate).getTime()) / msPerDay;
 }
 
 // data quality score (0-100): completeness + freshness of asset data fields
 // pass isPortfolio=true to include amountUpdatedAt freshness in the denominator
 export function computeDataScore(asset: Asset, amountUpdatedAt?: string, isPortfolio = false): number {
   let score = 0;
-  const total = isPortfolio ? DATA_SCORE_PORTFOLIO_FIELDS : DATA_SCORE_BASE_FIELDS;
+  const total = isPortfolio ? dataScorePortfolioFields : dataScoreBaseFields;
 
   if (asset.price !== undefined) score += 1;
   if (asset.performance1y !== undefined) score += 1;
@@ -98,10 +98,10 @@ export function computeDataScore(asset: Asset, amountUpdatedAt?: string, isPortf
   if (asset.riskReward1y !== undefined) score += 1;
   if (asset.riskReward3y !== undefined) score += 1;
 
-  if (asset.updatedAt !== undefined) score += toAgeDays(asset.updatedAt) <= DATA_FRESHNESS_DAYS ? 1 : DATA_SCORE_STALE_WEIGHT;
-  if (isPortfolio && amountUpdatedAt !== undefined) score += toAgeDays(amountUpdatedAt) <= AMOUNT_FRESHNESS_DAYS ? 1 : DATA_SCORE_STALE_WEIGHT;
+  if (asset.updatedAt !== undefined) score += toAgeDays(asset.updatedAt) <= dataFreshnessDays ? 1 : dataScoreStaleWeight;
+  if (isPortfolio && amountUpdatedAt !== undefined) score += toAgeDays(amountUpdatedAt) <= amountFreshnessDays ? 1 : dataScoreStaleWeight;
 
-  return Math.round((score / total) * DATA_SCORE_PERCENT);
+  return Math.round((score / total) * dataScorePercent);
 }
 
 // --- Portfolio ---
@@ -137,7 +137,7 @@ export const SettingsSchema = z.object({
     .datetime()
     .nullish()
     .transform(str => str ?? undefined),
-  similarityThreshold: z.number().min(0).max(1).default(DEFAULT_SIMILARITY_THRESHOLD),
+  similarityThreshold: z.number().min(0).max(1).default(defaultSimilarityThreshold),
   sort: z
     .object({
       column: z.string(),
@@ -153,8 +153,8 @@ export type Settings = z.infer<typeof SettingsSchema>;
 
 export const AppDataSchema = z
   .object({
-    assets: z.array(AssetSchema).max(MAX_ISINS),
-    portfolios: z.array(PortfolioSchema).max(MAX_PORTFOLIOS),
+    assets: z.array(AssetSchema).max(maxIsins),
+    portfolios: z.array(PortfolioSchema).max(maxPortfolios),
     settings: SettingsSchema,
   })
   .superRefine((data, ctx) => {

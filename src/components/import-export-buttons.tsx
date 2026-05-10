@@ -7,10 +7,10 @@ import { cn } from "../utils/browser-styles.ts";
 import { jsonStringify } from "../utils/json.ts";
 import { getStalenessTier, type StalenessTier } from "./import-export-utils.ts";
 
-const ISO_DATE_SLICE_END = 10;
-const REVOKE_DELAY_MS = 100;
-const ISO_TIME_START = 11;
-const ISO_TIME_END = 16;
+const isoDateSliceEnd = 10;
+const revokeDelayMs = 100;
+const isoTimeStart = 11;
+const isoTimeEnd = 16;
 
 function renderStalenessDecoration(tier: Exclude<StalenessTier, "1-ok">, unexportedChanges: number) {
   if (tier === "2-low")
@@ -97,7 +97,7 @@ function triggerDownload(blob: Blob, filename: string) {
   anchor.download = filename;
   anchor.click();
   /* v8 ignore next */
-  setTimeout(() => URL.revokeObjectURL(url), REVOKE_DELAY_MS);
+  setTimeout(() => URL.revokeObjectURL(url), revokeDelayMs);
 }
 
 function useImportExport() {
@@ -110,7 +110,7 @@ function useImportExport() {
 
   function handleExport() {
     const now = new Date().toISOString();
-    const datetime = `${now.slice(0, ISO_DATE_SLICE_END)} ${now.slice(ISO_TIME_START, ISO_TIME_END).replace(":", "h")}`;
+    const datetime = `${now.slice(0, isoDateSliceEnd)} ${now.slice(isoTimeStart, isoTimeEnd).replace(":", "h")}`;
     const blob = buildExportBlob(data, now);
     if (!blob) {
       toast.error("Export failed: could not serialize data.");
