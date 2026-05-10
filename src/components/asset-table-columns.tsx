@@ -275,7 +275,7 @@ export function makeDataScoreColumn(amountUpdatedAtMap?: Map<string, string>): C
     },
     header: "Data",
     id: "data-score",
-    meta: { center: true, title: "Data quality: completeness and freshness" },
+    meta: { center: true, title: "Data score" },
   };
 }
 export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string> | undefined): ColumnDef<Asset> {

@@ -76,8 +76,8 @@ export function computeScore(asset: Asset): number | undefined {
 const DATA_FRESHNESS_DAYS = 30;
 const AMOUNT_FRESHNESS_DAYS = 90;
 const MS_PER_DAY = 86_400_000;
-const DATA_SCORE_BASE_FIELDS = 8;
-const DATA_SCORE_PORTFOLIO_FIELDS = 9;
+const DATA_SCORE_BASE_FIELDS = 6;
+const DATA_SCORE_PORTFOLIO_FIELDS = 7;
 const DATA_SCORE_STALE_WEIGHT = 0.5;
 export const DATA_SCORE_PERCENT = 100;
 export const DATA_SCORE_WARN_THRESHOLD = 75;
@@ -95,10 +95,8 @@ export function computeDataScore(asset: Asset, amountUpdatedAt?: string, isPortf
   if (asset.price !== undefined) score += 1;
   if (asset.performance1y !== undefined) score += 1;
   if (asset.performance3y !== undefined) score += 1;
-  if (asset.performance5y !== undefined) score += 1;
   if (asset.riskReward1y !== undefined) score += 1;
   if (asset.riskReward3y !== undefined) score += 1;
-  if (asset.riskReward5y !== undefined) score += 1;
 
   if (asset.updatedAt !== undefined) score += toAgeDays(asset.updatedAt) <= DATA_FRESHNESS_DAYS ? 1 : DATA_SCORE_STALE_WEIGHT;
   if (isPortfolio && amountUpdatedAt !== undefined) score += toAgeDays(amountUpdatedAt) <= AMOUNT_FRESHNESS_DAYS ? 1 : DATA_SCORE_STALE_WEIGHT;
