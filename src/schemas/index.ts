@@ -88,7 +88,6 @@ function toAgeDays(isoDate: string): number {
 }
 
 // data quality score (0-100): completeness + freshness of asset data fields
-// pass isPortfolio=true to include amountUpdatedAt freshness in the denominator
 export function computeDataScore(asset: Asset, entry?: PortfolioEntry): number {
   let score = 0;
   const total = entry ? dataScorePortfolioFields : dataScoreBaseFields;

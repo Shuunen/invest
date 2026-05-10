@@ -1,14 +1,14 @@
 // oxlint-disable jsdoc/require-returns, jsdoc/require-param, react/forbid-component-props
 import { Link } from "@tanstack/react-router";
 import React from "react";
-import { cn } from "../utils/browser-styles";
+import { cn } from "../../utils/browser-styles";
 
 // Source : https://skiper-ui.com/v1/skiper40
 
 type LinkProps = React.ComponentProps<typeof Link>;
 
 /** Underline slides in from right on hover */
-const Link000 = ({ children, className, ...props }: LinkProps) => (
+export const AnimatedLink = ({ children, className, ...props }: LinkProps) => (
   <Link
     className={cn(
       "group relative block w-fit items-center truncate text-primary",
@@ -22,5 +22,3 @@ const Link000 = ({ children, className, ...props }: LinkProps) => (
     {children}
   </Link>
 );
-
-export { Link000 };

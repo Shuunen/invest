@@ -5,7 +5,7 @@ import { computeDataScore, computeScore, dataScoreWarnThreshold, type Asset, typ
 import { cn } from "../utils/browser-styles.ts";
 import { maxPercentage } from "../utils/constants.ts";
 import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
-import { Link000 } from "./animated-links.tsx";
+import { AnimatedLink } from "./animations/link.tsx";
 import { scoreMissingValue } from "./asset-table-utils.ts";
 
 declare module "@tanstack/react-table" {
@@ -176,9 +176,9 @@ export const columns: ColumnDef<Asset>[] = [
           </span>
         );
       return (
-        <Link000 data-testid={`name-${isin.toLowerCase()}`} to={`/assets/${isin}`}>
+        <AnimatedLink data-testid={`name-${isin.toLowerCase()}`} to={`/assets/${isin}`}>
           {name}
-        </Link000>
+        </AnimatedLink>
       );
     },
     header: "Name",

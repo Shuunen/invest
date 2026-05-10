@@ -3,6 +3,7 @@
     "@tanstack/react-router": "^1.169.2",
     "@tanstack/react-table": "^8.21.3",
     "dexie": "^4.4.2",
+    "framer-motion": "^12.38.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hot-toast": "^2.6.0",

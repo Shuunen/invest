@@ -1,6 +1,7 @@
 import { kebabCase } from "es-toolkit";
 import { cn } from "../utils/browser-styles";
 import { formatNumber } from "../utils/format-numbers";
+import { TextRoll } from "./animations/text-roll";
 
 export type MetricItem = {
   color: "success" | "neutral" | "error" | "warning" | "info";
@@ -11,7 +12,7 @@ export type MetricItem = {
 export function Metric({ label, value, color }: MetricItem) {
   const displayValue = typeof value === "number" ? formatNumber(value) : (value ?? "—");
   return (
-    <div className="flex flex-col gap-0.5">
+    <div className="flex flex-col gap-2 py-2">
       <span
         data-testid={`metric-${kebabCase(String(label))}-value`}
         className={cn(`font-mono text-xl font-bold tracking-tight`, {
@@ -22,9 +23,9 @@ export function Metric({ label, value, color }: MetricItem) {
           "text-warning": color === "warning",
         })}
       >
-        {displayValue}
+        <TextRoll>{displayValue}</TextRoll>
       </span>
-      <span data-testid={`metric-${kebabCase(String(label))}-label`} className="text-[10px] font-medium tracking-widest text-base-content/40 uppercase">
+      <span data-testid={`metric-${kebabCase(String(label))}-label`} className="text-xs font-medium tracking-widest text-base-content/40 uppercase">
         {label}
       </span>
     </div>
