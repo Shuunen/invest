@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import type { Allocation } from "../../schemas/index.ts";
 import { computeBalanceScore } from "../../utils/allocation-balance.ts";
 import { buildAllocationEntries } from "../../utils/allocation-charts.ts";
@@ -14,8 +15,8 @@ type Props = {
 };
 
 export function AllocationChart({ data, title, name, size = 220, card = false }: Props) {
-  const entries = buildAllocationEntries(data);
-  const balancedScore = computeBalanceScore(data);
+  const entries = useMemo(() => buildAllocationEntries(data), [data]);
+  const balancedScore = useMemo(() => computeBalanceScore(data), [data]);
   return (
     <div className={cn("text-center", { card })} data-testid={`${name}-card`}>
       <div className={cn({ "card-body": card })}>
