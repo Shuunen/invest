@@ -1,6 +1,7 @@
 import type { Allocation, Asset } from "../schemas/index.ts";
 
 export const similarityWarningThreshold = 0.6;
+
 export const similarityErrorThreshold = 0.8;
 
 export function computeAllocationSimilarity(alloc1: Allocation, alloc2: Allocation): number | undefined {
@@ -34,8 +35,9 @@ export function computeAssetSimilarity(asset1: Asset, asset2: Asset): number | u
   return defined.reduce((acc, score) => acc + score, 0) / defined.length;
 }
 
-export function computeMaxSimilarity(asset: Asset, others: Asset[]): { score: number; matchedIsin: string } | undefined {
-  const candidates = others.filter(other => other.isin !== asset.isin);
+export function computeMaxSimilarity(asset: Asset, others: Asset[], excludeIsins?: string[]): { score: number; matchedIsin: string } | undefined {
+  const excluded = new Set(excludeIsins);
+  const candidates = others.filter(other => other.isin !== asset.isin && !excluded.has(other.isin));
   if (candidates.length === 0) return undefined;
 
   let best: { score: number; matchedIsin: string } | undefined = undefined;

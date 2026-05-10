@@ -25,6 +25,7 @@ type AppStore = {
   addPortfolio: (portfolio: Portfolio) => void;
   data: AppData;
   deletePortfolio: (id: string) => void;
+  dismissSimilarity: (isin: string, matchedIsin: string) => void;
   isLoading: boolean;
   loadData: (data: AppData) => void;
   loadError: Error | undefined;
@@ -35,6 +36,7 @@ type AppStore = {
   setLoadError: (error: Error) => void;
   setPortfolioAssets: (portfolioId: string, entries: PortfolioEntry[]) => void;
   setSort: (sort: Settings["sort"]) => void;
+  unDismissSimilarity: (isin: string, matchedIsin: string) => void;
   updateAsset: (isin: string, asset: Asset) => void;
   updateAssetPrice: (isin: string, price: number) => void;
   updatePortfolio: (id: string, patch: Partial<Pick<Portfolio, "name" | "broker">>) => void;
@@ -73,6 +75,14 @@ export const useAppStore = create<AppStore>()(
         data: {
           ...state.data,
           portfolios: state.data.portfolios.filter(portfolio => portfolio.id !== id),
+          settings: incrementEditCount(state.data.settings),
+        },
+      })),
+    dismissSimilarity: (isin, matchedIsin) =>
+      set(state => ({
+        data: {
+          ...state.data,
+          assets: state.data.assets.map(asset => (asset.isin === isin && !asset.dismissedSimilarities.includes(matchedIsin) ? { ...asset, dismissedSimilarities: [...asset.dismissedSimilarities, matchedIsin] } : asset)),
           settings: incrementEditCount(state.data.settings),
         },
       })),
@@ -116,6 +126,14 @@ export const useAppStore = create<AppStore>()(
     setSort: sort =>
       set(state => ({
         data: { ...state.data, settings: { ...state.data.settings, sort } },
+      })),
+    unDismissSimilarity: (isin, matchedIsin) =>
+      set(state => ({
+        data: {
+          ...state.data,
+          assets: state.data.assets.map(asset => (asset.isin === isin ? { ...asset, dismissedSimilarities: asset.dismissedSimilarities.filter(dismissed => dismissed !== matchedIsin) } : asset)),
+          settings: incrementEditCount(state.data.settings),
+        },
       })),
     updateAsset: (isin, asset) =>
       set(state => {

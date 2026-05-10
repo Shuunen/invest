@@ -90,6 +90,7 @@ describe("SettingsSchema", () => {
 const baseAsset: Asset = {
   availableForPlan: true,
   availableOnBroker: true,
+  dismissedSimilarities: [],
   fees: 0.2,
   geoAllocation: {},
   isAccumulating: true,

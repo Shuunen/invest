@@ -11,6 +11,7 @@
       "Bash(ps *)",
       "Bash(python3 -c ' *)",
       "Bash(python3 *)",
+      "Bash(rtk *)",
       "Bash(sed *)",
       "Bash(xargs -r ps -p)",
       "Skill(autoplan)",

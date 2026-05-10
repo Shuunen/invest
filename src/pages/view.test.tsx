@@ -14,6 +14,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPlan: true,
     availableOnBroker: true,
+    dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: { us: 0.6 },
     isAccumulating: true,
@@ -255,5 +256,34 @@ describe("AssetViewPage - not found", () => {
     });
     render(<AssetViewPage isin={asset.isin} />);
     expect(screen.getByTestId("geo-allocation-chart")).toBeInTheDocument();
+  });
+});
+
+describe("AssetViewPage - dismissed similarities", () => {
+  it("does not show dismissed similarities card when list is empty", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ dismissedSimilarities: [] });
+    useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
+    render(<AssetViewPage isin={asset.isin} />);
+    expect(screen.queryByTestId("dismissed-similarities-card")).not.toBeInTheDocument();
+  });
+
+  it("shows dismissed similarities card with matched asset name when list is non-empty", () => {
+    expect.hasAssertions();
+    const otherIsin = "FR0000000001";
+    const other = makeAsset({ isin: otherIsin, name: "Other Fund" });
+    const asset = makeAsset({ dismissedSimilarities: [otherIsin] });
+    useAppStore.setState({ data: { ...defaultAppData, assets: [asset, other] }, isLoading: false, loadError: undefined });
+    render(<AssetViewPage isin={asset.isin} />);
+    expect(screen.getByTestId("dismissed-similarities-card")).toHaveTextContent("Other Fund");
+  });
+
+  it("shows ISIN as fallback when matched asset is not found", () => {
+    expect.hasAssertions();
+    const unknownIsin = "XX0000000001";
+    const asset = makeAsset({ dismissedSimilarities: [unknownIsin] });
+    useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
+    render(<AssetViewPage isin={asset.isin} />);
+    expect(screen.getByTestId("dismissed-similarities-card")).toHaveTextContent(unknownIsin);
   });
 });

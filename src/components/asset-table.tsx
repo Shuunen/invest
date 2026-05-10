@@ -15,9 +15,10 @@ import { PageHeader } from "./page-header.tsx";
 
 type Props = {
   assets?: Asset[];
-  onRemoveAsset?: (isin: string) => void;
   onAmountChange?: (isin: string, amount: number) => void;
+  onDismissSimilarity?: (isin: string, matchedIsin: string) => void;
   onPriceChange?: (isin: string, price: number) => void;
+  onRemoveAsset?: (isin: string) => void;
   onToggleSelect?: (isin: string) => void;
   selectedIsins?: Set<string>;
   amountMap?: Map<string, number>;
@@ -47,11 +48,12 @@ function buildActiveColumns({
   onToggleSelect,
   onRemoveAsset,
   onAmountChange,
+  onDismissSimilarity,
   onPriceChange,
   amountMap,
   amountUpdatedAtMap,
   assets,
-}: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onPriceChange" | "amountMap" | "amountUpdatedAtMap" | "assets">): ColumnDef<Asset>[] {
+}: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onDismissSimilarity" | "onPriceChange" | "amountMap" | "amountUpdatedAtMap" | "assets">): ColumnDef<Asset>[] {
   const baseCols = onPriceChange ? columns.filter(col => col.id !== "price") : columns;
   // Insert data-score right after the first column (Score) so the two quality indicators sit together
   const colsWithDataScore = [baseCols[0], makeDataScoreColumn(amountMap, amountUpdatedAtMap), ...baseCols.slice(1)];
@@ -62,12 +64,12 @@ function buildActiveColumns({
     ...(onAmountChange ? [makeAmountColumn(amountMap)] : []),
     ...(amountUpdatedAtMap ? [makeAmountUpdatedAtColumn(amountUpdatedAtMap)] : []),
     ...(onAmountChange ? [makeValueColumn(amountMap)] : []),
-    ...(onAmountChange && assets ? [makeSimilarityColumn(assets)] : []),
+    ...(onAmountChange && assets ? [makeSimilarityColumn(assets, onDismissSimilarity)] : []),
     ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : []),
   ];
 }
 
-function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onPriceChange, onToggleSelect, selectedIsins, amountMap, amountUpdatedAtMap }: Props = {}) {
+function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onDismissSimilarity, onPriceChange, onToggleSelect, selectedIsins, amountMap, amountUpdatedAtMap }: Props = {}) {
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
@@ -81,7 +83,7 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
   };
   useHydration(retryKey);
   const resolvedVisibility = useMemo(() => ({ ...defaultColumnVisibility, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
-  const activeColumns = buildActiveColumns({ amountMap, amountUpdatedAtMap, assets: propAssets, onAmountChange, onPriceChange, onRemoveAsset, onToggleSelect });
+  const activeColumns = buildActiveColumns({ amountMap, amountUpdatedAtMap, assets: propAssets, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onToggleSelect });
   const sorting: SortingState = useMemo(() => {
     const { column, direction } = data.settings.sort;
     if (column === "amount" && !onAmountChange) return [];
@@ -216,7 +218,7 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
   );
 }
 
-export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, onToggleSelect, selectedIsins, amountMap, amountUpdatedAtMap, onPriceChange: propOnPriceChange }: Props = {}) {
+export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, onDismissSimilarity, onToggleSelect, selectedIsins, amountMap, amountUpdatedAtMap, onPriceChange: propOnPriceChange }: Props = {}) {
   const navigate = useNavigate();
   const [isPriceEditing, setIsPriceEditing] = useState(false);
   const priceEditActions = useMemo(() => {
@@ -236,6 +238,7 @@ export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, 
     amountUpdatedAtMap,
     assets: propAssets,
     onAmountChange,
+    onDismissSimilarity,
     onPriceChange,
     onRemoveAsset,
     onToggleSelect,

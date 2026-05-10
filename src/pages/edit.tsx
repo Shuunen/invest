@@ -5,6 +5,7 @@ import { toast } from "react-hot-toast";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { AssetForm } from "./edit/asset-form.tsx";
+import { DismissedSimilaritiesSection } from "./edit/dismissed-similarities.tsx";
 import { buildDiffRows, type DiffRow } from "./edit/form-diff.ts";
 import { buildAssetFromForm, emptyFormState, toFormState, type FormState } from "./edit/form-state.ts";
 import { IsinFetchRow } from "./edit/isin-fetch-row.tsx";
@@ -108,6 +109,9 @@ type Props = { isin: string };
 export function AssetEditPage({ isin: originalIsin }: Props) {
   const navigate = useNavigate();
   const { closeConfirm, confirmSave, diffRows, form, errors, fetchError, patch, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, resetAndClose } = useAssetEditForm(originalIsin);
+  const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === originalIsin));
+  const allAssets = useAppStore(state => state.data.assets);
+  const unDismissSimilarity = useAppStore(state => state.unDismissSimilarity);
 
   if (!form)
     return (
@@ -132,6 +136,11 @@ export function AssetEditPage({ isin: originalIsin }: Props) {
         patch={patch}
         disableSave={!hasChanges}
       />
+      {asset && asset.dismissedSimilarities.length > 0 && (
+        <div className="mx-auto max-w-4xl px-6 pb-6">
+          <DismissedSimilaritiesSection asset={asset} allAssets={allAssets} onUnDismiss={unDismissSimilarity} />
+        </div>
+      )}
       {isConfirmOpen && <SaveModal diffRows={diffRows} onClose={closeConfirm} onConfirm={confirmSave} onReset={resetAndClose} />}
     </>
   );
