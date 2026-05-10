@@ -1,4 +1,4 @@
-import { kebabCase } from "es-toolkit/string";
+import { kebabCase } from "es-toolkit";
 import { ModalActions } from "../../components/modal-actions";
 import { ModalHeader } from "../../components/modal-header";
 import type { DiffRow } from "./form-diff.ts";

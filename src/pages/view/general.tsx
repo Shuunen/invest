@@ -1,4 +1,4 @@
-import { kebabCase } from "es-toolkit/string";
+import { kebabCase } from "es-toolkit";
 import type { Asset } from "../../schemas/index.ts";
 import { cn } from "../../utils/browser-styles.ts";
 import { formatDate } from "../../utils/format-numbers.ts";

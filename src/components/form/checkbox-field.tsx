@@ -1,4 +1,4 @@
-import { kebabCase } from "es-toolkit/string";
+import { kebabCase } from "es-toolkit";
 
 export type CheckboxFieldProps = {
   label: string;
