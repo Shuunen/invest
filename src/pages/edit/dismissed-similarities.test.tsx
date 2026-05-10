@@ -39,7 +39,7 @@ describe("EditDismissedSimilaritiesSection", () => {
 
     renderSection(asset, allAssets, onUnDismiss);
 
-    expect(screen.queryByTestId("edit-dismissed-similarities-card")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("dismissed-similarities-card")).not.toBeInTheDocument();
   });
 
   it("opens confirm modal and un-dismisses with matching values", () => {
