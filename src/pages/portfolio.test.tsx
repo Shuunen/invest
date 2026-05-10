@@ -252,6 +252,24 @@ describe("PortfolioPage - empty portfolio", () => {
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(0);
   });
 
+  it("amount shows as text by default and as input when editing", () => {
+    expect.hasAssertions();
+    const asset = makeAsset();
+    const portfolio = makePortfolio({
+      entries: [{ amount: 5, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.queryByTestId("amount-input-lu1234567890")).not.toBeInTheDocument();
+    expect(screen.getByTestId("amount-lu1234567890")).toHaveTextContent("5");
+    fireEvent.click(screen.getByTestId("action-edit"));
+    expect(screen.getByTestId("amount-input-lu1234567890")).toBeInTheDocument();
+  });
+
   it("amount input updates entry amount in the store on blur", () => {
     expect.hasAssertions();
     const asset = makeAsset();
@@ -264,6 +282,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
+    fireEvent.click(screen.getByTestId("action-edit"));
     const input = screen.getByTestId("amount-input-lu1234567890");
     fireEvent.click(input);
     fireEvent.change(input, { target: { value: "15" } });
@@ -283,6 +302,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
+    fireEvent.click(screen.getByTestId("action-edit"));
     const input = screen.getByTestId("amount-input-lu1234567890");
     fireEvent.blur(input);
     expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.amount).toBe(5);
@@ -330,8 +350,8 @@ describe("PortfolioPage - empty portfolio", () => {
   });
 });
 
-describe("PortfolioPage - price editing", () => {
-  it("clicking Edit prices toggles to Done and shows price inputs", () => {
+describe("PortfolioPage - editing mode", () => {
+  it("clicking Edit toggles to Done and shows price and amount inputs", () => {
     expect.hasAssertions();
     const asset = makeAsset({ isin: "LU1111111111", price: 50 });
     const portfolio = makePortfolio({
@@ -344,9 +364,10 @@ describe("PortfolioPage - price editing", () => {
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
     expect(screen.queryByTestId(`price-input-${asset.isin.toLowerCase()}`)).not.toBeInTheDocument();
-    fireEvent.click(screen.getByTestId("action-edit-prices"));
-    expect(screen.getByTestId("action-set-prices")).toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("action-edit"));
+    expect(screen.getByTestId("action-done")).toBeInTheDocument();
     expect(screen.getByTestId(`price-input-${asset.isin.toLowerCase()}`)).toBeInTheDocument();
+    expect(screen.getByTestId(`amount-input-${asset.isin.toLowerCase()}`)).toBeInTheDocument();
   });
 
   it("price input blur with new value updates asset price in the store", () => {
@@ -361,11 +382,48 @@ describe("PortfolioPage - price editing", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    fireEvent.click(screen.getByTestId("action-edit-prices"));
+    fireEvent.click(screen.getByTestId("action-edit"));
     const input = screen.getByTestId(`price-input-${asset.isin.toLowerCase()}`);
     fireEvent.change(input, { target: { value: "99" } });
     fireEvent.blur(input);
     expect(useAppStore.getState().data.assets[0]?.price).toBe(99);
+  });
+
+  it("note shows as text by default and as input when editing", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1111111111" });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "my note", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.queryByTestId(`note-input-${asset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    expect(screen.getByTestId(`note-${asset.isin.toLowerCase()}`)).toHaveTextContent("my note");
+    fireEvent.click(screen.getByTestId("action-edit"));
+    expect(screen.getByTestId(`note-input-${asset.isin.toLowerCase()}`)).toBeInTheDocument();
+  });
+
+  it("note input blur with new value updates entry note in the store", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1111111111" });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    fireEvent.click(screen.getByTestId("action-edit"));
+    const input = screen.getByTestId(`note-input-${asset.isin.toLowerCase()}`);
+    fireEvent.change(input, { target: { value: "great fund" } });
+    fireEvent.blur(input);
+    expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.notes).toBe("great fund");
   });
 });
 

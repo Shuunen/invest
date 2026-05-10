@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(~/.claude/skills/gstack/bin/*)",
+      "Bash(awk *)",
       "Bash(git *)",
       "Bash(grep *)",
       "Bash(node -e *)",
