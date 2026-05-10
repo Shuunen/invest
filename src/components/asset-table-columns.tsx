@@ -2,6 +2,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
 import { computeDataScore, computeScore, dataScoreWarnThreshold, type Asset, type PortfolioEntry } from "../schemas/index.ts";
+import { computeMaxSimilarity, similarityErrorThreshold, similarityWarningThreshold } from "../utils/asset-similarity.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { maxPercentage } from "../utils/constants.ts";
 import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
@@ -298,6 +299,41 @@ export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string
     header: "Amt. updated",
     id: "amount-updated-at",
     meta: { center: true, title: "Date the portfolio amount was last changed" },
+  };
+}
+
+export function makeSimilarityColumn(assets: Asset[]): ColumnDef<Asset> {
+  return {
+    accessorFn: row => computeMaxSimilarity(row, assets)?.score,
+    cell: ({ getValue, row }) => {
+      const score = getValue<number | undefined>();
+      const { isin } = row.original;
+      if (score === undefined)
+        return (
+          <span data-testid={`similarity-${isin.toLowerCase()}`} className="flex items-center justify-center">
+            –
+          </span>
+        );
+      const pct = `${Math.round(score * maxPercentage)}%`;
+      const isError = score > similarityErrorThreshold;
+      const isWarning = score > similarityWarningThreshold;
+      const dotClass = isError ? "bg-error" : "bg-warning";
+      /* v8 ignore next -- score defined → computeMaxSimilarity non-null; matchedIsin always in assets */
+      const matchedResult = computeMaxSimilarity(row.original, assets);
+      /* v8 ignore next -- matchedAsset always found since matchedIsin comes from the same assets list */
+      const tipText = matchedResult ? `${pct} similar to ${(assets.find(candidate => candidate.isin === matchedResult.matchedIsin) ?? { name: "" }).name}` : pct;
+      if (!isWarning) return undefined;
+      return (
+        <span data-testid={`similarity-${isin.toLowerCase()}`} data-tip={tipText} className="tooltip flex items-center gap-1.5">
+          <span className={cn("inline-block h-2 w-2 shrink-0 rounded-full", dotClass)} />
+          <span className="w-8 text-center">{pct}</span>
+        </span>
+      );
+    },
+    header: "Similarity",
+    id: "similarity",
+    meta: { title: "Similarity geo/sector" },
+    sortUndefined: "last",
   };
 }
 

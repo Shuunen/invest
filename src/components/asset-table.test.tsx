@@ -857,6 +857,70 @@ describe("AssetTable - updatedAt column", () => {
   });
 });
 
+const simIsinA = "LU0000000001";
+const simIsinB = "LU0000000002";
+const simGlobalAsset = makeAsset({ geoAllocation: { us: 1 }, isin: simIsinA });
+const simNoDataAssets = [makeAsset({ isin: simIsinA }), makeAsset({ isin: simIsinB })];
+const simNeutralAssets = [makeAsset({ geoAllocation: { eu: 0.5, us: 0.5 }, isin: simIsinA }), makeAsset({ geoAllocation: { asia: 0.6, eu: 0.2, us: 0.2 }, isin: simIsinB })];
+// A={eu:0.5,us:0.5} vs B={eu:0.8,us:0.2}: overlap=min(0.5,0.8)+min(0.5,0.2)=0.7 → 70% (warning range)
+const simWarningAssets = [makeAsset({ geoAllocation: { eu: 0.5, us: 0.5 }, isin: simIsinA }), makeAsset({ geoAllocation: { eu: 0.8, us: 0.2 }, isin: simIsinB, name: "Similar ETF" })];
+const simErrorAssets = [makeAsset({ geoAllocation: { us: 1 }, isin: simIsinA }), makeAsset({ geoAllocation: { us: 1 }, isin: simIsinB, name: "Duplicate ETF" })];
+
+describe("AssetTable - similarity column", () => {
+  const onAmountChange = vi.fn<(isin: string, amount: number) => void>();
+
+  it("does not render similarity column in global table (no onAmountChange)", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData([simGlobalAsset]), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    expect(screen.queryByTestId(`similarity-${simIsinA.toLowerCase()}`)).not.toBeInTheDocument();
+  });
+
+  it("renders dash for undefined similarity (no allocation data)", () => {
+    expect.hasAssertions();
+    render(<AssetTable assets={simNoDataAssets} onAmountChange={onAmountChange} />);
+    const cell = screen.getByTestId(`similarity-${simIsinA.toLowerCase()}`);
+    expect(cell).toHaveTextContent("–");
+  });
+
+  it("renders nothing for neutral similarity ≤60%", () => {
+    expect.hasAssertions();
+    render(<AssetTable assets={simNeutralAssets} onAmountChange={onAmountChange} />);
+    expect(screen.queryByTestId(`similarity-${simIsinA.toLowerCase()}`)).not.toBeInTheDocument();
+  });
+
+  it("renders yellow dot for warning similarity >60%", () => {
+    expect.hasAssertions();
+    render(<AssetTable assets={simWarningAssets} onAmountChange={onAmountChange} />);
+    const cell = screen.getByTestId(`similarity-${simIsinA.toLowerCase()}`);
+    const dot = cell.querySelector(".bg-warning");
+    expect(dot).toBeInTheDocument();
+  });
+
+  it("renders red dot for error similarity >80%", () => {
+    expect.hasAssertions();
+    render(<AssetTable assets={simErrorAssets} onAmountChange={onAmountChange} />);
+    const cell = screen.getByTestId(`similarity-${simIsinA.toLowerCase()}`);
+    const dot = cell.querySelector(".bg-error");
+    expect(dot).toBeInTheDocument();
+  });
+
+  it("sets data-tip with matched asset name on warning/error badge", () => {
+    expect.hasAssertions();
+    render(<AssetTable assets={simErrorAssets} onAmountChange={onAmountChange} />);
+    const cell = screen.getByTestId(`similarity-${simIsinA.toLowerCase()}`);
+    expect(cell).toHaveAttribute("data-tip");
+    expect(cell.dataset.tip).toMatch(/100% similar to Duplicate ETF/u);
+  });
+
+  it("renders similarity column when onAmountChange is provided", () => {
+    expect.hasAssertions();
+    render(<AssetTable assets={simErrorAssets} onAmountChange={onAmountChange} />);
+    const testId = `similarity-${simIsinA.toLowerCase()}`;
+    expect(screen.getByTestId(testId)).toHaveTextContent("100%");
+  });
+});
+
 describe("formatPercent", () => {
   it("formats positive numbers with plus sign and percent symbol", () => {
     expect.hasAssertions();
