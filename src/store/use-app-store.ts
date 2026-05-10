@@ -151,10 +151,18 @@ export const useAppStore = create<AppStore>()(
                 ...portfolio,
                 entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, isin: newIsin } : entry)),
               }));
+        const assets =
+          isin === newIsin
+            ? state.data.assets.map(data => (data.isin === isin ? { ...asset, updatedAt: new Date().toISOString() } : data))
+            : state.data.assets.map(data => {
+                if (data.isin === isin) return { ...asset, updatedAt: new Date().toISOString() };
+                if (!data.dismissedSimilarities.includes(isin)) return data;
+                return { ...data, dismissedSimilarities: data.dismissedSimilarities.map(dismissed => (dismissed === isin ? newIsin : dismissed)) };
+              });
         return {
           data: {
             ...state.data,
-            assets: state.data.assets.map(data => (data.isin === isin ? { ...asset, updatedAt: new Date().toISOString() } : data)),
+            assets,
             portfolios,
             settings: incrementEditCount(state.data.settings),
           },

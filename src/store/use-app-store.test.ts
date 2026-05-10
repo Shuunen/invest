@@ -180,6 +180,21 @@ describe("useAppStore - asset mutations", () => {
     expect(entries?.[1]?.isin).toBe("LU0987654321");
   });
 
+  it("updateAsset cascades ISIN rename into dismissedSimilarities of other assets", () => {
+    expect.hasAssertions();
+    const assetB = { ...baseAsset, dismissedSimilarities: [baseAsset.isin, "LU_OTHER"], isin: "LU0987654321", name: "ETF B" };
+    const assetC = { ...baseAsset, dismissedSimilarities: [], isin: "LU1111111111", name: "ETF C" };
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [baseAsset, assetB, assetC] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    const renamed = { ...baseAsset, isin: "LU9999999999" };
+    useAppStore.getState().updateAsset(baseAsset.isin, renamed);
+    expect(useAppStore.getState().data.assets[1]?.dismissedSimilarities).toStrictEqual(["LU9999999999", "LU_OTHER"]);
+    expect(useAppStore.getState().data.assets[2]?.dismissedSimilarities).toStrictEqual([]);
+  });
+
   it("updateAssetPrice updates the matching asset price and leaves others unchanged", () => {
     expect.hasAssertions();
     const assetB = { ...baseAsset, isin: "LU0987654321", name: "ETF B", price: 20 };

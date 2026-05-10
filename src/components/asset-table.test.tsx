@@ -901,25 +901,19 @@ describe("AssetTable - similarity column", () => {
   it("renders yellow dot for warning similarity >60%", () => {
     expect.hasAssertions();
     render(<AssetTable assets={simWarningAssets} onAmountChange={onAmountChange} />);
-    const cell = screen.getByTestId(`similarity-${simIsinA.toLowerCase()}`);
-    const dot = cell.querySelector(".bg-warning");
-    expect(dot).toBeInTheDocument();
+    expect(screen.getByTestId(`similarity-dot-${simIsinA.toLowerCase()}`)).toHaveClass("bg-warning");
   });
 
   it("renders red dot for error similarity >80%", () => {
     expect.hasAssertions();
     render(<AssetTable assets={simErrorAssets} onAmountChange={onAmountChange} />);
-    const cell = screen.getByTestId(`similarity-${simIsinA.toLowerCase()}`);
-    const dot = cell.querySelector(".bg-error");
-    expect(dot).toBeInTheDocument();
+    expect(screen.getByTestId(`similarity-dot-${simIsinA.toLowerCase()}`)).toHaveClass("bg-error");
   });
 
   it("shows popover with matched asset name on hover", async () => {
     expect.hasAssertions();
     render(<AssetTable assets={simErrorAssets} onAmountChange={onAmountChange} />);
-    const cell = screen.getByTestId(`similarity-${simIsinA.toLowerCase()}`);
-    const wrapper = cell.closest("[class*=relative]") as HTMLElement;
-    invariant(wrapper, "Expected wrapper element to exist");
+    const wrapper = screen.getByTestId(`similarity-wrapper-${simIsinA.toLowerCase()}`);
     await userEvent.hover(wrapper);
     const popover = screen.getByTestId(`similarity-popover-${simIsinA.toLowerCase()}`);
     expect(popover).toHaveTextContent(/100% similar to Duplicate ETF/u);

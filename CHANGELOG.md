@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2026-05-11
+
+### Added in 0.8.0
+
+- Similarity detection — the asset table now shows a "Similarity" column that flags ETFs with overlapping geographic or sector allocations above a warning/error threshold, with a hover popover showing the percentage and the matched fund name
+- Dismiss/un-dismiss similarity — users can dismiss a similarity warning from the popover and restore it from the edit page dismissed-similarities section, with ISIN rename cascading into stored dismissed-similarity references
+- Notes on portfolio entries — each portfolio position can now have a free-text note, editable inline when the portfolio is in edit mode and displayed in the asset table
+
+### Fixed in 0.8.0
+
+- Luxembourg and Israel added to country schemas and allocation charts (geo allocation pie charts)
+
 ## [0.7.0] - 2026-05-10
 
 ### Added in 0.7.0
