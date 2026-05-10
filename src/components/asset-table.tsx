@@ -1,3 +1,4 @@
+// oxlint-disable max-lines
 import { useNavigate } from "@tanstack/react-router";
 import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
 import { CheckIcon, PencilLineIcon, PlusIcon } from "lucide-react";
@@ -5,7 +6,20 @@ import { useCallback, useMemo, useState } from "react";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { type AssetTableMeta, columns, makeAmountColumn, makeAmountUpdatedAtColumn, makeDataScoreColumn, makePriceEditColumn, makeRemoveColumn, makeSelectColumn, makeSimilarityColumn, makeValueColumn } from "./asset-table-columns.tsx";
+import {
+  type AssetTableMeta,
+  columns,
+  makeAmountColumn,
+  makeAmountUpdatedAtColumn,
+  makeDataScoreColumn,
+  makeNoteColumn,
+  makePriceEditColumn,
+  makePortfolioPriceColumn,
+  makeRemoveColumn,
+  makeSelectColumn,
+  makeSimilarityColumn,
+  makeValueColumn,
+} from "./asset-table-columns.tsx";
 import { useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
@@ -15,8 +29,11 @@ import { PageHeader } from "./page-header.tsx";
 
 type Props = {
   assets?: Asset[];
+  isEditing?: boolean;
+  noteMap?: Map<string, string>;
   onAmountChange?: (isin: string, amount: number) => void;
   onDismissSimilarity?: (isin: string, matchedIsin: string) => void;
+  onNoteChange?: (isin: string, note: string) => void;
   onPriceChange?: (isin: string, price: number) => void;
   onRemoveAsset?: (isin: string) => void;
   onToggleSelect?: (isin: string) => void;
@@ -54,22 +71,25 @@ function buildActiveColumns({
   amountUpdatedAtMap,
   assets,
 }: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onDismissSimilarity" | "onPriceChange" | "amountMap" | "amountUpdatedAtMap" | "assets">): ColumnDef<Asset>[] {
-  const baseCols = onPriceChange ? columns.filter(col => col.id !== "price") : columns;
+  const isPortfolioMode = Boolean(onAmountChange);
+  const baseCols = onPriceChange || isPortfolioMode ? columns.filter(col => col.id !== "price") : columns;
   // Insert data-score right after the first column (Score) so the two quality indicators sit together
   const colsWithDataScore = [baseCols[0], makeDataScoreColumn(amountMap, amountUpdatedAtMap), ...baseCols.slice(1)];
   return [
     ...(onToggleSelect ? [makeSelectColumn()] : []),
     ...colsWithDataScore,
-    ...(onPriceChange ? [makePriceEditColumn()] : []),
+    ...(onPriceChange && !isPortfolioMode ? [makePriceEditColumn()] : []),
+    ...(isPortfolioMode ? [makePortfolioPriceColumn()] : []),
     ...(onAmountChange ? [makeAmountColumn(amountMap)] : []),
     ...(amountUpdatedAtMap ? [makeAmountUpdatedAtColumn(amountUpdatedAtMap)] : []),
-    ...(onAmountChange ? [makeValueColumn(amountMap)] : []),
     ...(onAmountChange && assets ? [makeSimilarityColumn(assets, onDismissSimilarity)] : []),
+    ...(isPortfolioMode ? [makeNoteColumn()] : []),
+    ...(onAmountChange ? [makeValueColumn(amountMap)] : []),
     ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : []),
   ];
 }
 
-function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onDismissSimilarity, onPriceChange, onToggleSelect, selectedIsins, amountMap, amountUpdatedAtMap }: Props = {}) {
+function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onDismissSimilarity, onPriceChange, onToggleSelect, selectedIsins, amountMap, amountUpdatedAtMap, isEditing, noteMap, onNoteChange }: Props = {}) {
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
@@ -94,7 +114,8 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
     if (!lower) return propAssets ?? data.assets;
     return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
   }, [data.assets, filterText, propAssets]);
-  const meta: AssetTableMeta | undefined = (onToggleSelect ?? onAmountChange ?? onPriceChange ?? amountUpdatedAtMap) ? { amountMap, amountUpdatedAtMap, onAmountChange, onPriceChange, onToggleSelect, selectedIsins } : undefined;
+  const meta: AssetTableMeta | undefined =
+    (onToggleSelect ?? onAmountChange ?? onPriceChange ?? amountUpdatedAtMap) ? { amountMap, amountUpdatedAtMap, isEditing, noteMap, onAmountChange, onNoteChange, onPriceChange, onToggleSelect, selectedIsins } : undefined;
   const table = useTableInstance({
     columns: activeColumns,
     filteredAssets,
@@ -169,7 +190,7 @@ function renderTableHeader(table: Table<Asset>) {
             <th
               key={header.id}
               aria-sort={header.column.getCanSort() ? getAriaSortValue(header.column.getIsSorted()) : undefined}
-              className={cn(header.column.getIsSorted() ? "font-semibold" : undefined, header.column.columnDef.meta?.center ? "text-center" : "pl-0")}
+              className={cn(header.column.getIsSorted() ? "font-semibold" : undefined, { "text-center": header.column.columnDef.meta?.center })}
               colSpan={header.colSpan}
               scope="col"
             >
@@ -218,9 +239,12 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
   );
 }
 
-export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, onDismissSimilarity, onToggleSelect, selectedIsins, amountMap, amountUpdatedAtMap, onPriceChange: propOnPriceChange }: Props = {}) {
+function useAssetsPriceEditState(propAssets: Asset[] | undefined, propOnPriceChange: ((isin: string, price: number) => void) | undefined) {
   const navigate = useNavigate();
   const [isPriceEditing, setIsPriceEditing] = useState(false);
+  const stablePriceChange = useCallback((isin: string, price: number) => {
+    useAppStore.getState().updateAssetPrice(isin, price);
+  }, []);
   const priceEditActions = useMemo(() => {
     const icon = isPriceEditing ? <CheckIcon size={16} /> : <PencilLineIcon size={16} />;
     return [
@@ -228,17 +252,34 @@ export function AssetTable({ assets: propAssets, onRemoveAsset, onAmountChange, 
       { icon, label: isPriceEditing ? "Done" : "Edit prices", onClick: () => setIsPriceEditing(prev => !prev) },
     ];
   }, [isPriceEditing, navigate]);
-  const stablePriceChange = useCallback((isin: string, price: number) => {
-    useAppStore.getState().updateAssetPrice(isin, price);
-  }, []);
-  const internalOnPriceChange = !propAssets && isPriceEditing ? stablePriceChange : undefined;
-  const onPriceChange = propOnPriceChange ?? internalOnPriceChange;
+  const onPriceChange = propOnPriceChange ?? (!propAssets && isPriceEditing ? stablePriceChange : undefined);
+  return { onPriceChange, priceEditActions };
+}
+
+export function AssetTable({
+  assets: propAssets,
+  onRemoveAsset,
+  onAmountChange,
+  onDismissSimilarity,
+  onToggleSelect,
+  selectedIsins,
+  amountMap,
+  amountUpdatedAtMap,
+  onPriceChange: propOnPriceChange,
+  isEditing,
+  noteMap,
+  onNoteChange,
+}: Props = {}) {
+  const { onPriceChange, priceEditActions } = useAssetsPriceEditState(propAssets, propOnPriceChange);
   const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({
     amountMap,
     amountUpdatedAtMap,
     assets: propAssets,
+    isEditing,
+    noteMap,
     onAmountChange,
     onDismissSimilarity,
+    onNoteChange,
     onPriceChange,
     onRemoveAsset,
     onToggleSelect,

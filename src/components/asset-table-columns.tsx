@@ -19,7 +19,10 @@ declare module "@tanstack/react-table" {
 }
 
 export type AssetTableMeta = {
+  isEditing?: boolean;
+  noteMap?: Map<string, string>;
   onAmountChange?: (isin: string, amount: number) => void;
+  onNoteChange?: (isin: string, note: string) => void;
   onPriceChange?: (isin: string, price: number) => void;
   onToggleSelect?: (isin: string) => void;
   selectedIsins?: Set<string>;
@@ -74,6 +77,12 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
       const meta = table.options.meta as AssetTableMeta | undefined;
       const { isin } = row.original;
       const value = meta?.amountMap?.get(isin) ?? 0;
+      if (!meta?.isEditing)
+        return (
+          <span data-testid={`amount-${isin.toLowerCase()}`} className={cn({ "text-warning": value === 0 })}>
+            {value === 0 ? "—" : value}
+          </span>
+        );
       return (
         <input
           type="number"
@@ -128,6 +137,75 @@ export function makePriceEditColumn(): ColumnDef<Asset> {
     header: "Price",
     id: "price",
     meta: { center: true, title: "Price of one asset in €" },
+  };
+}
+
+export function makePortfolioPriceColumn(): ColumnDef<Asset> {
+  return {
+    accessorKey: "price",
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { isin } = row.original;
+      const value = row.original.price;
+      if (!meta?.isEditing) return <span data-testid={`price-${isin.toLowerCase()}`}>{formatPrice(value)}</span>;
+      return (
+        <input
+          type="number"
+          className="input input-xs w-20 text-center"
+          min={0}
+          step={1}
+          defaultValue={value}
+          key={value}
+          id={`price-input-${isin.toLowerCase()}`}
+          data-testid={`price-input-${isin.toLowerCase()}`}
+          aria-label={`Price for ${row.original.name}`}
+          onClick={event => event.stopPropagation()}
+          onBlur={event => {
+            const price = Math.max(0, Number(event.target.value) || 0);
+            if (price !== value) meta?.onPriceChange?.(isin, price);
+          }}
+        />
+      );
+    },
+    header: "Price",
+    id: "price",
+    meta: { center: true, title: "Price of one asset in €" },
+  };
+}
+
+export function makeNoteColumn(): ColumnDef<Asset> {
+  return {
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { isin } = row.original;
+      const value = meta?.noteMap?.get(isin) ?? "";
+      if (!meta?.isEditing)
+        return (
+          <span data-testid={`note-${isin.toLowerCase()}`} className="text-base-content/60">
+            {value || "—"}
+          </span>
+        );
+      return (
+        <input
+          type="text"
+          className="input input-xs w-[100px]"
+          defaultValue={value}
+          key={value}
+          id={`note-input-${isin.toLowerCase()}`}
+          data-testid={`note-input-${isin.toLowerCase()}`}
+          aria-label={`Note for ${row.original.name}`}
+          placeholder="Note…"
+          onClick={event => event.stopPropagation()}
+          onBlur={event => {
+            const note = event.target.value.trim();
+            if (note !== value) meta?.onNoteChange?.(isin, note);
+          }}
+        />
+      );
+    },
+    header: "Note",
+    id: "note",
+    meta: { title: "Note for this position" },
   };
 }
 
@@ -296,10 +374,9 @@ export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string
   return {
     accessorFn: row => amountUpdatedAtMap?.get(row.isin),
     cell: ({ getValue, row }) => <span data-testid={`amount-updated-at-${row.original.isin.toLowerCase()}`}>{formatDate(getValue<string | undefined>())}</span>,
-    enableHiding: false,
     header: "Amt. updated",
     id: "amount-updated-at",
-    meta: { center: true, title: "Date the portfolio amount was last changed" },
+    meta: { center: true, title: "Amount last updated" },
   };
 }
 

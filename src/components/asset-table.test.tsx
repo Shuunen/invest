@@ -646,21 +646,28 @@ describe("AssetTable - value column", () => {
 });
 
 describe("AssetTable - amount column", () => {
-  it("renders shares column with default 0 when no amountMap is provided", () => {
+  it("renders amount as text by default and shows — for zero", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData(amountAssets), isLoading: false, loadError: undefined });
+    render(<AssetTable assets={amountAssets} onAmountChange={vi.fn<(isin: string, shares: number) => void>()} />);
+    expect(screen.getByTestId(`amount-${amountAsset.isin.toLowerCase()}`)).toHaveTextContent("—");
+    expect(screen.queryByTestId(`amount-input-${amountAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+  });
+
+  it("renders amount input when isEditing is true with default 0 when no amountMap is provided", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData(amountAssets), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
-    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} />);
-    const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
-    expect(input).toHaveValue(0);
+    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} isEditing />);
+    expect(screen.getByTestId(`amount-input-${amountAsset.isin.toLowerCase()}`)).toHaveValue(0);
   });
 
   it("calls onAmountChange when input value changes and blurs", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData(amountAssets), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
-    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} />);
-    const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
+    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} isEditing />);
+    const input = screen.getByTestId(`amount-input-${amountAsset.isin.toLowerCase()}`);
     fireEvent.change(input, { target: { value: "7" } });
     fireEvent.blur(input);
     expect(onAmountChange).toHaveBeenCalledWith(amountAsset.isin, 7);
@@ -671,8 +678,8 @@ describe("AssetTable - amount column", () => {
     useAppStore.setState({ data: makeTestData(amountAssets), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
     const amountMap = new Map([[amountAsset.isin, 3]]);
-    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} amountMap={amountMap} />);
-    const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
+    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} amountMap={amountMap} isEditing />);
+    const input = screen.getByTestId(`amount-input-${amountAsset.isin.toLowerCase()}`);
     fireEvent.blur(input);
     expect(onAmountChange).not.toHaveBeenCalled();
   });
@@ -681,8 +688,8 @@ describe("AssetTable - amount column", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData(amountAssets), isLoading: false, loadError: undefined });
     const onAmountChange = vi.fn<(isin: string, shares: number) => void>();
-    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} />);
-    const input = screen.getByRole("spinbutton", { name: /amount for test etf/iu });
+    render(<AssetTable assets={amountAssets} onAmountChange={onAmountChange} isEditing />);
+    const input = screen.getByTestId(`amount-input-${amountAsset.isin.toLowerCase()}`);
     fireEvent.change(input, { target: { value: "" } });
     fireEvent.blur(input);
     expect(onAmountChange).not.toHaveBeenCalled();
@@ -694,20 +701,20 @@ describe("AssetTable - amount column", () => {
       [sortAsset1.isin, 5],
       [sortAsset2.isin, 2],
     ]);
-    render(<AssetTable assets={sortAssets} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
+    render(<AssetTable assets={sortAssets} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} isEditing />);
     const amountHeader = screen.getByRole("button", { name: /amount/iu });
     fireEvent.click(amountHeader);
-    const inputs = screen.getAllByRole("spinbutton");
+    const inputs = screen.getAllByTestId(/^amount-input-/u);
     expect(inputs[0]).toHaveValue(2);
     expect(inputs[1]).toHaveValue(5);
   });
 
   it("sorts by amount column using accessorFn without amountMap", () => {
     expect.hasAssertions();
-    render(<AssetTable assets={sortAssets} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
+    render(<AssetTable assets={sortAssets} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} isEditing />);
     const amountHeader = screen.getByRole("button", { name: /amount/iu });
     fireEvent.click(amountHeader);
-    const inputs = screen.getAllByRole("spinbutton");
+    const inputs = screen.getAllByTestId(/^amount-input-/u);
     expect(inputs[0]).toHaveValue(0);
     expect(inputs[1]).toHaveValue(0);
   });
@@ -923,6 +930,99 @@ describe("AssetTable - similarity column", () => {
     render(<AssetTable assets={simErrorAssets} onAmountChange={onAmountChange} />);
     const testId = `similarity-${simIsinA.toLowerCase()}`;
     expect(screen.getByTestId(testId)).toHaveTextContent("100%");
+  });
+});
+
+const noteAsset = makeAsset({ isin: "LU1111111111", name: "Note ETF" });
+const noteAssets = [noteAsset];
+const noteIsin = noteAsset.isin.toLowerCase();
+
+describe("AssetTable - note column", () => {
+  it("renders note as text (—) by default when no note set", () => {
+    expect.hasAssertions();
+    render(<AssetTable assets={noteAssets} onAmountChange={vi.fn<(id: string, count: number) => void>()} />);
+    expect(screen.getByTestId(`note-${noteIsin}`)).toHaveTextContent("—");
+    expect(screen.queryByTestId(`note-input-${noteIsin}`)).not.toBeInTheDocument();
+  });
+
+  it("renders note text when noteMap has a value", () => {
+    expect.hasAssertions();
+    const noteMap = new Map([[noteAsset.isin, "my note"]]);
+    render(<AssetTable assets={noteAssets} onAmountChange={vi.fn<(id: string, count: number) => void>()} noteMap={noteMap} />);
+    expect(screen.getByTestId(`note-${noteIsin}`)).toHaveTextContent("my note");
+  });
+
+  it("renders note input when isEditing is true", () => {
+    expect.hasAssertions();
+    const noteMap = new Map([[noteAsset.isin, "existing note"]]);
+    render(<AssetTable assets={noteAssets} onAmountChange={vi.fn<(id: string, count: number) => void>()} noteMap={noteMap} isEditing />);
+    expect(screen.getByTestId(`note-input-${noteIsin}`)).toHaveValue("existing note");
+    expect(screen.queryByTestId(`note-${noteIsin}`)).not.toBeInTheDocument();
+  });
+
+  it("calls onNoteChange when note input blurs with new value", () => {
+    expect.hasAssertions();
+    const onNoteChange = vi.fn<(isin: string, note: string) => void>();
+    const noteMap = new Map([[noteAsset.isin, "old"]]);
+    render(<AssetTable assets={noteAssets} onAmountChange={vi.fn<(id: string, count: number) => void>()} noteMap={noteMap} onNoteChange={onNoteChange} isEditing />);
+    const input = screen.getByTestId(`note-input-${noteIsin}`);
+    fireEvent.change(input, { target: { value: "new note" } });
+    fireEvent.blur(input);
+    expect(onNoteChange).toHaveBeenCalledWith(noteAsset.isin, "new note");
+  });
+
+  it("does not call onNoteChange when value is unchanged on blur", () => {
+    expect.hasAssertions();
+    const onNoteChange = vi.fn<(isin: string, note: string) => void>();
+    const noteMap = new Map([[noteAsset.isin, "same"]]);
+    render(<AssetTable assets={noteAssets} onAmountChange={vi.fn<(id: string, count: number) => void>()} noteMap={noteMap} onNoteChange={onNoteChange} isEditing />);
+    fireEvent.blur(screen.getByTestId(`note-input-${noteIsin}`));
+    expect(onNoteChange).not.toHaveBeenCalled();
+  });
+
+  it("clicking note input stops event propagation", () => {
+    expect.hasAssertions();
+    render(<AssetTable assets={noteAssets} onAmountChange={vi.fn<(id: string, count: number) => void>()} isEditing />);
+    expect(() => fireEvent.click(screen.getByTestId(`note-input-${noteIsin}`))).not.toThrow();
+  });
+});
+
+const pricePortfolioAsset = makeAsset({ isin: "LU2222222222", name: "Portfolio Price ETF", price: 42 });
+const pricePortfolioAssets = [pricePortfolioAsset];
+const pricePortfolioIsin = pricePortfolioAsset.isin.toLowerCase();
+const zeroPortfolioPriceAsset = makeAsset({ isin: "LU3333333333", name: "Zero ETF", price: 0 });
+const zeroPortfolioPriceAssets = [zeroPortfolioPriceAsset];
+
+describe("AssetTable - portfolio price column", () => {
+  it("renders price as text by default in portfolio mode", () => {
+    expect.hasAssertions();
+    render(<AssetTable assets={pricePortfolioAssets} onAmountChange={vi.fn<(id: string, count: number) => void>()} />);
+    expect(screen.getByTestId(`price-${pricePortfolioIsin}`)).toHaveTextContent("42");
+    expect(screen.queryByTestId(`price-input-${pricePortfolioIsin}`)).not.toBeInTheDocument();
+  });
+
+  it("clicking portfolio price input stops event propagation", () => {
+    expect.hasAssertions();
+    render(<AssetTable assets={pricePortfolioAssets} onAmountChange={vi.fn<(id: string, count: number) => void>()} isEditing />);
+    expect(() => fireEvent.click(screen.getByTestId(`price-input-${pricePortfolioIsin}`))).not.toThrow();
+  });
+
+  it("blurring portfolio price input with unchanged value does not call onPriceChange", () => {
+    expect.hasAssertions();
+    const onPriceChange = vi.fn<(isin: string, price: number) => void>();
+    render(<AssetTable assets={pricePortfolioAssets} onAmountChange={vi.fn<(id: string, count: number) => void>()} onPriceChange={onPriceChange} isEditing />);
+    fireEvent.blur(screen.getByTestId(`price-input-${pricePortfolioIsin}`));
+    expect(onPriceChange).not.toHaveBeenCalled();
+  });
+
+  it("blurring portfolio price input with NaN (empty) clamps to 0 and does not call when initial is also 0", () => {
+    expect.hasAssertions();
+    const onPriceChange = vi.fn<(isin: string, price: number) => void>();
+    render(<AssetTable assets={zeroPortfolioPriceAssets} onAmountChange={vi.fn<(id: string, count: number) => void>()} onPriceChange={onPriceChange} isEditing />);
+    const input = screen.getByTestId(`price-input-${zeroPortfolioPriceAsset.isin.toLowerCase()}`);
+    fireEvent.change(input, { target: { value: "" } });
+    fireEvent.blur(input);
+    expect(onPriceChange).not.toHaveBeenCalled();
   });
 });
 
