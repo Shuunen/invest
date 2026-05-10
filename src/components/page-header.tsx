@@ -1,4 +1,4 @@
-import { kebabCase } from "es-toolkit/string";
+import { kebabCase } from "es-toolkit";
 import { useMemo } from "react";
 import { computeScore, type Asset } from "../schemas";
 import { formatPercent } from "../utils/format-numbers";

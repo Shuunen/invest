@@ -125,10 +125,10 @@ Use `"utf8"` (not `"utf-8"`) as the canonical Node.js encoding string.
 
 **All `data-testid` values must be kebab-case.** Use descriptive lowercase-hyphenated IDs (e.g., `save-button`, `name-input`, `score-display`). For per-item elements include the item key (e.g., `` `price-input-${isin}` ``). CamelCase or PascalCase IDs are forbidden.
 
-When a `data-testid` is derived from a dynamic string (label, name, etc.), use `kebabCase` from `es-toolkit/string` instead of hand-rolling a converter:
+When a `data-testid` is derived from a dynamic string (label, name, etc.), use `kebabCase` from `es-toolkit` instead of hand-rolling a converter:
 
 ```ts
-import { kebabCase } from "es-toolkit/string";
+import { kebabCase } from "es-toolkit";
 
 // bad — fragile, misses edge cases
 const toKebab = (s: string) => s.toLowerCase().replaceAll(/\s+/g, "-");
