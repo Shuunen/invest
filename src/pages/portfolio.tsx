@@ -24,7 +24,7 @@ function computeAveragePortfolioDataScore(entries: PortfolioEntry[], assets: Ass
   for (const entry of entries) {
     const asset = assetByIsin.get(entry.isin);
     if (asset === undefined) continue;
-    totalScore += computeDataScore(asset, entry.amountUpdatedAt, true);
+    totalScore += computeDataScore(asset, entry);
     count += 1;
   }
 

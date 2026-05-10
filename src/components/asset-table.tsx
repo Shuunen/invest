@@ -53,7 +53,7 @@ function buildActiveColumns({
 }: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onPriceChange" | "amountMap" | "amountUpdatedAtMap">): ColumnDef<Asset>[] {
   const baseCols = onPriceChange ? columns.filter(col => col.id !== "price") : columns;
   // Insert data-score right after the first column (Score) so the two quality indicators sit together
-  const colsWithDataScore = [baseCols[0], makeDataScoreColumn(amountUpdatedAtMap), ...baseCols.slice(1)];
+  const colsWithDataScore = [baseCols[0], makeDataScoreColumn(amountMap, amountUpdatedAtMap), ...baseCols.slice(1)];
   return [
     ...(onToggleSelect ? [makeSelectColumn()] : []),
     ...colsWithDataScore,

@@ -78,7 +78,7 @@ const dataFreshnessDays = 30;
 const amountFreshnessDays = 90;
 const msPerDay = 86_400_000;
 const dataScoreBaseFields = 6;
-const dataScorePortfolioFields = 7;
+const dataScorePortfolioFields = 8;
 const dataScoreStaleWeight = 0.5;
 export const dataScoreWarnThreshold = 75;
 
@@ -88,19 +88,21 @@ function toAgeDays(isoDate: string): number {
 
 // data quality score (0-100): completeness + freshness of asset data fields
 // pass isPortfolio=true to include amountUpdatedAt freshness in the denominator
-export function computeDataScore(asset: Asset, amountUpdatedAt?: string, isPortfolio = false): number {
+export function computeDataScore(asset: Asset, entry?: PortfolioEntry): number {
   let score = 0;
-  const total = isPortfolio ? dataScorePortfolioFields : dataScoreBaseFields;
+  const total = entry ? dataScorePortfolioFields : dataScoreBaseFields;
 
-  if (asset.price !== undefined) score += 1;
+  if (asset.price && asset.price > 0) score += 1;
   if (asset.performance1y !== undefined) score += 1;
   if (asset.performance3y !== undefined) score += 1;
   if (asset.riskReward1y !== undefined) score += 1;
   if (asset.riskReward3y !== undefined) score += 1;
 
   if (asset.updatedAt !== undefined) score += toAgeDays(asset.updatedAt) <= dataFreshnessDays ? 1 : dataScoreStaleWeight;
-  if (isPortfolio && amountUpdatedAt !== undefined) score += toAgeDays(amountUpdatedAt) <= amountFreshnessDays ? 1 : dataScoreStaleWeight;
-
+  if (entry) {
+    if (entry.amountUpdatedAt !== undefined) score += toAgeDays(entry.amountUpdatedAt) <= amountFreshnessDays ? 1 : dataScoreStaleWeight;
+    if (entry.amount > 0) score += 1;
+  }
   return Math.round((score / total) * maxPercentage);
 }
 
