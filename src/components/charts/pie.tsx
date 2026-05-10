@@ -177,7 +177,7 @@ export function PieChart({ entries, name, size = 300 }: PieChartProps) {
         setHovered(undefined);
       }}
     >
-      <svg height={`${size}px`} viewBox={`0 0 ${size} ${size}`} width="100%" data-testid={kebabCase(`${name}-chart`)}>
+      <svg height={`${size}px`} viewBox={`0 0 ${size} ${size}`} width="100%" aria-label={`${name} allocation pie chart`} role="img" data-testid={kebabCase(`${name}-chart`)}>
         <defs>
           <style>{`@keyframes pie-dash { to { stroke-dashoffset: -${hoverDashCycle}; } } .pie-dash { animation: pie-dash 1s linear infinite; }`}</style>
         </defs>

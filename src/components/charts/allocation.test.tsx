@@ -3,7 +3,7 @@ import type { Allocation } from "../../schemas/index.ts";
 import { AllocationChart } from "./allocation.tsx";
 
 const emptyAllocation: Allocation = {};
-const simpleAllocation: Allocation = { us: 0.6, europe: 0.4 };
+const simpleAllocation: Allocation = { europe: 0.4, us: 0.6 };
 
 describe("AllocationChart", () => {
   it("renders the card container with the given name testid", () => {

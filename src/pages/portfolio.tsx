@@ -171,9 +171,11 @@ export function PortfolioPage({ portfolioId }: Props) {
     [isPriceEditing, setIsPriceEditing],
   );
 
+  const entries = useMemo(() => portfolio?.entries ?? [], [portfolio]);
+  const selectedIsins = useMemo(() => new Set(entries.map(entry => entry.isin)), [entries]);
+
   if (!portfolio) return renderNotFound();
-  const { broker, entries, name } = portfolio;
-  const selectedIsins = new Set(entries.map(entry => entry.isin));
+  const { broker, name } = portfolio;
 
   function handlePickerConfirm(newIsins: string[]) {
     setPortfolioAssets(portfolioId, buildEntries(newIsins, entries));
