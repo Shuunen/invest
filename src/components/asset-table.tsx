@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
-import { type AssetTableMeta, columns, makeAmountColumn, makeAmountUpdatedAtColumn, makeDataScoreColumn, makePriceEditColumn, makeRemoveColumn, makeSelectColumn, makeValueColumn } from "./asset-table-columns.tsx";
+import { type AssetTableMeta, columns, makeAmountColumn, makeAmountUpdatedAtColumn, makeDataScoreColumn, makePriceEditColumn, makeRemoveColumn, makeSelectColumn, makeSimilarityColumn, makeValueColumn } from "./asset-table-columns.tsx";
 import { useHydration } from "./asset-table-db.ts";
 import { renderColumnFilter, renderSearchFilter } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
@@ -50,7 +50,8 @@ function buildActiveColumns({
   onPriceChange,
   amountMap,
   amountUpdatedAtMap,
-}: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onPriceChange" | "amountMap" | "amountUpdatedAtMap">): ColumnDef<Asset>[] {
+  assets,
+}: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onPriceChange" | "amountMap" | "amountUpdatedAtMap" | "assets">): ColumnDef<Asset>[] {
   const baseCols = onPriceChange ? columns.filter(col => col.id !== "price") : columns;
   // Insert data-score right after the first column (Score) so the two quality indicators sit together
   const colsWithDataScore = [baseCols[0], makeDataScoreColumn(amountMap, amountUpdatedAtMap), ...baseCols.slice(1)];
@@ -61,6 +62,7 @@ function buildActiveColumns({
     ...(onAmountChange ? [makeAmountColumn(amountMap)] : []),
     ...(amountUpdatedAtMap ? [makeAmountUpdatedAtColumn(amountUpdatedAtMap)] : []),
     ...(onAmountChange ? [makeValueColumn(amountMap)] : []),
+    ...(onAmountChange && assets ? [makeSimilarityColumn(assets)] : []),
     ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : []),
   ];
 }
@@ -79,7 +81,7 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
   };
   useHydration(retryKey);
   const resolvedVisibility = useMemo(() => ({ ...defaultColumnVisibility, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
-  const activeColumns = buildActiveColumns({ amountMap, amountUpdatedAtMap, onAmountChange, onPriceChange, onRemoveAsset, onToggleSelect });
+  const activeColumns = buildActiveColumns({ amountMap, amountUpdatedAtMap, assets: propAssets, onAmountChange, onPriceChange, onRemoveAsset, onToggleSelect });
   const sorting: SortingState = useMemo(() => {
     const { column, direction } = data.settings.sort;
     if (column === "amount" && !onAmountChange) return [];

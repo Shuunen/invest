@@ -9,15 +9,16 @@
       "Bash(pnpm *)",
       "Bash(pnpx *)",
       "Bash(ps *)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3 *)",
       "Bash(sed *)",
       "Bash(xargs -r ps -p)",
+      "Skill(autoplan)",
       "Skill(investigate)",
       "Skill(qa)",
       "WebFetch(domain:api.github.com)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(python3 *)",
-      "Bash(python3 -c ' *)"
+      "WebFetch(domain:raw.githubusercontent.com)"
     ]
   }
 }
