@@ -20,7 +20,7 @@ type Props = {
 export function SimilarityCell({ asset, assets, onDismiss, result }: Props) {
   const { isin } = asset;
   const [visible, setVisible] = useState(false);
-  const hideTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => () => clearTimeout(hideTimer.current), []);
 
