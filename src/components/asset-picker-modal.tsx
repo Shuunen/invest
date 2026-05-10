@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Allocation, Asset } from "../schemas/index.ts";
 import { AssetTable } from "./asset-table.tsx";
 import { AllocationChart } from "./charts/allocation.tsx";
@@ -70,7 +70,8 @@ function renderPickerList({ assets, selected, toggle }: RenderListArgs) {
 
 export function AssetPickerModal({ assets, initialSelected, onCancel, onConfirm, title }: Props) {
   const { handleConfirm, selected, toggle } = useAssetPicker(initialSelected, onConfirm);
-  const beforeAllocations = useMemo(() => buildProjectedAllocations(assets, initialSelected), [assets, initialSelected]);
+  const openSelectedRef = useRef(initialSelected);
+  const beforeAllocations = useMemo(() => buildProjectedAllocations(assets, openSelectedRef.current), [assets]);
   const afterAllocations = useMemo(() => buildProjectedAllocations(assets, selected), [assets, selected]);
 
   return (

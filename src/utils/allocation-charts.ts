@@ -86,6 +86,6 @@ export function buildAllocationEntries(data: Allocation): AllocationChartEntry[]
     return { fill: colorMap[key] ?? fallback, key, label: formatAllocationKey(key), value };
   });
 
-  if (sum < otherThreshold) result.push({ fill: otherColor, key: "other", label: "Other", value: 1 - sum });
+  if (sum < otherThreshold && sum <= 1) result.push({ fill: otherColor, key: "other", label: "Other", value: 1 - sum });
   return result;
 }
