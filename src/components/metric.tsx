@@ -3,7 +3,7 @@ import { cn } from "../utils/browser-styles";
 import { formatNumber } from "../utils/format-numbers";
 
 export type MetricItem = {
-  color: "success" | "neutral" | "danger" | "warning" | "info";
+  color: "success" | "neutral" | "error" | "warning" | "info";
   label: string | number;
   value: string | number | undefined;
 };
@@ -15,7 +15,7 @@ export function Metric({ label, value, color }: MetricItem) {
       <span
         data-testid={`metric-${kebabCase(String(label))}-value`}
         className={cn(`font-mono text-xl font-bold tracking-tight`, {
-          "text-danger": color === "danger",
+          "text-error": color === "error",
           "text-info": color === "info",
           "text-neutral": color === "neutral",
           "text-success": color === "success",

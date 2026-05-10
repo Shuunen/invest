@@ -3,12 +3,40 @@ import { CheckIcon, ListIcon, PencilLineIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AssetPickerModal } from "../components/asset-picker-modal.tsx";
 import { AssetTable } from "../components/asset-table.tsx";
+import type { MetricItem } from "../components/metric.tsx";
 import { ModalActions } from "../components/modal-actions.tsx";
 import { ModalHeader } from "../components/modal-header.tsx";
 import { PageHeader } from "../components/page-header.tsx";
-import type { Asset, PortfolioEntry } from "../schemas/index.ts";
+import { computeDataScore, type Asset, type PortfolioEntry } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
+import { maxPercentage } from "../utils/constants.ts";
 import { formatPrice } from "../utils/format-numbers.ts";
+
+const dataScoreHeaderWarnThreshold = 95;
+
+function computeAveragePortfolioDataScore(entries: PortfolioEntry[], assets: Asset[]): number | undefined {
+  if (entries.length === 0) return undefined;
+
+  const assetByIsin = new Map(assets.map(asset => [asset.isin, asset]));
+  let totalScore = 0;
+  let count = 0;
+
+  for (const entry of entries) {
+    const asset = assetByIsin.get(entry.isin);
+    if (asset === undefined) continue;
+    totalScore += computeDataScore(asset, entry.amountUpdatedAt, true);
+    count += 1;
+  }
+
+  if (count === 0) return undefined;
+  return Math.round(totalScore / count);
+}
+
+function getAverageDataScoreColor(averageDataScore: number | undefined): MetricItem["color"] {
+  if (averageDataScore === undefined || averageDataScore === maxPercentage) return "success" as const;
+  if (averageDataScore > dataScoreHeaderWarnThreshold) return "warning" as const;
+  return "error" as const;
+}
 
 function usePriceEditing() {
   const [isPriceEditing, setIsPriceEditing] = useState(false);
@@ -19,6 +47,7 @@ function usePriceEditing() {
 function usePortfolioData(portfolioId: string) {
   const portfolio = useAppStore(state => state.data.portfolios.find(port => port.id === portfolioId));
   const assets = useAppStore(state => state.data.assets);
+  const entries = useMemo(() => portfolio?.entries ?? [], [portfolio]);
   const portfolioAssets = useMemo(() => (portfolio?.entries ?? []).map(entry => assets.find(ast => ast.isin === entry.isin)).filter((ast): ast is Asset => ast !== undefined), [assets, portfolio]);
   const amountMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.amount])), [portfolio]);
   const amountUpdatedAtMap = useMemo(() => {
@@ -26,8 +55,17 @@ function usePortfolioData(portfolioId: string) {
     for (const entry of portfolio?.entries ?? []) if (entry.amountUpdatedAt !== undefined) map.set(entry.isin, entry.amountUpdatedAt);
     return map;
   }, [portfolio]);
-  const totalValue = useTotalValue(portfolio?.entries ?? [], assets);
-  const headerMetrics = useMemo(() => [{ color: "success" as const, label: "Total Value", value: formatPrice(totalValue) }], [totalValue]);
+  const totalValue = useTotalValue(entries, assets);
+  const averageDataScore = useMemo(() => computeAveragePortfolioDataScore(entries, assets), [assets, entries]);
+  const averageDataScoreColor = useMemo(() => getAverageDataScoreColor(averageDataScore), [averageDataScore]);
+  const headerMetrics = useMemo(
+    () =>
+      [
+        { color: "info" as const, label: "Total Value", value: formatPrice(totalValue) },
+        { color: averageDataScoreColor, label: "Average Data Score", value: averageDataScore === undefined ? undefined : `${averageDataScore}%` },
+      ] satisfies MetricItem[],
+    [averageDataScore, averageDataScoreColor, totalValue],
+  );
   return { amountMap, amountUpdatedAtMap, assets, headerMetrics, portfolio, portfolioAssets };
 }
 
@@ -76,13 +114,13 @@ function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDele
   return (
     <dialog className="modal-open modal" aria-modal="true">
       <div className="modal-box">
-        <ModalHeader title="Remove asset" onClose={onCancel} type="danger" />
+        <ModalHeader title="Remove asset" onClose={onCancel} type="error" />
         Remove{" "}
         <span data-testid="modal-asset-name" className="font-semibold">
           {assetName}
         </span>{" "}
         from this portfolio? This cannot be undone.
-        <ModalActions onCancel={onCancel} onConfirm={onConfirm} confirmText="Remove" type="danger" />
+        <ModalActions onCancel={onCancel} onConfirm={onConfirm} confirmText="Remove" type="error" />
       </div>
       <div className="modal-backdrop" onClick={onCancel} />
     </dialog>

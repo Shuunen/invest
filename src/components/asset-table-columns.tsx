@@ -1,8 +1,9 @@
 // oxlint-disable max-lines
 import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
-import { computeDataScore, computeScore, dataScorePercent, dataScoreWarnThreshold, type Asset } from "../schemas/index.ts";
+import { computeDataScore, computeScore, dataScoreWarnThreshold, type Asset } from "../schemas/index.ts";
 import { cn } from "../utils/browser-styles.ts";
+import { maxPercentage } from "../utils/constants.ts";
 import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
 import { Link000 } from "./animated-links.tsx";
 import { scoreMissingValue } from "./asset-table-utils.ts";
@@ -264,7 +265,7 @@ export function makeDataScoreColumn(amountUpdatedAtMap?: Map<string, string>): C
     cell: ({ getValue, row }) => {
       const score = getValue<number>();
       let dotClass = "bg-error";
-      if (score === dataScorePercent) dotClass = "bg-success";
+      if (score === maxPercentage) dotClass = "bg-success";
       else if (score >= dataScoreWarnThreshold) dotClass = "bg-warning";
       return (
         <span className="flex items-center gap-1.5" data-testid={`data-score-${row.original.isin.toLowerCase()}`}>
@@ -275,7 +276,7 @@ export function makeDataScoreColumn(amountUpdatedAtMap?: Map<string, string>): C
     },
     header: "Data",
     id: "data-score",
-    meta: { center: true, title: "Data score" },
+    meta: { title: "Data score" },
   };
 }
 export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string> | undefined): ColumnDef<Asset> {

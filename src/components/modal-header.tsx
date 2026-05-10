@@ -5,14 +5,14 @@ type ModalHeaderProps = {
   title: string;
   subtitle?: string;
   onClose: () => void;
-  type?: "default" | "danger";
+  type?: "default" | "error";
 };
 
 export function ModalHeader({ title, subtitle, onClose, type = "default" }: ModalHeaderProps) {
   return (
     <div
       className={cn("mb-4 flex justify-between", {
-        "text-error": type === "danger",
+        "text-error": type === "error",
       })}
     >
       <div className="grid gap-2">

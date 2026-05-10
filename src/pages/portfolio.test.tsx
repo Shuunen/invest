@@ -175,6 +175,63 @@ describe("PortfolioPage - empty portfolio", () => {
     expect(screen.getByTestId("metric-total-value-value")).toHaveTextContent("200 €");
   });
 
+  it("shows average data score metric with success color when the average is 100%", () => {
+    expect.hasAssertions();
+    const now = new Date().toISOString();
+    const asset = makeAsset({ price: 200, updatedAt: now });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 3, amountUpdatedAt: now, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByTestId("metric-average-data-score-value")).toHaveTextContent("100%");
+    expect(screen.getByTestId("metric-average-data-score-value")).toHaveClass("text-success");
+  });
+
+  it("shows warning color when average data score is above 95% and below 100%", () => {
+    expect.hasAssertions();
+    const now = new Date().toISOString();
+    const staleDate = "2000-01-01T00:00:00.000Z";
+    const firstAsset = makeAsset({ isin: "LU1111111111", price: 100, updatedAt: now });
+    const secondAsset = makeAsset({ isin: "LU2222222222", price: 100, updatedAt: staleDate });
+    const portfolio = makePortfolio({
+      entries: [
+        { amount: 1, amountUpdatedAt: now, inPEA: false, isin: firstAsset.isin, notes: "", positionValue: 0, targetAmount: 0 },
+        { amount: 1, amountUpdatedAt: now, inPEA: false, isin: secondAsset.isin, notes: "", positionValue: 0, targetAmount: 0 },
+      ],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [firstAsset, secondAsset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByTestId("metric-average-data-score-value")).toHaveTextContent("97%");
+    expect(screen.getByTestId("metric-average-data-score-value")).toHaveClass("text-warning");
+  });
+
+  it("shows error color when average data score is 95% or lower", () => {
+    expect.hasAssertions();
+    const now = new Date().toISOString();
+    const staleDate = "2000-01-01T00:00:00.000Z";
+    const asset = makeAsset({ price: 100, updatedAt: staleDate });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 1, amountUpdatedAt: now, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByTestId("metric-average-data-score-value")).toHaveTextContent("93%");
+    expect(screen.getByTestId("metric-average-data-score-value")).toHaveClass("text-error");
+  });
+
   it("remove button calls setPortfolioAssets without the removed isin", () => {
     expect.hasAssertions();
     const asset = makeAsset();
