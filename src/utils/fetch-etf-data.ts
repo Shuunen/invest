@@ -5,6 +5,7 @@ export type EtfPrefillData = {
   geoAllocation: Partial<Record<Country, number>>;
   isAccumulating: boolean | undefined;
   name: string | undefined;
+  price: string | undefined;
   performance1y: string | undefined;
   performance3y: string | undefined;
   performance5y: string | undefined;
@@ -159,6 +160,7 @@ export function parseEtfHtml(html: string): EtfPrefillData {
     performance1y: parsePercentValue(getTestIdText(doc, "etf-returns-section_1year-return")),
     performance3y: parsePercentValue(getTestIdText(doc, "etf-returns-section_3year-return")),
     performance5y: parsePercentValue(getTestIdText(doc, "etf-returns-section_5year-return")),
+    price: undefined,
     provider,
     riskReward1y: getRiskTableValue(doc, "Return per risk 1 year"),
     riskReward3y: getRiskTableValue(doc, "Return per risk 3 years"),

@@ -4,13 +4,22 @@
 import { execSync } from "node:child_process";
 import http from "node:http";
 import https from "node:https";
-
 const targetHost = "www.justetf.com";
+const stockHost = "logical-invest.com";
+const flareSolverrUrl = "http://192.168.1.142:8191/v1";
+const flareSolverrTimeoutMs = 60_000;
 const port = 8010;
 const pathPrefix = "/proxy";
+const stockPathPrefix = "/stock/";
+const stockAssetPattern = /var\s+asset\s*=\s*(\{[\s\S]*?\})\s*;/u;
 const httpNoContent = 204;
 const httpNotFound = 404;
+const httpBadRequest = 400;
 const httpBadGateway = 502;
+const httpInternalServerError = 500;
+const httpOk = 200;
+const httpSuccessMin = 200;
+const httpSuccessMax = 300;
 const upstreamTimeoutMs = 10_000;
 
 /** In-memory cookie jar: name → raw "name=value" string */
@@ -79,6 +88,68 @@ function handleProxyRequest(req: http.IncomingMessage, res: http.ServerResponse)
   req.pipe(proxyReq);
 }
 
+type FlareSolverrResponse = {
+  solution?: { response?: string; status?: number };
+  status?: string;
+};
+
+async function fetchTextFromHost(hostname: string, path: string): Promise<string> {
+  const response = await fetch(flareSolverrUrl, {
+    body: JSON.stringify({ cmd: "request.get", maxTimeout: flareSolverrTimeoutMs, url: `https://${hostname}${path}` }),
+    headers: { "Content-Type": "application/json" },
+    method: "POST",
+  });
+  if (!response.ok) throw new Error(`FlareSolverr error: HTTP ${String(response.status)}`);
+  const data = (await response.json()) as FlareSolverrResponse;
+  const statusCode = data.solution?.status ?? 0;
+  if (statusCode < httpSuccessMin || statusCode >= httpSuccessMax) throw new Error(`HTTP ${String(statusCode)} from upstream`);
+  const html = data.solution?.response;
+  if (!html) throw new Error("FlareSolverr returned empty response");
+  return html;
+}
+
+function parseAssetObject(html: string): unknown {
+  const objectLiteral = stockAssetPattern.exec(html)?.[1];
+  if (objectLiteral === undefined) throw new Error("Asset object not found in upstream HTML");
+  const jsonLike = objectLiteral.replaceAll(/,\s*([}\]])/gu, "$1");
+  return JSON.parse(jsonLike);
+}
+
+function resolveStockSymbol(rawUrl: string | undefined): string | undefined {
+  const symbolPath = rawUrl?.slice(stockPathPrefix.length).split("/")[0] ?? "";
+  const symbol = decodeURIComponent(symbolPath).trim();
+  return symbol === "" ? undefined : symbol;
+}
+
+async function handleStockRequest(req: http.IncomingMessage, res: http.ServerResponse) {
+  const symbol = resolveStockSymbol(req.url);
+  if (symbol === undefined) {
+    res.writeHead(httpBadRequest);
+    res.end("Missing stock symbol");
+    return;
+  }
+
+  if (req.method !== "GET") {
+    res.writeHead(httpBadRequest);
+    res.end("Only GET is supported for /stock");
+    return;
+  }
+
+  const upstreamPath = `/app/stock/${encodeURIComponent(symbol)}/`;
+  try {
+    const html = await fetchTextFromHost(stockHost, upstreamPath);
+    const asset = parseAssetObject(html);
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.writeHead(httpOk);
+    res.end(JSON.stringify(asset));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to fetch stock asset";
+    console.error("Stock proxy error:", message);
+    res.writeHead(httpInternalServerError);
+    res.end(message);
+  }
+}
+
 const server = http.createServer((req, res) => {
   res.setHeader("Access-Control-Allow-Headers", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, PATCH, DELETE");
@@ -88,6 +159,12 @@ const server = http.createServer((req, res) => {
     res.end();
     return;
   }
+
+  if (req.url?.startsWith(stockPathPrefix)) {
+    void handleStockRequest(req, res);
+    return;
+  }
+
   if (!req.url?.startsWith(`${pathPrefix}/`) && req.url !== pathPrefix) {
     res.writeHead(httpNotFound);
     res.end("Not found");

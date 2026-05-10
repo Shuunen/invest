@@ -4,6 +4,7 @@ import type { FormState, PatchFn } from "./form-state.ts";
 export function applyEtfPrefill(data: EtfPrefillData, patch: PatchFn, currentForm: FormState) {
   if (data.name !== undefined) patch("name", data.name);
   if (data.provider !== undefined) patch("provider", data.provider);
+  if (data.price !== undefined) patch("price", data.price);
   if (data.tickers !== undefined) {
     const existing = currentForm.tickers
       .split(",")

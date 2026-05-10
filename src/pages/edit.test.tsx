@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { Asset } from "../schemas/index.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { fetchEtfData } from "../utils/fetch-etf-data.ts";
+import { fetchStockData } from "../utils/fetch-stock-data.ts";
 import { AssetEditPage } from "./edit.tsx";
 
 const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>());
@@ -12,6 +13,7 @@ vi.mock(import("@tanstack/react-router"), async () => {
 });
 
 vi.mock(import("../utils/fetch-etf-data.ts"));
+vi.mock(import("../utils/fetch-stock-data.ts"));
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
@@ -389,6 +391,7 @@ describe("AssetEditPage - form", () => {
 
 describe("AssetEditPage - fetch", () => {
   function setup() {
+    vi.clearAllMocks();
     mockNavigate.mockClear();
     const asset = makeAsset();
     useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
@@ -416,6 +419,7 @@ describe("AssetEditPage - fetch", () => {
       performance1y: "26.14",
       performance3y: "66.54",
       performance5y: "87.45",
+      price: undefined,
       provider: "iShares",
       riskReward1y: "2.08",
       riskReward3y: "1.19",
@@ -428,7 +432,37 @@ describe("AssetEditPage - fetch", () => {
     await waitFor(() => {
       expect(screen.getByTestId("name")).toHaveValue("iShares Core S&P 500");
     });
+    expect(fetchEtfData).toHaveBeenCalledWith("LU1234567890");
     expect(screen.getByTestId("provider")).toHaveValue("iShares");
+  });
+
+  it("uses stock fetch for short identifiers", async () => {
+    expect.hasAssertions();
+    vi.mocked(fetchStockData).mockResolvedValue({
+      fees: undefined,
+      geoAllocation: {},
+      isAccumulating: undefined,
+      name: "Microsoft",
+      performance1y: "-4.5",
+      performance3y: "37.7",
+      performance5y: "71.4",
+      price: "352",
+      provider: "NASDAQ",
+      riskReward1y: "-0.3",
+      riskReward3y: "0.37",
+      riskReward5y: "0.34",
+      sectorAllocation: {},
+      tickers: "MSFT",
+    });
+    setup();
+    fireEvent.change(screen.getByTestId("isin"), { target: { value: "MSFT" } });
+    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("name")).toHaveValue("Microsoft");
+    });
+    expect(fetchStockData).toHaveBeenCalledWith("MSFT");
+    expect(fetchEtfData).not.toHaveBeenCalled();
+    expect(screen.getByTestId("provider")).toHaveValue("NASDAQ");
   });
 
   it("shows spinner while fetching then hides it on completion", async () => {
@@ -441,6 +475,7 @@ describe("AssetEditPage - fetch", () => {
       performance1y: undefined,
       performance3y: undefined,
       performance5y: undefined,
+      price: undefined,
       provider: undefined,
       riskReward1y: undefined,
       riskReward3y: undefined,
@@ -486,6 +521,7 @@ describe("AssetEditPage - fetch", () => {
       performance1y: undefined,
       performance3y: undefined,
       performance5y: undefined,
+      price: undefined,
       provider: undefined,
       riskReward1y: undefined,
       riskReward3y: undefined,

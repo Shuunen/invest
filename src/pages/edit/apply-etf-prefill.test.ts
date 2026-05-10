@@ -11,6 +11,7 @@ function makeEmptyPrefill(): EtfPrefillData {
     performance1y: undefined,
     performance3y: undefined,
     performance5y: undefined,
+    price: undefined,
     provider: undefined,
     riskReward1y: undefined,
     riskReward3y: undefined,
@@ -48,6 +49,13 @@ describe("applyEtfPrefill — scalar fields", () => {
     const { patch, patched } = makePatch();
     applyEtfPrefill({ ...makeEmptyPrefill(), provider: "iShares" }, patch, emptyFormState);
     expect(patched.provider).toBe("iShares");
+  });
+
+  it("patches price when defined", () => {
+    expect.hasAssertions();
+    const { patch, patched } = makePatch();
+    applyEtfPrefill({ ...makeEmptyPrefill(), price: "352" }, patch, emptyFormState);
+    expect(patched.price).toBe("352");
   });
 
   it("patches tickers when defined and form has no existing tickers", () => {
