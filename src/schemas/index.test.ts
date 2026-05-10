@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { invariant } from "es-toolkit";
 import { jsonParse } from "../utils/json";
-import { safeImportJson, parseAppData, computeScore, computeDataScore, AppDataSchema, SettingsSchema, type AppData, type Asset } from "./index";
+import { safeImportJson, parseAppData, computeScore, computeDataScore, AppDataSchema, SettingsSchema, type AppData, type Asset, type PortfolioEntry } from "./index";
 
 const sampleRaw = readFileSync(join(process.cwd(), "data/sample.json"), "utf8");
 
@@ -118,6 +118,16 @@ const fullAsset: Asset = {
   riskReward5y: 2,
 };
 
+const fullEntry: PortfolioEntry = {
+  amount: 1,
+  amountUpdatedAt: undefined,
+  inPEA: false,
+  isin: fullAsset.isin,
+  notes: "",
+  positionValue: 0,
+  targetAmount: 0,
+};
+
 describe("computeDataScore", () => {
   it("returns 0 when no optional fields are populated", () => {
     expect.hasAssertions();
@@ -127,37 +137,36 @@ describe("computeDataScore", () => {
   it("returns 100 when all scored data fields are defined and updatedAt is fresh", () => {
     expect.hasAssertions();
     const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString(); // 1 hour ago
-    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate })).toBe(100);
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, { ...fullEntry, amountUpdatedAt: freshDate })).toBe(100);
   });
 
   it("returns partial score when updatedAt is stale (older than 30 days)", () => {
     expect.hasAssertions();
     const staleDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString(); // 60 days ago
-    // 5 scored fields + 0.5 (stale updatedAt) = 5.5/6 = 91.67 → rounds to 92
-    expect(computeDataScore({ ...fullAsset, updatedAt: staleDate })).toBe(92);
+    // 5 scored fields + 0.5 (stale updatedAt) + 1 amount + 0.5 stale amountUpdatedAt = 7.5/8 = 93.75 → rounds to 94
+    expect(computeDataScore({ ...fullAsset, updatedAt: staleDate }, { ...fullEntry, amountUpdatedAt: staleDate })).toBe(94);
   });
 
-  it("includes amountUpdatedAt in total when isPortfolio=true", () => {
+  it("includes amountUpdatedAt and amount in total when an entry is provided", () => {
     expect.hasAssertions();
     const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
-    const freshAmount = new Date(Date.now() - 1000 * 60 * 60).toISOString();
-    // 5 scored fields + 1 (fresh updatedAt) + 1 (fresh amountUpdatedAt) = 7/7 = 100
-    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, freshAmount, true)).toBe(100);
+    // 5 scored fields + 1 (fresh updatedAt) + 1 amount + 1 fresh amountUpdatedAt = 8/8 = 100
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, { ...fullEntry, amountUpdatedAt: freshDate })).toBe(100);
   });
 
   it("penalizes missing amountUpdatedAt in portfolio context", () => {
     expect.hasAssertions();
     const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
-    // 5 scored fields + 1 (fresh updatedAt) + 0 (no amountUpdatedAt) = 6/7 = 85.71 → rounds to 86
-    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, undefined, true)).toBe(86);
+    // 5 scored fields + 1 (fresh updatedAt) + 1 amount + 0 (no amountUpdatedAt) = 7/8 = 87.5 → rounds to 88
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, fullEntry)).toBe(88);
   });
 
   it("gives partial credit for stale amountUpdatedAt in portfolio context", () => {
     expect.hasAssertions();
     const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
     const staleAmount = new Date(Date.now() - 1000 * 60 * 60 * 24 * 120).toISOString(); // 120 days ago
-    // 5 scored fields + 1 (fresh updatedAt) + 0.5 (stale amountUpdatedAt) = 6.5/7 = 92.86 → rounds to 93
-    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, staleAmount, true)).toBe(93);
+    // 5 scored fields + 1 (fresh updatedAt) + 1 amount + 0.5 (stale amountUpdatedAt) = 7.5/8 = 93.75 → rounds to 94
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, { ...fullEntry, amountUpdatedAt: staleAmount })).toBe(94);
   });
 });
 

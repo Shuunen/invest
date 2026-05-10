@@ -228,7 +228,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByTestId("metric-average-data-score-value")).toHaveTextContent("93%");
+    expect(screen.getByTestId("metric-average-data-score-value")).toHaveTextContent("94%");
     expect(screen.getByTestId("metric-average-data-score-value")).toHaveClass("text-error");
   });
 

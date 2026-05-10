@@ -1,7 +1,7 @@
 // oxlint-disable max-lines
 import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
-import { computeDataScore, computeScore, dataScoreWarnThreshold, type Asset } from "../schemas/index.ts";
+import { computeDataScore, computeScore, dataScoreWarnThreshold, type Asset, type PortfolioEntry } from "../schemas/index.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { maxPercentage } from "../utils/constants.ts";
 import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
@@ -75,7 +75,7 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
       return (
         <input
           type="number"
-          className="input input-xs w-14 text-center"
+          className={cn("input input-xs w-14 text-center", { "bg-warning/10 input-warning": value === 0 })}
           min={0}
           defaultValue={value}
           step={0.1}
@@ -258,10 +258,21 @@ export const columns: ColumnDef<Asset>[] = [
   },
 ];
 
-export function makeDataScoreColumn(amountUpdatedAtMap?: Map<string, string>): ColumnDef<Asset> {
-  const isPortfolio = amountUpdatedAtMap !== undefined;
+export function makeDataScoreColumn(amountMap?: Map<string, number>, amountUpdatedAtMap?: Map<string, string>): ColumnDef<Asset> {
   return {
-    accessorFn: row => computeDataScore(row, amountUpdatedAtMap?.get(row.isin), isPortfolio),
+    accessorFn: row => {
+      if (amountMap === undefined && amountUpdatedAtMap === undefined) return computeDataScore(row);
+      const entry: PortfolioEntry = {
+        amount: amountMap?.get(row.isin) ?? 0,
+        amountUpdatedAt: amountUpdatedAtMap?.get(row.isin),
+        inPEA: false,
+        isin: row.isin,
+        notes: "",
+        positionValue: 0,
+        targetAmount: 0,
+      };
+      return computeDataScore(row, entry);
+    },
     cell: ({ getValue, row }) => {
       const score = getValue<number>();
       let dotClass = "bg-error";
