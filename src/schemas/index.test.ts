@@ -124,7 +124,7 @@ describe("computeDataScore", () => {
     expect(computeDataScore(baseAsset)).toBe(0);
   });
 
-  it("returns 100 when all 7 data fields are defined and updatedAt is fresh", () => {
+  it("returns 100 when all scored data fields are defined and updatedAt is fresh", () => {
     expect.hasAssertions();
     const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString(); // 1 hour ago
     expect(computeDataScore({ ...fullAsset, updatedAt: freshDate })).toBe(100);
@@ -133,31 +133,31 @@ describe("computeDataScore", () => {
   it("returns partial score when updatedAt is stale (older than 30 days)", () => {
     expect.hasAssertions();
     const staleDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString(); // 60 days ago
-    // 7 data fields (all defined) + 0.5 (stale updatedAt) = 7.5/8 = 93.75 → rounds to 94
-    expect(computeDataScore({ ...fullAsset, updatedAt: staleDate })).toBe(94);
+    // 5 scored fields + 0.5 (stale updatedAt) = 5.5/6 = 91.67 → rounds to 92
+    expect(computeDataScore({ ...fullAsset, updatedAt: staleDate })).toBe(92);
   });
 
   it("includes amountUpdatedAt in total when isPortfolio=true", () => {
     expect.hasAssertions();
     const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
     const freshAmount = new Date(Date.now() - 1000 * 60 * 60).toISOString();
-    // 7 data fields + 1 (fresh updatedAt) + 1 (fresh amountUpdatedAt) = 9/9 = 100
+    // 5 scored fields + 1 (fresh updatedAt) + 1 (fresh amountUpdatedAt) = 7/7 = 100
     expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, freshAmount, true)).toBe(100);
   });
 
   it("penalizes missing amountUpdatedAt in portfolio context", () => {
     expect.hasAssertions();
     const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
-    // 7 data fields + 1 (fresh updatedAt) + 0 (no amountUpdatedAt) = 8/9 = 88.88 → rounds to 89
-    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, undefined, true)).toBe(89);
+    // 5 scored fields + 1 (fresh updatedAt) + 0 (no amountUpdatedAt) = 6/7 = 85.71 → rounds to 86
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, undefined, true)).toBe(86);
   });
 
   it("gives partial credit for stale amountUpdatedAt in portfolio context", () => {
     expect.hasAssertions();
     const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
     const staleAmount = new Date(Date.now() - 1000 * 60 * 60 * 24 * 120).toISOString(); // 120 days ago
-    // 7 data fields + 1 (fresh updatedAt) + 0.5 (stale amountUpdatedAt) = 8.5/9 = 94.44 → rounds to 94
-    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, staleAmount, true)).toBe(94);
+    // 5 scored fields + 1 (fresh updatedAt) + 0.5 (stale amountUpdatedAt) = 6.5/7 = 92.86 → rounds to 93
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, staleAmount, true)).toBe(93);
   });
 });
 
