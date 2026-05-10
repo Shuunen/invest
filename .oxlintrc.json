@@ -92,6 +92,7 @@
         "prefer-importing-jest-globals": "off",
         "prefer-describe-function-title": "off",
         "no-magic-numbers": "off",
+        "max-statements": "off",
         "no-nodejs-modules": "off"
       }
     }

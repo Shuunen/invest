@@ -89,7 +89,7 @@ function PieSliceFill({ end, fill, isHovered, label, onEnter, size, start }: Pie
 
 function PieSliceLabel({ end, fill, fraction, isHovered, label, mid, size, start, total }: Omit<PieSliceProps, "onEnter">) {
   const { cx, cy, fullCircle, lp } = deriveSliceGeometry({ end, fraction, mid, size, start });
-  const pctText = formatPercent(total === 0 ? undefined : fraction * maxPercentage).replaceAll(" ", "");
+  const pctText = formatPercent(total === 0 ? undefined : fraction * maxPercentage, true);
   const charWidth = isHovered ? 9 : 8;
   const padX = 8;
   const badgeHeight = isHovered ? 48 : 44;

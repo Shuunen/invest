@@ -1,4 +1,5 @@
 import { invariant, startCase } from "es-toolkit";
+import type { Allocation } from "../schemas/index.ts";
 
 const otherColor = "#777";
 const otherThreshold = 0.95;
@@ -69,7 +70,7 @@ function formatAllocationKey(key: string): string {
   return key in keyMapping ? keyMapping[key as keyof typeof keyMapping] : startCase(key);
 }
 
-export function buildAllocationEntries(data: Partial<Record<string, number>>): AllocationChartEntry[] | undefined {
+export function buildAllocationEntries(data: Allocation): AllocationChartEntry[] | undefined {
   const entries: Array<[string, number]> = [];
   for (const [key, value] of Object.entries(data)) {
     if (value === undefined || value <= 0) continue;

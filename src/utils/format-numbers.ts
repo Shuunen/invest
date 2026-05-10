@@ -15,8 +15,8 @@ export function formatPrice(val: number | undefined): string {
   return val === undefined ? emptyValue : `${formatNumber(val)} €`;
 }
 
-export function formatPercent(val: number | undefined): string {
-  return val === undefined ? emptyValue : `${formatNumber(val)} %`;
+export function formatPercent(val: number | undefined, noSpace = false): string {
+  return val === undefined ? emptyValue : `${formatNumber(val)}${noSpace ? "" : " "}%`;
 }
 
 export function formatDate(val: string | undefined): string {

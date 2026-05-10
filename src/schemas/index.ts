@@ -13,6 +13,7 @@ const SectorSchema = z.enum(["technology", "financials", "healthcare", "consumer
 
 export type Country = z.infer<typeof CountrySchema>;
 export type Sector = z.infer<typeof SectorSchema>;
+export type Allocation = Partial<Record<string, number>>;
 
 export const countries = CountrySchema.options satisfies readonly Country[];
 export const sectors = SectorSchema.options satisfies readonly Sector[];
