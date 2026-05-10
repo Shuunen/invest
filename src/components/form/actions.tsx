@@ -5,7 +5,7 @@ export type FormActionsProps = {
   onCancel: () => void;
   onReset?: () => void;
   confirmText?: string;
-  type?: "default" | "danger";
+  type?: "default" | "error";
 };
 
 export function FormActions({ onCancel, onConfirm, onReset, confirmText = "Confirm", type = "default" }: FormActionsProps) {
@@ -19,7 +19,7 @@ export function FormActions({ onCancel, onConfirm, onReset, confirmText = "Confi
           Reset
         </button>
       )}
-      <button type="submit" data-testid="form-confirm-button" className={cn(`btn btn-outline`, { "btn-error": type === "danger", "btn-primary": type === "default" })} onClick={onConfirm}>
+      <button type="submit" data-testid="form-confirm-button" className={cn(`btn btn-outline`, { "btn-error": type === "error", "btn-primary": type === "default" })} onClick={onConfirm}>
         {confirmText}
       </button>
     </div>

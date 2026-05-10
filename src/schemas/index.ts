@@ -1,4 +1,5 @@
 import { z } from "zod/v4";
+import { maxPercentage } from "../utils/constants";
 
 // --- Geography ---
 
@@ -79,7 +80,6 @@ const msPerDay = 86_400_000;
 const dataScoreBaseFields = 6;
 const dataScorePortfolioFields = 7;
 const dataScoreStaleWeight = 0.5;
-export const dataScorePercent = 100;
 export const dataScoreWarnThreshold = 75;
 
 function toAgeDays(isoDate: string): number {
@@ -101,7 +101,7 @@ export function computeDataScore(asset: Asset, amountUpdatedAt?: string, isPortf
   if (asset.updatedAt !== undefined) score += toAgeDays(asset.updatedAt) <= dataFreshnessDays ? 1 : dataScoreStaleWeight;
   if (isPortfolio && amountUpdatedAt !== undefined) score += toAgeDays(amountUpdatedAt) <= amountFreshnessDays ? 1 : dataScoreStaleWeight;
 
-  return Math.round((score / total) * dataScorePercent);
+  return Math.round((score / total) * maxPercentage);
 }
 
 // --- Portfolio ---
