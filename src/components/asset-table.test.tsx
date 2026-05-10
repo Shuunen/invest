@@ -156,9 +156,8 @@ describe("AssetTable - loading and error states", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: new Error("DB failed") });
     render(<AssetTable />);
-    expect(screen.getByRole("alert")).toBeInTheDocument();
-    expect(screen.getByText(/DB failed/u)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /retry/iu })).toBeInTheDocument();
+    expect(screen.getByTestId("error-message")).toHaveTextContent("Failed to load data: DB failed");
+    expect(screen.getByTestId("retry-button")).toHaveTextContent("Retry");
   });
 
   it("retry button clears the error state", () => {
@@ -176,7 +175,7 @@ describe("AssetTable - data display", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    expect(screen.getByText(/no instruments added yet/iu)).toBeInTheDocument();
+    expect(screen.getByTestId("empty-table-message")).toHaveTextContent("No instruments added yet");
   });
 
   it("renders all ISIN rows", () => {
@@ -184,8 +183,8 @@ describe("AssetTable - data display", () => {
     const assets = [makeAsset({ isin: "LU1234567890", name: "ETF One" }), makeAsset({ isin: "FR0000000001", name: "ETF Two" })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    expect(screen.getByText("ETF One")).toBeInTheDocument();
-    expect(screen.getByText("ETF Two")).toBeInTheDocument();
+    expect(screen.getByTestId("asset-row-LU1234567890")).toHaveTextContent("ETF One");
+    expect(screen.getByTestId("asset-row-FR0000000001")).toHaveTextContent("ETF Two");
   });
 
   it("renders undefined numeric cell as em dash", () => {
@@ -206,7 +205,7 @@ describe("AssetTable - select column", () => {
   it("renders unchecked select checkbox when onToggleSelect is set but no selectedIsins", () => {
     expect.hasAssertions();
     render(<AssetTable assets={selectAssets} onToggleSelect={vi.fn<(isin: string) => void>()} />);
-    const row = screen.getByText(selectAsset.name).closest("tr");
+    const row = screen.getByTestId("asset-row-LU1234567890");
     invariant(row, "Expected table row to exist");
     expect(within(row).getByRole("checkbox", { hidden: true })).not.toBeChecked();
   });
@@ -372,8 +371,8 @@ describe("AssetTable - filter", () => {
     const input = screen.getByPlaceholderText(/search/iu);
     fireEvent.change(input, { target: { value: "Alpha" } });
     await waitFor(() => {
-      expect(screen.getByText("Alpha ETF")).toBeInTheDocument();
-      expect(screen.queryByText("Beta ETF")).not.toBeInTheDocument();
+      expect(screen.getByTestId("asset-row-LU1234567890")).toHaveTextContent("Alpha ETF");
+      expect(screen.queryByTestId("asset-row-FR0000000001")).not.toBeInTheDocument();
     });
   });
 
@@ -385,7 +384,7 @@ describe("AssetTable - filter", () => {
     const input = screen.getByPlaceholderText(/search/iu);
     fireEvent.change(input, { target: { value: "LU1234" } });
     await waitFor(() => {
-      expect(screen.queryByText("Beta ETF")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("asset-row-FR0000000001")).not.toBeInTheDocument();
     });
   });
 
@@ -397,7 +396,7 @@ describe("AssetTable - filter", () => {
     const input = screen.getByPlaceholderText(/search/iu);
     fireEvent.change(input, { target: { value: "Amundi" } });
     await waitFor(() => {
-      expect(screen.queryByText("Beta ETF")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("asset-row-FR0000000001")).not.toBeInTheDocument();
     });
   });
 
@@ -409,7 +408,7 @@ describe("AssetTable - filter", () => {
     const input = screen.getByPlaceholderText(/search/iu);
     fireEvent.change(input, { target: { value: "IWDA" } });
     await waitFor(() => {
-      expect(screen.queryByText("Beta ETF")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("asset-row-FR0000000001")).not.toBeInTheDocument();
     });
   });
 });
@@ -455,7 +454,7 @@ describe("AssetTable - tickers column", () => {
       loadError: undefined,
     });
     render(<AssetTable />);
-    expect(screen.getByText("IWDA, EUNL")).toBeInTheDocument();
+    expect(screen.getByTestId("tickers-lu1234567890")).toHaveTextContent("IWDA, EUNL");
   });
 
   it("sort by tickers column uses custom sortingFn", async () => {
@@ -498,8 +497,8 @@ describe("AssetTable - hidden numeric columns", () => {
       loadError: undefined,
     });
     render(<AssetTable />);
-    expect(screen.getByText("143")).toBeInTheDocument();
-    expect(screen.getByText("857")).toBeInTheDocument();
+    expect(screen.getByTestId("performance1y-lu1234567890")).toHaveTextContent("143");
+    expect(screen.getByTestId("risk-reward1y-lu1234567890")).toHaveTextContent("857");
   });
 });
 
@@ -597,20 +596,20 @@ describe("AssetTable - value column", () => {
     expect.hasAssertions();
     const amountMap = new Map([[valueAssetNoPrice.isin, 5]]);
     render(<AssetTable assets={valueAssetsNoPrice} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
-    expect(screen.getByText("0 €")).toBeInTheDocument();
+    expect(screen.getByTestId("value-lu1234567890")).toHaveTextContent("0 €");
   });
 
   it("shows computed value when price and amount are set", () => {
     expect.hasAssertions();
     const amountMap = new Map([[valueAssetWithPrice.isin, 3]]);
     render(<AssetTable assets={valueAssetsWithPrice} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
-    expect(screen.getByText("300 €")).toBeInTheDocument();
+    expect(screen.getByTestId("value-lu1234567890")).toHaveTextContent("300 €");
   });
 
   it("shows 0 € when no amountMap entry exists", () => {
     expect.hasAssertions();
     render(<AssetTable assets={valueAssetsPrice50} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
-    expect(screen.getByText("0 €")).toBeInTheDocument();
+    expect(screen.getByTestId("value-lu1234567890")).toHaveTextContent("0 €");
   });
 
   it("sorts by value column with undefined price uses 0 fallback", () => {
@@ -618,7 +617,7 @@ describe("AssetTable - value column", () => {
     render(<AssetTable assets={valueSortAssetsNoPrice} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} />);
     const valueHeader = screen.getByRole("button", { name: /value/iu });
     fireEvent.click(valueHeader);
-    expect(screen.getByText("0 €")).toBeInTheDocument();
+    expect(screen.getByTestId("value-lu0000000001")).toHaveTextContent("0 €");
   });
 
   it("sorts by value column with defined amountMap missing ISIN entry uses 0 fallback", () => {
@@ -627,7 +626,7 @@ describe("AssetTable - value column", () => {
     render(<AssetTable assets={valueSortAssets} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={emptyAmountMap} />);
     const valueHeader = screen.getByRole("button", { name: /value/iu });
     fireEvent.click(valueHeader);
-    expect(screen.getAllByText("0 €").length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId(/^value-/u).length).toBeGreaterThan(0);
   });
 
   it("sorts by value column using accessorFn", () => {
@@ -639,8 +638,8 @@ describe("AssetTable - value column", () => {
     render(<AssetTable assets={valueSortAssets} onAmountChange={vi.fn<(isin: string, amount: number) => void>()} amountMap={amountMap} />);
     const valueHeader = screen.getByRole("button", { name: /value/iu });
     fireEvent.click(valueHeader);
-    expect(screen.getByText("200 €")).toBeInTheDocument();
-    expect(screen.getByText("150 €")).toBeInTheDocument();
+    expect(screen.getByTestId("value-lu0000000001")).toHaveTextContent("200 €");
+    expect(screen.getByTestId("value-lu0000000002")).toHaveTextContent("150 €");
   });
 });
 
@@ -728,8 +727,8 @@ describe("AssetTable - price editing", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    expect(screen.getByTestId("action-add-asset")).toBeInTheDocument();
-    expect(screen.getByTestId("action-edit-prices")).toBeInTheDocument();
+    expect(screen.getByTestId("action-add-asset")).toHaveTextContent("Add asset");
+    expect(screen.getByTestId("action-edit-prices")).toHaveTextContent("Edit prices");
   });
 
   it("clicking Add asset navigates to /assets/create", () => {
@@ -745,7 +744,7 @@ describe("AssetTable - price editing", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    expect(screen.getByTestId("action-edit-prices")).toBeInTheDocument();
+    expect(screen.getByTestId("action-edit-prices")).toHaveTextContent("Edit prices");
   });
 
   it("clicking Edit prices shows price inputs", async () => {

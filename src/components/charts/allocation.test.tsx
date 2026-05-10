@@ -29,7 +29,7 @@ describe("AllocationChart", () => {
   it("renders title text", () => {
     expect.hasAssertions();
     render(<AllocationChart data={simpleAllocation} title="My Title" name="test" />);
-    expect(screen.getByText("My Title")).toBeInTheDocument();
+    expect(screen.getByTestId("test-card")).toHaveTextContent("My Title");
   });
 
   it("applies card class when card prop is true", () => {

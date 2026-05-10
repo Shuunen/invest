@@ -3,7 +3,7 @@ import { ErrorBoundary } from "./error-boundary.tsx";
 
 function Bomb({ shouldThrow }: { shouldThrow: boolean }) {
   if (shouldThrow) throw new Error("test explosion");
-  return <div>Safe content</div>;
+  return <div data-testid="safe-content">Safe content</div>;
 }
 
 describe("ErrorBoundary - normal rendering", () => {
@@ -14,7 +14,7 @@ describe("ErrorBoundary - normal rendering", () => {
         <Bomb shouldThrow={false} />
       </ErrorBoundary>,
     );
-    expect(screen.getByText("Safe content")).toBeInTheDocument();
+    expect(screen.getByTestId("safe-content")).toHaveTextContent("Safe content");
   });
 });
 
@@ -29,8 +29,8 @@ describe("ErrorBoundary - error state", () => {
         <Bomb shouldThrow />
       </ErrorBoundary>,
     );
-    expect(screen.getByTestId("error-alert")).toBeInTheDocument();
-    expect(screen.getByTestId("error-message")).toBeInTheDocument();
+    expect(screen.getByTestId("error-alert")).toHaveTextContent("Something went wrong: test explosion");
+    expect(screen.getByTestId("error-message")).toHaveTextContent("Something went wrong: test explosion");
   });
 
   it("Retry button renders when onReset provided and calls it on click", () => {
@@ -45,7 +45,7 @@ describe("ErrorBoundary - error state", () => {
       </ErrorBoundary>,
     );
     const btn = screen.getByTestId("retry-button");
-    expect(btn).toBeInTheDocument();
+    expect(btn).toBeEnabled();
     fireEvent.click(btn);
     expect(onReset).toHaveBeenCalledOnce();
   });
