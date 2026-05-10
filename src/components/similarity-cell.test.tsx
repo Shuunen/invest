@@ -2,6 +2,7 @@ import type { AccessorFnColumnDef } from "@tanstack/react-table";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { invariant } from "es-toolkit";
 import type { Asset } from "../schemas/index.ts";
+import { computeMaxSimilarity } from "../utils/asset-similarity.ts";
 import { makeSimilarityColumn } from "./asset-table-columns.tsx";
 import { SimilarityCell } from "./similarity-cell.tsx";
 
@@ -30,7 +31,13 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
 }
 
 function renderSimilarityCell(asset: Asset, assets: Asset[], onDismiss: ((isin: string, matchedIsin: string) => void) | undefined) {
-  render(<SimilarityCell asset={asset} assets={assets} onDismiss={onDismiss} />);
+  const result = computeMaxSimilarity(asset, assets, asset.dismissedSimilarities);
+  render(<SimilarityCell asset={asset} assets={assets} onDismiss={onDismiss} result={result} />);
+}
+
+function renderSimilarityCellWithCustomDisplay(asset: Asset, similarAssets: Asset[], displayAssets: Asset[]) {
+  const result = computeMaxSimilarity(asset, similarAssets, asset.dismissedSimilarities);
+  render(<SimilarityCell asset={asset} assets={displayAssets} onDismiss={undefined} result={result} />);
 }
 
 describe("SimilarityCell", () => {
@@ -42,9 +49,7 @@ describe("SimilarityCell", () => {
 
     renderSimilarityCell(firstAsset, assets, undefined);
 
-    const cell = screen.getByTestId("similarity-lu0000000001");
-    const wrapper = cell.parentElement;
-    invariant(wrapper, "Expected similarity wrapper to exist");
+    const wrapper = screen.getByTestId("similarity-wrapper-lu0000000001");
     fireEvent.mouseEnter(wrapper);
 
     expect(screen.getByTestId("similarity-popover-lu0000000001")).toHaveTextContent("100% similar to Duplicate ETF");
@@ -62,9 +67,7 @@ describe("SimilarityCell", () => {
 
     renderSimilarityCell(firstAsset, assets, onDismiss);
 
-    const cell = screen.getByTestId("similarity-lu0000000001");
-    const wrapper = cell.parentElement;
-    invariant(wrapper, "Expected similarity wrapper to exist");
+    const wrapper = screen.getByTestId("similarity-wrapper-lu0000000001");
 
     fireEvent.mouseEnter(wrapper);
     fireEvent.click(screen.getByTestId("similarity-dismiss-lu0000000001"));
@@ -82,6 +85,21 @@ describe("SimilarityCell", () => {
     expect(screen.queryByTestId("similarity-popover-lu0000000001")).not.toBeInTheDocument();
 
     vi.useRealTimers();
+  });
+
+  it("falls back to matched ISIN as name when matched asset is not in assets list", () => {
+    expect.hasAssertions();
+    const firstAsset = makeAsset({ geoAllocation: { us: 1 }, isin: "LU0000000001" });
+    const secondAsset = makeAsset({ geoAllocation: { us: 1 }, isin: "LU0000000002" });
+    // Use only firstAsset as display assets so the matched asset (secondAsset) is not found by name
+    const allAssets = [firstAsset, secondAsset];
+    const displayOnly = [firstAsset];
+    renderSimilarityCellWithCustomDisplay(firstAsset, allAssets, displayOnly);
+
+    const wrapper = screen.getByTestId("similarity-wrapper-lu0000000001");
+    fireEvent.mouseEnter(wrapper);
+
+    expect(screen.getByTestId("similarity-popover-lu0000000001")).toHaveTextContent("100% similar to LU0000000002");
   });
 });
 

@@ -381,9 +381,10 @@ export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string
 }
 
 export function makeSimilarityColumn(assets: Asset[], onDismiss?: (isin: string, matchedIsin: string) => void): ColumnDef<Asset> {
+  const resultsMap = new Map(assets.map(asset => [asset.isin, computeMaxSimilarity(asset, assets, asset.dismissedSimilarities)]));
   return {
-    accessorFn: row => computeMaxSimilarity(row, assets, row.dismissedSimilarities)?.score,
-    cell: ({ row }) => <SimilarityCell asset={row.original} assets={assets} onDismiss={onDismiss} />,
+    accessorFn: row => resultsMap.get(row.isin)?.score,
+    cell: ({ row }) => <SimilarityCell asset={row.original} assets={assets} onDismiss={onDismiss} result={resultsMap.get(row.original.isin)} />,
     header: "Similarity",
     id: "similarity",
     meta: { title: "Similarity geo/sector" },

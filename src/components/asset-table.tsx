@@ -89,21 +89,29 @@ function buildActiveColumns({
   ];
 }
 
+function useRetry() {
+  const [retryKey, setRetryKey] = useState(0);
+  const handleRetry = () => {
+    useAppStore.setState({ isLoading: true, loadError: undefined });
+    setRetryKey(prevKey => prevKey + 1);
+  };
+  useHydration(retryKey);
+  return handleRetry;
+}
+
 function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onDismissSimilarity, onPriceChange, onToggleSelect, selectedIsins, amountMap, amountUpdatedAtMap, isEditing, noteMap, onNoteChange }: Props = {}) {
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
   const setSort = useAppStore(state => state.setSort);
   const setColumnVisibility = useAppStore(state => state.setColumnVisibility);
-  const [retryKey, setRetryKey] = useState(0);
   const [filterText, setFilterText] = useState("");
-  const handleRetry = () => {
-    useAppStore.setState({ isLoading: true, loadError: undefined });
-    setRetryKey(prevKey => prevKey + 1);
-  };
-  useHydration(retryKey);
+  const handleRetry = useRetry();
   const resolvedVisibility = useMemo(() => ({ ...defaultColumnVisibility, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
-  const activeColumns = buildActiveColumns({ amountMap, amountUpdatedAtMap, assets: propAssets, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onToggleSelect });
+  const activeColumns = useMemo(
+    () => buildActiveColumns({ amountMap, amountUpdatedAtMap, assets: propAssets, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onToggleSelect }),
+    [amountMap, amountUpdatedAtMap, propAssets, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onToggleSelect],
+  );
   const sorting: SortingState = useMemo(() => {
     const { column, direction } = data.settings.sort;
     if (column === "amount" && !onAmountChange) return [];

@@ -16,8 +16,7 @@ export function DismissedSimilaritiesSection({ asset, allAssets, onUnDismiss }: 
   if (asset.dismissedSimilarities.length === 0) return undefined;
 
   function handleConfirm() {
-    /* v8 ignore next -- confirm modal cannot trigger confirm while state is undefined */
-    if (!confirm) return;
+    invariant(confirm, "confirm state must be set when handleConfirm is called");
     invariant(onUnDismiss, "onUnDismiss callback is required to un-dismiss similarities");
     onUnDismiss(confirm.isin, confirm.matchedIsin);
     setConfirm(undefined);
