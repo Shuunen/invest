@@ -302,6 +302,37 @@ describe("AssetTable - sorting", () => {
     });
     expect(useAppStore.getState().data.settings.sort.direction).not.toBe(firstDir);
   });
+
+  it("sorts by note values in portfolio mode", async () => {
+    expect.hasAssertions();
+    const first = makeAsset({ isin: "LU1234567890", name: "First ETF" });
+    const second = makeAsset({ isin: "FR0000000001", name: "Second ETF" });
+    const assets = [first, second];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(
+      <AssetTable
+        amountMap={
+          new Map([
+            [first.isin, 1],
+            [second.isin, 1],
+          ])
+        }
+        noteMap={
+          new Map([
+            [first.isin, "z-note"],
+            [second.isin, "a-note"],
+          ])
+        }
+        onAmountChange={vi.fn<(isin: string, amount: number) => void>()}
+      />,
+    );
+    fireEvent.click(screen.getByTestId("sort-note"));
+    await waitFor(() => {
+      const rows = screen.getAllByTestId(/asset-row-/u);
+      expect(rows[0]).toHaveAttribute("data-testid", "asset-row-FR0000000001");
+      expect(rows[1]).toHaveAttribute("data-testid", "asset-row-LU1234567890");
+    });
+  });
 });
 
 describe("AssetTable - column hiding", () => {
@@ -978,6 +1009,19 @@ describe("AssetTable - note column", () => {
     expect.hasAssertions();
     render(<AssetTable assets={noteAssets} onAmountChange={vi.fn<(id: string, count: number) => void>()} isEditing />);
     expect(() => fireEvent.click(screen.getByTestId(`note-input-${noteIsin}`))).not.toThrow();
+  });
+
+  it("allows note sorting even when noteMap is undefined", async () => {
+    expect.hasAssertions();
+    const first = makeAsset({ isin: "LU1111111111", name: "First ETF" });
+    const second = makeAsset({ isin: "FR1111111111", name: "Second ETF" });
+    const assets = [first, second];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(<AssetTable onAmountChange={vi.fn<(id: string, count: number) => void>()} />);
+    fireEvent.click(screen.getByTestId("sort-note"));
+    await waitFor(() => {
+      expect(useAppStore.getState().data.settings.sort.column).toBe("note");
+    });
   });
 });
 

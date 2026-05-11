@@ -173,22 +173,23 @@ export function makePortfolioPriceColumn(): ColumnDef<Asset> {
   };
 }
 
-export function makeNoteColumn(): ColumnDef<Asset> {
+export function makeNoteColumn(noteMap?: Map<string, string>): ColumnDef<Asset> {
   return {
+    accessorFn: row => noteMap?.get(row.isin) ?? "",
     cell: ({ row, table }) => {
       const meta = table.options.meta as AssetTableMeta | undefined;
       const { isin } = row.original;
       const value = meta?.noteMap?.get(isin) ?? "";
       if (!meta?.isEditing)
         return (
-          <span data-testid={`note-${isin.toLowerCase()}`} className="text-base-content/60">
+          <span data-testid={`note-${isin.toLowerCase()}`} className="-ml-2">
             {value || "—"}
           </span>
         );
       return (
         <input
           type="text"
-          className="input input-xs w-[100px]"
+          className="input input-xs w-36"
           defaultValue={value}
           key={value}
           id={`note-input-${isin.toLowerCase()}`}
