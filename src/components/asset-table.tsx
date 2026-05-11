@@ -67,10 +67,11 @@ function buildActiveColumns({
   onAmountChange,
   onDismissSimilarity,
   onPriceChange,
+  noteMap,
   amountMap,
   amountUpdatedAtMap,
   assets,
-}: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onDismissSimilarity" | "onPriceChange" | "amountMap" | "amountUpdatedAtMap" | "assets">): ColumnDef<Asset>[] {
+}: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onDismissSimilarity" | "onPriceChange" | "noteMap" | "amountMap" | "amountUpdatedAtMap" | "assets">): ColumnDef<Asset>[] {
   const isPortfolioMode = Boolean(onAmountChange);
   const baseCols = onPriceChange || isPortfolioMode ? columns.filter(col => col.id !== "price") : columns;
   // Insert data-score right after the first column (Score) so the two quality indicators sit together
@@ -83,7 +84,7 @@ function buildActiveColumns({
     ...(onAmountChange ? [makeAmountColumn(amountMap)] : []),
     ...(amountUpdatedAtMap ? [makeAmountUpdatedAtColumn(amountUpdatedAtMap)] : []),
     ...(onAmountChange && assets ? [makeSimilarityColumn(assets, onDismissSimilarity)] : []),
-    ...(isPortfolioMode ? [makeNoteColumn()] : []),
+    ...(isPortfolioMode ? [makeNoteColumn(noteMap)] : []),
     ...(onAmountChange ? [makeValueColumn(amountMap)] : []),
     ...(onRemoveAsset ? [makeRemoveColumn(onRemoveAsset)] : []),
   ];
@@ -109,8 +110,8 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
   const handleRetry = useRetry();
   const resolvedVisibility = useMemo(() => ({ ...defaultColumnVisibility, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
   const activeColumns = useMemo(
-    () => buildActiveColumns({ amountMap, amountUpdatedAtMap, assets: propAssets, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onToggleSelect }),
-    [amountMap, amountUpdatedAtMap, propAssets, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onToggleSelect],
+    () => buildActiveColumns({ amountMap, amountUpdatedAtMap, assets: propAssets, noteMap, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onToggleSelect }),
+    [amountMap, amountUpdatedAtMap, propAssets, noteMap, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onToggleSelect],
   );
   const sorting: SortingState = useMemo(() => {
     const { column, direction } = data.settings.sort;
@@ -198,7 +199,7 @@ function renderTableHeader(table: Table<Asset>) {
             <th
               key={header.id}
               aria-sort={header.column.getCanSort() ? getAriaSortValue(header.column.getIsSorted()) : undefined}
-              className={cn(header.column.getIsSorted() ? "font-semibold" : undefined, { "text-center": header.column.columnDef.meta?.center })}
+              className={cn(header.column.getIsSorted() ? "font-semibold" : undefined, header.column.columnDef.meta?.center ? "text-center" : "pl-0")}
               colSpan={header.colSpan}
               scope="col"
             >
