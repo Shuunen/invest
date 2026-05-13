@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from "react";
-import type { Allocation, Asset } from "../schemas/index.ts";
+import type { Asset } from "../schemas/index.ts";
+import { computeWeightedAllocationsFromSelection } from "../utils/allocation-charts.ts";
 import { AssetTable } from "./asset-table.tsx";
 import { AllocationChart } from "./charts/allocation.tsx";
 import { ModalActions } from "./modal-actions.tsx";
@@ -10,6 +11,8 @@ type Props = {
   assets: Asset[];
   /** The ISINs of the assets that should be initially selected when the modal opens */
   initialSelected: Set<string>;
+  /** Optional amount map used to compute capital-weighted allocation previews */
+  amountByIsin?: Map<string, number>;
   /** Called when the user cancels the selection (e.g. by clicking outside the modal or on the Cancel button) */
   onCancel: () => void;
   /** Called with the new set of selected ISINs when the user confirms their selection */
@@ -37,27 +40,6 @@ function useAssetPicker(initialSelected: Set<string>, onConfirm: (selectedIsins:
 
 type RenderListArgs = { assets: Asset[]; selected: Set<string>; toggle: (isin: string) => void };
 
-function averageAllocation(maps: Allocation[]): Allocation {
-  if (maps.length === 0) return {};
-  const totals = new Map<string, number>();
-
-  for (const allocationMap of maps)
-    for (const [key, value] of Object.entries(allocationMap)) {
-      if (value === undefined) continue;
-      totals.set(key, (totals.get(key) ?? 0) + value);
-    }
-
-  return Object.fromEntries(Array.from(totals.entries()).map(([key, value]) => [key, value / maps.length]));
-}
-
-function buildProjectedAllocations(assets: Asset[], selectedIsins: Set<string>) {
-  const selectedAssets = assets.filter(asset => selectedIsins.has(asset.isin));
-  return {
-    geo: averageAllocation(selectedAssets.map(asset => asset.geoAllocation)),
-    sector: averageAllocation(selectedAssets.map(asset => asset.sectorAllocation)),
-  };
-}
-
 function renderPickerList({ assets, selected, toggle }: RenderListArgs) {
   if (assets.length === 0)
     return (
@@ -68,11 +50,87 @@ function renderPickerList({ assets, selected, toggle }: RenderListArgs) {
   return <AssetTable assets={assets} selectedIsins={selected} onToggleSelect={toggle} />;
 }
 
-export function AssetPickerModal({ assets, initialSelected, onCancel, onConfirm, title }: Props) {
+type AllocationPreviewArgs = {
+  amountByIsin?: Map<string, number>;
+  assets: Asset[];
+  initialSelected: Set<string>;
+  selected: Set<string>;
+};
+
+function useAllocationPreview({ amountByIsin, assets, initialSelected, selected }: AllocationPreviewArgs) {
+  const [newSelectionInvestmentAmount, setNewSelectionInvestmentAmount] = useState(0);
+  const assetByIsin = useMemo(() => new Map(assets.map(asset => [asset.isin, asset])), [assets]);
+
+  const selectedWithoutAmount = useMemo(() => {
+    if (amountByIsin === undefined) return [];
+    return [...selected].filter(isin => !amountByIsin.has(isin));
+  }, [amountByIsin, selected]);
+
+  const afterAmountByIsin = useMemo(() => {
+    if (amountByIsin === undefined) return undefined;
+    if (selectedWithoutAmount.length === 0) return amountByIsin;
+
+    const nextAmountByIsin = new Map(amountByIsin);
+    const eurosPerNewAsset = newSelectionInvestmentAmount / selectedWithoutAmount.length;
+    for (const isin of selectedWithoutAmount) {
+      const price = assetByIsin.get(isin)?.price;
+      const amountInUnits = price === undefined || price <= 0 ? 0 : eurosPerNewAsset / price;
+      nextAmountByIsin.set(isin, amountInUnits);
+    }
+    return nextAmountByIsin;
+  }, [amountByIsin, assetByIsin, newSelectionInvestmentAmount, selectedWithoutAmount]);
+
+  const beforeAllocations = useMemo(() => computeWeightedAllocationsFromSelection({ amountByIsin, assets, defaultAmount: amountByIsin === undefined ? 1 : 0, selectedIsins: initialSelected }), [amountByIsin, assets, initialSelected]);
+  const afterAllocations = useMemo(
+    () => computeWeightedAllocationsFromSelection({ amountByIsin: afterAmountByIsin, assets, defaultAmount: amountByIsin === undefined ? 1 : 0, selectedIsins: selected }),
+    [afterAmountByIsin, amountByIsin, assets, selected],
+  );
+
+  return { afterAllocations, beforeAllocations, newSelectionInvestmentAmount, selectedWithoutAmount, setNewSelectionInvestmentAmount };
+}
+
+type RenderSelectionInvestmentInputArgs = {
+  newSelectionCount: number;
+  value: number;
+  onChange: (nextValue: number) => void;
+};
+
+function renderSelectionInvestmentInput({ newSelectionCount, onChange, value }: RenderSelectionInvestmentInputArgs) {
+  return (
+    <div className="flex w-52 items-center justify-center bg-transparent">
+      <label className="form-control w-full max-w-xs" data-testid="new-selection-investment-control">
+        <div className="label">
+          <span className="label-text text-xs">Investment for new selection (€)</span>
+        </div>
+        <input
+          type="number"
+          min={0}
+          step={100}
+          value={value}
+          onChange={event => {
+            const next = Number(event.target.value);
+            onChange(Number.isFinite(next) && next >= 0 ? next : 0);
+          }}
+          className="input-bordered input input-sm w-full"
+          data-testid="new-selection-investment-input"
+        />
+        <div className="label">
+          <span className="label-text-alt text-xs text-base-content/60">Split equally across {newSelectionCount} new asset(s)</span>
+        </div>
+      </label>
+    </div>
+  );
+}
+
+export function AssetPickerModal({ assets, initialSelected, amountByIsin, onCancel, onConfirm, title }: Props) {
   const { handleConfirm, selected, toggle } = useAssetPicker(initialSelected, onConfirm);
-  const openSelectedRef = useRef(initialSelected);
-  const beforeAllocations = useMemo(() => buildProjectedAllocations(assets, openSelectedRef.current), [assets]);
-  const afterAllocations = useMemo(() => buildProjectedAllocations(assets, selected), [assets, selected]);
+  const initialSelectedRef = useRef(initialSelected);
+  const { afterAllocations, beforeAllocations, newSelectionInvestmentAmount, selectedWithoutAmount, setNewSelectionInvestmentAmount } = useAllocationPreview({
+    amountByIsin,
+    assets,
+    initialSelected: initialSelectedRef.current,
+    selected,
+  });
 
   return (
     <dialog className="modal-open modal" aria-modal="true">
@@ -81,7 +139,7 @@ export function AssetPickerModal({ assets, initialSelected, onCancel, onConfirm,
         <div className="mb-3 flex justify-between pb-2" data-testid="allocation-preview-row">
           <AllocationChart data={beforeAllocations.geo} title="Current geography" name="before-geo-allocation" />
           <AllocationChart data={afterAllocations.geo} title="Selected geography" name="after-geo-allocation" />
-          <div className="w-32 bg-transparent" />
+          {renderSelectionInvestmentInput({ newSelectionCount: selectedWithoutAmount.length, onChange: setNewSelectionInvestmentAmount, value: newSelectionInvestmentAmount })}
           <AllocationChart data={beforeAllocations.sector} title="Current sectors" name="before-sector-allocation" />
           <AllocationChart data={afterAllocations.sector} title="Selected sectors" name="after-sector-allocation" />
         </div>
