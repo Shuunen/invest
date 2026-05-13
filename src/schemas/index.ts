@@ -24,6 +24,12 @@ export const maxIsins = 5000;
 export const maxPortfolios = 50;
 const scoreFeeWeight = 10;
 const scoreRiskWeight = 5;
+const scoreTimeFrameShort = 1;
+const scoreTimeFrameMedium = 3;
+const scoreTimeFrameLong = 5;
+const scoreWeightShort = 0.2;
+const scoreWeightMedium = 0.5;
+const scoreWeightLong = 0.3;
 const defaultSimilarityThreshold = 0.85;
 
 const nullableNumber = z
@@ -69,11 +75,47 @@ export const AssetSchema = z.object({
 
 export type Asset = z.infer<typeof AssetSchema>;
 
+type Metric = {
+  value: number;
+  weight: number;
+};
+
+// Compute weighted contribution; missing timeframes contribute 0 (no renormalization)
+const computeWeightedContribution = (metrics: Metric[]): number => metrics.reduce((sum, metric) => sum + metric.value * metric.weight, 0);
+
 // score is derived, never stored
+// Blends 1y/3y/5y performance and risk/reward with weights 0.2/0.5/0.3 respectively
+// Falls back to available timeframes (e.g., 3y-only if 1y/5y missing)
+// Requires 3y data as anchor for stability
 export function computeScore(asset: Asset): number | undefined {
-  const { performance3y, riskReward3y, fees } = asset;
+  const { performance1y, performance3y, performance5y, riskReward1y, riskReward3y, riskReward5y, fees } = asset;
+
+  // Require 3y data as anchor
   if (performance3y === undefined || riskReward3y === undefined) return undefined;
-  return performance3y + riskReward3y * scoreRiskWeight - fees * scoreFeeWeight;
+
+  // Collect available metrics with nominal weights
+  type TimeFrame = typeof scoreTimeFrameShort | typeof scoreTimeFrameMedium | typeof scoreTimeFrameLong;
+  const nominalWeights: Record<TimeFrame, number> = {
+    [scoreTimeFrameShort]: scoreWeightShort,
+    [scoreTimeFrameMedium]: scoreWeightMedium,
+    [scoreTimeFrameLong]: scoreWeightLong,
+  };
+
+  const perfMetrics: Metric[] = [];
+  const riskMetrics: Metric[] = [];
+
+  if (performance1y !== undefined) perfMetrics.push({ value: performance1y, weight: nominalWeights[scoreTimeFrameShort] });
+  perfMetrics.push({ value: performance3y, weight: nominalWeights[scoreTimeFrameMedium] });
+  if (performance5y !== undefined) perfMetrics.push({ value: performance5y, weight: nominalWeights[scoreTimeFrameLong] });
+
+  if (riskReward1y !== undefined) riskMetrics.push({ value: riskReward1y, weight: nominalWeights[scoreTimeFrameShort] });
+  riskMetrics.push({ value: riskReward3y, weight: nominalWeights[scoreTimeFrameMedium] });
+  if (riskReward5y !== undefined) riskMetrics.push({ value: riskReward5y, weight: nominalWeights[scoreTimeFrameLong] });
+
+  const avgPerformance = computeWeightedContribution(perfMetrics);
+  const avgRiskReward = computeWeightedContribution(riskMetrics);
+
+  return avgPerformance + avgRiskReward * scoreRiskWeight - fees * scoreFeeWeight;
 }
 
 const dataFreshnessDays = 30;
