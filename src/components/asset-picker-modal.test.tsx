@@ -309,4 +309,28 @@ describe("AssetPickerModal - with assets", () => {
 
     expect(input).toHaveValue(0);
   });
+
+  it("treats newly selected asset with undefined price as zero units in after allocations", async () => {
+    expect.hasAssertions();
+    const noPriceAsset = makeAsset({ geoAllocation: { europe: 1 }, isin: "LU3333333333", name: "No Price Fund", price: undefined });
+    render(
+      <AssetPickerModal
+        assets={[weightedPreviewAssetA, noPriceAsset]}
+        initialSelected={new Set([weightedPreviewAssetA.isin])}
+        amountByIsin={new Map([[weightedPreviewAssetA.isin, 10]])}
+        onCancel={vi.fn<() => void>()}
+        onConfirm={vi.fn<(isins: string[]) => void>()}
+        title="Select assets"
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId(`asset-row-LU3333333333`));
+    fireEvent.change(screen.getByTestId("new-selection-investment-input"), { target: { value: "1000" } });
+
+    await waitFor(() => {
+      const afterGeoCard = screen.getByTestId("after-geo-allocation-card");
+      // noPriceAsset gets amountInUnits = 0 → contributes 0 weight, so after chart still shows only USA
+      expect(within(afterGeoCard).getByTestId("slice-label-text-usa")).toHaveTextContent("100%");
+    });
+  });
 });
