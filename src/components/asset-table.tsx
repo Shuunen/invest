@@ -18,6 +18,7 @@ import {
   makeRemoveColumn,
   makeSelectColumn,
   makeSimilarityColumn,
+  makeTargetAmountColumn,
   makeValueColumn,
 } from "./asset-table-columns.tsx";
 import { useHydration } from "./asset-table-db.ts";
@@ -36,10 +37,12 @@ type Props = {
   onNoteChange?: (isin: string, note: string) => void;
   onPriceChange?: (isin: string, price: number) => void;
   onRemoveAsset?: (isin: string) => void;
+  onTargetAmountChange?: (isin: string, targetAmount: number) => void;
   onToggleSelect?: (isin: string) => void;
   selectedIsins?: Set<string>;
   amountMap?: Map<string, number>;
   amountUpdatedAtMap?: Map<string, string>;
+  targetAmountMap?: Map<string, number>;
 };
 
 function getSortIndicator(sorted: "asc" | "desc" | false): string {
@@ -65,13 +68,15 @@ function buildActiveColumns({
   onToggleSelect,
   onRemoveAsset,
   onAmountChange,
+  onTargetAmountChange,
   onDismissSimilarity,
   onPriceChange,
   noteMap,
   amountMap,
   amountUpdatedAtMap,
+  targetAmountMap,
   assets,
-}: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onDismissSimilarity" | "onPriceChange" | "noteMap" | "amountMap" | "amountUpdatedAtMap" | "assets">): ColumnDef<Asset>[] {
+}: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onTargetAmountChange" | "onDismissSimilarity" | "onPriceChange" | "noteMap" | "amountMap" | "amountUpdatedAtMap" | "targetAmountMap" | "assets">): ColumnDef<Asset>[] {
   const isPortfolioMode = Boolean(onAmountChange);
   const baseCols = onPriceChange || isPortfolioMode ? columns.filter(col => col.id !== "price") : columns;
   // Insert data-score right after the first column (Score) so the two quality indicators sit together
@@ -82,6 +87,7 @@ function buildActiveColumns({
     ...(onPriceChange && !isPortfolioMode ? [makePriceEditColumn()] : []),
     ...(isPortfolioMode ? [makePortfolioPriceColumn()] : []),
     ...(onAmountChange ? [makeAmountColumn(amountMap)] : []),
+    ...(onTargetAmountChange ? [makeTargetAmountColumn(targetAmountMap)] : []),
     ...(amountUpdatedAtMap ? [makeAmountUpdatedAtColumn(amountUpdatedAtMap)] : []),
     ...(onAmountChange && assets ? [makeSimilarityColumn(assets, onDismissSimilarity)] : []),
     ...(isPortfolioMode ? [makeNoteColumn(noteMap)] : []),
@@ -100,7 +106,9 @@ function useRetry() {
   return handleRetry;
 }
 
-function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange, onDismissSimilarity, onPriceChange, onToggleSelect, selectedIsins, amountMap, amountUpdatedAtMap, isEditing, noteMap, onNoteChange }: Props = {}) {
+function useAssetTableState(props: Props = {}) {
+  const { amountMap, amountUpdatedAtMap, assets: propAssets, isEditing, noteMap, selectedIsins } = props;
+  const { onAmountChange, onDismissSimilarity, onNoteChange, onPriceChange, onRemoveAsset, onTargetAmountChange, onToggleSelect, targetAmountMap } = props;
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
@@ -110,8 +118,8 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
   const handleRetry = useRetry();
   const resolvedVisibility = useMemo(() => ({ ...defaultColumnVisibility, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
   const activeColumns = useMemo(
-    () => buildActiveColumns({ amountMap, amountUpdatedAtMap, assets: propAssets, noteMap, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onToggleSelect }),
-    [amountMap, amountUpdatedAtMap, propAssets, noteMap, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onToggleSelect],
+    () => buildActiveColumns({ amountMap, amountUpdatedAtMap, assets: propAssets, noteMap, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onTargetAmountChange, onToggleSelect, targetAmountMap }),
+    [amountMap, amountUpdatedAtMap, propAssets, noteMap, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onTargetAmountChange, onToggleSelect, targetAmountMap],
   );
   const sorting: SortingState = useMemo(() => {
     const { column, direction } = data.settings.sort;
@@ -124,7 +132,9 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
     return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
   }, [data.assets, filterText, propAssets]);
   const meta: AssetTableMeta | undefined =
-    (onToggleSelect ?? onAmountChange ?? onPriceChange ?? amountUpdatedAtMap) ? { amountMap, amountUpdatedAtMap, isEditing, noteMap, onAmountChange, onNoteChange, onPriceChange, onToggleSelect, selectedIsins } : undefined;
+    (onToggleSelect ?? onAmountChange ?? onPriceChange ?? onTargetAmountChange ?? amountUpdatedAtMap)
+      ? { amountMap, amountUpdatedAtMap, isEditing, noteMap, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, onToggleSelect, selectedIsins, targetAmountMap }
+      : undefined;
   const table = useTableInstance({
     columns: activeColumns,
     filteredAssets,
@@ -134,7 +144,6 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
     setSort,
     sorting,
   });
-  const visibleLeafCount = table.getVisibleLeafColumns().length;
   return {
     data,
     filterText,
@@ -144,7 +153,7 @@ function useAssetTableState({ assets: propAssets, onRemoveAsset, onAmountChange,
     quintileClasses: computeQuintileClasses(table.getRowModel().rows),
     setFilterText,
     table,
-    visibleLeafCount,
+    visibleLeafCount: table.getVisibleLeafColumns().length,
   };
 }
 
@@ -265,35 +274,10 @@ function useAssetsPriceEditState(propAssets: Asset[] | undefined, propOnPriceCha
   return { onPriceChange, priceEditActions };
 }
 
-export function AssetTable({
-  assets: propAssets,
-  onRemoveAsset,
-  onAmountChange,
-  onDismissSimilarity,
-  onToggleSelect,
-  selectedIsins,
-  amountMap,
-  amountUpdatedAtMap,
-  onPriceChange: propOnPriceChange,
-  isEditing,
-  noteMap,
-  onNoteChange,
-}: Props = {}) {
+export function AssetTable(props: Props = {}) {
+  const { assets: propAssets, onPriceChange: propOnPriceChange } = props;
   const { onPriceChange, priceEditActions } = useAssetsPriceEditState(propAssets, propOnPriceChange);
-  const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({
-    amountMap,
-    amountUpdatedAtMap,
-    assets: propAssets,
-    isEditing,
-    noteMap,
-    onAmountChange,
-    onDismissSimilarity,
-    onNoteChange,
-    onPriceChange,
-    onRemoveAsset,
-    onToggleSelect,
-    selectedIsins,
-  });
+  const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({ ...props, onPriceChange });
   if (!propAssets && isLoading) return renderSkeleton();
   if (!propAssets && loadError) return renderError(loadError, handleRetry);
   if (!propAssets && data.assets.length === 0) return renderEmpty();
@@ -309,7 +293,7 @@ export function AssetTable({
         <table className="table-hover table w-full">
           <caption className="sr-only">ISINs reference data table</caption>
           {renderTableHeader(table)}
-          {filterReturnedNoResults ? renderNoResults(table.getVisibleLeafColumns().length, filterText) : renderTableBody(table, quintileClasses, onToggleSelect)}
+          {filterReturnedNoResults ? renderNoResults(table.getVisibleLeafColumns().length, filterText) : renderTableBody(table, quintileClasses, props.onToggleSelect)}
         </table>
       </div>
     </>

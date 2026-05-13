@@ -24,10 +24,12 @@ export type AssetTableMeta = {
   onAmountChange?: (isin: string, amount: number) => void;
   onNoteChange?: (isin: string, note: string) => void;
   onPriceChange?: (isin: string, price: number) => void;
+  onTargetAmountChange?: (isin: string, targetAmount: number) => void;
   onToggleSelect?: (isin: string) => void;
   selectedIsins?: Set<string>;
   amountMap?: Map<string, number>;
   amountUpdatedAtMap?: Map<string, string>;
+  targetAmountMap?: Map<string, number>;
 };
 
 function booleanCell(isin: string, field: string, value: boolean) {
@@ -35,6 +37,36 @@ function booleanCell(isin: string, field: string, value: boolean) {
     <span data-testid={`bool-${field}-${isin.toLowerCase()}`} aria-label={value ? "Yes" : "No"} className={cn("badge", { "bg-error/10": !value, "bg-success/10": value })}>
       {value ? "Yes" : "No"}
     </span>
+  );
+}
+
+type NumberInputOpts = {
+  ariaLabel: string;
+  className: string;
+  dataTestid: string;
+  id: string;
+  onBlur: (value: number) => void;
+  value: number;
+};
+
+function makeNumberInput({ ariaLabel, className, dataTestid, id, onBlur, value }: NumberInputOpts) {
+  return (
+    <input
+      type="number"
+      className={className}
+      min={0}
+      defaultValue={value}
+      step={0.1}
+      key={value}
+      id={id}
+      data-testid={dataTestid}
+      aria-label={ariaLabel}
+      onClick={event => event.stopPropagation()}
+      onBlur={event => {
+        const amount = Math.max(0, Number(event.target.value) || 0);
+        if (amount !== value) onBlur(amount);
+      }}
+    />
   );
 }
 
@@ -83,24 +115,14 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
             {value === 0 ? "—" : value}
           </span>
         );
-      return (
-        <input
-          type="number"
-          className={cn("input input-xs w-14 text-center", { "bg-warning/10 input-warning": value === 0 })}
-          min={0}
-          defaultValue={value}
-          step={0.1}
-          key={value}
-          id={`amount-input-${isin.toLowerCase()}`}
-          data-testid={`amount-input-${isin.toLowerCase()}`}
-          aria-label={`Amount for ${row.original.name}`}
-          onClick={event => event.stopPropagation()}
-          onBlur={event => {
-            const amount = Math.max(0, Number(event.target.value) || 0);
-            if (amount !== value) meta?.onAmountChange?.(isin, amount);
-          }}
-        />
-      );
+      return makeNumberInput({
+        ariaLabel: `Amount for ${row.original.name}`,
+        className: cn("input input-xs w-14 text-center", { "bg-warning/10 input-warning": value === 0 }),
+        dataTestid: `amount-input-${isin.toLowerCase()}`,
+        id: `amount-input-${isin.toLowerCase()}`,
+        onBlur: amount => meta?.onAmountChange?.(isin, amount),
+        value,
+      });
     },
     header: "Amount",
     id: "amount",
@@ -371,6 +393,34 @@ export function makeDataScoreColumn(amountMap?: Map<string, number>, amountUpdat
     meta: { title: "Data score" },
   };
 }
+export function makeTargetAmountColumn(targetAmountMap: Map<string, number> | undefined): ColumnDef<Asset> {
+  return {
+    accessorFn: row => targetAmountMap?.get(row.isin) ?? 0,
+    cell: ({ row, table }) => {
+      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { isin } = row.original;
+      const value = meta?.targetAmountMap?.get(isin) ?? 0;
+      if (!meta?.isEditing)
+        return (
+          <span data-testid={`target-amount-${isin.toLowerCase()}`} className={cn({ "text-base-content/40": value === 0 })}>
+            {value === 0 ? "—" : value}
+          </span>
+        );
+      return makeNumberInput({
+        ariaLabel: `Target amount for ${row.original.name}`,
+        className: "input input-xs w-14 text-center",
+        dataTestid: `target-amount-input-${isin.toLowerCase()}`,
+        id: `target-amount-input-${isin.toLowerCase()}`,
+        onBlur: targetAmount => meta?.onTargetAmountChange?.(isin, targetAmount),
+        value,
+      });
+    },
+    header: "Target",
+    id: "target-amount",
+    meta: { center: true, title: "Target amount of units" },
+  };
+}
+
 export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string> | undefined): ColumnDef<Asset> {
   return {
     accessorFn: row => amountUpdatedAtMap?.get(row.isin),

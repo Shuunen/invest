@@ -18,6 +18,10 @@ function patchPortfolioEntryNote(portfolios: Portfolio[], { isin, note, portfoli
   return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, notes: note } : entry)) } : portfolio));
 }
 
+function patchPortfolioEntryTargetAmount(portfolios: Portfolio[], { isin, portfolioId, targetAmount }: { isin: string; portfolioId: string; targetAmount: number }): Portfolio[] {
+  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, targetAmount } : entry)) } : portfolio));
+}
+
 export const defaultAppData: AppData = {
   assets: [],
   portfolios: [],
@@ -46,6 +50,7 @@ type AppStore = {
   updatePortfolio: (id: string, patch: Partial<Pick<Portfolio, "name" | "broker">>) => void;
   updatePortfolioEntryAmount: (portfolioId: string, isin: string, amount: number) => void;
   updatePortfolioEntryNote: (portfolioId: string, isin: string, note: string) => void;
+  updatePortfolioEntryTargetAmount: (portfolioId: string, isin: string, targetAmount: number) => void;
 };
 
 export const useAppStore = create<AppStore>()(
@@ -201,6 +206,14 @@ export const useAppStore = create<AppStore>()(
         data: {
           ...state.data,
           portfolios: patchPortfolioEntryNote(state.data.portfolios, { isin, note, portfolioId }),
+          settings: incrementEditCount(state.data.settings),
+        },
+      })),
+    updatePortfolioEntryTargetAmount: (portfolioId, isin, targetAmount) =>
+      set(state => ({
+        data: {
+          ...state.data,
+          portfolios: patchPortfolioEntryTargetAmount(state.data.portfolios, { isin, portfolioId, targetAmount }),
           settings: incrementEditCount(state.data.settings),
         },
       })),

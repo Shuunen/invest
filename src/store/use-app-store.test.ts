@@ -482,6 +482,38 @@ describe("useAppStore - updatePortfolioEntryNote", () => {
   });
 });
 
+describe("useAppStore - updatePortfolioEntryTargetAmount", () => {
+  const baseEntry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+  const basePortfolioId = "00000000-0000-4000-8000-000000000001";
+  const basePort = { broker: "Test", entries: [baseEntry], id: basePortfolioId, name: "Test" };
+
+  it("updates the targetAmount for the matching portfolio entry", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: { ...defaultAppData, portfolios: [basePort] }, isLoading: false, loadError: undefined });
+    useAppStore.getState().updatePortfolioEntryTargetAmount(basePortfolioId, "LU1234567890", 50);
+    expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.targetAmount).toBe(50);
+  });
+
+  it("increments editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: { ...defaultAppData, portfolios: [basePort] }, isLoading: false, loadError: undefined });
+    const before = useAppStore.getState().data.settings.editCount;
+    useAppStore.getState().updatePortfolioEntryTargetAmount(basePortfolioId, "LU1234567890", 25);
+    expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
+  });
+
+  it("does not affect other entries or portfolios", () => {
+    expect.hasAssertions();
+    const entry2 = { ...baseEntry, isin: "LU0987654321", targetAmount: 100 };
+    const otherPort = { ...basePort, entries: [entry2], id: "00000000-0000-4000-8000-000000000002" };
+    const portfolio = { ...basePort, entries: [baseEntry, entry2] };
+    useAppStore.setState({ data: { ...defaultAppData, portfolios: [portfolio, otherPort] }, isLoading: false, loadError: undefined });
+    useAppStore.getState().updatePortfolioEntryTargetAmount(basePortfolioId, "LU1234567890", 75);
+    expect(useAppStore.getState().data.portfolios[0]?.entries[1]?.targetAmount).toBe(100);
+    expect(useAppStore.getState().data.portfolios[1]?.entries[0]?.targetAmount).toBe(100);
+  });
+});
+
 describe("useAppStore - similarity dismiss", () => {
   const assetA: Asset = {
     availableForPlan: false,
