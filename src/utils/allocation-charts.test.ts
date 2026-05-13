@@ -99,9 +99,9 @@ describe("buildAllocationEntries", () => {
     expect(entries.length).toBeGreaterThanOrEqual(12);
   });
 
-  it("appends Other entry when sum is below 0.95 threshold", () => {
+  it("appends Other entry when sum is below 1", () => {
     expect.hasAssertions();
-    const allocation: Allocation = { europe: 0.3, us: 0.5 };
+    const allocation: Allocation = { us: 0.98 };
     const entries = buildAllocationEntries(allocation);
     expect(entries).toBeDefined();
     invariant(entries, "Expected entries");
@@ -109,22 +109,22 @@ describe("buildAllocationEntries", () => {
     expect(other).toBeDefined();
     invariant(other, "Expected Other entry");
     expect(other.label).toBe("Other");
-    expect(other.value).toBeCloseTo(0.2);
+    expect(other.value).toBeCloseTo(0.02);
     expect(other.fill).toBe("#777");
   });
 
-  it("does not append Other entry when sum is exactly 0.95", () => {
+  it("does not append Other entry when sum is exactly 1", () => {
     expect.hasAssertions();
-    const allocation: Allocation = { europe: 0.35, us: 0.6 };
+    const allocation: Allocation = { europe: 0.4, us: 0.6 };
     const entries = buildAllocationEntries(allocation);
     expect(entries).toBeDefined();
     invariant(entries, "Expected entries");
     expect(entries.find(entry => entry.key === "other")).toBeUndefined();
   });
 
-  it("does not append Other entry when sum exceeds 0.95", () => {
+  it("does not append Other entry when sum exceeds 1", () => {
     expect.hasAssertions();
-    const allocation: Allocation = { europe: 0.4, us: 0.6 };
+    const allocation: Allocation = { europe: 0.45, us: 0.6 };
     const entries = buildAllocationEntries(allocation);
     expect(entries).toBeDefined();
     invariant(entries, "Expected entries");

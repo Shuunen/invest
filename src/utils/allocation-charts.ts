@@ -2,7 +2,6 @@ import { invariant, startCase } from "es-toolkit";
 import type { Allocation, Asset, PortfolioEntry } from "../schemas/index.ts";
 
 const otherColor = "#777";
-const otherThreshold = 0.95;
 const fallbackColors = ["#0072B2", "#E69F00", "#009E73", "#D55E00", "#56B4E9", "#CC79A7", "#F0E442", "#117733", "#AA4499", "#882255", "#332288"];
 
 const keyMapping = {
@@ -82,13 +81,14 @@ export function buildAllocationEntries(data: Allocation): AllocationChartEntry[]
 
   const sorted = entries.toSorted(([, valueA], [, valueB]) => valueB - valueA);
   const sum = entries.reduce((acc, [, value]) => acc + value, 0);
+  const remainder = 1 - sum;
   const result = sorted.map(([key, value], idx) => {
     const fallback = fallbackColors[idx % fallbackColors.length];
     invariant(fallback !== undefined, "fallbackColors index out of range");
     return { fill: colorMap[key] ?? fallback, key, label: formatAllocationKey(key), value };
   });
 
-  if (sum < otherThreshold && sum <= 1) result.push({ fill: otherColor, key: "other", label: "Other", value: 1 - sum });
+  if (remainder > 0 && sum <= 1) result.push({ fill: otherColor, key: "other", label: "Other", value: remainder });
   return result;
 }
 
@@ -101,7 +101,6 @@ export function buildAllocationEntries(data: Allocation): AllocationChartEntry[]
  * Then sums the weighted allocation values across all entries.
  *
  * Treats undefined prices as 0. Returns empty allocations if totalValue is 0.
- *
  * @param entries Portfolio entries (holdings)
  * @param assets Asset metadata (allocations, prices)
  * @param totalValue Total portfolio value (sum of all position values)
