@@ -82,10 +82,22 @@ const msPerDay = 86_400_000;
 const dataScoreBaseFields = 6;
 const dataScorePortfolioFields = 8;
 const dataScoreStaleWeight = 0.5;
+const allocationScoreDimensions = 2;
 export const dataScoreWarnThreshold = 75;
 
 function toAgeDays(isoDate: string): number {
   return (Date.now() - new Date(isoDate).getTime()) / msPerDay;
+}
+
+function computeAllocationCoverage(allocation: Allocation): number {
+  const values = Object.values(allocation);
+  if (values.length === 0) return 0;
+  let total = 0;
+  for (const value of values) {
+    if (value === undefined || value <= 0) continue;
+    total += value;
+  }
+  return Math.min(1, total);
 }
 
 // data quality score (0-100): completeness + freshness of asset data fields
@@ -104,7 +116,12 @@ export function computeDataScore(asset: Asset, entry?: PortfolioEntry): number {
     if (entry.amountUpdatedAt !== undefined) score += toAgeDays(entry.amountUpdatedAt) <= amountFreshnessDays ? 1 : dataScoreStaleWeight;
     if (entry.amount > 0) score += 1;
   }
-  return Math.round((score / total) * maxPercentage);
+
+  const geoCoverage = computeAllocationCoverage(asset.geoAllocation);
+  const sectorCoverage = computeAllocationCoverage(asset.sectorAllocation);
+  const allocationCoverage = (geoCoverage + sectorCoverage) / allocationScoreDimensions;
+
+  return Math.round((score / total) * maxPercentage * allocationCoverage);
 }
 
 // --- Portfolio ---

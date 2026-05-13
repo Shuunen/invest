@@ -110,6 +110,7 @@ const baseAsset: Asset = {
 
 const fullAsset: Asset = {
   ...baseAsset,
+  geoAllocation: { europe: 0.4, us: 0.6 },
   performance1y: 10,
   performance3y: 20,
   performance5y: 30,
@@ -117,6 +118,7 @@ const fullAsset: Asset = {
   riskReward1y: 1,
   riskReward3y: 1.5,
   riskReward5y: 2,
+  sectorAllocation: { financials: 0.3, technology: 0.7 },
 };
 
 const fullEntry: PortfolioEntry = {
@@ -168,6 +170,47 @@ describe("computeDataScore", () => {
     const staleAmount = new Date(Date.now() - 1000 * 60 * 60 * 24 * 120).toISOString(); // 120 days ago
     // 5 scored fields + 1 (fresh updatedAt) + 1 amount + 0.5 (stale amountUpdatedAt) = 7.5/8 = 93.75 → rounds to 94
     expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, { ...fullEntry, amountUpdatedAt: staleAmount })).toBe(94);
+  });
+
+  it("returns 0 when allocations are empty (no allocation data at all)", () => {
+    expect.hasAssertions();
+    const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
+    const assetWithNoAllocations = {
+      ...fullAsset,
+      geoAllocation: {},
+      sectorAllocation: {},
+      updatedAt: freshDate,
+    };
+
+    // coverage = (0 + 0) / 2 = 0 → score is 0 regardless of other fields
+    expect(computeDataScore(assetWithNoAllocations, { ...fullEntry, amountUpdatedAt: freshDate })).toBe(0);
+  });
+
+  it("reduces score when allocation totals are below 100%", () => {
+    expect.hasAssertions();
+    const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
+    const assetWithPartialAllocations = {
+      ...fullAsset,
+      geoAllocation: { us: 0.8 },
+      sectorAllocation: { technology: 0.6 },
+      updatedAt: freshDate,
+    };
+
+    // Base score is 100, then scaled by allocation coverage average: (0.8 + 0.6) / 2 = 0.7
+    expect(computeDataScore(assetWithPartialAllocations, { ...fullEntry, amountUpdatedAt: freshDate })).toBe(70);
+  });
+
+  it("does not penalize score when allocations reach or exceed 100%", () => {
+    expect.hasAssertions();
+    const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
+    const assetWithCompleteAllocations = {
+      ...fullAsset,
+      geoAllocation: { europe: 0.4, us: 0.6 },
+      sectorAllocation: { financials: 0.4, technology: 0.7 },
+      updatedAt: freshDate,
+    };
+
+    expect(computeDataScore(assetWithCompleteAllocations, { ...fullEntry, amountUpdatedAt: freshDate })).toBe(100);
   });
 });
 
