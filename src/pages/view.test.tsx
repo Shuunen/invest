@@ -234,9 +234,9 @@ describe("AssetViewPage - not found", () => {
     expect(screen.getByTestId("geo-allocation-chart")).toBeInTheDocument();
   });
 
-  it("renders geo-allocation-chart without Other entry when sum meets threshold", () => {
+  it("renders geo-allocation-chart with Other entry when allocation is incomplete", () => {
     expect.hasAssertions();
-    const asset = makeAsset({ geoAllocation: { us: 0.98 } });
+    const asset = makeAsset({ geoAllocation: { us: 0.98 }, sectorAllocation: { financials: 1 } });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
@@ -244,6 +244,7 @@ describe("AssetViewPage - not found", () => {
     });
     render(<AssetViewPage isin={asset.isin} />);
     expect(screen.getByTestId("geo-allocation-chart")).toBeInTheDocument();
+    expect(screen.getByTestId("slice-other")).toBeInTheDocument();
   });
 
   it("renders geo-allocation-chart with multiple entries sorted correctly", () => {
