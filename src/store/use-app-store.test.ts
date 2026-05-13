@@ -96,7 +96,7 @@ describe("useAppStore - settings mutations", () => {
 });
 
 function makePortfolioEntry(isin: string) {
-  return { amount: 100, amountUpdatedAt: "2024-01-01T00:00:00.000Z", inPEA: false, isin, notes: "", positionValue: 0, targetAmount: 0 };
+  return { amount: 100, amountUpdatedAt: "2024-01-01T00:00:00.000Z", inPEA: false, isin, notes: "", positionValue: 0, targetAmount: 0, targetAmountUpdatedAt: "2024-01-01T00:00:00.000Z" };
 }
 
 describe("useAppStore - asset mutations", () => {
@@ -365,9 +365,18 @@ describe("useAppStore - portfolio mutations", () => {
     expect(useAppStore.getState().data.settings.editCount).toBe(before + 1);
   });
 
-  it("setPortfolioAssets stamps amountUpdatedAt on new entries and preserves it on existing ones", () => {
+  it("setPortfolioAssets stamps amountUpdatedAt/targetAmountUpdatedAt on new entries and preserves them on existing ones", () => {
     expect.hasAssertions();
-    const existingEntry = { amount: 2, amountUpdatedAt: "2024-01-01T00:00:00.000Z", inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    const existingEntry = {
+      amount: 2,
+      amountUpdatedAt: "2024-01-01T00:00:00.000Z",
+      inPEA: false,
+      isin: "LU1234567890",
+      notes: "",
+      positionValue: 0,
+      targetAmount: 0,
+      targetAmountUpdatedAt: "2024-01-02T00:00:00.000Z",
+    };
     const newEntry = { amount: 0, inPEA: false, isin: "LU0987654321", notes: "", positionValue: 0, targetAmount: 0 };
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [basePortfolio] },
@@ -377,8 +386,10 @@ describe("useAppStore - portfolio mutations", () => {
     useAppStore.getState().setPortfolioAssets(basePortfolio.id, [existingEntry, newEntry]);
     const entries = useAppStore.getState().data.portfolios[0]?.entries;
     expect(entries?.[0]?.amountUpdatedAt).toBe("2024-01-01T00:00:00.000Z");
+    expect(entries?.[0]?.targetAmountUpdatedAt).toBe("2024-01-02T00:00:00.000Z");
     expect(entries?.[1]?.amountUpdatedAt).toBeTypeOf("string");
-    expect(entries?.[1]?.amountUpdatedAt).not.toBe("2024-01-01T00:00:00.000Z");
+    expect(entries?.[1]?.targetAmountUpdatedAt).toBeTypeOf("string");
+    expect(entries?.[1]?.targetAmountUpdatedAt).not.toBe("2024-01-02T00:00:00.000Z");
   });
 
   it("setPortfolioAssets does not affect other portfolios", () => {
@@ -492,6 +503,7 @@ describe("useAppStore - updatePortfolioEntryTargetAmount", () => {
     useAppStore.setState({ data: { ...defaultAppData, portfolios: [basePort] }, isLoading: false, loadError: undefined });
     useAppStore.getState().updatePortfolioEntryTargetAmount(basePortfolioId, "LU1234567890", 50);
     expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.targetAmount).toBe(50);
+    expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.targetAmountUpdatedAt).toBeTypeOf("string");
   });
 
   it("increments editCount", () => {

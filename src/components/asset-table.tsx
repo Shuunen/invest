@@ -19,6 +19,7 @@ import {
   makeSelectColumn,
   makeSimilarityColumn,
   makeTargetAmountColumn,
+  makeTargetAmountUpdatedAtColumn,
   makeValueColumn,
 } from "./asset-table-columns.tsx";
 import { useHydration } from "./asset-table-db.ts";
@@ -28,21 +29,10 @@ import { renderSkeleton } from "./asset-table-skeleton.tsx";
 import { computeQuintileClasses, defaultColumnVisibility, getAriaSortValue, getScoreDotClass } from "./asset-table-utils.ts";
 import { PageHeader } from "./page-header.tsx";
 
-type Props = {
+type Props = AssetTableMeta & {
   assets?: Asset[];
-  isEditing?: boolean;
-  noteMap?: Map<string, string>;
-  onAmountChange?: (isin: string, amount: number) => void;
   onDismissSimilarity?: (isin: string, matchedIsin: string) => void;
-  onNoteChange?: (isin: string, note: string) => void;
-  onPriceChange?: (isin: string, price: number) => void;
   onRemoveAsset?: (isin: string) => void;
-  onTargetAmountChange?: (isin: string, targetAmount: number) => void;
-  onToggleSelect?: (isin: string) => void;
-  selectedIsins?: Set<string>;
-  amountMap?: Map<string, number>;
-  amountUpdatedAtMap?: Map<string, string>;
-  targetAmountMap?: Map<string, number>;
 };
 
 function getSortIndicator(sorted: "asc" | "desc" | false): string {
@@ -75,8 +65,12 @@ function buildActiveColumns({
   amountMap,
   amountUpdatedAtMap,
   targetAmountMap,
+  targetAmountUpdatedAtMap,
   assets,
-}: Pick<Props, "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onTargetAmountChange" | "onDismissSimilarity" | "onPriceChange" | "noteMap" | "amountMap" | "amountUpdatedAtMap" | "targetAmountMap" | "assets">): ColumnDef<Asset>[] {
+}: Pick<
+  Props,
+  "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onTargetAmountChange" | "onDismissSimilarity" | "onPriceChange" | "noteMap" | "amountMap" | "amountUpdatedAtMap" | "targetAmountMap" | "targetAmountUpdatedAtMap" | "assets"
+>): ColumnDef<Asset>[] {
   const isPortfolioMode = Boolean(onAmountChange);
   const baseCols = onPriceChange || isPortfolioMode ? columns.filter(col => col.id !== "price") : columns;
   // Insert data-score right after the first column (Score) so the two quality indicators sit together
@@ -87,8 +81,9 @@ function buildActiveColumns({
     ...(onPriceChange && !isPortfolioMode ? [makePriceEditColumn()] : []),
     ...(isPortfolioMode ? [makePortfolioPriceColumn()] : []),
     ...(onAmountChange ? [makeAmountColumn(amountMap)] : []),
-    ...(onTargetAmountChange ? [makeTargetAmountColumn(targetAmountMap)] : []),
     ...(amountUpdatedAtMap ? [makeAmountUpdatedAtColumn(amountUpdatedAtMap)] : []),
+    ...(onTargetAmountChange ? [makeTargetAmountColumn(targetAmountMap)] : []),
+    ...(targetAmountUpdatedAtMap ? [makeTargetAmountUpdatedAtColumn(targetAmountUpdatedAtMap)] : []),
     ...(onAmountChange && assets ? [makeSimilarityColumn(assets, onDismissSimilarity)] : []),
     ...(isPortfolioMode ? [makeNoteColumn(noteMap)] : []),
     ...(onAmountChange ? [makeValueColumn(amountMap)] : []),
@@ -106,8 +101,32 @@ function useRetry() {
   return handleRetry;
 }
 
+function buildTableMeta(
+  props: Pick<
+    Props,
+    "amountMap" | "amountUpdatedAtMap" | "isEditing" | "noteMap" | "onAmountChange" | "onNoteChange" | "onPriceChange" | "onTargetAmountChange" | "onToggleSelect" | "selectedIsins" | "targetAmountMap" | "targetAmountUpdatedAtMap"
+  >,
+): AssetTableMeta | undefined {
+  const { amountMap, amountUpdatedAtMap, isEditing, noteMap, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, onToggleSelect, selectedIsins, targetAmountMap, targetAmountUpdatedAtMap } = props;
+  if (!(onToggleSelect ?? onAmountChange ?? onPriceChange ?? onTargetAmountChange ?? amountUpdatedAtMap ?? targetAmountUpdatedAtMap)) return undefined;
+  return {
+    amountMap,
+    amountUpdatedAtMap,
+    isEditing,
+    noteMap,
+    onAmountChange,
+    onNoteChange,
+    onPriceChange,
+    onTargetAmountChange,
+    onToggleSelect,
+    selectedIsins,
+    targetAmountMap,
+    targetAmountUpdatedAtMap,
+  };
+}
+
 function useAssetTableState(props: Props = {}) {
-  const { amountMap, amountUpdatedAtMap, assets: propAssets, isEditing, noteMap, selectedIsins } = props;
+  const { amountMap, amountUpdatedAtMap, assets: propAssets, isEditing, noteMap, selectedIsins, targetAmountUpdatedAtMap } = props;
   const { onAmountChange, onDismissSimilarity, onNoteChange, onPriceChange, onRemoveAsset, onTargetAmountChange, onToggleSelect, targetAmountMap } = props;
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
@@ -118,8 +137,9 @@ function useAssetTableState(props: Props = {}) {
   const handleRetry = useRetry();
   const resolvedVisibility = useMemo(() => ({ ...defaultColumnVisibility, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
   const activeColumns = useMemo(
-    () => buildActiveColumns({ amountMap, amountUpdatedAtMap, assets: propAssets, noteMap, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onTargetAmountChange, onToggleSelect, targetAmountMap }),
-    [amountMap, amountUpdatedAtMap, propAssets, noteMap, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onTargetAmountChange, onToggleSelect, targetAmountMap],
+    () =>
+      buildActiveColumns({ amountMap, amountUpdatedAtMap, assets: propAssets, noteMap, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onTargetAmountChange, onToggleSelect, targetAmountMap, targetAmountUpdatedAtMap }),
+    [amountMap, amountUpdatedAtMap, propAssets, noteMap, onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onTargetAmountChange, onToggleSelect, targetAmountMap, targetAmountUpdatedAtMap],
   );
   const sorting: SortingState = useMemo(() => {
     const { column, direction } = data.settings.sort;
@@ -131,10 +151,7 @@ function useAssetTableState(props: Props = {}) {
     if (!lower) return propAssets ?? data.assets;
     return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
   }, [data.assets, filterText, propAssets]);
-  const meta: AssetTableMeta | undefined =
-    (onToggleSelect ?? onAmountChange ?? onPriceChange ?? onTargetAmountChange ?? amountUpdatedAtMap)
-      ? { amountMap, amountUpdatedAtMap, isEditing, noteMap, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, onToggleSelect, selectedIsins, targetAmountMap }
-      : undefined;
+  const meta = buildTableMeta({ amountMap, amountUpdatedAtMap, isEditing, noteMap, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, onToggleSelect, selectedIsins, targetAmountMap, targetAmountUpdatedAtMap });
   const table = useTableInstance({
     columns: activeColumns,
     filteredAssets,

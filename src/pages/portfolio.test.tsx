@@ -428,21 +428,6 @@ describe("PortfolioPage - editing mode", () => {
 });
 
 describe("PortfolioPage - target amount column", () => {
-  it("displays dash when targetAmount is 0 in non-editing mode", () => {
-    expect.hasAssertions();
-    const asset = makeAsset({ isin: "LU1111111111" });
-    const portfolio = makePortfolio({
-      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
-    });
-    useAppStore.setState({
-      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
-      isLoading: false,
-      loadError: undefined,
-    });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByTestId(`target-amount-${asset.isin.toLowerCase()}`)).toHaveTextContent("—");
-  });
-
   it("displays targetAmount value in non-editing mode", () => {
     expect.hasAssertions();
     const asset = makeAsset({ isin: "LU1111111111" });

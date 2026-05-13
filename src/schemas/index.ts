@@ -176,6 +176,7 @@ export const PortfolioEntrySchema = z.object({
   notes: z.string().default(""),
   positionValue: z.number().nonnegative(),
   targetAmount: z.number().nonnegative(),
+  targetAmountUpdatedAt: z.iso.datetime().optional(),
 });
 
 export type PortfolioEntry = z.infer<typeof PortfolioEntrySchema>;

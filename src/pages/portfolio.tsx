@@ -86,6 +86,11 @@ function usePortfolioData(portfolioId: string) {
     for (const entry of portfolio?.entries ?? []) if (entry.amountUpdatedAt !== undefined) map.set(entry.isin, entry.amountUpdatedAt);
     return map;
   }, [portfolio]);
+  const targetAmountUpdatedAtMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const entry of portfolio?.entries ?? []) if (entry.targetAmountUpdatedAt !== undefined) map.set(entry.isin, entry.targetAmountUpdatedAt);
+    return map;
+  }, [portfolio]);
   const totalValue = useTotalValue(entries, assets);
   const portfolioAllocations = useMemo(() => computePortfolioWeightedAllocations(entries, assets, totalValue), [entries, assets, totalValue]);
   const targetTotalValue = useMemo(() => {
@@ -112,7 +117,7 @@ function usePortfolioData(portfolioId: string) {
   );
   const noteMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.notes])), [portfolio]);
   const dismissSimilarity = useAppStore(state => state.dismissSimilarity);
-  return { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, entries, headerMetrics, noteMap, portfolio, portfolioAllocations, portfolioAssets, targetAllocations, targetAmountMap, totalValue };
+  return { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, entries, headerMetrics, noteMap, portfolio, portfolioAllocations, portfolioAssets, targetAllocations, targetAmountMap, targetAmountUpdatedAtMap, totalValue };
 }
 
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
@@ -212,6 +217,7 @@ function renderAssetTableSection(
       amountUpdatedAtMap?: Map<string, string>;
       noteMap?: Map<string, string>;
       targetAmountMap?: Map<string, number>;
+      targetAmountUpdatedAtMap?: Map<string, string>;
     };
     isEditing: boolean;
     portfolioAllocations: { geo: Allocation; sector: Allocation };
@@ -233,6 +239,7 @@ function renderAssetTableSection(
         amountUpdatedAtMap={config.maps.amountUpdatedAtMap}
         noteMap={config.maps.noteMap}
         targetAmountMap={config.maps.targetAmountMap}
+        targetAmountUpdatedAtMap={config.maps.targetAmountUpdatedAtMap}
         isEditing={config.isEditing}
       />
       {config.totalValue > 0 && renderAllocationCharts(config.portfolioAllocations, config.targetAllocations)}
@@ -245,7 +252,8 @@ type Props = {
 };
 
 export function PortfolioPage({ portfolioId }: Props) {
-  const { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, entries, headerMetrics, noteMap, portfolio, portfolioAllocations, portfolioAssets, targetAllocations, targetAmountMap, totalValue } = usePortfolioData(portfolioId);
+  const { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, entries, headerMetrics, noteMap, portfolio, portfolioAllocations, portfolioAssets, targetAllocations, targetAmountMap, targetAmountUpdatedAtMap, totalValue } =
+    usePortfolioData(portfolioId);
   const { actions, handleConfirmDelete, handlePickerConfirm, isEditing, isinToDelete, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, pickerOpen, selectedIsins, setIsinToDelete, setPickerOpen } = usePortfolioActions(
     portfolioId,
     entries,
@@ -274,6 +282,7 @@ export function PortfolioPage({ portfolioId }: Props) {
               amountUpdatedAtMap,
               noteMap,
               targetAmountMap,
+              targetAmountUpdatedAtMap,
             },
             portfolioAllocations,
             targetAllocations,
