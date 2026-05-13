@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.0] - 2026-05-14
+
+### Added in 0.9.0
+
+- Target portfolio — each holding can now have a target amount, shown in a new "Target" column with a trend icon (equal/up/down/zero) indicating whether the current position is on track. The target can be set by units or by percentage of target portfolio value
+- Target allocation charts — the portfolio page now shows side-by-side actual vs target geography and sector pie charts, so you can see at a glance where your allocation drifts from intent
+- Capital-weighted allocation previews in the asset picker — when adding assets to a portfolio, the "Selected geography" and "Selected sectors" charts are now weighted by your actual holding sizes rather than averaged equally. A new investment amount input lets you simulate how new purchases would shift the allocation
+- Amount percentages — the "Amount" column now shows each holding's share of the total portfolio value alongside the unit count
+
+### Changed in 0.9.0
+
+- Scoring method — the asset score now blends 1y/3y/5y performance and risk/reward metrics with weights (0.2/0.5/0.3). Missing timeframes contribute 0 rather than being normalized away, so funds with longer tracked histories score proportionally higher
+- Data quality score now accounts for allocation completeness — assets with empty geographic or sector allocations score 0; partial allocations reduce the score proportionally to coverage
+- Other threshold in allocation charts removed — the "Other" slice now appears for any allocation sum below 1 (previously 0.95)
+- Note column is wider and sortable by note content
+- Fee warning color adjusted to use error/warning semantics more consistently
+
 ## [0.8.0] - 2026-05-11
 
 ### Added in 0.8.0
