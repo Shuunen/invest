@@ -576,6 +576,27 @@ describe("PortfolioPage - allocation charts", () => {
     expect(screen.queryByText("Portfolio sectors")).not.toBeInTheDocument();
   });
 
+  it("renders allocation charts when total value is 0 but target total is positive", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({
+      geoAllocation: { uk: 0.4, us: 0.6 },
+      isin: "LU1234567890",
+      price: 100,
+      sectorAllocation: { financials: 0.5, technology: 0.5 },
+    });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 100 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByTestId("portfolio-geo-card")).toHaveTextContent("Actual geography");
+    expect(screen.getByTestId("target-geo-card")).toHaveTextContent("Target geography");
+  });
+
   it("recomputes and updates allocation charts when amount is changed", () => {
     expect.hasAssertions();
     const asset = makeAsset({
