@@ -1352,6 +1352,7 @@ describe("AssetTable - target-amount column", () => {
     useAppStore.setState({ data: makeTestData(targetAssets), isLoading: false, loadError: undefined });
     const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
     render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} amountMap={new Map([[targetAsset.isin, 10]])} targetAmountMap={new Map([[targetAsset.isin, 10]])} />);
+    expect(screen.getByTestId(`target-trend-equal-${targetAsset.isin.toLowerCase()}`)).toHaveAttribute("aria-label", "Target equals amount");
     expect(screen.queryByTestId(`target-trend-zero-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
     expect(screen.queryByTestId(`target-trend-up-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
     expect(screen.queryByTestId(`target-trend-down-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
