@@ -104,10 +104,24 @@ function useRetry() {
 function buildTableMeta(
   props: Pick<
     Props,
-    "amountMap" | "amountUpdatedAtMap" | "isEditing" | "noteMap" | "onAmountChange" | "onNoteChange" | "onPriceChange" | "onTargetAmountChange" | "onToggleSelect" | "selectedIsins" | "targetAmountMap" | "targetAmountUpdatedAtMap"
+    | "amountMap"
+    | "amountUpdatedAtMap"
+    | "isEditing"
+    | "noteMap"
+    | "onAmountChange"
+    | "onNoteChange"
+    | "onPriceChange"
+    | "onTargetAmountChange"
+    | "onToggleSelect"
+    | "selectedIsins"
+    | "targetAmountMap"
+    | "targetAmountUpdatedAtMap"
+    | "totalValue"
+    | "targetTotalValue"
   >,
 ): AssetTableMeta | undefined {
-  const { amountMap, amountUpdatedAtMap, isEditing, noteMap, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, onToggleSelect, selectedIsins, targetAmountMap, targetAmountUpdatedAtMap } = props;
+  const { amountMap, amountUpdatedAtMap, isEditing, noteMap, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, onToggleSelect, selectedIsins, targetAmountMap, targetAmountUpdatedAtMap, totalValue, targetTotalValue } =
+    props;
   if (!(onToggleSelect ?? onAmountChange ?? onPriceChange ?? onTargetAmountChange ?? amountUpdatedAtMap ?? targetAmountUpdatedAtMap)) return undefined;
   return {
     amountMap,
@@ -122,11 +136,13 @@ function buildTableMeta(
     selectedIsins,
     targetAmountMap,
     targetAmountUpdatedAtMap,
+    targetTotalValue,
+    totalValue,
   };
 }
 
 function useAssetTableState(props: Props = {}) {
-  const { amountMap, amountUpdatedAtMap, assets: propAssets, isEditing, noteMap, selectedIsins, targetAmountUpdatedAtMap } = props;
+  const { amountMap, amountUpdatedAtMap, assets: propAssets, isEditing, noteMap, selectedIsins, targetAmountUpdatedAtMap, totalValue, targetTotalValue } = props;
   const { onAmountChange, onDismissSimilarity, onNoteChange, onPriceChange, onRemoveAsset, onTargetAmountChange, onToggleSelect, targetAmountMap } = props;
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
@@ -151,27 +167,24 @@ function useAssetTableState(props: Props = {}) {
     if (!lower) return propAssets ?? data.assets;
     return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
   }, [data.assets, filterText, propAssets]);
-  const meta = buildTableMeta({ amountMap, amountUpdatedAtMap, isEditing, noteMap, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, onToggleSelect, selectedIsins, targetAmountMap, targetAmountUpdatedAtMap });
-  const table = useTableInstance({
-    columns: activeColumns,
-    filteredAssets,
-    meta,
-    resolvedVisibility,
-    setColumnVisibility,
-    setSort,
-    sorting,
+  const meta = buildTableMeta({
+    amountMap,
+    amountUpdatedAtMap,
+    isEditing,
+    noteMap,
+    onAmountChange,
+    onNoteChange,
+    onPriceChange,
+    onTargetAmountChange,
+    onToggleSelect,
+    selectedIsins,
+    targetAmountMap,
+    targetAmountUpdatedAtMap,
+    targetTotalValue,
+    totalValue,
   });
-  return {
-    data,
-    filterText,
-    handleRetry,
-    isLoading,
-    loadError,
-    quintileClasses: computeQuintileClasses(table.getRowModel().rows),
-    setFilterText,
-    table,
-    visibleLeafCount: table.getVisibleLeafColumns().length,
-  };
+  const table = useTableInstance({ columns: activeColumns, filteredAssets, meta, resolvedVisibility, setColumnVisibility, setSort, sorting });
+  return { data, filterText, handleRetry, isLoading, loadError, quintileClasses: computeQuintileClasses(table.getRowModel().rows), setFilterText, table, visibleLeafCount: table.getVisibleLeafColumns().length };
 }
 
 function renderError(error: Error, handleRetry: () => void) {
