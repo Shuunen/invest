@@ -5,6 +5,15 @@ const minRowsForFormatting = 3;
 const quintileHighThreshold = 0.8;
 const quintileLowThreshold = 0.2;
 export const scoreMissingValue = -100;
+const feeGoodThreshold = 0.2;
+const feeBadThreshold = 0.45;
+
+function feeThresholdClass(value: number | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  if (value <= feeGoodThreshold) return "bg-success/20 text-success-content";
+  if (value >= feeBadThreshold) return "bg-error/20 text-error-content";
+  return undefined;
+}
 
 export function getAriaSortValue(sorted: "asc" | "desc" | false): "ascending" | "descending" | "none" {
   if (sorted === "asc") return "ascending";
@@ -60,7 +69,7 @@ export function computeQuintileClasses(rows: Row<Asset>[]): Map<string, Map<stri
       const allValues = rows.map((row): number | undefined => (colId === "score" ? scoreCache.get(row.id) : (row.original[colId as keyof Asset] as number | undefined)));
       // Pre-filter undefined values once per column so quintileClassFromSorted can skip that work per-row
       const definedValues = allValues.filter((val): val is number => val !== undefined);
-      const rowClassMap = new Map(rows.map((row, rowIdx) => [row.id, quintileClassFromSorted(allValues[rowIdx], definedValues)]));
+      const rowClassMap = colId === "fees" ? new Map(rows.map((row, rowIdx) => [row.id, feeThresholdClass(allValues[rowIdx])])) : new Map(rows.map((row, rowIdx) => [row.id, quintileClassFromSorted(allValues[rowIdx], definedValues)]));
       return [colId, rowClassMap];
     }),
   );
