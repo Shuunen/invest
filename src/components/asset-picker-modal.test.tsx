@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { invariant } from "es-toolkit";
 import type { Asset } from "../schemas/index.ts";
@@ -45,15 +45,37 @@ const singleAssetList = [baseAsset];
 const assetA = makeAsset({ isin: "LU1234567890", name: "Global ETF" });
 const assetB = makeAsset({ isin: "LU0987654321", name: "Bond Fund" });
 const filteredList = [assetA, assetB];
-const assetWithAllocation = makeAsset({ geoAllocation: { us: 1 }, sectorAllocation: { technology: 1 } });
+const assetWithAllocation = makeAsset({ geoAllocation: { us: 1 }, price: 100, sectorAllocation: { technology: 1 } });
 const assetWithAllocationList = [assetWithAllocation];
 const assetWithAllocationSelected = new Set([assetWithAllocation.isin]);
+const weightedAmountMap = new Map([[assetWithAllocation.isin, 10]]);
 const assetWithUndefinedAllocation = makeAsset({
   geoAllocation: { us: undefined as unknown as number },
+  price: 100,
   sectorAllocation: { technology: undefined as unknown as number },
 });
 const assetWithUndefinedAllocationList = [assetWithUndefinedAllocation];
 const assetWithUndefinedAllocationSelected = new Set([assetWithUndefinedAllocation.isin]);
+const weightedPreviewAssetA = makeAsset({
+  geoAllocation: { us: 1 },
+  isin: "LU1111111111",
+  name: "US Fund",
+  price: 100,
+  sectorAllocation: { technology: 1 },
+});
+const weightedPreviewAssetB = makeAsset({
+  geoAllocation: { uk: 1 },
+  isin: "LU2222222222",
+  name: "UK Fund",
+  price: 100,
+  sectorAllocation: { financials: 1 },
+});
+const weightedPreviewAssets = [weightedPreviewAssetA, weightedPreviewAssetB];
+const weightedPreviewSelected = new Set([weightedPreviewAssetA.isin, weightedPreviewAssetB.isin]);
+const weightedPreviewAmountByIsin = new Map([
+  [weightedPreviewAssetA.isin, 80],
+  [weightedPreviewAssetB.isin, 20],
+]);
 
 describe("AssetPickerModal - no assets", () => {
   it("shows empty message when assets list is empty", () => {
@@ -66,7 +88,9 @@ describe("AssetPickerModal - no assets", () => {
 describe("AssetPickerModal - with assets", () => {
   it("renders four allocation preview charts in a single row", () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={assetWithAllocationList} initialSelected={assetWithAllocationSelected} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(
+      <AssetPickerModal assets={assetWithAllocationList} initialSelected={assetWithAllocationSelected} amountByIsin={weightedAmountMap} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />,
+    );
 
     expect(screen.getByTestId("allocation-preview-row")).toBeInTheDocument();
     expect(screen.getByTestId("before-geo-allocation-chart")).toBeInTheDocument();
@@ -77,7 +101,9 @@ describe("AssetPickerModal - with assets", () => {
 
   it("keeps before charts and updates after charts when selections change", async () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={assetWithAllocationList} initialSelected={assetWithAllocationSelected} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(
+      <AssetPickerModal assets={assetWithAllocationList} initialSelected={assetWithAllocationSelected} amountByIsin={weightedAmountMap} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />,
+    );
 
     expect(screen.getByTestId("before-geo-allocation-chart")).toBeInTheDocument();
     expect(screen.getByTestId("after-geo-allocation-chart")).toBeInTheDocument();
@@ -95,7 +121,16 @@ describe("AssetPickerModal - with assets", () => {
 
   it("ignores undefined allocation values when building projected charts", () => {
     expect.hasAssertions();
-    render(<AssetPickerModal assets={assetWithUndefinedAllocationList} initialSelected={assetWithUndefinedAllocationSelected} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
+    render(
+      <AssetPickerModal
+        assets={assetWithUndefinedAllocationList}
+        initialSelected={assetWithUndefinedAllocationSelected}
+        amountByIsin={new Map([[assetWithUndefinedAllocation.isin, 10]])}
+        onCancel={vi.fn<() => void>()}
+        onConfirm={vi.fn<(isins: string[]) => void>()}
+        title="Select assets"
+      />,
+    );
 
     expect(screen.getByTestId("before-geo-allocation-empty")).toBeInTheDocument();
     expect(screen.getByTestId("after-geo-allocation-empty")).toBeInTheDocument();
@@ -191,5 +226,87 @@ describe("AssetPickerModal - with assets", () => {
     render(<AssetPickerModal assets={singleAssetList} initialSelected={new Set([baseAsset.isin])} onCancel={vi.fn<() => void>()} onConfirm={onConfirm} title="Select assets" />);
     await userEvent.click(screen.getByTestId("form-confirm-button"));
     expect(onConfirm).toHaveBeenCalledWith([baseAsset.isin]);
+  });
+
+  it("uses amount-weighted allocations in preview charts", () => {
+    expect.hasAssertions();
+    render(
+      <AssetPickerModal
+        assets={weightedPreviewAssets}
+        initialSelected={weightedPreviewSelected}
+        amountByIsin={weightedPreviewAmountByIsin}
+        onCancel={vi.fn<() => void>()}
+        onConfirm={vi.fn<(isins: string[]) => void>()}
+        title="Select assets"
+      />,
+    );
+
+    for (const usaLabel of screen.getAllByTestId("slice-label-text-usa")) expect(usaLabel).toHaveTextContent("80%");
+    for (const ukLabel of screen.getAllByTestId("slice-label-text-uk")) expect(ukLabel).toHaveTextContent("20%");
+  });
+
+  it("uses the investment input to weight newly selected assets in after allocations", async () => {
+    expect.hasAssertions();
+    render(
+      <AssetPickerModal
+        assets={weightedPreviewAssets}
+        initialSelected={new Set([weightedPreviewAssetA.isin])}
+        amountByIsin={new Map([[weightedPreviewAssetA.isin, 100]])}
+        onCancel={vi.fn<() => void>()}
+        onConfirm={vi.fn<(isins: string[]) => void>()}
+        title="Select assets"
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId("asset-row-LU2222222222"));
+    fireEvent.change(screen.getByTestId("new-selection-investment-input"), { target: { value: "100" } });
+
+    await waitFor(() => {
+      const afterGeoCard = screen.getByTestId("after-geo-allocation-card");
+      expect(within(afterGeoCard).getByTestId("slice-label-text-usa")).toHaveTextContent("99%");
+      expect(within(afterGeoCard).getByTestId("slice-uk")).toBeInTheDocument();
+    });
+  });
+
+  it("keeps tiny euro investment impact tiny against an existing portfolio", async () => {
+    expect.hasAssertions();
+    render(
+      <AssetPickerModal
+        assets={weightedPreviewAssets}
+        initialSelected={new Set([weightedPreviewAssetA.isin])}
+        amountByIsin={new Map([[weightedPreviewAssetA.isin, 7]])}
+        onCancel={vi.fn<() => void>()}
+        onConfirm={vi.fn<(isins: string[]) => void>()}
+        title="Select assets"
+      />,
+    );
+
+    fireEvent.click(screen.getByTestId("asset-row-LU2222222222"));
+    fireEvent.change(screen.getByTestId("new-selection-investment-input"), { target: { value: "1" } });
+
+    await waitFor(() => {
+      const afterGeoCard = screen.getByTestId("after-geo-allocation-card");
+      expect(within(afterGeoCard).getByTestId("slice-label-text-usa")).toHaveTextContent("100%");
+      expect(within(afterGeoCard).getByTestId("slice-uk")).toBeInTheDocument();
+    });
+  });
+
+  it("normalizes invalid investment values to zero", () => {
+    expect.hasAssertions();
+    render(
+      <AssetPickerModal
+        assets={weightedPreviewAssets}
+        initialSelected={new Set([weightedPreviewAssetA.isin])}
+        amountByIsin={new Map([[weightedPreviewAssetA.isin, 100]])}
+        onCancel={vi.fn<() => void>()}
+        onConfirm={vi.fn<(isins: string[]) => void>()}
+        title="Select assets"
+      />,
+    );
+
+    const input = screen.getByTestId("new-selection-investment-input");
+    fireEvent.change(input, { target: { value: "-50" } });
+
+    expect(input).toHaveValue(0);
   });
 });

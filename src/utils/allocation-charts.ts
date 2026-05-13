@@ -1,5 +1,5 @@
 import { invariant, startCase } from "es-toolkit";
-import type { Allocation } from "../schemas/index.ts";
+import type { Allocation, Asset, PortfolioEntry } from "../schemas/index.ts";
 
 const otherColor = "#777";
 const otherThreshold = 0.95;
@@ -90,4 +90,84 @@ export function buildAllocationEntries(data: Allocation): AllocationChartEntry[]
 
   if (sum < otherThreshold && sum <= 1) result.push({ fill: otherColor, key: "other", label: "Other", value: 1 - sum });
   return result;
+}
+
+/**
+ * Compute capital-weighted portfolio allocations.
+ *
+ * For each entry in the portfolio, calculates its weight as:
+ *   weight = (entry.amount × asset.price) / totalValue
+ *
+ * Then sums the weighted allocation values across all entries.
+ *
+ * Treats undefined prices as 0. Returns empty allocations if totalValue is 0.
+ *
+ * @param entries Portfolio entries (holdings)
+ * @param assets Asset metadata (allocations, prices)
+ * @param totalValue Total portfolio value (sum of all position values)
+ * @returns Object with `geo` and `sector` allocations
+ */
+export function computePortfolioWeightedAllocations(entries: PortfolioEntry[], assets: Asset[], totalValue: number): { geo: Allocation; sector: Allocation } {
+  // Guard: zero portfolio value → empty allocations
+  if (totalValue === 0) return { geo: {}, sector: {} };
+
+  const geoAllocation: Allocation = {};
+  const sectorAllocation: Allocation = {};
+
+  // Build asset lookup map for O(1) access
+  const assetMap = new Map(assets.map(asset => [asset.isin, asset]));
+
+  // Accumulate weighted allocations
+  for (const entry of entries) {
+    const asset = assetMap.get(entry.isin);
+    if (!asset) continue; // Skip entries without matching asset
+
+    // Compute weight: (amount × price) / totalValue
+    const positionValue = entry.amount * (asset.price ?? 0);
+    const weight = positionValue / totalValue;
+
+    // Accumulate weighted geo allocation
+    for (const [key, value] of Object.entries(asset.geoAllocation)) {
+      if (value === undefined || value <= 0) continue;
+      geoAllocation[key] = (geoAllocation[key] ?? 0) + value * weight;
+    }
+
+    // Accumulate weighted sector allocation
+    for (const [key, value] of Object.entries(asset.sectorAllocation)) {
+      if (value === undefined || value <= 0) continue;
+      sectorAllocation[key] = (sectorAllocation[key] ?? 0) + value * weight;
+    }
+  }
+
+  return { geo: geoAllocation, sector: sectorAllocation };
+}
+
+type WeightedSelectionAllocationsOptions = {
+  amountByIsin?: Map<string, number>;
+  assets: Asset[];
+  defaultAmount?: number;
+  selectedIsins: Set<string>;
+};
+
+export function computeWeightedAllocationsFromSelection({ amountByIsin, assets, defaultAmount = 1, selectedIsins }: WeightedSelectionAllocationsOptions): { geo: Allocation; sector: Allocation } {
+  const entries: PortfolioEntry[] = [];
+  const assetMap = new Map(assets.map(asset => [asset.isin, asset]));
+
+  for (const isin of selectedIsins)
+    entries.push({
+      amount: amountByIsin?.get(isin) ?? defaultAmount,
+      inPEA: false,
+      isin,
+      notes: "",
+      positionValue: 0,
+      targetAmount: 0,
+    });
+
+  let totalValue = 0;
+  for (const entry of entries) {
+    const asset = assetMap.get(entry.isin);
+    totalValue += entry.amount * (asset?.price ?? 0);
+  }
+
+  return computePortfolioWeightedAllocations(entries, assets, totalValue);
 }

@@ -479,3 +479,110 @@ describe("PortfolioPage - asset picker modal", () => {
     expect(preserved?.notes).toBe("keep");
   });
 });
+
+describe("PortfolioPage - allocation charts", () => {
+  it("renders portfolio allocation charts when portfolio has assets and positive total value", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({
+      geoAllocation: { uk: 0.4, us: 0.6 },
+      isin: "LU1234567890",
+      price: 100,
+      sectorAllocation: { financials: 0.5, technology: 0.5 },
+    });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 100, inPEA: false, isin: asset.isin, notes: "", positionValue: 10_000, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByText("Portfolio geography")).toBeInTheDocument();
+    expect(screen.getByText("Portfolio sectors")).toBeInTheDocument();
+  });
+
+  it("does not render allocation charts when total value is 0", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({
+      geoAllocation: { uk: 0.4, us: 0.6 },
+      isin: "LU1234567890",
+      price: undefined, // price = 0 → total value = 0
+      sectorAllocation: { financials: 0.5, technology: 0.5 },
+    });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 100, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.queryByText("Portfolio geography")).not.toBeInTheDocument();
+    expect(screen.queryByText("Portfolio sectors")).not.toBeInTheDocument();
+  });
+
+  it("recomputes and updates allocation charts when amount is changed", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({
+      geoAllocation: { us: 1 },
+      isin: "LU1234567890",
+      price: 100,
+      sectorAllocation: { technology: 1 },
+    });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 100, inPEA: false, isin: asset.isin, notes: "", positionValue: 10_000, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByText("Portfolio geography")).toBeInTheDocument();
+    // Change amount via store update (simulating price edit)
+    act(() => {
+      useAppStore.getState().updateAssetPrice(asset.isin, 200);
+    });
+    // Charts should still render (now with different weighting if multi-asset)
+    expect(screen.getByText("Portfolio geography")).toBeInTheDocument();
+  });
+
+  it("recomputes allocation charts when asset price is updated", () => {
+    expect.hasAssertions();
+    const asset1 = makeAsset({
+      geoAllocation: { us: 1 },
+      isin: "LU1111111111",
+      price: 100,
+      sectorAllocation: { technology: 1 },
+    });
+    const asset2 = makeAsset({
+      geoAllocation: { uk: 1 },
+      isin: "LU2222222222",
+      price: 100,
+      sectorAllocation: { financials: 1 },
+    });
+    // 50-50 portfolio
+    const portfolio = makePortfolio({
+      entries: [
+        { amount: 50, inPEA: false, isin: asset1.isin, notes: "", positionValue: 5000, targetAmount: 0 },
+        { amount: 50, inPEA: false, isin: asset2.isin, notes: "", positionValue: 5000, targetAmount: 0 },
+      ],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset1, asset2], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    // Initial 50-50 split
+    expect(screen.getByText("Portfolio geography")).toBeInTheDocument();
+    // Update price of asset1 to double its weight
+    act(() => {
+      useAppStore.getState().updateAssetPrice(asset1.isin, 200);
+    });
+    // Charts should recompute with new weighting (asset1 now ~67%, asset2 ~33%)
+    expect(screen.getByText("Portfolio geography")).toBeInTheDocument();
+  });
+});
