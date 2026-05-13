@@ -139,7 +139,7 @@ export function AssetPickerModal({ assets, initialSelected, amountByIsin, onCanc
         <div className="mb-3 flex justify-between pb-2" data-testid="allocation-preview-row">
           <AllocationChart data={beforeAllocations.geo} title="Current geography" name="before-geo-allocation" />
           <AllocationChart data={afterAllocations.geo} title="Selected geography" name="after-geo-allocation" />
-          {renderSelectionInvestmentInput({ newSelectionCount: selectedWithoutAmount.length, onChange: setNewSelectionInvestmentAmount, value: newSelectionInvestmentAmount })}
+          {selectedWithoutAmount.length > 0 && renderSelectionInvestmentInput({ newSelectionCount: selectedWithoutAmount.length, onChange: setNewSelectionInvestmentAmount, value: newSelectionInvestmentAmount })}
           <AllocationChart data={beforeAllocations.sector} title="Current sectors" name="before-sector-allocation" />
           <AllocationChart data={afterAllocations.sector} title="Selected sectors" name="after-sector-allocation" />
         </div>

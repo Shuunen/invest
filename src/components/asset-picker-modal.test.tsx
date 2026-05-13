@@ -99,6 +99,15 @@ describe("AssetPickerModal - with assets", () => {
     expect(screen.getByTestId("after-sector-allocation-chart")).toBeInTheDocument();
   });
 
+  it("does not render the new-selection investment input when no new asset is selected", () => {
+    expect.hasAssertions();
+    render(
+      <AssetPickerModal assets={assetWithAllocationList} initialSelected={assetWithAllocationSelected} amountByIsin={weightedAmountMap} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />,
+    );
+
+    expect(screen.queryByTestId("new-selection-investment-control")).not.toBeInTheDocument();
+  });
+
   it("keeps before charts and updates after charts when selections change", async () => {
     expect.hasAssertions();
     render(
@@ -304,7 +313,9 @@ describe("AssetPickerModal - with assets", () => {
       />,
     );
 
+    fireEvent.click(screen.getByTestId("asset-row-LU2222222222"));
     const input = screen.getByTestId("new-selection-investment-input");
+    expect(input).toHaveValue(0);
     fireEvent.change(input, { target: { value: "-50" } });
 
     expect(input).toHaveValue(0);

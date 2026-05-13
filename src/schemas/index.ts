@@ -85,7 +85,7 @@ const computeWeightedContribution = (metrics: Metric[]): number => metrics.reduc
 
 // score is derived, never stored
 // Blends 1y/3y/5y performance and risk/reward with weights 0.2/0.5/0.3 respectively
-// Falls back to available timeframes (e.g., 3y-only if 1y/5y missing)
+// Uses nominal timeframe weights; missing 1y/5y metrics contribute 0 (no renormalization)
 // Requires 3y data as anchor for stability
 export function computeScore(asset: Asset): number | undefined {
   const { performance1y, performance3y, performance5y, riskReward1y, riskReward3y, riskReward5y, fees } = asset;

@@ -261,7 +261,7 @@ function renderAssetTableSection(
         targetTotalValue={config.targetTotalValue}
         totalValue={config.totalValue}
       />
-      {config.totalValue > 0 && renderAllocationCharts(config.portfolioAllocations, config.targetAllocations)}
+      {(config.totalValue > 0 || config.targetTotalValue > 0) && renderAllocationCharts(config.portfolioAllocations, config.targetAllocations)}
     </>
   );
 }
