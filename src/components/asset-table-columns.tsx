@@ -1,6 +1,7 @@
 // oxlint-disable max-lines
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowDownToDot, EqualIcon, Trash2, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowDownToDot, DotIcon, EqualIcon, Trash2, TrendingDown, TrendingUp } from "lucide-react";
+import type { ReactNode } from "react";
 import { computeDataScore, computeScore, dataScoreWarnThreshold, type Asset, type PortfolioEntry } from "../schemas/index.ts";
 import { computeMaxSimilarity } from "../utils/asset-similarity.ts";
 import { cn } from "../utils/browser-styles.ts";
@@ -29,8 +30,10 @@ export type AssetTableMeta = {
   selectedIsins?: Set<string>;
   amountMap?: Map<string, number>;
   amountUpdatedAtMap?: Map<string, string>;
+  totalValue?: number;
   targetAmountMap?: Map<string, number>;
   targetAmountUpdatedAtMap?: Map<string, string>;
+  targetTotalValue?: number;
 };
 
 function booleanCell(isin: string, field: string, value: boolean) {
@@ -45,13 +48,12 @@ type NumberInputOpts = {
   ariaLabel: string;
   className: string;
   dataTestid: string;
-  id: string;
   onBlur: (value: number) => void;
   step?: number;
   value: number;
 };
 
-function makeNumberInput({ ariaLabel, className, dataTestid, id, onBlur, step = 0.1, value }: NumberInputOpts) {
+function makeNumberInput({ ariaLabel, className, dataTestid, onBlur, step = 0.1, value }: NumberInputOpts) {
   return (
     <input
       type="number"
@@ -59,8 +61,7 @@ function makeNumberInput({ ariaLabel, className, dataTestid, id, onBlur, step = 
       min={0}
       defaultValue={value}
       step={step}
-      key={value}
-      id={id}
+      key={`${dataTestid}-${value}`}
       data-testid={dataTestid}
       aria-label={ariaLabel}
       onClick={event => event.stopPropagation()}
@@ -70,6 +71,18 @@ function makeNumberInput({ ariaLabel, className, dataTestid, id, onBlur, step = 
       }}
     />
   );
+}
+
+function computePercentage(value: number, totalValue: number | undefined): number | undefined {
+  if (totalValue === undefined) return undefined;
+  if (totalValue <= 0) return value === 0 ? 0 : undefined;
+  return (value / totalValue) * maxPercentage;
+}
+
+function computeAmountFromPercentage(percent: number, price: number | undefined, totalValue: number | undefined): number {
+  if (price === undefined || price <= 0) return 0;
+  if (totalValue === undefined || totalValue <= 0) return 0;
+  return ((percent / maxPercentage) * totalValue) / price;
 }
 
 export function makeSelectColumn(): ColumnDef<Asset> {
@@ -111,20 +124,30 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
       const meta = table.options.meta as AssetTableMeta | undefined;
       const { isin } = row.original;
       const value = meta?.amountMap?.get(isin) ?? 0;
+      const { price } = row.original;
+      const amountPercentage = computePercentage(value * (price ?? 0), meta?.totalValue);
+      const amountPercentageLabel = amountPercentage === undefined ? "—" : `${Math.round(amountPercentage)}%`;
       if (!meta?.isEditing)
         return (
-          <span data-testid={`amount-${isin.toLowerCase()}`} className={cn({ "text-warning": value === 0 })}>
-            {value === 0 ? "—" : value}
+          <span className={cn("flex items-center justify-center gap-1", { "text-warning": value === 0 })} data-testid={`amount-${isin.toLowerCase()}`}>
+            <span data-testid={`amount-value-${isin.toLowerCase()}`}>{value === 0 ? "—" : value}</span>
+            <DotIcon size={12} aria-hidden="true" />
+            <span data-testid={`amount-percent-${isin.toLowerCase()}`}>{amountPercentageLabel}</span>
           </span>
         );
-      return makeNumberInput({
-        ariaLabel: `Amount for ${row.original.name}`,
-        className: cn("input input-xs w-14 text-center", { "bg-warning/10 input-warning": value === 0 }),
-        dataTestid: `amount-input-${isin.toLowerCase()}`,
-        id: `amount-input-${isin.toLowerCase()}`,
-        onBlur: amount => meta?.onAmountChange?.(isin, amount),
-        value,
-      });
+      return (
+        <span className="flex items-center justify-center gap-1" data-testid={`amount-${isin.toLowerCase()}`}>
+          {makeNumberInput({
+            ariaLabel: `Amount for ${row.original.name}`,
+            className: cn("input input-xs w-14 text-center", { "bg-warning/10 input-warning": value === 0 }),
+            dataTestid: `amount-input-${isin.toLowerCase()}`,
+            onBlur: amount => meta?.onAmountChange?.(isin, amount),
+            value,
+          })}
+          <DotIcon size={12} data-testid={`amount-percent-dot-${isin.toLowerCase()}`} aria-hidden="true" />
+          <span data-testid={`amount-percent-${isin.toLowerCase()}`}>{amountPercentageLabel}</span>
+        </span>
+      );
     },
     header: "Amount",
     id: "amount",
@@ -147,7 +170,6 @@ export function makePriceEditColumn(): ColumnDef<Asset> {
           step={1}
           defaultValue={value}
           key={value}
-          id={`price-input-${isin.toLowerCase()}`}
           data-testid={`price-input-${isin.toLowerCase()}`}
           aria-label={`Price for ${row.original.name}`}
           onClick={event => event.stopPropagation()}
@@ -180,7 +202,6 @@ export function makePortfolioPriceColumn(): ColumnDef<Asset> {
           step={1}
           defaultValue={value}
           key={value}
-          id={`price-input-${isin.toLowerCase()}`}
           data-testid={`price-input-${isin.toLowerCase()}`}
           aria-label={`Price for ${row.original.name}`}
           onClick={event => event.stopPropagation()}
@@ -216,7 +237,6 @@ export function makeNoteColumn(noteMap?: Map<string, string>): ColumnDef<Asset> 
           className="input input-xs w-36"
           defaultValue={value}
           key={value}
-          id={`note-input-${isin.toLowerCase()}`}
           data-testid={`note-input-${isin.toLowerCase()}`}
           aria-label={`Note for ${row.original.name}`}
           placeholder="Note…"
@@ -406,36 +426,61 @@ function makeTargetTrendIcon(isin: string, targetAmount: number, amount: number)
   return undefined;
 }
 
+function renderTargetAmountReadCell({ amount, amountPercentageLabel, isin, targetAmount, trendIcon }: { amount: number; amountPercentageLabel: string; isin: string; targetAmount: number | undefined; trendIcon: ReactNode }) {
+  return (
+    <span className={cn("flex items-center justify-center gap-1", { "opacity-40": targetAmount === amount })}>
+      <span data-testid={`target-amount-${isin.toLowerCase()}`}>{targetAmount ?? "—"}</span>
+      {trendIcon}
+      <span data-testid={`target-percent-${isin.toLowerCase()}`}>{amountPercentageLabel}</span>
+    </span>
+  );
+}
+
+function renderTargetAmountEditCell({ amountInput, percentInput, trendIcon }: { amountInput: ReactNode; percentInput: ReactNode; trendIcon: ReactNode }) {
+  return (
+    <span className="flex items-center justify-center gap-1">
+      {amountInput}
+      {trendIcon}
+      {percentInput}
+    </span>
+  );
+}
+
 export function makeTargetAmountColumn(targetAmountMap: Map<string, number> | undefined): ColumnDef<Asset> {
   return {
     accessorFn: row => targetAmountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
       const meta = table.options.meta as AssetTableMeta | undefined;
-      const { isin } = row.original;
+      const { isin, price } = row.original;
       const value = meta?.targetAmountMap?.get(isin);
       const amount = meta?.amountMap?.get(isin) ?? 0;
-      const trendIcon = makeTargetTrendIcon(isin, value ?? 0, amount);
-      if (!meta?.isEditing)
-        return (
-          <span className={cn("flex items-center justify-center gap-1", { "opacity-40": value === amount })}>
-            <span data-testid={`target-amount-${isin.toLowerCase()}`}>{value ?? "—"}</span>
-            {trendIcon}
-          </span>
-        );
-      return (
-        <span className="flex items-center justify-center gap-1">
-          {makeNumberInput({
-            ariaLabel: `Target amount for ${row.original.name}`,
-            className: "input input-xs w-14 text-center",
-            dataTestid: `target-amount-input-${isin.toLowerCase()}`,
-            id: `target-amount-input-${isin.toLowerCase()}`,
-            onBlur: targetAmount => meta?.onTargetAmountChange?.(isin, targetAmount),
-            step: 1,
-            value: value ?? 0,
-          })}
-          {trendIcon}
-        </span>
-      );
+      const targetAmountValue = value ?? 0;
+      const targetPositionValue = targetAmountValue * (price ?? 0);
+      const targetPercentage = value === undefined ? undefined : computePercentage(targetPositionValue, meta?.targetTotalValue);
+      const targetPercentageLabel = targetPercentage === undefined ? "—" : `${Math.round(targetPercentage)}%`;
+      const trendIcon = value === undefined ? undefined : makeTargetTrendIcon(isin, value, amount);
+      if (!meta?.isEditing) return renderTargetAmountReadCell({ amount, amountPercentageLabel: targetPercentageLabel, isin, targetAmount: value, trendIcon });
+      const amountInput = makeNumberInput({
+        ariaLabel: `Target amount for ${row.original.name}`,
+        className: "input input-xs w-14 text-center",
+        dataTestid: `target-amount-input-${isin.toLowerCase()}`,
+        onBlur: targetAmount => meta?.onTargetAmountChange?.(isin, targetAmount),
+        step: 1,
+        value: targetAmountValue,
+      });
+      const percentInput = makeNumberInput({
+        ariaLabel: `Target percentage for ${row.original.name}`,
+        className: "input input-xs w-16 text-center",
+        dataTestid: `target-percent-input-${isin.toLowerCase()}`,
+        onBlur: percent => {
+          const roundedPercent = Math.round(percent);
+          const targetAmount = Math.round(computeAmountFromPercentage(roundedPercent, price, meta?.targetTotalValue));
+          meta?.onTargetAmountChange?.(isin, targetAmount);
+        },
+        step: 1,
+        value: Math.round(targetPercentage ?? 0),
+      });
+      return renderTargetAmountEditCell({ amountInput, percentInput, trendIcon });
     },
     header: "Target",
     id: "target-amount",
@@ -444,23 +489,37 @@ export function makeTargetAmountColumn(targetAmountMap: Map<string, number> | un
 }
 
 export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string> | undefined): ColumnDef<Asset> {
-  return {
-    accessorFn: row => amountUpdatedAtMap?.get(row.isin),
-    cell: ({ getValue, row }) => <span data-testid={`amount-updated-at-${row.original.isin.toLowerCase()}`}>{formatDate(getValue<string | undefined>())}</span>,
+  return makeUpdatedAtColumn({
+    dateMap: amountUpdatedAtMap,
     header: "Amt. updated",
     id: "amount-updated-at",
-    meta: { center: true, title: "Amount last updated" },
+    testIdPrefix: "amount-updated-at",
+    title: "Amount last updated",
+  });
+}
+
+function makeUpdatedAtColumn({ dateMap, header, id, testIdPrefix, title }: { dateMap: Map<string, string> | undefined; header: string; id: string; testIdPrefix: string; title: string }): ColumnDef<Asset> {
+  return {
+    accessorFn: row => dateMap?.get(row.isin),
+    cell: ({ getValue, row }) => (
+      <span className="whitespace-nowrap" data-testid={`${testIdPrefix}-${row.original.isin.toLowerCase()}`}>
+        {formatDate(getValue<string | undefined>())}
+      </span>
+    ),
+    header,
+    id,
+    meta: { center: true, title },
   };
 }
 
 export function makeTargetAmountUpdatedAtColumn(targetAmountUpdatedAtMap: Map<string, string> | undefined): ColumnDef<Asset> {
-  return {
-    accessorFn: row => targetAmountUpdatedAtMap?.get(row.isin),
-    cell: ({ getValue, row }) => <span data-testid={`target-amount-updated-at-${row.original.isin.toLowerCase()}`}>{formatDate(getValue<string | undefined>())}</span>,
+  return makeUpdatedAtColumn({
+    dateMap: targetAmountUpdatedAtMap,
     header: "Tgt. updated",
     id: "target-amount-updated-at",
-    meta: { center: true, title: "Target amount last updated" },
-  };
+    testIdPrefix: "target-amount-updated-at",
+    title: "Target amount last updated",
+  });
 }
 
 export function makeSimilarityColumn(assets: Asset[], onDismiss?: (isin: string, matchedIsin: string) => void): ColumnDef<Asset> {

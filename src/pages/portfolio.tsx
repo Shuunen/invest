@@ -1,3 +1,4 @@
+// oxlint-disable max-lines
 import { invariant } from "es-toolkit";
 import { CheckIcon, ListIcon, PencilLineIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
@@ -74,6 +75,7 @@ function usePortfolioActions(portfolioId: string, entries: PortfolioEntry[]) {
   return { actions, handleConfirmDelete, handlePickerConfirm, isEditing, isinToDelete, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, pickerOpen, selectedIsins, setIsinToDelete, setPickerOpen };
 }
 
+// oxlint-disable-next-line max-lines-per-function
 function usePortfolioData(portfolioId: string) {
   const portfolio = useAppStore(state => state.data.portfolios.find(port => port.id === portfolioId));
   const assets = useAppStore(state => state.data.assets);
@@ -117,9 +119,24 @@ function usePortfolioData(portfolioId: string) {
   );
   const noteMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.notes])), [portfolio]);
   const dismissSimilarity = useAppStore(state => state.dismissSimilarity);
-  return { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, entries, headerMetrics, noteMap, portfolio, portfolioAllocations, portfolioAssets, targetAllocations, targetAmountMap, targetAmountUpdatedAtMap, totalValue };
+  return {
+    amountMap,
+    amountUpdatedAtMap,
+    assets,
+    dismissSimilarity,
+    entries,
+    headerMetrics,
+    noteMap,
+    portfolio,
+    portfolioAllocations,
+    portfolioAssets,
+    targetAllocations,
+    targetAmountMap,
+    targetAmountUpdatedAtMap,
+    targetTotalValue,
+    totalValue,
+  };
 }
-
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
   return selectedIsins.map(isin => {
     const existing = existingEntries.find(entry => entry.isin === isin);
@@ -130,7 +147,6 @@ function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]
 function removeEntry(entries: PortfolioEntry[], isin: string): PortfolioEntry[] {
   return entries.filter(en => en.isin !== isin);
 }
-
 function renderNoAssets() {
   return (
     <div className="p-8 text-center">
@@ -222,6 +238,7 @@ function renderAssetTableSection(
     isEditing: boolean;
     portfolioAllocations: { geo: Allocation; sector: Allocation };
     targetAllocations: { geo: Allocation; sector: Allocation };
+    targetTotalValue: number;
     totalValue: number;
   },
 ) {
@@ -241,6 +258,8 @@ function renderAssetTableSection(
         targetAmountMap={config.maps.targetAmountMap}
         targetAmountUpdatedAtMap={config.maps.targetAmountUpdatedAtMap}
         isEditing={config.isEditing}
+        targetTotalValue={config.targetTotalValue}
+        totalValue={config.totalValue}
       />
       {config.totalValue > 0 && renderAllocationCharts(config.portfolioAllocations, config.targetAllocations)}
     </>
@@ -251,9 +270,25 @@ type Props = {
   portfolioId: string;
 };
 
+// oxlint-disable-next-line max-lines-per-function
 export function PortfolioPage({ portfolioId }: Props) {
-  const { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, entries, headerMetrics, noteMap, portfolio, portfolioAllocations, portfolioAssets, targetAllocations, targetAmountMap, targetAmountUpdatedAtMap, totalValue } =
-    usePortfolioData(portfolioId);
+  const {
+    amountMap,
+    amountUpdatedAtMap,
+    assets,
+    dismissSimilarity,
+    entries,
+    headerMetrics,
+    noteMap,
+    portfolio,
+    portfolioAllocations,
+    portfolioAssets,
+    targetAllocations,
+    targetAmountMap,
+    targetAmountUpdatedAtMap,
+    targetTotalValue,
+    totalValue,
+  } = usePortfolioData(portfolioId);
   const { actions, handleConfirmDelete, handlePickerConfirm, isEditing, isinToDelete, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, pickerOpen, selectedIsins, setIsinToDelete, setPickerOpen } = usePortfolioActions(
     portfolioId,
     entries,
@@ -286,6 +321,7 @@ export function PortfolioPage({ portfolioId }: Props) {
             },
             portfolioAllocations,
             targetAllocations,
+            targetTotalValue,
             totalValue,
           })}
       {pickerOpen && <AssetPickerModal assets={assets} initialSelected={selectedIsins} amountByIsin={amountMap} onCancel={() => setPickerOpen(false)} onConfirm={handlePickerConfirm} title={`${name} portfolio assets`} />}
