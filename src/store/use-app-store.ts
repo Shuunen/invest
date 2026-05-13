@@ -19,7 +19,8 @@ function patchPortfolioEntryNote(portfolios: Portfolio[], { isin, note, portfoli
 }
 
 function patchPortfolioEntryTargetAmount(portfolios: Portfolio[], { isin, portfolioId, targetAmount }: { isin: string; portfolioId: string; targetAmount: number }): Portfolio[] {
-  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, targetAmount } : entry)) } : portfolio));
+  const now = new Date().toISOString();
+  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, targetAmount, targetAmountUpdatedAt: now } : entry)) } : portfolio));
 }
 
 export const defaultAppData: AppData = {
@@ -128,7 +129,18 @@ export const useAppStore = create<AppStore>()(
         return {
           data: {
             ...state.data,
-            portfolios: state.data.portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: entries.map(entry => (entry.amountUpdatedAt ? entry : { ...entry, amountUpdatedAt: now })) } : portfolio)),
+            portfolios: state.data.portfolios.map(portfolio =>
+              portfolio.id === portfolioId
+                ? {
+                    ...portfolio,
+                    entries: entries.map(entry => ({
+                      ...entry,
+                      amountUpdatedAt: entry.amountUpdatedAt ?? now,
+                      targetAmountUpdatedAt: entry.targetAmountUpdatedAt ?? now,
+                    })),
+                  }
+                : portfolio,
+            ),
             settings: incrementEditCount(state.data.settings),
           },
         };

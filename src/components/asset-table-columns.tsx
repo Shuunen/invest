@@ -1,6 +1,6 @@
 // oxlint-disable max-lines
 import type { ColumnDef } from "@tanstack/react-table";
-import { Trash2 } from "lucide-react";
+import { ArrowDownToDot, EqualIcon, Trash2, TrendingDown, TrendingUp } from "lucide-react";
 import { computeDataScore, computeScore, dataScoreWarnThreshold, type Asset, type PortfolioEntry } from "../schemas/index.ts";
 import { computeMaxSimilarity } from "../utils/asset-similarity.ts";
 import { cn } from "../utils/browser-styles.ts";
@@ -30,6 +30,7 @@ export type AssetTableMeta = {
   amountMap?: Map<string, number>;
   amountUpdatedAtMap?: Map<string, string>;
   targetAmountMap?: Map<string, number>;
+  targetAmountUpdatedAtMap?: Map<string, string>;
 };
 
 function booleanCell(isin: string, field: string, value: boolean) {
@@ -46,17 +47,18 @@ type NumberInputOpts = {
   dataTestid: string;
   id: string;
   onBlur: (value: number) => void;
+  step?: number;
   value: number;
 };
 
-function makeNumberInput({ ariaLabel, className, dataTestid, id, onBlur, value }: NumberInputOpts) {
+function makeNumberInput({ ariaLabel, className, dataTestid, id, onBlur, step = 0.1, value }: NumberInputOpts) {
   return (
     <input
       type="number"
       className={className}
       min={0}
       defaultValue={value}
-      step={0.1}
+      step={step}
       key={value}
       id={id}
       data-testid={dataTestid}
@@ -393,27 +395,47 @@ export function makeDataScoreColumn(amountMap?: Map<string, number>, amountUpdat
     meta: { title: "Data score" },
   };
 }
+
+function makeTargetTrendIcon(isin: string, targetAmount: number, amount: number) {
+  const normalizedIsin = isin.toLowerCase();
+  const iconSize = 14;
+  if (targetAmount === 0) return <ArrowDownToDot color="var(--color-error)" size={iconSize} data-testid={`target-trend-zero-${normalizedIsin}`} aria-label="Target amount is zero" />;
+  if (targetAmount === amount) return <EqualIcon size={iconSize} data-testid={`target-trend-equal-${normalizedIsin}`} aria-label="Target equals amount" />;
+  if (targetAmount > amount) return <TrendingUp color="var(--color-success)" size={iconSize} data-testid={`target-trend-up-${normalizedIsin}`} aria-label="Target is above amount" />;
+  if (targetAmount < amount) return <TrendingDown size={iconSize} data-testid={`target-trend-down-${normalizedIsin}`} aria-label="Target is below amount" />;
+  return undefined;
+}
+
 export function makeTargetAmountColumn(targetAmountMap: Map<string, number> | undefined): ColumnDef<Asset> {
   return {
     accessorFn: row => targetAmountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
       const meta = table.options.meta as AssetTableMeta | undefined;
       const { isin } = row.original;
-      const value = meta?.targetAmountMap?.get(isin) ?? 0;
+      const value = meta?.targetAmountMap?.get(isin);
+      const amount = meta?.amountMap?.get(isin) ?? 0;
+      const trendIcon = makeTargetTrendIcon(isin, value ?? 0, amount);
       if (!meta?.isEditing)
         return (
-          <span data-testid={`target-amount-${isin.toLowerCase()}`} className={cn({ "text-base-content/40": value === 0 })}>
-            {value === 0 ? "—" : value}
+          <span className={cn("flex items-center justify-center gap-1", { "opacity-40": value === amount })}>
+            <span data-testid={`target-amount-${isin.toLowerCase()}`}>{value ?? "—"}</span>
+            {trendIcon}
           </span>
         );
-      return makeNumberInput({
-        ariaLabel: `Target amount for ${row.original.name}`,
-        className: "input input-xs w-14 text-center",
-        dataTestid: `target-amount-input-${isin.toLowerCase()}`,
-        id: `target-amount-input-${isin.toLowerCase()}`,
-        onBlur: targetAmount => meta?.onTargetAmountChange?.(isin, targetAmount),
-        value,
-      });
+      return (
+        <span className="flex items-center justify-center gap-1">
+          {makeNumberInput({
+            ariaLabel: `Target amount for ${row.original.name}`,
+            className: "input input-xs w-14 text-center",
+            dataTestid: `target-amount-input-${isin.toLowerCase()}`,
+            id: `target-amount-input-${isin.toLowerCase()}`,
+            onBlur: targetAmount => meta?.onTargetAmountChange?.(isin, targetAmount),
+            step: 1,
+            value: value ?? 0,
+          })}
+          {trendIcon}
+        </span>
+      );
     },
     header: "Target",
     id: "target-amount",
@@ -428,6 +450,16 @@ export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string
     header: "Amt. updated",
     id: "amount-updated-at",
     meta: { center: true, title: "Amount last updated" },
+  };
+}
+
+export function makeTargetAmountUpdatedAtColumn(targetAmountUpdatedAtMap: Map<string, string> | undefined): ColumnDef<Asset> {
+  return {
+    accessorFn: row => targetAmountUpdatedAtMap?.get(row.isin),
+    cell: ({ getValue, row }) => <span data-testid={`target-amount-updated-at-${row.original.isin.toLowerCase()}`}>{formatDate(getValue<string | undefined>())}</span>,
+    header: "Tgt. updated",
+    id: "target-amount-updated-at",
+    meta: { center: true, title: "Target amount last updated" },
   };
 }
 
