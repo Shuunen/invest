@@ -91,6 +91,7 @@
         "vitest/prefer-lowercase-title": "off",
         "prefer-importing-jest-globals": "off",
         "prefer-describe-function-title": "off",
+        "jsx-no-new-array-as-prop": "off",
         "no-magic-numbers": "off",
         "max-statements": "off",
         "no-nodejs-modules": "off"

@@ -1075,3 +1075,97 @@ describe("formatPercent", () => {
     expect(formatPercent(undefined)).toBe("—");
   });
 });
+
+describe("AssetTable - target-amount column", () => {
+  const targetAsset = makeAsset();
+  const targetAssets = [targetAsset];
+
+  it("sorts by target amount values", async () => {
+    expect.hasAssertions();
+    const first = makeAsset({ isin: "LU0000000001", name: "First ETF" });
+    const second = makeAsset({ isin: "LU0000000002", name: "Second ETF" });
+    const assets = [first, second];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
+    render(
+      <AssetTable
+        assets={assets}
+        onTargetAmountChange={onTargetAmountChange}
+        targetAmountMap={
+          new Map([
+            [first.isin, 7],
+            [second.isin, 3],
+          ])
+        }
+      />,
+    );
+    fireEvent.click(screen.getByTestId("sort-target-amount"));
+    await waitFor(() => {
+      const rows = screen.getAllByTestId(/asset-row-/u);
+      expect(rows[0]).toHaveAttribute("data-testid", `asset-row-${second.isin}`);
+      expect(rows[1]).toHaveAttribute("data-testid", `asset-row-${first.isin}`);
+    });
+  });
+
+  it("sorts by target amount with missing map entry as 0", async () => {
+    expect.hasAssertions();
+    const first = makeAsset({ isin: "LU0000000011", name: "First ETF" });
+    const second = makeAsset({ isin: "LU0000000022", name: "Second ETF" });
+    const assets = [first, second];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
+    render(<AssetTable assets={assets} onTargetAmountChange={onTargetAmountChange} targetAmountMap={new Map([[first.isin, 5]])} />);
+    fireEvent.click(screen.getByTestId("sort-target-amount"));
+    await waitFor(() => {
+      const rows = screen.getAllByTestId(/asset-row-/u);
+      expect(rows[0]).toHaveAttribute("data-testid", `asset-row-${second.isin}`);
+      expect(rows[1]).toHaveAttribute("data-testid", `asset-row-${first.isin}`);
+    });
+  });
+
+  it("renders dash when targetAmountMap is omitted", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData(targetAssets), isLoading: false, loadError: undefined });
+    const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
+    render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} />);
+    expect(screen.getByTestId(`target-amount-${targetAsset.isin.toLowerCase()}`)).toHaveTextContent("—");
+  });
+
+  it("renders target amount as text by default and shows — for zero", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData(targetAssets), isLoading: false, loadError: undefined });
+    const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
+    render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} targetAmountMap={new Map([[targetAsset.isin, 0]])} />);
+    const cell = screen.getByTestId(`target-amount-${targetAsset.isin.toLowerCase()}`);
+    expect(cell).toBeInTheDocument();
+    expect(cell).toHaveTextContent("—");
+  });
+
+  it("renders target amount value when non-zero", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData(targetAssets), isLoading: false, loadError: undefined });
+    const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
+    render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} targetAmountMap={new Map([[targetAsset.isin, 42]])} />);
+    expect(screen.getByTestId(`target-amount-${targetAsset.isin.toLowerCase()}`)).toHaveTextContent("42");
+  });
+
+  it("renders target amount input when isEditing is true", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData(targetAssets), isLoading: false, loadError: undefined });
+    const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
+    render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} isEditing targetAmountMap={new Map([[targetAsset.isin, 0]])} />);
+    const input = screen.getByTestId(`target-amount-input-${targetAsset.isin.toLowerCase()}`);
+    expect(input).toHaveValue(0);
+  });
+
+  it("calls onTargetAmountChange when input value changes and blurs with new value", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: makeTestData(targetAssets), isLoading: false, loadError: undefined });
+    const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
+    render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} isEditing targetAmountMap={new Map([[targetAsset.isin, 0]])} />);
+    const input = screen.getByTestId(`target-amount-input-${targetAsset.isin.toLowerCase()}`);
+    fireEvent.change(input, { target: { value: "15" } });
+    fireEvent.blur(input);
+    expect(onTargetAmountChange).toHaveBeenCalledWith(targetAsset.isin, 15);
+  });
+});

@@ -179,7 +179,7 @@ describe("PortfolioPage - empty portfolio", () => {
   it("shows average data score metric with success color when the average is 100%", () => {
     expect.hasAssertions();
     const now = new Date().toISOString();
-    const asset = makeAsset({ price: 200, updatedAt: now });
+    const asset = makeAsset({ geoAllocation: { europe: 0.4, us: 0.6 }, price: 200, sectorAllocation: { financials: 0.3, technology: 0.7 }, updatedAt: now });
     const portfolio = makePortfolio({
       entries: [{ amount: 3, amountUpdatedAt: now, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
     });
@@ -197,8 +197,8 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const now = new Date().toISOString();
     const staleDate = "2000-01-01T00:00:00.000Z";
-    const firstAsset = makeAsset({ isin: "LU1111111111", price: 100, updatedAt: now });
-    const secondAsset = makeAsset({ isin: "LU2222222222", price: 100, updatedAt: staleDate });
+    const firstAsset = makeAsset({ geoAllocation: { europe: 0.4, us: 0.6 }, isin: "LU1111111111", price: 100, sectorAllocation: { financials: 0.3, technology: 0.7 }, updatedAt: now });
+    const secondAsset = makeAsset({ geoAllocation: { europe: 0.4, us: 0.6 }, isin: "LU2222222222", price: 100, sectorAllocation: { financials: 0.3, technology: 0.7 }, updatedAt: staleDate });
     const portfolio = makePortfolio({
       entries: [
         { amount: 1, amountUpdatedAt: now, inPEA: false, isin: firstAsset.isin, notes: "", positionValue: 0, targetAmount: 0 },
@@ -219,7 +219,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const now = new Date().toISOString();
     const staleDate = "2000-01-01T00:00:00.000Z";
-    const asset = makeAsset({ price: 100, updatedAt: staleDate });
+    const asset = makeAsset({ geoAllocation: { europe: 0.4, us: 0.6 }, price: 100, sectorAllocation: { financials: 0.3, technology: 0.7 }, updatedAt: staleDate });
     const portfolio = makePortfolio({
       entries: [{ amount: 1, amountUpdatedAt: now, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
     });
@@ -427,6 +427,74 @@ describe("PortfolioPage - editing mode", () => {
   });
 });
 
+describe("PortfolioPage - target amount column", () => {
+  it("displays dash when targetAmount is 0 in non-editing mode", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1111111111" });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByTestId(`target-amount-${asset.isin.toLowerCase()}`)).toHaveTextContent("—");
+  });
+
+  it("displays targetAmount value in non-editing mode", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1111111111" });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 50 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByTestId(`target-amount-${asset.isin.toLowerCase()}`)).toHaveTextContent("50");
+  });
+
+  it("shows input field in editing mode", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1111111111" });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 25 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.queryByTestId(`target-amount-input-${asset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId("action-edit"));
+    expect(screen.getByTestId(`target-amount-input-${asset.isin.toLowerCase()}`)).toBeInTheDocument();
+  });
+
+  it("target amount input blur with new value updates entry targetAmount in the store", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ isin: "LU1111111111" });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 10 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    fireEvent.click(screen.getByTestId("action-edit"));
+    const input = screen.getByTestId(`target-amount-input-${asset.isin.toLowerCase()}`);
+    fireEvent.change(input, { target: { value: "75" } });
+    fireEvent.blur(input);
+    expect(useAppStore.getState().data.portfolios[0]?.entries[0]?.targetAmount).toBe(75);
+  });
+});
+
 describe("PortfolioPage - asset picker modal", () => {
   it("opens the asset picker modal when Add / Edit assets is clicked", () => {
     expect.hasAssertions();
@@ -498,8 +566,8 @@ describe("PortfolioPage - allocation charts", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByText("Portfolio geography")).toBeInTheDocument();
-    expect(screen.getByText("Portfolio sectors")).toBeInTheDocument();
+    expect(screen.getByTestId("portfolio-geo-card")).toHaveTextContent("Actual geography");
+    expect(screen.getByTestId("portfolio-sector-card")).toHaveTextContent("Actual sectors");
   });
 
   it("does not render allocation charts when total value is 0", () => {
@@ -540,13 +608,13 @@ describe("PortfolioPage - allocation charts", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByText("Portfolio geography")).toBeInTheDocument();
+    expect(screen.getByTestId("portfolio-geo-card")).toHaveTextContent("Actual geography");
     // Change amount via store update (simulating price edit)
     act(() => {
       useAppStore.getState().updateAssetPrice(asset.isin, 200);
     });
     // Charts should still render (now with different weighting if multi-asset)
-    expect(screen.getByText("Portfolio geography")).toBeInTheDocument();
+    expect(screen.getByTestId("portfolio-geo-card")).toHaveTextContent("Actual geography");
   });
 
   it("recomputes allocation charts when asset price is updated", () => {
@@ -577,12 +645,12 @@ describe("PortfolioPage - allocation charts", () => {
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
     // Initial 50-50 split
-    expect(screen.getByText("Portfolio geography")).toBeInTheDocument();
+    expect(screen.getByTestId("portfolio-geo-card")).toHaveTextContent("Actual geography");
     // Update price of asset1 to double its weight
     act(() => {
       useAppStore.getState().updateAssetPrice(asset1.isin, 200);
     });
     // Charts should recompute with new weighting (asset1 now ~67%, asset2 ~33%)
-    expect(screen.getByText("Portfolio geography")).toBeInTheDocument();
+    expect(screen.getByTestId("portfolio-geo-card")).toHaveTextContent("Actual geography");
   });
 });

@@ -8,7 +8,7 @@ import type { MetricItem } from "../components/metric.tsx";
 import { ModalActions } from "../components/modal-actions.tsx";
 import { ModalHeader } from "../components/modal-header.tsx";
 import { PageHeader } from "../components/page-header.tsx";
-import { computeDataScore, type Asset, type PortfolioEntry } from "../schemas/index.ts";
+import { computeDataScore, type Allocation, type Asset, type PortfolioEntry } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { computePortfolioWeightedAllocations } from "../utils/allocation-charts.ts";
 import { maxPercentage } from "../utils/constants.ts";
@@ -44,6 +44,7 @@ function usePortfolioActions(portfolioId: string, entries: PortfolioEntry[]) {
   const setPortfolioAssets = useAppStore(state => state.setPortfolioAssets);
   const updatePortfolioEntryAmount = useAppStore(state => state.updatePortfolioEntryAmount);
   const updatePortfolioEntryNote = useAppStore(state => state.updatePortfolioEntryNote);
+  const updatePortfolioEntryTargetAmount = useAppStore(state => state.updatePortfolioEntryTargetAmount);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [isinToDelete, setIsinToDelete] = useState<string | undefined>(undefined);
   const [isEditing, setIsEditing] = useState(false);
@@ -53,6 +54,7 @@ function usePortfolioActions(portfolioId: string, entries: PortfolioEntry[]) {
   }, []);
   const onAmountChange = useCallback((isin: string, amount: number) => updatePortfolioEntryAmount(portfolioId, isin, amount), [portfolioId, updatePortfolioEntryAmount]);
   const onNoteChange = useCallback((isin: string, note: string) => updatePortfolioEntryNote(portfolioId, isin, note), [portfolioId, updatePortfolioEntryNote]);
+  const onTargetAmountChange = useCallback((isin: string, targetAmount: number) => updatePortfolioEntryTargetAmount(portfolioId, isin, targetAmount), [portfolioId, updatePortfolioEntryTargetAmount]);
   const actions = useMemo(
     () => [
       { icon: <ListIcon size={16} />, label: "Select assets", onClick: () => setPickerOpen(true) },
@@ -69,7 +71,7 @@ function usePortfolioActions(portfolioId: string, entries: PortfolioEntry[]) {
     setPortfolioAssets(portfolioId, removeEntry(entries, isinToDelete));
     setIsinToDelete(undefined);
   }
-  return { actions, handleConfirmDelete, handlePickerConfirm, isEditing, isinToDelete, onAmountChange, onNoteChange, onPriceChange, pickerOpen, selectedIsins, setIsinToDelete, setPickerOpen };
+  return { actions, handleConfirmDelete, handlePickerConfirm, isEditing, isinToDelete, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, pickerOpen, selectedIsins, setIsinToDelete, setPickerOpen };
 }
 
 function usePortfolioData(portfolioId: string) {
@@ -78,6 +80,7 @@ function usePortfolioData(portfolioId: string) {
   const entries = useMemo(() => portfolio?.entries ?? [], [portfolio]);
   const portfolioAssets = useMemo(() => (portfolio?.entries ?? []).map(entry => assets.find(ast => ast.isin === entry.isin)).filter((ast): ast is Asset => ast !== undefined), [assets, portfolio]);
   const amountMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.amount])), [portfolio]);
+  const targetAmountMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.targetAmount])), [portfolio]);
   const amountUpdatedAtMap = useMemo(() => {
     const map = new Map<string, string>();
     for (const entry of portfolio?.entries ?? []) if (entry.amountUpdatedAt !== undefined) map.set(entry.isin, entry.amountUpdatedAt);
@@ -85,6 +88,18 @@ function usePortfolioData(portfolioId: string) {
   }, [portfolio]);
   const totalValue = useTotalValue(entries, assets);
   const portfolioAllocations = useMemo(() => computePortfolioWeightedAllocations(entries, assets, totalValue), [entries, assets, totalValue]);
+  const targetTotalValue = useMemo(() => {
+    let total = 0;
+    for (const entry of entries) {
+      const asset = assets.find(data => data.isin === entry.isin);
+      total += entry.targetAmount * (asset?.price ?? 0);
+    }
+    return total;
+  }, [entries, assets]);
+  const targetAllocations = useMemo(() => {
+    const targetEntries = entries.map(entry => ({ ...entry, amount: entry.targetAmount }));
+    return computePortfolioWeightedAllocations(targetEntries, assets, targetTotalValue);
+  }, [entries, assets, targetTotalValue]);
   const averageDataScore = useMemo(() => computeAveragePortfolioDataScore(entries, assets), [assets, entries]);
   const averageDataScoreColor = useMemo(() => getAverageDataScoreColor(averageDataScore), [averageDataScore]);
   const headerMetrics = useMemo(
@@ -97,7 +112,7 @@ function usePortfolioData(portfolioId: string) {
   );
   const noteMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.notes])), [portfolio]);
   const dismissSimilarity = useAppStore(state => state.dismissSimilarity);
-  return { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, entries, headerMetrics, noteMap, portfolio, portfolioAllocations, portfolioAssets, totalValue };
+  return { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, entries, headerMetrics, noteMap, portfolio, portfolioAllocations, portfolioAssets, targetAllocations, targetAmountMap, totalValue };
 }
 
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
@@ -158,6 +173,18 @@ function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDele
   );
 }
 
+function renderAllocationCharts(portfolioAllocations: { geo: Allocation; sector: Allocation }, targetAllocations: { geo: Allocation; sector: Allocation }) {
+  return (
+    <div className="mt-6 flex gap-4 p-4">
+      <AllocationChart data={portfolioAllocations.geo} title="Actual geography" name="portfolio-geo" />
+      <AllocationChart data={targetAllocations.geo} title="Target geography" name="target-geo" />
+      <div className="grow" />
+      <AllocationChart data={portfolioAllocations.sector} title="Actual sectors" name="portfolio-sector" />
+      <AllocationChart data={targetAllocations.sector} title="Target sectors" name="target-sector" />
+    </div>
+  );
+}
+
 function useTotalValue(entries: PortfolioEntry[], assets: Asset[]) {
   return useMemo(() => {
     let total = 0;
@@ -169,13 +196,60 @@ function useTotalValue(entries: PortfolioEntry[], assets: Asset[]) {
   }, [entries, assets]);
 }
 
+function renderAssetTableSection(
+  portfolioAssets: Asset[],
+  setIsinToDelete: (isin: string | undefined) => void,
+  config: {
+    handlers: {
+      onAmountChange: (isin: string, amount: number) => void;
+      onDismissSimilarity: (isin: string, matchedIsin: string) => void;
+      onNoteChange: (isin: string, note: string) => void;
+      onPriceChange: (isin: string, price: number) => void;
+      onTargetAmountChange: (isin: string, targetAmount: number) => void;
+    };
+    maps: {
+      amountMap?: Map<string, number>;
+      amountUpdatedAtMap?: Map<string, string>;
+      noteMap?: Map<string, string>;
+      targetAmountMap?: Map<string, number>;
+    };
+    isEditing: boolean;
+    portfolioAllocations: { geo: Allocation; sector: Allocation };
+    targetAllocations: { geo: Allocation; sector: Allocation };
+    totalValue: number;
+  },
+) {
+  return (
+    <>
+      <AssetTable
+        assets={portfolioAssets}
+        onRemoveAsset={setIsinToDelete}
+        onAmountChange={config.handlers.onAmountChange}
+        onDismissSimilarity={config.handlers.onDismissSimilarity}
+        onPriceChange={config.handlers.onPriceChange}
+        onNoteChange={config.handlers.onNoteChange}
+        onTargetAmountChange={config.handlers.onTargetAmountChange}
+        amountMap={config.maps.amountMap}
+        amountUpdatedAtMap={config.maps.amountUpdatedAtMap}
+        noteMap={config.maps.noteMap}
+        targetAmountMap={config.maps.targetAmountMap}
+        isEditing={config.isEditing}
+      />
+      {config.totalValue > 0 && renderAllocationCharts(config.portfolioAllocations, config.targetAllocations)}
+    </>
+  );
+}
+
 type Props = {
   portfolioId: string;
 };
 
 export function PortfolioPage({ portfolioId }: Props) {
-  const { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, entries, headerMetrics, noteMap, portfolio, portfolioAllocations, portfolioAssets, totalValue } = usePortfolioData(portfolioId);
-  const { actions, handleConfirmDelete, handlePickerConfirm, isEditing, isinToDelete, onAmountChange, onNoteChange, onPriceChange, pickerOpen, selectedIsins, setIsinToDelete, setPickerOpen } = usePortfolioActions(portfolioId, entries);
+  const { amountMap, amountUpdatedAtMap, assets, dismissSimilarity, entries, headerMetrics, noteMap, portfolio, portfolioAllocations, portfolioAssets, targetAllocations, targetAmountMap, totalValue } = usePortfolioData(portfolioId);
+  const { actions, handleConfirmDelete, handlePickerConfirm, isEditing, isinToDelete, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, pickerOpen, selectedIsins, setIsinToDelete, setPickerOpen } = usePortfolioActions(
+    portfolioId,
+    entries,
+  );
 
   if (!portfolio) return renderNotFound();
   const { broker, name } = portfolio;
@@ -184,30 +258,27 @@ export function PortfolioPage({ portfolioId }: Props) {
   return (
     <div className="flex flex-col">
       <PageHeader title={name} subtitle={`Broker : ${broker}`} assets={portfolioAssets} metrics={headerMetrics} actions={actions} />
-      {portfolioAssets.length === 0 ? (
-        renderNoAssets()
-      ) : (
-        <>
-          <AssetTable
-            assets={portfolioAssets}
-            onRemoveAsset={setIsinToDelete}
-            onAmountChange={onAmountChange}
-            onDismissSimilarity={dismissSimilarity}
-            onPriceChange={onPriceChange}
-            onNoteChange={onNoteChange}
-            amountMap={amountMap}
-            amountUpdatedAtMap={amountUpdatedAtMap}
-            noteMap={noteMap}
-            isEditing={isEditing}
-          />
-          {portfolioAssets.length > 0 && totalValue > 0 && (
-            <div className="mt-6 flex gap-4 p-4">
-              <AllocationChart data={portfolioAllocations.geo} title="Portfolio geography" name="portfolio-geo" card />
-              <AllocationChart data={portfolioAllocations.sector} title="Portfolio sectors" name="portfolio-sector" card />
-            </div>
-          )}
-        </>
-      )}
+      {portfolioAssets.length === 0
+        ? renderNoAssets()
+        : renderAssetTableSection(portfolioAssets, setIsinToDelete, {
+            handlers: {
+              onAmountChange,
+              onDismissSimilarity: dismissSimilarity,
+              onNoteChange,
+              onPriceChange,
+              onTargetAmountChange,
+            },
+            isEditing,
+            maps: {
+              amountMap,
+              amountUpdatedAtMap,
+              noteMap,
+              targetAmountMap,
+            },
+            portfolioAllocations,
+            targetAllocations,
+            totalValue,
+          })}
       {pickerOpen && <AssetPickerModal assets={assets} initialSelected={selectedIsins} amountByIsin={amountMap} onCancel={() => setPickerOpen(false)} onConfirm={handlePickerConfirm} title={`${name} portfolio assets`} />}
       {isinToDelete !== undefined &&
         renderDeleteConfirmModal({
