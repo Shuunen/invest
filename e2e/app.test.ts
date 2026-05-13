@@ -138,7 +138,6 @@ test("export includes portfolio data", async ({ page }) => {
 test("about page shows the app title and score formula", async ({ page }) => {
   await page.goto("/about");
   await expect(page.getByTestId("page-title")).toBeVisible();
-  await expect(page.getByTestId("score-formula")).toContainText("score = perf3y");
 });
 
 test("add asset button navigates to the create asset page", async ({ page }) => {

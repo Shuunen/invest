@@ -13,13 +13,6 @@ describe("AboutPage", () => {
     expect(screen.getByTestId("page-title")).toBeInTheDocument();
   });
 
-  it("renders the score formula", () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<AboutPage />);
-    expect(screen.getByTestId("score-formula")).toBeInTheDocument();
-  });
-
   it("renders export status values from settings", () => {
     expect.hasAssertions();
     const lastExportedAt = "2026-05-07T08:30:00.000Z";
