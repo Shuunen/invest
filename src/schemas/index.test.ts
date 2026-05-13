@@ -241,14 +241,103 @@ describe("computeScore", () => {
     expect(score).toBeTypeOf("number");
   });
 
-  it("matches formula: perf3y + risk3y*5 - fees*10", () => {
+  it("matches weighted formula for fully populated data", () => {
     expect.hasAssertions();
-    // oxlint-disable-next-line vitest/no-conditional-in-test
-    const asset = AppDataSchema.parse(jsonParse(sampleRaw)).assets.find(entry => entry.performance3y !== undefined && entry.riskReward3y !== undefined);
-    invariant(asset, "Expected to find an ISIN with all required fields");
+    const asset: Asset = {
+      availableForPlan: true,
+      availableOnBroker: true,
+      dismissedSimilarities: [],
+      fees: 0.3,
+      geoAllocation: {},
+      isAccumulating: true,
+      isin: "TESTFULL",
+      name: "Complete Inputs",
+      performance1y: 80,
+      performance3y: 120,
+      performance5y: 150,
+      price: 100,
+      provider: "Test",
+      riskReward1y: 2,
+      riskReward3y: 1.5,
+      riskReward5y: 1.2,
+      sectorAllocation: {},
+      tickers: [],
+    };
+
+    invariant(asset.performance1y !== undefined, "Expected performance1y to be defined");
     invariant(asset.performance3y !== undefined, "Expected performance3y to be defined");
+    invariant(asset.performance5y !== undefined, "Expected performance5y to be defined");
+    invariant(asset.riskReward1y !== undefined, "Expected riskReward1y to be defined");
     invariant(asset.riskReward3y !== undefined, "Expected riskReward3y to be defined");
-    const expected = asset.performance3y + asset.riskReward3y * 5 - asset.fees * 10;
+    invariant(asset.riskReward5y !== undefined, "Expected riskReward5y to be defined");
+
+    const avgPerf = asset.performance1y * 0.2 + asset.performance3y * 0.5 + asset.performance5y * 0.3;
+    const avgRisk = asset.riskReward1y * 0.2 + asset.riskReward3y * 0.5 + asset.riskReward5y * 0.3;
+
+    const expected = avgPerf + avgRisk * 5 - asset.fees * 10;
     expect(computeScore(asset)).toBeCloseTo(expected, 10);
+  });
+
+  it("handles score with only 3y and risk data (no 1y or 5y)", () => {
+    expect.hasAssertions();
+    // Create asset with only 3y data (1y and 5y missing)
+    const assetOnly3y: Asset = {
+      availableForPlan: true,
+      availableOnBroker: true,
+      dismissedSimilarities: [],
+      fees: 0.15,
+      geoAllocation: {},
+      isAccumulating: true,
+      isin: "TEST001",
+      name: "Test Fund",
+      performance1y: undefined,
+      performance3y: 100,
+      performance5y: undefined,
+      price: 123.45,
+      provider: "Test",
+      riskReward1y: undefined,
+      riskReward3y: 1.5,
+      riskReward5y: undefined,
+      sectorAllocation: {},
+      tickers: [],
+    };
+
+    // Missing 1y/5y now contributes 0 instead of being normalized away
+    const expected = 100 * 0.5 + 1.5 * 0.5 * 5 - 0.15 * 10;
+    expect(computeScore(assetOnly3y)).toBeCloseTo(expected, 10);
+  });
+
+  it("penalizes missing 5y metrics versus complete data", () => {
+    expect.hasAssertions();
+    const complete: Asset = {
+      availableForPlan: true,
+      availableOnBroker: true,
+      dismissedSimilarities: [],
+      fees: 0.3,
+      geoAllocation: {},
+      isAccumulating: true,
+      isin: "TEST002",
+      name: "Complete",
+      performance1y: 80,
+      performance3y: 120,
+      performance5y: 150,
+      price: 100,
+      provider: "Test",
+      riskReward1y: 2,
+      riskReward3y: 1.5,
+      riskReward5y: 1.2,
+      sectorAllocation: {},
+      tickers: [],
+    };
+
+    const missing5y: Asset = { ...complete, performance5y: undefined, riskReward5y: undefined };
+
+    const completeScore = computeScore(complete);
+    const missing5yScore = computeScore(missing5y);
+    expect(completeScore).toBeDefined();
+    expect(missing5yScore).toBeDefined();
+    invariant(completeScore !== undefined, "Expected complete score");
+    invariant(missing5yScore !== undefined, "Expected missing-5y score");
+    expect(completeScore).toBeGreaterThan(missing5yScore);
   });
 });
