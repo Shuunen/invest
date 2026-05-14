@@ -13,7 +13,7 @@ export function Metrics({ items }: Props) {
         {items.map((item, index) => (
           <Fragment key={item.label}>
             {index > 0 && <div className="h-6 w-px bg-base-300" />}
-            <Metric label={item.label} value={item.value} color={item.color} />
+            <Metric label={item.label} value={item.value} color={item.color} index={index} />
           </Fragment>
         ))}
       </div>

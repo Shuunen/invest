@@ -2,6 +2,7 @@ import { kebabCase } from "es-toolkit";
 import { useMemo } from "react";
 import { computeScore, type Asset } from "../schemas";
 import { formatPercent } from "../utils/format-numbers";
+import { TextAnimate } from "./animations/text-animate";
 import type { MetricItem } from "./metric";
 import { Metrics } from "./metrics";
 
@@ -59,11 +60,15 @@ export function PageHeader({ actions, assets, metrics, title, subtitle }: Props)
     <div className="bg-base-100 px-4 pt-5">
       <div className="flex items-center justify-between">
         <div className="mb-4">
-          <h1 data-testid="page-title" className="text-2xl font-bold tracking-tight">
-            {title}
+          <h1 aria-label={title} data-testid="page-title" className="text-2xl font-bold tracking-tight">
+            <TextAnimate animation="scaleUp" by="character">
+              {title}
+            </TextAnimate>
           </h1>
           <p data-testid="page-subtitle" className="mt-1 text-sm text-base-content/60">
-            {subtitle}
+            <TextAnimate animation="scaleDown" by="character">
+              {subtitle}
+            </TextAnimate>
           </p>
         </div>
         {actions && actions.length > 0 && (

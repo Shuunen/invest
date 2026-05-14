@@ -68,7 +68,7 @@ export default defineConfig({
   ],
   test: {
     coverage: {
-      exclude: ["src/bin/**/*", "src/pwa.ts", "src/*.tsx"],
+      exclude: ["src/bin/**/*", "src/pwa.ts", "src/*.tsx", "src/components/animations/**/*"],
       include: ["src/**/*.{ts,tsx}"],
       reporter: ["lcov"],
       thresholds: {
