@@ -25,6 +25,8 @@ export const TextHyper = ({ className, duration = 800, text, animateOnLoad = tru
   };
 
   useEffect(() => {
+    iterations.current = 0;
+    setDisplayText(text.split(""));
     const interval = setInterval(
       () => {
         if (!animateOnLoad && isFirstRender.current) {
