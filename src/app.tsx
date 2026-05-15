@@ -82,7 +82,7 @@ export function App() {
           <ImportExportButtons />
         </div>
       </nav>
-      <main className="flex-1">
+      <main className="flex h-full grow flex-col">
         <Outlet />
       </main>
       {createOpen && <CreatePortfolioModal onClose={() => setCreateOpen(false)} />}

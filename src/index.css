@@ -38,3 +38,7 @@
 .card-body {
   @apply gap-3 px-5 py-4;
 }
+
+hr {
+  @apply border-base-content/10;
+}

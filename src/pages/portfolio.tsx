@@ -196,12 +196,15 @@ function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDele
 
 function renderAllocationCharts(portfolioAllocations: { geo: Allocation; sector: Allocation }, targetAllocations: { geo: Allocation; sector: Allocation }) {
   return (
-    <div className="mt-6 flex gap-4 p-4">
-      <AllocationChart data={portfolioAllocations.geo} title="Actual geography" name="portfolio-geo" />
-      <AllocationChart data={targetAllocations.geo} title="Target geography" name="target-geo" />
-      <div className="grow" />
-      <AllocationChart data={portfolioAllocations.sector} title="Actual sectors" name="portfolio-sector" />
-      <AllocationChart data={targetAllocations.sector} title="Target sectors" name="target-sector" />
+    <div className="p-4">
+      <hr />
+      <div data-testid="allocation-charts" className="flex h-72 gap-4 p-4">
+        <AllocationChart data={portfolioAllocations.geo} title="Actual geography" name="portfolio-geo" />
+        <AllocationChart data={targetAllocations.geo} title="Target geography" name="target-geo" />
+        <div className="grow" />
+        <AllocationChart data={portfolioAllocations.sector} title="Actual sectors" name="portfolio-sector" />
+        <AllocationChart data={targetAllocations.sector} title="Target sectors" name="target-sector" />
+      </div>
     </div>
   );
 }
@@ -243,26 +246,28 @@ function renderAssetTableSection(
   },
 ) {
   return (
-    <>
-      <AssetTable
-        assets={portfolioAssets}
-        onRemoveAsset={setIsinToDelete}
-        onAmountChange={config.handlers.onAmountChange}
-        onDismissSimilarity={config.handlers.onDismissSimilarity}
-        onPriceChange={config.handlers.onPriceChange}
-        onNoteChange={config.handlers.onNoteChange}
-        onTargetAmountChange={config.handlers.onTargetAmountChange}
-        amountMap={config.maps.amountMap}
-        amountUpdatedAtMap={config.maps.amountUpdatedAtMap}
-        noteMap={config.maps.noteMap}
-        targetAmountMap={config.maps.targetAmountMap}
-        targetAmountUpdatedAtMap={config.maps.targetAmountUpdatedAtMap}
-        isEditing={config.isEditing}
-        targetTotalValue={config.targetTotalValue}
-        totalValue={config.totalValue}
-      />
+    <div className="flex grow flex-col">
+      <div className={config.totalValue > 0 || config.targetTotalValue > 0 ? "flex max-h-[calc(100dvh-37rem)] grow overflow-y-auto" : undefined}>
+        <AssetTable
+          assets={portfolioAssets}
+          onRemoveAsset={setIsinToDelete}
+          onAmountChange={config.handlers.onAmountChange}
+          onDismissSimilarity={config.handlers.onDismissSimilarity}
+          onPriceChange={config.handlers.onPriceChange}
+          onNoteChange={config.handlers.onNoteChange}
+          onTargetAmountChange={config.handlers.onTargetAmountChange}
+          amountMap={config.maps.amountMap}
+          amountUpdatedAtMap={config.maps.amountUpdatedAtMap}
+          noteMap={config.maps.noteMap}
+          targetAmountMap={config.maps.targetAmountMap}
+          targetAmountUpdatedAtMap={config.maps.targetAmountUpdatedAtMap}
+          isEditing={config.isEditing}
+          targetTotalValue={config.targetTotalValue}
+          totalValue={config.totalValue}
+        />
+      </div>
       {(config.totalValue > 0 || config.targetTotalValue > 0) && renderAllocationCharts(config.portfolioAllocations, config.targetAllocations)}
-    </>
+    </div>
   );
 }
 
@@ -299,7 +304,7 @@ export function PortfolioPage({ portfolioId }: Props) {
   const assetToDelete = isinToDelete === undefined ? undefined : assets.find(asset => asset.isin === isinToDelete);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex grow flex-col">
       <PageHeader title={name} subtitle={`Broker : ${broker}`} assets={portfolioAssets} metrics={headerMetrics} actions={actions} />
       {portfolioAssets.length === 0
         ? renderNoAssets()
