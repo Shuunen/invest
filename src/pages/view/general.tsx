@@ -19,13 +19,13 @@ export function ViewGeneralSection({ asset }: Props) {
     <div className="card">
       <div className="card-body">
         <h2 className="card-title">General</h2>
-        <FieldRow label="ISIN" name="isin" value={asset.isin} />
-        <FieldRow label="Provider" value={asset.provider || "—"} name="provider" />
-        <FieldRow label="Tickers" value={asset.tickers.length > 0 ? asset.tickers.join(", ") : "—"} name="tickers" />
-        <FieldRow label="Accumulating" value={booleanBadge(asset.isAccumulating, "Accumulating")} name="accumulating" />
-        <FieldRow label="Broker availability" value={booleanBadge(asset.availableOnBroker, "Broker")} name="broker-availability" />
-        <FieldRow label="Plan compatibility" value={booleanBadge(asset.availableForPlan, "Plan")} name="plan-compatibility" />
-        <FieldRow label="Last updated" value={formatDate(asset.updatedAt)} name="updated-at" />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FieldRow label="ISIN" name="isin" value={asset.isin} />
+          <FieldRow label="Provider" value={asset.provider || "—"} name="provider" />
+          <FieldRow label="Tickers" value={asset.tickers.length > 0 ? asset.tickers.join(", ") : "—"} name="tickers" />
+          <FieldRow label="Accumulating" value={booleanBadge(asset.isAccumulating, "Accumulating")} name="accumulating" />
+          <FieldRow label="Last updated" value={formatDate(asset.updatedAt)} name="updated-at" />
+        </div>
       </div>
     </div>
   );

@@ -137,7 +137,7 @@ export function AssetEditPage({ isin: originalIsin }: Props) {
         disableSave={!hasChanges}
       />
       {asset && asset.dismissedSimilarities.length > 0 && (
-        <div className="mx-auto max-w-4xl px-6 pb-6">
+        <div className="px-6 pb-6">
           <DismissedSimilaritiesSection asset={asset} allAssets={allAssets} onUnDismiss={unDismissSimilarity} />
         </div>
       )}

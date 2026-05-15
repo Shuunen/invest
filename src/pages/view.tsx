@@ -23,7 +23,7 @@ export function AssetViewPage({ isin }: Props) {
     );
 
   return (
-    <div className="mx-auto max-w-4xl p-6">
+    <div className="mx-auto max-w-7xl p-6">
       <div className="mb-6 flex items-center justify-between">
         <button
           type="button"

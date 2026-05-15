@@ -18,9 +18,9 @@ type Props = {
 
 export function AssetForm({ disableSave = false, errors, form, isinDisplay, onCancel, onSave, patch, title }: Props) {
   return (
-    <div className="mx-auto max-w-4xl p-6">
+    <div className="max-w-8xl mx-auto mt-6">
       <div className="mb-6 flex items-center justify-between">
-        <button type="button" data-testid="cancel-button" className="btn gap-1 btn-ghost btn-sm" onClick={onCancel}>
+        <button type="button" data-testid="cancel-button" className="btn gap-1 btn-soft btn-sm" onClick={onCancel}>
           <ArrowLeft size={16} />
           Cancel
         </button>

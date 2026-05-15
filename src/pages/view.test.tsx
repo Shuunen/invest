@@ -145,8 +145,6 @@ describe("AssetViewPage - not found", () => {
     });
     render(<AssetViewPage isin={asset.isin} />);
     expect(screen.getByTestId("accumulating-badge")).toHaveTextContent("No");
-    expect(screen.getByTestId("broker-badge")).toHaveTextContent("No");
-    expect(screen.getByTestId("plan-badge")).toHaveTextContent("No");
   });
 
   it("renders empty state for empty geoAllocation and sectorAllocation", () => {
