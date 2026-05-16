@@ -53,10 +53,10 @@ function renderDiffRowsTable(diffRows: DiffRow[], onResetRow?: (row: DiffRow) =>
         <tbody>
           {diffRows.map(row => (
             <tr key={row.field} data-testid={`change-row-${kebabCase(row.field)}`} className="group rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary">
-              <td>{row.field}</td>
-              <td className="font-mono text-sm">{row.before}</td>
-              <td className="font-mono text-sm">{renderAfterCell(row)}</td>
-              <td>
+              <td className="whitespace-nowrap">{row.field}</td>
+              <td className="font-mono text-sm whitespace-nowrap">{row.before}</td>
+              <td className="font-mono text-sm whitespace-nowrap">{renderAfterCell(row)}</td>
+              <td className="whitespace-nowrap">
                 <button
                   type="button"
                   data-testid={`reset-row-${kebabCase(row.field)}`}

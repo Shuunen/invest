@@ -267,7 +267,7 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
           {row.getVisibleCells().map(cell => {
             const qClass = quintileClasses.get(cell.column.id)?.get(row.id);
             const isScoreCol = cell.column.id === "score";
-            const tdClass = cn({ "font-semibold": isScoreCol }, { "text-center": cell.column.columnDef.meta?.center }, qClass);
+            const tdClass = cn("whitespace-nowrap", { "font-semibold": isScoreCol }, { "text-center": cell.column.columnDef.meta?.center }, qClass);
             const cellNode = flexRender(cell.column.columnDef.cell, cell.getContext());
             return (
               <td key={cell.id} className={tdClass}>
