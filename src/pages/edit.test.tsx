@@ -119,6 +119,38 @@ describe("AssetEditPage - form", () => {
     expect(screen.getByTestId("change-row-accumulating")).toHaveTextContent("Yes");
   });
 
+  it("resets a single changed field from the confirmation modal", async () => {
+    expect.hasAssertions();
+    const asset = makeAsset();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+
+    render(<AssetEditPage isin={asset.isin} />);
+    fireEvent.change(screen.getByTestId("name"), { target: { value: "Changed Name" } });
+    fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.4" } });
+    fireEvent.click(screen.getByTestId("save-button"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("reset-row-name"));
+
+    expect(screen.queryByTestId("change-row-name")).not.toBeInTheDocument();
+    expect(screen.getByTestId("change-row-fees")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("form-confirm-button"));
+
+    await waitFor(() => {
+      const [savedAsset] = useAppStore.getState().data.assets;
+      expect(savedAsset?.name).toBe(asset.name);
+      expect(savedAsset?.fees).toBe(0.4);
+    });
+  });
+
   it("saves the snapshot captured at modal open, not live form edits made behind the modal", async () => {
     expect.hasAssertions();
     mockNavigate.mockClear();

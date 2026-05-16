@@ -11,6 +11,7 @@ type Props = {
   onClose: () => void;
   onConfirm: () => void;
   onReset: () => void;
+  onResetRow?: (row: DiffRow) => void;
 };
 
 function parseNumericDiffValue(value: string): number | undefined {
@@ -37,7 +38,7 @@ function renderAfterCell(row: DiffRow) {
   );
 }
 
-function renderDiffRowsTable(diffRows: DiffRow[]) {
+function renderDiffRowsTable(diffRows: DiffRow[], onResetRow?: (row: DiffRow) => void) {
   return (
     <div className="mt-4 max-h-96 overflow-auto rounded-box">
       <table className="table table-zebra table-sm" data-testid="confirm-save-diff-table">
@@ -46,14 +47,25 @@ function renderDiffRowsTable(diffRows: DiffRow[]) {
             <th>Field</th>
             <th>Before</th>
             <th>After</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {diffRows.map(row => (
-            <tr key={row.field} data-testid={`change-row-${kebabCase(row.field)}`} className="rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary">
+            <tr key={row.field} data-testid={`change-row-${kebabCase(row.field)}`} className="group rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary">
               <td>{row.field}</td>
               <td className="font-mono text-sm">{row.before}</td>
               <td className="font-mono text-sm">{renderAfterCell(row)}</td>
+              <td>
+                <button
+                  type="button"
+                  data-testid={`reset-row-${kebabCase(row.field)}`}
+                  className="btn h-auto min-h-0 p-0 btn-link opacity-0 transition-opacity btn-xs group-hover:opacity-100 focus-visible:opacity-100"
+                  onClick={() => onResetRow?.(row)}
+                >
+                  Reset
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -70,12 +82,12 @@ function renderNoChangesNotice() {
   );
 }
 
-export function SaveModal({ diffRows, onClose, onConfirm, onReset }: Props) {
+export function SaveModal({ diffRows, onClose, onConfirm, onReset, onResetRow }: Props) {
   return (
     <dialog className="modal-open modal" aria-modal="true" data-testid="confirm-save-modal">
       <div className="modal-box max-w-3xl">
         <ModalHeader title="Confirm changes before saving" subtitle="Review what changed in this asset before applying the update." onClose={onClose} />
-        {diffRows.length > 0 ? renderDiffRowsTable(diffRows) : renderNoChangesNotice()}
+        {diffRows.length > 0 ? renderDiffRowsTable(diffRows, onResetRow) : renderNoChangesNotice()}
         <ModalActions onCancel={onClose} onConfirm={onConfirm} onReset={onReset} confirmText="Confirm and save" />
       </div>
       <div className="modal-backdrop" onClick={onClose} />

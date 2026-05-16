@@ -25,31 +25,36 @@ type ConfirmAssetSaveParams = {
 function useConfirmAssetSave({ asset, form, navigate, onReset, onValidationError, originalIsin, updateAsset }: ConfirmAssetSaveParams) {
   const [diffRows, setDiffRows] = useState<DiffRow[]>([]);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [initialSnapshotForm, setInitialSnapshotForm] = useState<FormState | undefined>();
   const [snapshotForm, setSnapshotForm] = useState<FormState | undefined>();
-
   function openConfirm() {
     invariant(form, "Expected form to be defined");
     invariant(asset, "Expected asset to be defined");
     const result = buildAssetFromForm(form);
-    if ("errors" in result) {
-      onValidationError(result.errors);
-      return;
-    }
+    if ("errors" in result) return onValidationError(result.errors);
+    const initialForm = toFormState(asset);
+    setInitialSnapshotForm(initialForm);
     setSnapshotForm(form);
-    setDiffRows(buildDiffRows(toFormState(asset), form));
+    setDiffRows(buildDiffRows(initialForm, form));
     setIsConfirmOpen(true);
   }
-
+  function resetDiffRow(diffRow: DiffRow) {
+    setSnapshotForm(prevSnapshot => {
+      invariant(prevSnapshot, "Expected snapshot form to be defined before row reset");
+      invariant(initialSnapshotForm, "Expected initial snapshot form to be defined before row reset");
+      const nextSnapshot = diffRow.reset(prevSnapshot, initialSnapshotForm);
+      setDiffRows(buildDiffRows(initialSnapshotForm, nextSnapshot));
+      return nextSnapshot;
+    });
+  }
   function confirmSave() {
     invariant(snapshotForm, "Expected snapshot form to be defined");
-    // Snapshot was validated at openConfirm time — error path is unreachable
     const result = buildAssetFromForm(snapshotForm) as { data: Asset };
     setIsConfirmOpen(false);
     updateAsset(originalIsin, result.data);
     toast.success("Asset saved");
     void navigate({ params: { isin: snapshotForm.isin }, replace: true, to: "/assets/$isin" });
   }
-
   return {
     closeConfirm: () => setIsConfirmOpen(false),
     confirmSave,
@@ -60,6 +65,7 @@ function useConfirmAssetSave({ asset, form, navigate, onReset, onValidationError
       onReset();
       setIsConfirmOpen(false);
     },
+    resetDiffRow,
   };
 }
 
@@ -91,7 +97,7 @@ function useAssetEditForm(originalIsin: string) {
 
   const { fetchError, handleFetch, isFetching } = useEtfFetch((form ?? emptyFormState).isin, patch, form ?? emptyFormState);
   const hasChanges = useMemo(() => (asset && form ? buildDiffRows(toFormState(asset), form).length > 0 : false), [asset, form]);
-  const { closeConfirm, confirmSave, diffRows, isConfirmOpen, openConfirm, resetAndClose } = useConfirmAssetSave({
+  const { closeConfirm, confirmSave, diffRows, isConfirmOpen, openConfirm, resetAndClose, resetDiffRow } = useConfirmAssetSave({
     asset,
     form,
     navigate,
@@ -101,14 +107,14 @@ function useAssetEditForm(originalIsin: string) {
     updateAsset,
   });
 
-  return { closeConfirm, confirmSave, diffRows, errors, fetchError, form, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, patch, resetAndClose };
+  return { closeConfirm, confirmSave, diffRows, errors, fetchError, form, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, patch, resetAndClose, resetDiffRow };
 }
 
 type Props = { isin: string };
 
 export function AssetEditPage({ isin: originalIsin }: Props) {
   const navigate = useNavigate();
-  const { closeConfirm, confirmSave, diffRows, form, errors, fetchError, patch, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, resetAndClose } = useAssetEditForm(originalIsin);
+  const { closeConfirm, confirmSave, diffRows, form, errors, fetchError, patch, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, resetAndClose, resetDiffRow } = useAssetEditForm(originalIsin);
   const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === originalIsin));
   const allAssets = useAppStore(state => state.data.assets);
   const unDismissSimilarity = useAppStore(state => state.unDismissSimilarity);
@@ -141,7 +147,7 @@ export function AssetEditPage({ isin: originalIsin }: Props) {
           <DismissedSimilaritiesSection asset={asset} allAssets={allAssets} onUnDismiss={unDismissSimilarity} />
         </div>
       )}
-      {isConfirmOpen && <SaveModal diffRows={diffRows} onClose={closeConfirm} onConfirm={confirmSave} onReset={resetAndClose} />}
+      {isConfirmOpen && <SaveModal diffRows={diffRows} onClose={closeConfirm} onConfirm={confirmSave} onReset={resetAndClose} onResetRow={resetDiffRow} />}
     </>
   );
 }

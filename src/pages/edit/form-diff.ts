@@ -5,34 +5,36 @@ import type { FormState } from "./form-state.ts";
 const emptyValue = "-";
 
 type ComparableValue = boolean | string;
+type ScalarFormKey = Exclude<keyof FormState, "geoAllocation" | "sectorAllocation">;
 
 type DiffConfig = {
   field: string;
-  getValue: (form: FormState) => ComparableValue;
+  key: ScalarFormKey;
 };
 
 export type DiffRow = {
   after: string;
   before: string;
   field: string;
+  reset: (currentForm: FormState, initialForm: FormState) => FormState;
 };
 
 const scalarFields: DiffConfig[] = [
-  { field: "ISIN", getValue: form => form.isin },
-  { field: "Name", getValue: form => form.name },
-  { field: "Provider", getValue: form => form.provider },
-  { field: "Tickers", getValue: form => form.tickers },
-  { field: "Accumulating", getValue: form => form.isAccumulating },
-  { field: "Available On Broker", getValue: form => form.availableOnBroker },
-  { field: "Available For Plan", getValue: form => form.availableForPlan },
-  { field: "Fees (%)", getValue: form => form.fees },
-  { field: "Price (EUR)", getValue: form => form.price },
-  { field: "Performance 1 Year (%)", getValue: form => form.performance1y },
-  { field: "Performance 3 Years (%)", getValue: form => form.performance3y },
-  { field: "Performance 5 Years (%)", getValue: form => form.performance5y },
-  { field: "Risk/Reward 1 Year", getValue: form => form.riskReward1y },
-  { field: "Risk/Reward 3 Years", getValue: form => form.riskReward3y },
-  { field: "Risk/Reward 5 Years", getValue: form => form.riskReward5y },
+  { field: "ISIN", key: "isin" },
+  { field: "Name", key: "name" },
+  { field: "Provider", key: "provider" },
+  { field: "Tickers", key: "tickers" },
+  { field: "Accumulating", key: "isAccumulating" },
+  { field: "Available On Broker", key: "availableOnBroker" },
+  { field: "Available For Plan", key: "availableForPlan" },
+  { field: "Fees (%)", key: "fees" },
+  { field: "Price (EUR)", key: "price" },
+  { field: "Performance 1 Year (%)", key: "performance1y" },
+  { field: "Performance 3 Years (%)", key: "performance3y" },
+  { field: "Performance 5 Years (%)", key: "performance5y" },
+  { field: "Risk/Reward 1 Year", key: "riskReward1y" },
+  { field: "Risk/Reward 3 Years", key: "riskReward3y" },
+  { field: "Risk/Reward 5 Years", key: "riskReward5y" },
 ];
 
 function formatValue(value: ComparableValue): string {
@@ -40,22 +42,52 @@ function formatValue(value: ComparableValue): string {
   return value.trim() === "" ? emptyValue : value;
 }
 
-function makeDiffRow({ after, before, field }: { after: ComparableValue; before: ComparableValue; field: string }): DiffRow[] {
-  return before === after ? [] : [{ after: formatValue(after), before: formatValue(before), field }];
+function makeDiffRow({ after, before, field, reset }: { after: ComparableValue; before: ComparableValue; field: string; reset: (currentForm: FormState, initialForm: FormState) => FormState }): DiffRow[] {
+  return before === after ? [] : [{ after: formatValue(after), before: formatValue(before), field, reset }];
 }
 
-function buildAllocationDiffRows({ current, initial, keys, prefix }: { current: Partial<Record<string, string>>; initial: Partial<Record<string, string>>; keys: readonly string[]; prefix: "Geo" | "Sector" }): DiffRow[] {
+function buildAllocationDiffRows<Key extends string>({ current, initial, keys, prefix }: { current: Partial<Record<Key, string>>; initial: Partial<Record<Key, string>>; keys: readonly Key[]; prefix: "Geo" | "Sector" }): DiffRow[] {
   return keys.flatMap(key =>
     makeDiffRow({
       after: current[key] ?? "",
       before: initial[key] ?? "",
       field: `${prefix} ${startCase(key)} (%)`,
+      reset: (currentForm, initialForm) => {
+        if (prefix === "Geo") {
+          const initialValue = initialForm.geoAllocation[key as keyof typeof initialForm.geoAllocation] ?? "";
+          return {
+            ...currentForm,
+            geoAllocation: {
+              ...currentForm.geoAllocation,
+              [key]: initialValue,
+            },
+          };
+        }
+        const initialValue = initialForm.sectorAllocation[key as keyof typeof initialForm.sectorAllocation] ?? "";
+        return {
+          ...currentForm,
+          sectorAllocation: {
+            ...currentForm.sectorAllocation,
+            [key]: initialValue,
+          },
+        };
+      },
     }),
   );
 }
 
 export function buildDiffRows(initialForm: FormState, currentForm: FormState): DiffRow[] {
-  const scalarRows = scalarFields.flatMap(config => makeDiffRow({ after: config.getValue(currentForm), before: config.getValue(initialForm), field: config.field }));
+  const scalarRows = scalarFields.flatMap(config =>
+    makeDiffRow({
+      after: currentForm[config.key],
+      before: initialForm[config.key],
+      field: config.field,
+      reset: (currentSnapshotForm, initialSnapshotForm) => ({
+        ...currentSnapshotForm,
+        [config.key]: initialSnapshotForm[config.key],
+      }),
+    }),
+  );
   const geoRows = buildAllocationDiffRows({ current: currentForm.geoAllocation, initial: initialForm.geoAllocation, keys: countries, prefix: "Geo" });
   const sectorRows = buildAllocationDiffRows({ current: currentForm.sectorAllocation, initial: initialForm.sectorAllocation, keys: sectors, prefix: "Sector" });
 
