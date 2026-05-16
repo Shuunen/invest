@@ -1,12 +1,13 @@
 // oxlint-disable max-lines
 import type { ColumnDef } from "@tanstack/react-table";
-import { ArrowDownToDot, DotIcon, EqualIcon, Trash2, TrendingDown, TrendingUp } from "lucide-react";
+import { DotIcon, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { computeDataScore, computeScore, dataScoreWarnThreshold, type Asset, type PortfolioEntry } from "../schemas/index.ts";
 import { computeMaxSimilarity } from "../utils/asset-similarity.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { maxPercentage } from "../utils/constants.ts";
 import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
+import { computeTrend } from "../utils/trend.ts";
 import { AnimatedLink } from "./animations/link.tsx";
 import { scoreMissingValue } from "./asset-table-utils.ts";
 import { SimilarityCell } from "./similarity-cell.tsx";
@@ -418,12 +419,9 @@ export function makeDataScoreColumn(amountMap?: Map<string, number>, amountUpdat
 
 function makeTargetTrendIcon(isin: string, targetAmount: number, amount: number) {
   const normalizedIsin = isin.toLowerCase();
-  const iconSize = 14;
-  if (targetAmount === 0) return <ArrowDownToDot color="var(--color-error)" size={iconSize} data-testid={`target-trend-zero-${normalizedIsin}`} aria-label="Target amount is zero" />;
-  if (targetAmount === amount) return <EqualIcon size={iconSize} data-testid={`target-trend-equal-${normalizedIsin}`} aria-label="Target equals amount" />;
-  if (targetAmount > amount) return <TrendingUp color="var(--color-success)" size={iconSize} data-testid={`target-trend-up-${normalizedIsin}`} aria-label="Target is above amount" />;
-  if (targetAmount < amount) return <TrendingDown size={iconSize} data-testid={`target-trend-down-${normalizedIsin}`} aria-label="Target is below amount" />;
-  return undefined;
+  if (Number.isNaN(targetAmount)) return undefined;
+  const { Icon, trend, color, message } = computeTrend(amount, targetAmount);
+  return <Icon color={color} size={18} data-testid={`target-trend-${trend}-${normalizedIsin}`} aria-label={message} />;
 }
 
 function renderTargetAmountReadCell({ amount, amountPercentageLabel, isin, targetAmount, trendIcon }: { amount: number; amountPercentageLabel: string; isin: string; targetAmount: number | undefined; trendIcon: ReactNode }) {

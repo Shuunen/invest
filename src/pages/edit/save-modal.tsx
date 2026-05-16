@@ -1,6 +1,9 @@
 import { kebabCase } from "es-toolkit";
+import { TriangleAlertIcon } from "lucide-react";
 import { ModalActions } from "../../components/modal-actions";
 import { ModalHeader } from "../../components/modal-header";
+import { cn } from "../../utils/browser-styles.ts";
+import { computeTrend } from "../../utils/trend.ts";
 import type { DiffRow } from "./form-diff.ts";
 
 type Props = {
@@ -10,9 +13,33 @@ type Props = {
   onReset: () => void;
 };
 
+function parseNumericDiffValue(value: string): number | undefined {
+  const trimmed = value.trim();
+  if (trimmed === "-" || trimmed === "") return undefined;
+  const numericPart = trimmed.replaceAll(",", ".").replaceAll(/[^\d.+-]/gu, "");
+  if (numericPart === "" || numericPart === "+" || numericPart === "-" || numericPart === "." || numericPart === "+." || numericPart === "-.") return undefined;
+  const parsed = Number(numericPart);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function renderAfterCell(row: DiffRow) {
+  const before = parseNumericDiffValue(row.before);
+  const after = parseNumericDiffValue(row.after);
+  if (before === undefined || after === undefined) return row.after;
+  const { Icon, color, message, showWarning, trend } = computeTrend(before, after);
+  return (
+    <span className="inline-flex items-center gap-1">
+      <span className={cn({ "opacity-30": trend === "almost-equal" })}>{row.after}</span>
+      <Icon aria-label={message} color={color} size={16} data-testid={`after-trend-${kebabCase(row.field)}`} />
+      {/* oxlint-disable-next-line react/forbid-component-props */}
+      {showWarning && <TriangleAlertIcon className="animate-pulse" color="var(--color-warning)" size={16} data-testid={`after-trend-warning-${kebabCase(row.field)}`} aria-label="Warning: large change" />}
+    </span>
+  );
+}
+
 function renderDiffRowsTable(diffRows: DiffRow[]) {
   return (
-    <div className="mt-4 max-h-96 overflow-auto rounded-box border border-base-300">
+    <div className="mt-4 max-h-96 overflow-auto rounded-box">
       <table className="table table-zebra table-sm" data-testid="confirm-save-diff-table">
         <thead>
           <tr>
@@ -23,10 +50,10 @@ function renderDiffRowsTable(diffRows: DiffRow[]) {
         </thead>
         <tbody>
           {diffRows.map(row => (
-            <tr key={row.field} data-testid={`change-row-${kebabCase(row.field)}`}>
+            <tr key={row.field} data-testid={`change-row-${kebabCase(row.field)}`} className="rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary">
               <td>{row.field}</td>
               <td className="font-mono text-sm">{row.before}</td>
-              <td className="font-mono text-sm">{row.after}</td>
+              <td className="font-mono text-sm">{renderAfterCell(row)}</td>
             </tr>
           ))}
         </tbody>

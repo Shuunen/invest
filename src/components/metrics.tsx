@@ -12,7 +12,7 @@ export function Metrics({ items }: Props) {
       <div className="flex items-center gap-5 py-3">
         {items.map((item, index) => (
           <Fragment key={item.label}>
-            {index > 0 && <div className="h-6 w-px bg-base-300" />}
+            {index > 0 && <div className="h-6 w-px" />}
             <Metric label={item.label} value={item.value} color={item.color} index={index} />
           </Fragment>
         ))}

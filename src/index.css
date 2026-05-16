@@ -6,6 +6,7 @@
 :root {
   --color-base-100: white;
   --color-base-200: var(--color-taupe-50);
+  --color-base-300: var(--color-taupe-400);
   --color-primary-content: white;
   --color-primary: var(--color-sky-700);
   --color-error: var(--color-red-600);

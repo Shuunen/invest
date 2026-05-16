@@ -1314,10 +1314,10 @@ describe("AssetTable - target-amount column", () => {
     useAppStore.setState({ data: makeTestData(targetAssets), isLoading: false, loadError: undefined });
     const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
     render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} amountMap={new Map([[targetAsset.isin, 42]])} targetAmountMap={new Map([[targetAsset.isin, 0]])} />);
-    const icon = screen.getByTestId(`target-trend-zero-${targetAsset.isin.toLowerCase()}`);
-    expect(icon).toHaveAttribute("aria-label", "Target amount is zero");
-    expect(screen.queryByTestId(`target-trend-up-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
-    expect(screen.queryByTestId(`target-trend-down-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    const icon = screen.getByTestId(`target-trend-decreased-to-zero-${targetAsset.isin.toLowerCase()}`);
+    expect(icon).toHaveAttribute("aria-label", "Decreased to zero");
+    expect(screen.queryByTestId(`target-trend-increased-a-lot-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(`target-trend-decreased-a-lot-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
   });
 
   it("renders target amount value when non-zero", () => {
@@ -1333,9 +1333,9 @@ describe("AssetTable - target-amount column", () => {
     useAppStore.setState({ data: makeTestData(targetAssets), isLoading: false, loadError: undefined });
     const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
     render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} amountMap={new Map([[targetAsset.isin, 10]])} targetAmountMap={new Map([[targetAsset.isin, 42]])} />);
-    const icon = screen.getByTestId(`target-trend-up-${targetAsset.isin.toLowerCase()}`);
-    expect(icon).toHaveAttribute("aria-label", "Target is above amount");
-    expect(screen.queryByTestId(`target-trend-down-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    const icon = screen.getByTestId(`target-trend-increased-a-lot-${targetAsset.isin.toLowerCase()}`);
+    expect(icon).toHaveAttribute("aria-label", "Increased a lot");
+    expect(screen.queryByTestId(`target-trend-decreased-a-lot-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
   });
 
   it("shows TrendingDown icon when target amount is lower than amount", () => {
@@ -1343,8 +1343,8 @@ describe("AssetTable - target-amount column", () => {
     useAppStore.setState({ data: makeTestData(targetAssets), isLoading: false, loadError: undefined });
     const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
     render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} amountMap={new Map([[targetAsset.isin, 42]])} targetAmountMap={new Map([[targetAsset.isin, 10]])} />);
-    expect(screen.getByTestId(`target-trend-down-${targetAsset.isin.toLowerCase()}`)).toBeInTheDocument();
-    expect(screen.queryByTestId(`target-trend-up-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    expect(screen.getByTestId(`target-trend-decreased-a-lot-${targetAsset.isin.toLowerCase()}`)).toHaveAttribute("aria-label", "Decreased a lot");
+    expect(screen.queryByTestId(`target-trend-increased-a-lot-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
   });
 
   it("shows no trend icon when target amount equals amount and is non-zero", () => {
@@ -1352,10 +1352,10 @@ describe("AssetTable - target-amount column", () => {
     useAppStore.setState({ data: makeTestData(targetAssets), isLoading: false, loadError: undefined });
     const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
     render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} amountMap={new Map([[targetAsset.isin, 10]])} targetAmountMap={new Map([[targetAsset.isin, 10]])} />);
-    expect(screen.getByTestId(`target-trend-equal-${targetAsset.isin.toLowerCase()}`)).toHaveAttribute("aria-label", "Target equals amount");
+    expect(screen.getByTestId(`target-trend-almost-equal-${targetAsset.isin.toLowerCase()}`)).toHaveAttribute("aria-label", "Almost equals");
     expect(screen.queryByTestId(`target-trend-zero-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
-    expect(screen.queryByTestId(`target-trend-up-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
-    expect(screen.queryByTestId(`target-trend-down-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(`target-trend-increased-a-lot-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(`target-trend-decreased-a-lot-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
   });
 
   it("shows no trend icon when target amount is NaN", () => {
@@ -1364,9 +1364,9 @@ describe("AssetTable - target-amount column", () => {
     const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
     render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} amountMap={new Map([[targetAsset.isin, 10]])} targetAmountMap={new Map([[targetAsset.isin, Number.NaN]])} />);
     expect(screen.queryByTestId(`target-trend-zero-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
-    expect(screen.queryByTestId(`target-trend-equal-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
-    expect(screen.queryByTestId(`target-trend-up-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
-    expect(screen.queryByTestId(`target-trend-down-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(`target-trend-almost-equal-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(`target-trend-increased-a-lot-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(`target-trend-decreased-a-lot-${targetAsset.isin.toLowerCase()}`)).not.toBeInTheDocument();
   });
 
   it("renders target amount input when isEditing is true", () => {
@@ -1393,8 +1393,8 @@ describe("AssetTable - target-amount column", () => {
     const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
     render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} isEditing amountMap={new Map([[targetAsset.isin, 5]])} targetAmountMap={new Map([[targetAsset.isin, 25]])} />);
     expect(screen.getByTestId(`target-amount-input-${targetAsset.isin.toLowerCase()}`)).toHaveValue(25);
-    const icon = screen.getByTestId(`target-trend-up-${targetAsset.isin.toLowerCase()}`);
-    expect(icon).toHaveAttribute("aria-label", "Target is above amount");
+    const icon = screen.getByTestId(`target-trend-increased-a-lot-${targetAsset.isin.toLowerCase()}`);
+    expect(icon).toHaveAttribute("aria-label", "Increased a lot");
   });
 
   it("shows error ArrowDownToDot icon while editing when target amount is zero", () => {
@@ -1403,8 +1403,8 @@ describe("AssetTable - target-amount column", () => {
     const onTargetAmountChange = vi.fn<(isin: string, targetAmount: number) => void>();
     render(<AssetTable assets={targetAssets} onTargetAmountChange={onTargetAmountChange} isEditing amountMap={new Map([[targetAsset.isin, 5]])} targetAmountMap={new Map([[targetAsset.isin, 0]])} />);
     expect(screen.getByTestId(`target-amount-input-${targetAsset.isin.toLowerCase()}`)).toHaveValue(0);
-    const icon = screen.getByTestId(`target-trend-zero-${targetAsset.isin.toLowerCase()}`);
-    expect(icon).toHaveAttribute("aria-label", "Target amount is zero");
+    const icon = screen.getByTestId(`target-trend-decreased-to-zero-${targetAsset.isin.toLowerCase()}`);
+    expect(icon).toHaveAttribute("aria-label", "Decreased to zero");
   });
 
   it("calls onTargetAmountChange when input value changes and blurs with new value", () => {
