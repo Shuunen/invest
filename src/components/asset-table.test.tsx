@@ -1280,6 +1280,26 @@ describe("AssetTable - target-amount column", () => {
     expect(screen.getByTestId(`target-percent-${pricedAsset.isin.toLowerCase()}`)).toHaveTextContent("50%");
   });
 
+  it("shows target worth popover on hover", async () => {
+    expect.hasAssertions();
+    const pricedAsset = makeAsset({ isin: "LU2323232323", price: 50 });
+    useAppStore.setState({ data: makeTestData([pricedAsset]), isLoading: false, loadError: undefined });
+    render(<AssetTable assets={[pricedAsset]} onTargetAmountChange={vi.fn<(isin: string, targetAmount: number) => void>()} amountMap={new Map([[pricedAsset.isin, 5]])} targetAmountMap={new Map([[pricedAsset.isin, 10]])} />);
+    const cell = screen.getByTestId("target-amount-read");
+    await userEvent.hover(cell);
+    expect(screen.getByTestId(`target-worth-popover-${pricedAsset.isin.toLowerCase()}`)).toHaveTextContent("To invest : 250 €");
+  });
+
+  it("does not show target worth popover when amount equals target amount", async () => {
+    expect.hasAssertions();
+    const pricedAsset = makeAsset({ isin: "LU4545454545", price: 50 });
+    useAppStore.setState({ data: makeTestData([pricedAsset]), isLoading: false, loadError: undefined });
+    render(<AssetTable assets={[pricedAsset]} onTargetAmountChange={vi.fn<(isin: string, targetAmount: number) => void>()} amountMap={new Map([[pricedAsset.isin, 5]])} targetAmountMap={new Map([[pricedAsset.isin, 5]])} />);
+    const cell = screen.getByTestId("target-amount-read");
+    await userEvent.hover(cell);
+    expect(screen.queryByTestId(`target-worth-popover-${pricedAsset.isin.toLowerCase()}`)).toBeNull();
+  });
+
   it("renders dash percentage when total value is non-positive and target value is non-zero", () => {
     expect.hasAssertions();
     const pricedAsset = makeAsset({ isin: "LU3333333333", price: 50 });

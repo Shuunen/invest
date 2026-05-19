@@ -11,6 +11,7 @@ import { computeTrend } from "../utils/trend.ts";
 import { AnimatedLink } from "./animations/link.tsx";
 import { scoreMissingValue } from "./asset-table-utils.ts";
 import { SimilarityCell } from "./similarity-cell.tsx";
+import { TargetAmountReadCell } from "./target-amount-read-cell.tsx";
 
 declare module "@tanstack/react-table" {
   // oxlint-disable-next-line typescript-eslint/consistent-type-definitions
@@ -424,19 +425,9 @@ function makeTargetTrendIcon(isin: string, targetAmount: number, amount: number)
   return <Icon color={color} size={18} data-testid={`target-trend-${trend}-${normalizedIsin}`} aria-label={message} />;
 }
 
-function renderTargetAmountReadCell({ amount, amountPercentageLabel, isin, targetAmount, trendIcon }: { amount: number; amountPercentageLabel: string; isin: string; targetAmount: number | undefined; trendIcon: ReactNode }) {
-  return (
-    <span className={cn("flex items-center justify-center gap-1", { "opacity-40": targetAmount === amount })}>
-      <span data-testid={`target-amount-${isin.toLowerCase()}`}>{targetAmount ?? "—"}</span>
-      {trendIcon}
-      <span data-testid={`target-percent-${isin.toLowerCase()}`}>{amountPercentageLabel}</span>
-    </span>
-  );
-}
-
 function renderTargetAmountEditCell({ amountInput, percentInput, trendIcon }: { amountInput: ReactNode; percentInput: ReactNode; trendIcon: ReactNode }) {
   return (
-    <span className="flex items-center justify-center gap-1">
+    <span className="flex items-center justify-center gap-1" data-testid="target-amount-edit">
       {amountInput}
       {trendIcon}
       {percentInput}
@@ -454,10 +445,12 @@ export function makeTargetAmountColumn(targetAmountMap: Map<string, number> | un
       const amount = meta?.amountMap?.get(isin) ?? 0;
       const targetAmountValue = value ?? 0;
       const targetPositionValue = targetAmountValue * (price ?? 0);
+      const targetAmountDelta = Math.max(targetAmountValue - amount, 0);
+      const targetInvestment = value === undefined || price === undefined ? undefined : targetAmountDelta * price;
       const targetPercentage = value === undefined ? undefined : computePercentage(targetPositionValue, meta?.targetTotalValue);
       const targetPercentageLabel = targetPercentage === undefined ? "—" : `${Math.round(targetPercentage)}%`;
       const trendIcon = value === undefined ? undefined : makeTargetTrendIcon(isin, value, amount);
-      if (!meta?.isEditing) return renderTargetAmountReadCell({ amount, amountPercentageLabel: targetPercentageLabel, isin, targetAmount: value, trendIcon });
+      if (!meta?.isEditing) return <TargetAmountReadCell amount={amount} amountPercentageLabel={targetPercentageLabel} isin={isin} targetAmount={value} targetInvestment={targetInvestment} trendIcon={trendIcon} />;
       const amountInput = makeNumberInput({
         ariaLabel: `Target amount for ${row.original.name}`,
         className: "input input-xs w-14 text-center",
