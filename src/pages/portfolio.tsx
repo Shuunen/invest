@@ -9,7 +9,7 @@ import type { MetricItem } from "../components/metric.tsx";
 import { ModalActions } from "../components/modal-actions.tsx";
 import { ModalHeader } from "../components/modal-header.tsx";
 import { PageHeader } from "../components/page-header.tsx";
-import { computeDataScore, type Allocation, type Asset, type PortfolioEntry } from "../schemas/index.ts";
+import { computeDataScore, computeScore, type Allocation, type Asset, type PortfolioEntry } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { computePortfolioWeightedAllocations } from "../utils/allocation-charts.ts";
 import { maxPercentage } from "../utils/constants.ts";
@@ -39,6 +39,24 @@ function getAverageDataScoreColor(averageDataScore: number | undefined): MetricI
   if (averageDataScore === undefined || averageDataScore === maxPercentage) return "success" as const;
   if (averageDataScore > dataScoreHeaderWarnThreshold) return "warning" as const;
   return "error" as const;
+}
+
+function computeAverageScore(assets: Asset[]): number | undefined {
+  const scores = assets.map(asset => computeScore(asset)).filter((score): score is number => score !== undefined);
+  if (scores.length === 0) return undefined;
+  return scores.reduce((sum, score) => sum + score, 0) / scores.length;
+}
+
+function computePerformer(assets: Asset[]): string | undefined {
+  let topAsset: Asset | undefined = undefined;
+  let topScore = Number.NEGATIVE_INFINITY;
+  for (const asset of assets) {
+    const score = computeScore(asset);
+    if (score === undefined || score <= topScore) continue;
+    topScore = score;
+    topAsset = asset;
+  }
+  return topAsset ? (topAsset.tickers[0] ?? topAsset.isin) : undefined;
 }
 
 function usePortfolioActions(portfolioId: string, entries: PortfolioEntry[]) {
@@ -75,49 +93,84 @@ function usePortfolioActions(portfolioId: string, entries: PortfolioEntry[]) {
   return { actions, handleConfirmDelete, handlePickerConfirm, isEditing, isinToDelete, onAmountChange, onNoteChange, onPriceChange, onTargetAmountChange, pickerOpen, selectedIsins, setIsinToDelete, setPickerOpen };
 }
 
-// oxlint-disable-next-line max-lines-per-function
+function usePortfolioAssets(entries: PortfolioEntry[], assets: Asset[]) {
+  const assetByIsin = useMemo(() => new Map(assets.map(asset => [asset.isin, asset])), [assets]);
+  const portfolioAssets = useMemo(() => entries.map(entry => assetByIsin.get(entry.isin)).filter((asset): asset is Asset => asset !== undefined), [assetByIsin, entries]);
+  return { assetByIsin, portfolioAssets };
+}
+
+function useEntryMaps(entries: PortfolioEntry[]) {
+  const amountMap = useMemo(() => new Map(entries.map(entry => [entry.isin, entry.amount])), [entries]);
+  const targetAmountMap = useMemo(() => new Map(entries.map(entry => [entry.isin, entry.targetAmount])), [entries]);
+  const amountUpdatedAtMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const entry of entries) if (entry.amountUpdatedAt !== undefined) map.set(entry.isin, entry.amountUpdatedAt);
+    return map;
+  }, [entries]);
+  const targetAmountUpdatedAtMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const entry of entries) if (entry.targetAmountUpdatedAt !== undefined) map.set(entry.isin, entry.targetAmountUpdatedAt);
+    return map;
+  }, [entries]);
+  const noteMap = useMemo(() => new Map(entries.map(entry => [entry.isin, entry.notes])), [entries]);
+  return { amountMap, amountUpdatedAtMap, noteMap, targetAmountMap, targetAmountUpdatedAtMap };
+}
+
+function useTargetTotalValue(entries: PortfolioEntry[], assetByIsin: Map<string, Asset>) {
+  return useMemo(() => {
+    let total = 0;
+    for (const entry of entries) total += entry.targetAmount * (assetByIsin.get(entry.isin)?.price ?? 0);
+    return total;
+  }, [assetByIsin, entries]);
+}
+
+function useAllocations(config: { entries: PortfolioEntry[]; assets: Asset[]; totalValue: number; targetTotalValue: number }) {
+  const { assets, entries, targetTotalValue, totalValue } = config;
+  const portfolioAllocations = useMemo(() => computePortfolioWeightedAllocations(entries, assets, totalValue), [assets, entries, totalValue]);
+  const targetAllocations = useMemo(() => {
+    const targetEntries = entries.map(entry => ({ ...entry, amount: entry.targetAmount }));
+    return computePortfolioWeightedAllocations(targetEntries, assets, targetTotalValue);
+  }, [assets, entries, targetTotalValue]);
+  return { portfolioAllocations, targetAllocations };
+}
+
+function useHeaderMetrics(config: { entries: PortfolioEntry[]; portfolioAssets: Asset[]; totalValue: number; targetTotalValue: number }) {
+  const { entries, portfolioAssets, targetTotalValue, totalValue } = config;
+  const averageDataScore = useMemo(() => computeAveragePortfolioDataScore(entries, portfolioAssets), [entries, portfolioAssets]);
+  const averageDataScoreColor = useMemo(() => getAverageDataScoreColor(averageDataScore), [averageDataScore]);
+  const averageScore = useMemo(() => computeAverageScore(portfolioAssets), [portfolioAssets]);
+  const performer = useMemo(() => computePerformer(portfolioAssets), [portfolioAssets]);
+
+  return useMemo(() => {
+    const targetAssets = entries.filter(entry => entry.targetAmount > 0).length;
+    const showTargetAssetsMetric = portfolioAssets.length !== targetAssets;
+    const baseMetrics = [
+      { color: "neutral" as const, label: "Avg Score", value: averageScore },
+      { color: averageDataScoreColor, label: "Avg Data", value: averageDataScore === undefined ? undefined : `${averageDataScore}%` },
+      { color: "success" as const, label: "Performer", value: performer },
+      { color: "info" as const, label: "Nb Assets", value: portfolioAssets.length.toFixed(0) },
+      { color: "info" as const, label: "Total Value", value: formatPrice(totalValue) },
+    ] satisfies MetricItem[];
+
+    if (targetAssets === 0) return baseMetrics;
+    return [
+      ...baseMetrics,
+      ...(showTargetAssetsMetric ? [{ color: "warning" as const, label: "Target Assets", value: targetAssets.toFixed(0) }] : []),
+      { color: "warning" as const, label: "Target Invest", value: formatPrice(targetTotalValue - totalValue) },
+    ] satisfies MetricItem[];
+  }, [averageDataScore, averageDataScoreColor, averageScore, entries, performer, portfolioAssets.length, targetTotalValue, totalValue]);
+}
+
 function usePortfolioData(portfolioId: string) {
   const portfolio = useAppStore(state => state.data.portfolios.find(port => port.id === portfolioId));
   const assets = useAppStore(state => state.data.assets);
   const entries = useMemo(() => portfolio?.entries ?? [], [portfolio]);
-  const portfolioAssets = useMemo(() => (portfolio?.entries ?? []).map(entry => assets.find(ast => ast.isin === entry.isin)).filter((ast): ast is Asset => ast !== undefined), [assets, portfolio]);
-  const amountMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.amount])), [portfolio]);
-  const targetAmountMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.targetAmount])), [portfolio]);
-  const amountUpdatedAtMap = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const entry of portfolio?.entries ?? []) if (entry.amountUpdatedAt !== undefined) map.set(entry.isin, entry.amountUpdatedAt);
-    return map;
-  }, [portfolio]);
-  const targetAmountUpdatedAtMap = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const entry of portfolio?.entries ?? []) if (entry.targetAmountUpdatedAt !== undefined) map.set(entry.isin, entry.targetAmountUpdatedAt);
-    return map;
-  }, [portfolio]);
-  const totalValue = useTotalValue(entries, assets);
-  const portfolioAllocations = useMemo(() => computePortfolioWeightedAllocations(entries, assets, totalValue), [entries, assets, totalValue]);
-  const targetTotalValue = useMemo(() => {
-    let total = 0;
-    for (const entry of entries) {
-      const asset = assets.find(data => data.isin === entry.isin);
-      total += entry.targetAmount * (asset?.price ?? 0);
-    }
-    return total;
-  }, [entries, assets]);
-  const targetAllocations = useMemo(() => {
-    const targetEntries = entries.map(entry => ({ ...entry, amount: entry.targetAmount }));
-    return computePortfolioWeightedAllocations(targetEntries, assets, targetTotalValue);
-  }, [entries, assets, targetTotalValue]);
-  const averageDataScore = useMemo(() => computeAveragePortfolioDataScore(entries, assets), [assets, entries]);
-  const averageDataScoreColor = useMemo(() => getAverageDataScoreColor(averageDataScore), [averageDataScore]);
-  const headerMetrics = useMemo(
-    () =>
-      [
-        { color: "info" as const, label: "Total Value", value: formatPrice(totalValue) },
-        { color: averageDataScoreColor, label: "Average Data Score", value: averageDataScore === undefined ? undefined : `${averageDataScore}%` },
-      ] satisfies MetricItem[],
-    [averageDataScore, averageDataScoreColor, totalValue],
-  );
-  const noteMap = useMemo(() => new Map((portfolio?.entries ?? []).map(entry => [entry.isin, entry.notes])), [portfolio]);
+  const { assetByIsin, portfolioAssets } = usePortfolioAssets(entries, assets);
+  const { amountMap, amountUpdatedAtMap, noteMap, targetAmountMap, targetAmountUpdatedAtMap } = useEntryMaps(entries);
+  const totalValue = useTotalValue(entries, assetByIsin);
+  const targetTotalValue = useTargetTotalValue(entries, assetByIsin);
+  const { portfolioAllocations, targetAllocations } = useAllocations({ assets, entries, targetTotalValue, totalValue });
+  const headerMetrics = useHeaderMetrics({ entries, portfolioAssets, targetTotalValue, totalValue });
   const dismissSimilarity = useAppStore(state => state.dismissSimilarity);
   return {
     amountMap,
@@ -198,10 +251,9 @@ function renderAllocationCharts(portfolioAllocations: { geo: Allocation; sector:
   return (
     <div className="p-4">
       <hr />
-      <div data-testid="allocation-charts" className="flex h-72 gap-4 p-4">
+      <div data-testid="allocation-charts" className="flex h-72 justify-evenly gap-4 p-4">
         <AllocationChart data={portfolioAllocations.geo} title="Actual geography" name="portfolio-geo" />
         <AllocationChart data={targetAllocations.geo} title="Target geography" name="target-geo" />
-        <div className="grow" />
         <AllocationChart data={portfolioAllocations.sector} title="Actual sectors" name="portfolio-sector" />
         <AllocationChart data={targetAllocations.sector} title="Target sectors" name="target-sector" />
       </div>
@@ -209,15 +261,12 @@ function renderAllocationCharts(portfolioAllocations: { geo: Allocation; sector:
   );
 }
 
-function useTotalValue(entries: PortfolioEntry[], assets: Asset[]) {
+function useTotalValue(entries: PortfolioEntry[], assetByIsin: Map<string, Asset>) {
   return useMemo(() => {
     let total = 0;
-    for (const entry of entries) {
-      const asset = assets.find(data => data.isin === entry.isin);
-      total += entry.amount * (asset?.price ?? 0);
-    }
+    for (const entry of entries) total += entry.amount * (assetByIsin.get(entry.isin)?.price ?? 0);
     return total;
-  }, [entries, assets]);
+  }, [assetByIsin, entries]);
 }
 
 function renderAssetTableSection(
@@ -305,7 +354,7 @@ export function PortfolioPage({ portfolioId }: Props) {
 
   return (
     <div className="flex grow flex-col">
-      <PageHeader title={name} subtitle={`Broker : ${broker}`} assets={portfolioAssets} metrics={headerMetrics} actions={actions} />
+      <PageHeader title={name} subtitle={`Broker : ${broker}`} assets={portfolioAssets} metrics={headerMetrics} replaceDefaultMetrics actions={actions} />
       {portfolioAssets.length === 0
         ? renderNoAssets()
         : renderAssetTableSection(portfolioAssets, setIsinToDelete, {

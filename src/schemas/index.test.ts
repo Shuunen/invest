@@ -146,8 +146,8 @@ describe("computeDataScore", () => {
   it("returns partial score when updatedAt is stale (older than 30 days)", () => {
     expect.hasAssertions();
     const staleDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString(); // 60 days ago
-    // 5 scored fields + 0.5 (stale updatedAt) + 1 amount + 0.5 stale amountUpdatedAt = 7.5/8 = 93.75 → rounds to 94
-    expect(computeDataScore({ ...fullAsset, updatedAt: staleDate }, { ...fullEntry, amountUpdatedAt: staleDate })).toBe(94);
+    // 5 scored fields + 0.5 (stale updatedAt) + 1 (fresh amountUpdatedAt within 90 days) = 6.5/7 = 92.86 → rounds to 93
+    expect(computeDataScore({ ...fullAsset, updatedAt: staleDate }, { ...fullEntry, amountUpdatedAt: staleDate })).toBe(93);
   });
 
   it("includes amountUpdatedAt and amount in total when an entry is provided", () => {
@@ -160,16 +160,16 @@ describe("computeDataScore", () => {
   it("penalizes missing amountUpdatedAt in portfolio context", () => {
     expect.hasAssertions();
     const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
-    // 5 scored fields + 1 (fresh updatedAt) + 1 amount + 0 (no amountUpdatedAt) = 7/8 = 87.5 → rounds to 88
-    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, fullEntry)).toBe(88);
+    // 5 scored fields + 1 (fresh updatedAt) + 0 (no amountUpdatedAt) = 6/7 = 85.71 → scales with allocations (x1.0) and rounds to 86
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, fullEntry)).toBe(86);
   });
 
   it("gives partial credit for stale amountUpdatedAt in portfolio context", () => {
     expect.hasAssertions();
     const freshDate = new Date(Date.now() - 1000 * 60 * 60).toISOString();
     const staleAmount = new Date(Date.now() - 1000 * 60 * 60 * 24 * 120).toISOString(); // 120 days ago
-    // 5 scored fields + 1 (fresh updatedAt) + 1 amount + 0.5 (stale amountUpdatedAt) = 7.5/8 = 93.75 → rounds to 94
-    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, { ...fullEntry, amountUpdatedAt: staleAmount })).toBe(94);
+    // 5 scored fields + 1 (fresh updatedAt) + 0.5 (stale amountUpdatedAt) = 6.5/7 = 92.86 → scales with allocations (x1.0) and rounds to 93
+    expect(computeDataScore({ ...fullAsset, updatedAt: freshDate }, { ...fullEntry, amountUpdatedAt: staleAmount })).toBe(93);
   });
 
   it("returns 0 when allocations are empty (no allocation data at all)", () => {

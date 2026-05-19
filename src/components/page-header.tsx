@@ -46,16 +46,21 @@ type Props = {
   actions?: Action[];
   /** The list of assets to compute the default metrics from. */
   assets: Asset[];
-  /** Additional optional metrics to display in the header, alongside the ones computed from the assets. */
+  /** Optional metrics to display in the header. */
   metrics?: MetricItem[];
+  /** When true, `metrics` replaces default computed metrics instead of being appended. */
+  replaceDefaultMetrics?: boolean;
   /** The subtitle of the page header. */
   subtitle: string;
   /** The title of the page header. */
   title: string;
 };
 
-export function PageHeader({ actions, assets, metrics, title, subtitle }: Props) {
-  const combinedMetrics = useMemo(() => [...metricItems(assets), ...(metrics ?? [])], [assets, metrics]);
+export function PageHeader({ actions, assets, metrics, replaceDefaultMetrics = false, title, subtitle }: Props) {
+  const combinedMetrics = useMemo(() => {
+    if (replaceDefaultMetrics) return metrics ?? [];
+    return [...metricItems(assets), ...(metrics ?? [])];
+  }, [assets, metrics, replaceDefaultMetrics]);
   return (
     <div className="bg-base-100 px-4 pt-5">
       <div className="flex items-center justify-between">

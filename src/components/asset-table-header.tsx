@@ -8,23 +8,25 @@ export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number
       <button type="button" tabIndex={0} className="btn text-gray-500 btn-ghost btn-sm">
         Columns <EyeIcon size={16} />
       </button>
-      <div tabIndex={0} className="dropdown-content menu z-9999 w-60 rounded-box bg-base-100 p-2 shadow-2xl">
-        {table
-          .getAllLeafColumns()
-          .filter(column => column.columnDef.enableHiding !== false)
-          .map(column => (
-            <label key={column.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-primary/30">
-              <input
-                data-testid={`toggle-col-${column.id}`}
-                type="checkbox"
-                className="checkbox checkbox-sm"
-                checked={column.getIsVisible()}
-                disabled={column.getIsVisible() && visibleLeafCount <= 1}
-                onChange={column.getToggleVisibilityHandler()}
-              />
-              <span className="label-text">{column.columnDef.meta?.title ?? String(column.columnDef.header)}</span>
-            </label>
-          ))}
+      <div tabIndex={0} className="dropdown-content menu z-9999 w-lg rounded-box bg-base-100 p-2 shadow-2xl">
+        <div className="grid grid-cols-2 gap-x-4">
+          {table
+            .getAllLeafColumns()
+            .filter(column => column.columnDef.enableHiding !== false)
+            .map(column => (
+              <label key={column.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 hover:bg-primary/30">
+                <input
+                  data-testid={`toggle-col-${column.id}`}
+                  type="checkbox"
+                  className="checkbox checkbox-sm"
+                  checked={column.getIsVisible()}
+                  disabled={column.getIsVisible() && visibleLeafCount <= 1}
+                  onChange={column.getToggleVisibilityHandler()}
+                />
+                <span className="label-text">{column.columnDef.meta?.title ?? String(column.columnDef.header)}</span>
+              </label>
+            ))}
+        </div>
       </div>
     </div>
   );

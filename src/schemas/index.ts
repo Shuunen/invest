@@ -122,7 +122,7 @@ const dataFreshnessDays = 30;
 const amountFreshnessDays = 90;
 const msPerDay = 86_400_000;
 const dataScoreBaseFields = 6;
-const dataScorePortfolioFields = 8;
+const dataScorePortfolioFields = dataScoreBaseFields + 1; // amountUpdatedAt is only relevant for portfolio entries
 const dataScoreStaleWeight = 0.5;
 const allocationScoreDimensions = 2;
 export const dataScoreWarnThreshold = 75;
@@ -154,10 +154,7 @@ export function computeDataScore(asset: Asset, entry?: PortfolioEntry): number {
   if (asset.riskReward3y !== undefined) score += 1;
 
   if (asset.updatedAt !== undefined) score += toAgeDays(asset.updatedAt) <= dataFreshnessDays ? 1 : dataScoreStaleWeight;
-  if (entry) {
-    if (entry.amountUpdatedAt !== undefined) score += toAgeDays(entry.amountUpdatedAt) <= amountFreshnessDays ? 1 : dataScoreStaleWeight;
-    if (entry.amount > 0) score += 1;
-  }
+  if (entry?.amountUpdatedAt !== undefined) score += toAgeDays(entry.amountUpdatedAt) <= amountFreshnessDays ? 1 : dataScoreStaleWeight;
 
   const geoCoverage = computeAllocationCoverage(asset.geoAllocation);
   const sectorCoverage = computeAllocationCoverage(asset.sectorAllocation);

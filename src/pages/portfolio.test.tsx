@@ -91,8 +91,8 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByTestId("metric-assets-value")).toHaveTextContent("0");
-    expect(screen.getByTestId("metric-assets-label")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-nb-assets-value")).toHaveTextContent("0");
+    expect(screen.getByTestId("metric-nb-assets-label")).toBeInTheDocument();
   });
 
   it("uses singular 'asset' when count is 1", () => {
@@ -107,7 +107,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByTestId("metric-assets-label")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-nb-assets-label")).toBeInTheDocument();
   });
 
   it("shows isin as top performer label when asset has no tickers", () => {
@@ -122,7 +122,7 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByTestId("metric-top-performer-value")).toHaveTextContent(asset.isin);
+    expect(screen.getByTestId("metric-performer-value")).toHaveTextContent(asset.isin);
   });
 
   it("renders asset table when portfolio has entries", () => {
@@ -157,6 +157,68 @@ describe("PortfolioPage - empty portfolio", () => {
     expect(screen.getByTestId("metric-total-value-value")).toHaveTextContent("600 €");
   });
 
+  it("renders portfolio metrics in the expected order and hides target assets when counts match", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ price: 200 });
+    const portfolio = makePortfolio({
+      entries: [{ amount: 3, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 4 }],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+
+    expect(screen.queryByTestId("metric-target-assets-value")).toBeNull();
+    expect(screen.getByTestId("metric-target-invest-value")).toHaveTextContent("200 €");
+
+    expect(screen.getAllByTestId(/metric-.*-label/u).map(label => label.textContent)).toStrictEqual(["Avg Score", "Avg Data", "Performer", "Nb Assets", "Total Value", "Target Invest"]);
+  });
+
+  it("shows target assets metric when target and actual asset counts differ", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ price: 200 });
+    const portfolio = makePortfolio({
+      entries: [
+        { amount: 3, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 4 },
+        { amount: 0, inPEA: false, isin: "ZZ9999999999", notes: "", positionValue: 0, targetAmount: 1 },
+      ],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+
+    expect(screen.getByTestId("metric-target-assets-value")).toHaveTextContent("2");
+    expect(screen.getByTestId("metric-target-invest-value")).toHaveTextContent("200 €");
+    expect(screen.getAllByTestId(/metric-.*-label/u).map(label => label.textContent)).toStrictEqual(["Avg Score", "Avg Data", "Performer", "Nb Assets", "Total Value", "Target Assets", "Target Invest"]);
+  });
+
+  it("hides target metrics when no entry has targetAmount > 0", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ price: 100 });
+    const portfolio = makePortfolio({
+      entries: [
+        { amount: 2, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 },
+        { amount: 5, inPEA: false, isin: "ZZ9999999999", notes: "", positionValue: 0, targetAmount: 0 },
+      ],
+    });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<PortfolioPage portfolioId={portfolio.id} />);
+    expect(screen.getByTestId("metric-total-value-label")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-total-value-value")).toHaveTextContent("200 €");
+    expect(screen.queryByTestId("metric-target-assets-label")).toBeNull();
+    expect(screen.queryByTestId("metric-target-invest-label")).toBeNull();
+    expect(screen.getAllByTestId(/metric-.*-label/u).map(label => label.textContent)).toStrictEqual(["Avg Score", "Avg Data", "Performer", "Nb Assets", "Total Value"]);
+  });
+
   it("counts 0 for entries whose asset is no longer in the store", () => {
     expect.hasAssertions();
     const asset = makeAsset({ price: 100 });
@@ -189,8 +251,8 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByTestId("metric-average-data-score-value")).toHaveTextContent("100%");
-    expect(screen.getByTestId("metric-average-data-score-value")).toHaveClass("text-success");
+    expect(screen.getByTestId("metric-avg-data-value")).toHaveTextContent("100%");
+    expect(screen.getByTestId("metric-avg-data-value")).toHaveClass("text-success");
   });
 
   it("shows warning color when average data score is above 95% and below 100%", () => {
@@ -211,8 +273,8 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByTestId("metric-average-data-score-value")).toHaveTextContent("97%");
-    expect(screen.getByTestId("metric-average-data-score-value")).toHaveClass("text-warning");
+    expect(screen.getByTestId("metric-avg-data-value")).toHaveTextContent("97%");
+    expect(screen.getByTestId("metric-avg-data-value")).toHaveClass("text-warning");
   });
 
   it("shows error color when average data score is 95% or lower", () => {
@@ -229,8 +291,8 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-    expect(screen.getByTestId("metric-average-data-score-value")).toHaveTextContent("94%");
-    expect(screen.getByTestId("metric-average-data-score-value")).toHaveClass("text-error");
+    expect(screen.getByTestId("metric-avg-data-value")).toHaveTextContent("93%");
+    expect(screen.getByTestId("metric-avg-data-value")).toHaveClass("text-error");
   });
 
   it("remove button calls setPortfolioAssets without the removed isin", () => {
