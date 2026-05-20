@@ -103,13 +103,11 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-
     render(<AssetEditPage isin={asset.isin} />);
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
     fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.4" } });
     fireEvent.click(screen.getByTestId("is-accumulating"));
     fireEvent.click(screen.getByTestId("save-button"));
-
     await waitFor(() => {
       expect(screen.getByTestId("confirm-save-diff-table")).toBeInTheDocument();
     });
@@ -127,23 +125,17 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-
     render(<AssetEditPage isin={asset.isin} />);
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Changed Name" } });
     fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.4" } });
     fireEvent.click(screen.getByTestId("save-button"));
-
     await waitFor(() => {
       expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
     });
-
     fireEvent.click(screen.getByTestId("reset-row-name"));
-
     expect(screen.queryByTestId("change-row-name")).not.toBeInTheDocument();
     expect(screen.getByTestId("change-row-fees")).toBeInTheDocument();
-
     fireEvent.click(screen.getByTestId("form-confirm-button"));
-
     await waitFor(() => {
       const [savedAsset] = useAppStore.getState().data.assets;
       expect(savedAsset?.name).toBe(asset.name);
@@ -160,18 +152,15 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-
     render(<AssetEditPage isin={asset.isin} />);
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
     fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
       expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
     });
-
     // Edit the live form behind the modal — the snapshot (Updated ETF) is what gets saved
     fireEvent.change(screen.getByTestId("name"), { target: { value: "" } });
     fireEvent.click(screen.getByTestId("form-confirm-button"));
-
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
     });
@@ -188,16 +177,13 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-
     render(<AssetEditPage isin={asset.isin} />);
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
     fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
       expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
     });
-
     fireEvent.click(screen.getByTestId("form-cancel-button"));
-
     await waitFor(() => {
       expect(screen.queryByTestId("confirm-save-modal")).not.toBeInTheDocument();
     });
@@ -212,7 +198,6 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-
     render(<AssetEditPage isin={asset.isin} />);
     expect(screen.getByTestId("save-button")).toBeDisabled();
   });
@@ -225,7 +210,6 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-
     render(<AssetEditPage isin={asset.isin} />);
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
     expect(screen.getByTestId("save-button")).not.toBeDisabled();
@@ -241,7 +225,6 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-
     render(<AssetEditPage isin={asset.isin} />);
     expect(screen.getByTestId("dismissed-similarities-card")).toHaveTextContent("Other Fund");
   });
@@ -255,16 +238,13 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-
     render(<AssetEditPage isin={asset.isin} />);
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Changed Name" } });
     fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
       expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
     });
-
     fireEvent.click(screen.getByTestId("form-reset-button"));
-
     await waitFor(() => {
       expect(screen.queryByTestId("confirm-save-modal")).not.toBeInTheDocument();
     });

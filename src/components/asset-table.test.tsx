@@ -77,7 +77,6 @@ const valueSortAssetsNoPrice = [valueSortAssetNoPrice];
 
 describe("matchesFilter", () => {
   const asset = makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi", tickers: ["IWDA"] });
-
   it("matches name case-insensitively", () => {
     expect.hasAssertions();
     expect(matchesFilter(asset, "alpha etf")).toBe(true);
@@ -148,7 +147,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     const lowFeeAsset = makeAsset({ fees: 0.2, isin: "LOWFEE00001" });
     const neutralFeeAsset = makeAsset({ fees: 0.3, isin: "MIDFEE00001" });
     const highFeeAsset = makeAsset({ fees: 0.6, isin: "HIGHFEE0001" });
-
     const rows = [
       { id: "0", original: lowFeeAsset },
       { id: "1", original: neutralFeeAsset },
@@ -157,7 +155,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     const classes = computeQuintileClasses(rows as unknown as never[]);
     const feeClasses = classes.get("fees");
     invariant(feeClasses, "Expected fees classes map to be defined");
-
     expect(feeClasses.get("0")).toBe("bg-success/20 text-success-content");
     expect(feeClasses.get("1")).toBeUndefined();
     expect(feeClasses.get("2")).toBe("bg-error/20 text-error-content");
@@ -168,7 +165,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     const goodFeeAsset = makeAsset({ fees: 0.15, isin: "LOWFEE00002" });
     const badFeeAsset = makeAsset({ fees: 0.45, isin: "HIGHFEE0002" });
     const worseFeeAsset = makeAsset({ fees: 0.9, isin: "HIGHFEE0003" });
-
     const rows = [
       { id: "0", original: goodFeeAsset },
       { id: "1", original: badFeeAsset },
@@ -177,7 +173,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     const classes = computeQuintileClasses(rows as unknown as never[]);
     const feeClasses = classes.get("fees");
     invariant(feeClasses, "Expected fees classes map to be defined");
-
     expect(feeClasses.get("0")).toBe("bg-success/20 text-success-content");
     expect(feeClasses.get("1")).toBe("bg-error/20 text-error-content");
     expect(feeClasses.get("2")).toBe("bg-error/20 text-error-content");
@@ -188,7 +183,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     const midFeeAsset1 = makeAsset({ fees: 0.21, isin: "MIDFEE00005" });
     const midFeeAsset2 = makeAsset({ fees: 0.3, isin: "MIDFEE00006" });
     const midFeeAsset3 = makeAsset({ fees: 0.44, isin: "MIDFEE00007" });
-
     const rows = [
       { id: "0", original: midFeeAsset1 },
       { id: "1", original: midFeeAsset2 },
@@ -197,7 +191,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     const classes = computeQuintileClasses(rows as unknown as never[]);
     const feeClasses = classes.get("fees");
     invariant(feeClasses, "Expected fees classes map to be defined");
-
     expect(feeClasses.get("0")).toBeUndefined();
     expect(feeClasses.get("1")).toBeUndefined();
     expect(feeClasses.get("2")).toBeUndefined();
@@ -208,7 +201,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     const sameFeeAsset1 = makeAsset({ fees: 0.1, isin: "SAMEFEE0001" });
     const sameFeeAsset2 = makeAsset({ fees: 0.1, isin: "SAMEFEE0002" });
     const sameFeeAsset3 = makeAsset({ fees: 0.1, isin: "SAMEFEE0003" });
-
     const rows = [
       { id: "0", original: sameFeeAsset1 },
       { id: "1", original: sameFeeAsset2 },
@@ -217,7 +209,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     const classes = computeQuintileClasses(rows as unknown as never[]);
     const feeClasses = classes.get("fees");
     invariant(feeClasses, "Expected fees classes map to be defined");
-
     expect(feeClasses.get("0")).toBe("bg-success/20 text-success-content");
     expect(feeClasses.get("1")).toBe("bg-success/20 text-success-content");
     expect(feeClasses.get("2")).toBe("bg-success/20 text-success-content");
@@ -227,7 +218,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     expect.hasAssertions();
     const lowFeeAsset = makeAsset({ fees: 0.1, isin: "SMALLFEE001" });
     const highFeeAsset = makeAsset({ fees: 0.9, isin: "SMALLFEE002" });
-
     const rows = [
       { id: "0", original: lowFeeAsset },
       { id: "1", original: highFeeAsset },
@@ -235,7 +225,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     const classes = computeQuintileClasses(rows as unknown as never[]);
     const feeClasses = classes.get("fees");
     invariant(feeClasses, "Expected fees classes map to be defined");
-
     expect(feeClasses.get("0")).toBe("bg-success/20 text-success-content");
     expect(feeClasses.get("1")).toBe("bg-error/20 text-error-content");
   });
@@ -246,7 +235,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     const mid = makeAsset({ fees: 0.6, isin: "SAFEFEE00004" });
     const invalid = { ...makeAsset({ fees: 0.6, isin: "SAFEFEE00002" }), fees: undefined } as unknown as Asset;
     const high = makeAsset({ fees: 1.1, isin: "SAFEFEE00003" });
-
     const rows = [
       { id: "0", original: low },
       { id: "1", original: invalid },
@@ -256,7 +244,6 @@ describe("computeQuintileClasses - fees semantics", () => {
     const classes = computeQuintileClasses(rows as unknown as never[]);
     const feeClasses = classes.get("fees");
     invariant(feeClasses, "Expected fees classes map to be defined");
-
     expect(feeClasses.get("0")).toBe("bg-success/20 text-success-content");
     expect(feeClasses.get("1")).toBeUndefined();
     expect(feeClasses.get("2")).toBe("bg-error/20 text-error-content");
@@ -680,10 +667,8 @@ describe("AssetTable - useHydration", () => {
     const seedAsset = makeAsset({ isin: "LU9999999990", name: "Seeded ETF" });
     const appData: AppData = { ...defaultAppData, assets: [seedAsset] };
     await db.appdata.put({ data: appData, id: 1 });
-
     useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
     render(<AssetTable />);
-
     await waitFor(() => {
       expect(useAppStore.getState().isLoading).toBe(false);
     });
@@ -694,10 +679,8 @@ describe("AssetTable - useHydration", () => {
     expect.hasAssertions();
     await db.delete();
     await db.open();
-
     useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
     render(<AssetTable />);
-
     await waitFor(() => {
       expect(useAppStore.getState().isLoading).toBe(false);
     });
@@ -706,10 +689,8 @@ describe("AssetTable - useHydration", () => {
   it("sets loadError when DB throws during load", async () => {
     expect.hasAssertions();
     vi.spyOn(db.appdata, "get").mockRejectedValueOnce(new Error("DB read failed"));
-
     useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
     render(<AssetTable />);
-
     await waitFor(() => {
       expect(useAppStore.getState().loadError?.message).toBe("DB read failed");
     });
@@ -721,19 +702,15 @@ describe("useDexieSync", () => {
     expect.hasAssertions();
     await db.delete();
     await db.open();
-
     useAppStore.setState({ data: makeTestData([makeAsset()]), isLoading: false, loadError: undefined });
-
     function DexieSyncWrapper() {
       useDexieSync();
       return <span />;
     }
     render(<DexieSyncWrapper />);
-
     act(() => {
       useAppStore.getState().setSort({ column: "fees", direction: "asc" });
     });
-
     // Wait for the debounce (300ms) to fire and the async write to complete
     await waitFor(
       async () => {
@@ -892,7 +869,6 @@ describe("AssetTable - amount column", () => {
 
 describe("AssetTable - price editing", () => {
   const priceAsset = makeAsset({ isin: "LU9876543210", price: 50 });
-
   it("shows Add asset and Edit prices buttons in the page header", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
@@ -1038,7 +1014,6 @@ const simErrorAssets = [makeAsset({ geoAllocation: { us: 1 }, isin: simIsinA }),
 
 describe("AssetTable - similarity column", () => {
   const onAmountChange = vi.fn<(isin: string, amount: number) => void>();
-
   it("does not render similarity column in global table (no onAmountChange)", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([simGlobalAsset]), isLoading: false, loadError: undefined });
@@ -1211,7 +1186,6 @@ describe("AssetTable - target-amount column", () => {
   const targetAssets = [targetAsset];
   const targetAmountUpdatedAt = "2026-01-02T12:34:56.000Z";
   const editTargetAsset = makeAsset({ isin: "LU2222222222", price: 50 });
-
   it("sorts by target amount values", async () => {
     expect.hasAssertions();
     const first = makeAsset({ isin: "LU0000000001", name: "First ETF" });

@@ -62,7 +62,6 @@ describe("PieChart", () => {
     const container = chart.parentElement;
     invariant(container, "Expected chart to have a parent container");
     fireEvent.mouseLeave(container);
-
     expect(screen.queryByTestId("pie-popover")).not.toBeInTheDocument();
   });
 

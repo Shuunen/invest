@@ -181,7 +181,6 @@ describe("computeDataScore", () => {
       sectorAllocation: {},
       updatedAt: freshDate,
     };
-
     // coverage = (0 + 0) / 2 = 0 → score is 0 regardless of other fields
     expect(computeDataScore(assetWithNoAllocations, { ...fullEntry, amountUpdatedAt: freshDate })).toBe(0);
   });
@@ -195,7 +194,6 @@ describe("computeDataScore", () => {
       sectorAllocation: { technology: 0.6 },
       updatedAt: freshDate,
     };
-
     // Base score is 100, then scaled by allocation coverage average: (0.8 + 0.6) / 2 = 0.7
     expect(computeDataScore(assetWithPartialAllocations, { ...fullEntry, amountUpdatedAt: freshDate })).toBe(70);
   });
@@ -209,7 +207,6 @@ describe("computeDataScore", () => {
       sectorAllocation: { financials: 0.4, technology: 0.7 },
       updatedAt: freshDate,
     };
-
     expect(computeDataScore(assetWithCompleteAllocations, { ...fullEntry, amountUpdatedAt: freshDate })).toBe(100);
   });
 });
@@ -263,17 +260,14 @@ describe("computeScore", () => {
       sectorAllocation: {},
       tickers: [],
     };
-
     invariant(asset.performance1y !== undefined, "Expected performance1y to be defined");
     invariant(asset.performance3y !== undefined, "Expected performance3y to be defined");
     invariant(asset.performance5y !== undefined, "Expected performance5y to be defined");
     invariant(asset.riskReward1y !== undefined, "Expected riskReward1y to be defined");
     invariant(asset.riskReward3y !== undefined, "Expected riskReward3y to be defined");
     invariant(asset.riskReward5y !== undefined, "Expected riskReward5y to be defined");
-
     const avgPerf = asset.performance1y * 0.2 + asset.performance3y * 0.5 + asset.performance5y * 0.3;
     const avgRisk = asset.riskReward1y * 0.2 + asset.riskReward3y * 0.5 + asset.riskReward5y * 0.3;
-
     const expected = avgPerf + avgRisk * 5 - asset.fees * 10;
     expect(computeScore(asset)).toBeCloseTo(expected, 10);
   });
@@ -301,7 +295,6 @@ describe("computeScore", () => {
       sectorAllocation: {},
       tickers: [],
     };
-
     // Missing 1y/5y now contributes 0 instead of being normalized away
     const expected = 100 * 0.5 + 1.5 * 0.5 * 5 - 0.15 * 10;
     expect(computeScore(assetOnly3y)).toBeCloseTo(expected, 10);
@@ -329,9 +322,7 @@ describe("computeScore", () => {
       sectorAllocation: {},
       tickers: [],
     };
-
     const missing5y: Asset = { ...complete, performance5y: undefined, riskReward5y: undefined };
-
     const completeScore = computeScore(complete);
     const missing5yScore = computeScore(missing5y);
     expect(completeScore).toBeDefined();

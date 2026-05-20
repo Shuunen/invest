@@ -9,7 +9,6 @@ describe("TextRoll", () => {
         <TextRoll>AB</TextRoll>
       </span>,
     );
-
     const roll = screen.getByTestId("text-roll-default");
     expect(roll).toHaveClass("text-success");
     expect(roll).toHaveTextContent("ABAB");
@@ -22,7 +21,6 @@ describe("TextRoll", () => {
         <TextRoll center>XYZ</TextRoll>
       </span>,
     );
-
     expect(screen.getByTestId("text-roll-centered")).toHaveTextContent("XYZXYZ");
   });
 });

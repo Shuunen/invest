@@ -594,9 +594,7 @@ describe("useAppStore - similarity dismiss", () => {
     const other = { ...assetA, isin: isinB, name: "ETF B" };
     const assetWithDismissed = { ...assetA, dismissedSimilarities: [isinB] };
     useAppStore.setState({ data: { ...defaultAppData, assets: [assetWithDismissed, other] }, isLoading: false, loadError: undefined });
-
     useAppStore.getState().unDismissSimilarity(assetA.isin, isinB);
-
     expect(useAppStore.getState().data.assets[1]?.dismissedSimilarities).toHaveLength(0);
   });
 });

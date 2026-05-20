@@ -176,9 +176,7 @@ describe("computePortfolioWeightedAllocations", () => {
     expect.hasAssertions();
     const assets = [makeAsset()];
     const entries = [makeEntry({ amount: 100, isin: "IE00B4L5Y983" })];
-
     const result = computePortfolioWeightedAllocations(entries, assets, 0);
-
     expect(result.geo).toStrictEqual({});
     expect(result.sector).toStrictEqual({});
   });
@@ -193,9 +191,7 @@ describe("computePortfolioWeightedAllocations", () => {
     });
     const entry = makeEntry({ amount: 100, isin: "ASSET1" });
     const totalValue = 10_000; // 100 * 100
-
     const result = computePortfolioWeightedAllocations([entry], [asset], totalValue);
-
     // Weight: (100 * 100) / 10_000 = 1.0 (100% of portfolio)
     expect(result.geo.us).toBe(0.6);
     expect(result.geo.uk).toBe(0.4);
@@ -217,13 +213,10 @@ describe("computePortfolioWeightedAllocations", () => {
       price: 100,
       sectorAllocation: { financials: 1 },
     });
-
     const entry1 = makeEntry({ amount: 800, isin: "ASSET1" }); // 800 * 100 = 80_000
     const entry2 = makeEntry({ amount: 200, isin: "ASSET2" }); // 200 * 100 = 20_000
     const totalValue = 100_000;
-
     const result = computePortfolioWeightedAllocations([entry1, entry2], [asset1, asset2], totalValue);
-
     // Asset1: weight = 80_000 / 100_000 = 0.8
     // Asset2: weight = 20_000 / 100_000 = 0.2
     expect(result.geo.us).toBe(0.8);
@@ -244,13 +237,10 @@ describe("computePortfolioWeightedAllocations", () => {
       isin: "ASSET2",
       price: undefined,
     });
-
     const entry1 = makeEntry({ amount: 100, isin: "ASSET1" }); // 100 * 100 = 10_000
     const entry2 = makeEntry({ amount: 100, isin: "ASSET2" }); // 100 * undefined = 0
     const totalValue = 10_000;
-
     const result = computePortfolioWeightedAllocations([entry1, entry2], [asset1, asset2], totalValue);
-
     // Only asset1 contributes: weight = 10_000 / 10_000 = 1.0
     // asset2 contributes nothing (weight = 0), so uk gets 1 * 0 = 0
     expect(result.geo).toStrictEqual({ uk: 0, us: 1 });
@@ -263,13 +253,10 @@ describe("computePortfolioWeightedAllocations", () => {
       isin: "KNOWN_ASSET",
       price: 100,
     });
-
     const entry1 = makeEntry({ amount: 100, isin: "KNOWN_ASSET" }); // 100 * 100 = 10_000
     const entry2 = makeEntry({ amount: 100, isin: "UNKNOWN_ASSET" }); // skipped
     const totalValue = 10_000;
-
     const result = computePortfolioWeightedAllocations([entry1, entry2], [asset], totalValue);
-
     // Only known asset contributes: weight = 10_000 / 10_000 = 1.0
     expect(result.geo.us).toBe(1);
   });
@@ -282,12 +269,9 @@ describe("computePortfolioWeightedAllocations", () => {
       price: 100,
       sectorAllocation: { financials: 0.7, technology: 0.3 },
     });
-
     const entry = makeEntry({ amount: 100, isin: "MULTI" });
     const totalValue = 10_000;
-
     const result = computePortfolioWeightedAllocations([entry], [asset], totalValue);
-
     // Weight: 1.0 (entire portfolio)
     expect(result.geo).toStrictEqual({ uk: 0.5, us: 0.5 });
     expect(result.sector).toStrictEqual({ financials: 0.7, technology: 0.3 });
@@ -301,12 +285,9 @@ describe("computePortfolioWeightedAllocations", () => {
       price: 100,
       sectorAllocation: { technology: 0.7 },
     });
-
     const entry = makeEntry({ amount: 100, isin: "SPARSE" });
     const totalValue = 10_000;
-
     const result = computePortfolioWeightedAllocations([entry], [asset], totalValue);
-
     // Only defined positive values should appear
     expect(result.geo.us).toBe(0.6);
     expect(result.geo.fr).toBeUndefined();
@@ -327,22 +308,18 @@ describe("computePortfolioWeightedAllocations", () => {
       price: 100,
       sectorAllocation: { healthcare: 1 },
     });
-
     // Entry 1: 50 * 50 = 2_500 → weight = 2_500 / 5_000 = 0.5
     const entry1 = makeEntry({ amount: 50, isin: "A1" });
     // Entry 2: 25 * 100 = 2_500 → weight = 2_500 / 5_000 = 0.5
     const entry2 = makeEntry({ amount: 25, isin: "A2" });
     const totalValue = 5000;
-
     const result = computePortfolioWeightedAllocations([entry1, entry2], [asset1, asset2], totalValue);
-
     // geo: us = 0.8 * 0.5 + 0.3 * 0.5 = 0.55
     //      uk = 0.2 * 0.5 = 0.1
     //      eu = 0.7 * 0.5 = 0.35
     expect(result.geo.us).toBe(0.55);
     expect(result.geo.uk).toBe(0.1);
     expect(result.geo.eu).toBe(0.35);
-
     // sector: technology = 0.6 * 0.5 = 0.3
     //         financials = 0.4 * 0.5 = 0.2
     //         healthcare = 1 * 0.5 = 0.5
@@ -353,7 +330,6 @@ describe("computePortfolioWeightedAllocations", () => {
     expect.hasAssertions();
     const assets = [makeAsset()];
     const result = computePortfolioWeightedAllocations([], assets, 10_000);
-
     expect(result.geo).toStrictEqual({});
     expect(result.sector).toStrictEqual({});
   });
@@ -362,7 +338,6 @@ describe("computePortfolioWeightedAllocations", () => {
     expect.hasAssertions();
     const entries = [makeEntry()];
     const result = computePortfolioWeightedAllocations(entries, [], 10_000);
-
     expect(result.geo).toStrictEqual({});
     expect(result.sector).toStrictEqual({});
   });
@@ -376,9 +351,7 @@ describe("computePortfolioWeightedAllocations", () => {
     });
     const entry = makeEntry({ amount: 0, isin: "ASSET1" });
     const totalValue = 1000; // Some other value
-
     const result = computePortfolioWeightedAllocations([entry], [asset], totalValue);
-
     // Entry with amount 0 has weight 0, so us gets 1 * 0 = 0
     expect(result.geo).toStrictEqual({ us: 0 });
   });
@@ -394,9 +367,7 @@ describe("computeWeightedAllocationsFromSelection", () => {
       [asset1.isin, 80],
       [asset2.isin, 20],
     ]);
-
     const result = computeWeightedAllocationsFromSelection({ amountByIsin, assets: [asset1, asset2], defaultAmount: 0, selectedIsins: selected });
-
     expect(result.geo.us).toBe(0.8);
     expect(result.geo.uk).toBe(0.2);
     expect(result.sector.technology).toBe(0.8);
@@ -407,9 +378,7 @@ describe("computeWeightedAllocationsFromSelection", () => {
     expect.hasAssertions();
     const asset = makeAsset({ geoAllocation: { us: 1 }, isin: "ASSET1", price: 100 });
     const selected = new Set([asset.isin]);
-
     const result = computeWeightedAllocationsFromSelection({ assets: [asset], selectedIsins: selected });
-
     expect(result.geo).toStrictEqual({ us: 1 });
   });
 });

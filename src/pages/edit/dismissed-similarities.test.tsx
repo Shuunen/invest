@@ -36,9 +36,7 @@ describe("EditDismissedSimilaritiesSection", () => {
     const asset = makeAsset({ dismissedSimilarities: [] });
     const allAssets = [asset];
     const onUnDismiss = vi.fn<(isin: string, matchedIsin: string) => void>();
-
     renderSection(asset, allAssets, onUnDismiss);
-
     expect(screen.queryByTestId("dismissed-similarities-card")).not.toBeInTheDocument();
   });
 
@@ -49,12 +47,9 @@ describe("EditDismissedSimilaritiesSection", () => {
     const matched = makeAsset({ isin: matchedIsin, name: "Other Fund" });
     const allAssets = [asset, matched];
     const onUnDismiss = vi.fn<(isin: string, matchedIsin: string) => void>();
-
     renderSection(asset, allAssets, onUnDismiss);
-
     fireEvent.click(screen.getByTestId("un-dismiss-similarity-fr0000000001"));
     expect(screen.getByTestId("un-dismiss-confirm-modal")).toHaveTextContent("Other Fund");
-
     fireEvent.click(screen.getByTestId("form-confirm-button"));
     expect(onUnDismiss).toHaveBeenCalledWith(asset.isin, matchedIsin);
     expect(screen.queryByTestId("un-dismiss-confirm-modal")).not.toBeInTheDocument();
@@ -66,15 +61,11 @@ describe("EditDismissedSimilaritiesSection", () => {
     const asset = makeAsset({ dismissedSimilarities: [matchedIsin] });
     const allAssets = [asset];
     const onUnDismiss = vi.fn<(isin: string, matchedIsin: string) => void>();
-
     renderSection(asset, allAssets, onUnDismiss);
-
     fireEvent.click(screen.getByTestId("un-dismiss-similarity-xx0000000001"));
     expect(screen.getByTestId("un-dismiss-confirm-modal")).toHaveTextContent(matchedIsin);
-
     fireEvent.click(screen.getByTestId("form-cancel-button"));
     expect(screen.queryByTestId("un-dismiss-confirm-modal")).not.toBeInTheDocument();
-
     fireEvent.click(screen.getByTestId("un-dismiss-similarity-xx0000000001"));
     fireEvent.click(screen.getByTestId("un-dismiss-confirm-backdrop"));
     expect(screen.queryByTestId("un-dismiss-confirm-modal")).not.toBeInTheDocument();

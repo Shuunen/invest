@@ -30,7 +30,6 @@ describe("PageHeader", () => {
   it("uses custom metrics only when replaceDefaultMetrics is true", () => {
     expect.hasAssertions();
     render(<PageHeader assets={[makeAsset()]} title="Portfolio" subtitle="Broker : Test" replaceDefaultMetrics metrics={[{ color: "info", label: "Custom", value: "42" }]} />);
-
     expect(screen.getByTestId("metric-custom-value")).toHaveTextContent("42");
     expect(screen.queryByTestId("metric-assets-label")).toBeNull();
   });
@@ -38,7 +37,6 @@ describe("PageHeader", () => {
   it("renders no metrics when replaceDefaultMetrics is true and no metrics are provided", () => {
     expect.hasAssertions();
     render(<PageHeader assets={[makeAsset()]} title="Portfolio" subtitle="Broker : Test" replaceDefaultMetrics />);
-
     expect(screen.queryByTestId("metric-assets-label")).toBeNull();
     expect(screen.queryByTestId("metric-avg-score-label")).toBeNull();
   });
@@ -46,7 +44,6 @@ describe("PageHeader", () => {
   it("appends custom metrics to defaults when replaceDefaultMetrics is false", () => {
     expect.hasAssertions();
     render(<PageHeader assets={[makeAsset()]} title="Portfolio" subtitle="Broker : Test" metrics={[{ color: "info", label: "Custom", value: "42" }]} />);
-
     expect(screen.getByTestId("metric-assets-label")).toHaveTextContent("Assets");
     expect(screen.getByTestId("metric-custom-value")).toHaveTextContent("42");
   });
@@ -55,14 +52,12 @@ describe("PageHeader", () => {
     expect.hasAssertions();
     const asset = makeAsset({ tickers: [] });
     render(<PageHeader assets={[asset]} title="Portfolio" subtitle="Broker : Test" />);
-
     expect(screen.getByTestId("metric-top-performer-value")).toHaveTextContent(asset.isin);
   });
 
   it("shows default metrics for an empty assets list", () => {
     expect.hasAssertions();
     render(<PageHeader assets={[]} title="Portfolio" subtitle="Broker : Test" />);
-
     expect(screen.getByTestId("metric-assets-value")).toHaveTextContent("0");
     expect(screen.getByTestId("metric-avg-fee-value")).toHaveTextContent("—");
     expect(screen.getByTestId("metric-top-performer-value")).toHaveTextContent("—");

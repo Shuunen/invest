@@ -91,7 +91,6 @@ describe("AssetPickerModal - with assets", () => {
     render(
       <AssetPickerModal assets={assetWithAllocationList} initialSelected={assetWithAllocationSelected} amountByIsin={weightedAmountMap} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />,
     );
-
     expect(screen.getByTestId("allocation-preview-row")).toBeInTheDocument();
     expect(screen.getByTestId("before-geo-allocation-chart")).toBeInTheDocument();
     expect(screen.getByTestId("after-geo-allocation-chart")).toBeInTheDocument();
@@ -104,7 +103,6 @@ describe("AssetPickerModal - with assets", () => {
     render(
       <AssetPickerModal assets={assetWithAllocationList} initialSelected={assetWithAllocationSelected} amountByIsin={weightedAmountMap} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />,
     );
-
     expect(screen.queryByTestId("new-selection-investment-control")).not.toBeInTheDocument();
   });
 
@@ -113,17 +111,13 @@ describe("AssetPickerModal - with assets", () => {
     render(
       <AssetPickerModal assets={assetWithAllocationList} initialSelected={assetWithAllocationSelected} amountByIsin={weightedAmountMap} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />,
     );
-
     expect(screen.getByTestId("before-geo-allocation-chart")).toBeInTheDocument();
     expect(screen.getByTestId("after-geo-allocation-chart")).toBeInTheDocument();
-
     fireEvent.click(screen.getByTestId("asset-row-LU1234567890"));
-
     await waitFor(() => {
       expect(screen.getByTestId("after-geo-allocation-empty")).toBeInTheDocument();
       expect(screen.getByTestId("after-sector-allocation-empty")).toBeInTheDocument();
     });
-
     expect(screen.getByTestId("before-geo-allocation-chart")).toBeInTheDocument();
     expect(screen.getByTestId("before-sector-allocation-chart")).toBeInTheDocument();
   });
@@ -140,7 +134,6 @@ describe("AssetPickerModal - with assets", () => {
         title="Select assets"
       />,
     );
-
     expect(screen.getByTestId("before-geo-allocation-empty")).toBeInTheDocument();
     expect(screen.getByTestId("after-geo-allocation-empty")).toBeInTheDocument();
   });
@@ -249,7 +242,6 @@ describe("AssetPickerModal - with assets", () => {
         title="Select assets"
       />,
     );
-
     for (const usaLabel of screen.getAllByTestId("slice-label-text-usa")) expect(usaLabel).toHaveTextContent("80%");
     for (const ukLabel of screen.getAllByTestId("slice-label-text-uk")) expect(ukLabel).toHaveTextContent("20%");
   });
@@ -266,10 +258,8 @@ describe("AssetPickerModal - with assets", () => {
         title="Select assets"
       />,
     );
-
     fireEvent.click(screen.getByTestId("asset-row-LU2222222222"));
     fireEvent.change(screen.getByTestId("new-selection-investment-input"), { target: { value: "100" } });
-
     await waitFor(() => {
       const afterGeoCard = screen.getByTestId("after-geo-allocation-card");
       expect(within(afterGeoCard).getByTestId("slice-label-text-usa")).toHaveTextContent("99%");
@@ -289,10 +279,8 @@ describe("AssetPickerModal - with assets", () => {
         title="Select assets"
       />,
     );
-
     fireEvent.click(screen.getByTestId("asset-row-LU2222222222"));
     fireEvent.change(screen.getByTestId("new-selection-investment-input"), { target: { value: "1" } });
-
     await waitFor(() => {
       const afterGeoCard = screen.getByTestId("after-geo-allocation-card");
       expect(within(afterGeoCard).getByTestId("slice-label-text-usa")).toHaveTextContent("100%");
@@ -312,12 +300,10 @@ describe("AssetPickerModal - with assets", () => {
         title="Select assets"
       />,
     );
-
     fireEvent.click(screen.getByTestId("asset-row-LU2222222222"));
     const input = screen.getByTestId("new-selection-investment-input");
     expect(input).toHaveValue(0);
     fireEvent.change(input, { target: { value: "-50" } });
-
     expect(input).toHaveValue(0);
   });
 
@@ -334,10 +320,8 @@ describe("AssetPickerModal - with assets", () => {
         title="Select assets"
       />,
     );
-
     fireEvent.click(screen.getByTestId(`asset-row-LU3333333333`));
     fireEvent.change(screen.getByTestId("new-selection-investment-input"), { target: { value: "1000" } });
-
     await waitFor(() => {
       const afterGeoCard = screen.getByTestId("after-geo-allocation-card");
       // noPriceAsset gets amountInUnits = 0 → contributes 0 weight, so after chart still shows only USA

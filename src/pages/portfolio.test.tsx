@@ -169,10 +169,8 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-
     expect(screen.queryByTestId("metric-target-assets-value")).toBeNull();
     expect(screen.getByTestId("metric-target-invest-value")).toHaveTextContent("200 €");
-
     expect(screen.getAllByTestId(/metric-.*-label/u).map(label => label.textContent)).toStrictEqual(["Avg Score", "Avg Data", "Performer", "Nb Assets", "Total Value", "Target Invest"]);
   });
 
@@ -191,7 +189,6 @@ describe("PortfolioPage - empty portfolio", () => {
       loadError: undefined,
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
-
     expect(screen.getByTestId("metric-target-assets-value")).toHaveTextContent("2");
     expect(screen.getByTestId("metric-target-invest-value")).toHaveTextContent("200 €");
     expect(screen.getAllByTestId(/metric-.*-label/u).map(label => label.textContent)).toStrictEqual(["Avg Score", "Avg Data", "Performer", "Nb Assets", "Total Value", "Target Assets", "Target Invest"]);

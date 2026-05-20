@@ -44,6 +44,7 @@ Never disable a lint rule without asking the user. Try to fix the code first the
 - **Globals**: `describe`, `it`, `expect` are global — do not import them
 - **File naming**: `.test.ts` / `.test.tsx` only, never `.spec.ts`
 - **Encoding**: `"utf8"`, not `"utf-8"`
+- **Spacing in tests**: in unit and e2e files, inside `test`/`it` blocks, do not include empty lines for visual spacing
 - **Selectors**: `getByTestId` / `queryByTestId` / `getAllByTestId` only — no role/text/label queries
 - **testid format**: kebab-case; use `kebabCase` from es-toolkit for dynamic ids
 - **Assertions**: never `toBeInTheDocument()` after `getByTestId` (redundant); use `toHaveTextContent`, `toHaveClass`, `toHaveAttribute` instead

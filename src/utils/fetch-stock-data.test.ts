@@ -51,7 +51,6 @@ describe("fetchStockData", () => {
         status: 502,
       }),
     );
-
     await expect(fetchStockData("MSFT")).rejects.toThrow("HTTP error 502");
   });
 
@@ -70,9 +69,7 @@ describe("fetchStockData", () => {
         ok: true,
       }),
     );
-
     const result = await fetchStockData("  UNK  ");
-
     expect(fetch).toHaveBeenCalledWith("http://localhost:8010/stock/UNK");
     expect({
       performance1y: result.performance1y,
