@@ -45,6 +45,30 @@ describe("SaveModal", () => {
     expect(screen.queryByTestId("after-trend-price-eur")).not.toBeInTheDocument();
   });
 
+  it("does not render a trend indicator when a value strips to a non-parseable placeholder", () => {
+    expect.hasAssertions();
+    const onClose = vi.fn<() => void>();
+    const onConfirm = vi.fn<() => void>();
+    const onReset = vi.fn<() => void>();
+    const diffRows: DiffRow[] = [{ after: "2", before: "+.", field: "Price (EUR)", reset: noopReset }];
+
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />);
+
+    expect(screen.queryByTestId("after-trend-price-eur")).not.toBeInTheDocument();
+  });
+
+  it("does not render a trend indicator for text values containing letters", () => {
+    expect.hasAssertions();
+    const onClose = vi.fn<() => void>();
+    const onConfirm = vi.fn<() => void>();
+    const onReset = vi.fn<() => void>();
+    const diffRows: DiffRow[] = [{ after: "IWFV,IS3S", before: "IS3S", field: "Tickers", reset: noopReset }];
+
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />);
+
+    expect(screen.queryByTestId("after-trend-tickers")).not.toBeInTheDocument();
+  });
+
   it("calls row reset callback when a row reset button is clicked", () => {
     expect.hasAssertions();
     const onClose = vi.fn<() => void>();

@@ -17,6 +17,7 @@ type Props = {
 function parseNumericDiffValue(value: string): number | undefined {
   const trimmed = value.trim();
   if (trimmed === "-" || trimmed === "") return undefined;
+  if (/[a-z]/iu.test(trimmed)) return undefined;
   const numericPart = trimmed.replaceAll(",", ".").replaceAll(/[^\d.+-]/gu, "");
   if (numericPart === "" || numericPart === "+" || numericPart === "-" || numericPart === "." || numericPart === "+." || numericPart === "-.") return undefined;
   const parsed = Number(numericPart);
