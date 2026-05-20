@@ -166,7 +166,7 @@ function usePieState(entries: Entry[]) {
 
 export function PieChart({ entries, name, size = 300 }: PieChartProps) {
   const { containerRef, handleMouseMove, hovered, hoveredSlice, popoverPos, setHovered, slices, total } = usePieState(entries);
-  const shouldRenderPopover = hoveredSlice !== undefined && hoveredSlice.fraction * maxPercentage <= hideInnerLabelBelowPercents;
+  const shouldRenderPopover = hoveredSlice !== undefined;
 
   return (
     <div
