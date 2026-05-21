@@ -2,7 +2,6 @@
 import { kebabCase } from "es-toolkit";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { maxPercentage } from "../../utils/constants.ts";
-import { formatPercent } from "../../utils/format-numbers";
 
 function toRad(deg: number) {
   return ((deg - 90) * Math.PI) / 180;
@@ -87,9 +86,9 @@ function PieSliceFill({ end, fill, isHovered, label, onEnter, size, start }: Pie
   );
 }
 
-function PieSliceLabel({ end, fill, fraction, isHovered, label, mid, size, start, total }: Omit<PieSliceProps, "onEnter">) {
+function PieSliceLabel({ end, fill, fraction, isHovered, label, mid, size, start }: Omit<PieSliceProps, "onEnter">) {
   const { cx, cy, fullCircle, lp } = deriveSliceGeometry({ end, fraction, mid, size, start });
-  const pctText = formatPercent(total === 0 ? undefined : fraction * maxPercentage, true);
+  const pctText = `${Math.round(fraction * maxPercentage)}%`;
   const charWidth = isHovered ? 9 : 8;
   const padX = 8;
   const badgeHeight = isHovered ? 48 : 44;
@@ -130,10 +129,15 @@ type PieChartProps = {
 const popoverOffset = 14;
 const hideInnerLabelBelowPercents = 7;
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
 function usePieState(entries: Entry[]) {
   const [hovered, setHovered] = useState<string | undefined>(undefined);
   const [popoverPos, setPopoverPos] = useState({ left: 0, top: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   const total = useMemo(() => entries.reduce((sum, { value }) => sum + value, 0), [entries]);
 
@@ -150,22 +154,25 @@ function usePieState(entries: Entry[]) {
   }, [entries, total]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
-    /* v8 ignore next */
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
+    const popoverRect = popoverRef.current?.getBoundingClientRect();
+    const popoverWidth = popoverRect?.width ?? 0;
+    const popoverHeight = popoverRect?.height ?? 0;
+    const minPos = popoverOffset;
+    const maxLeft = Math.max(minPos, window.innerWidth - popoverWidth - popoverOffset);
+    const maxTop = Math.max(minPos, window.innerHeight - popoverHeight - popoverOffset);
     setPopoverPos({
-      left: event.clientX - rect.left + popoverOffset,
-      top: event.clientY - rect.top + popoverOffset,
+      left: clamp(event.clientX + popoverOffset, minPos, maxLeft),
+      top: clamp(event.clientY + popoverOffset, minPos, maxTop),
     });
   }, []);
 
   const hoveredSlice = hovered === undefined ? undefined : slices.find(slice => slice.label === hovered);
 
-  return { containerRef, handleMouseMove, hovered, hoveredSlice, popoverPos, setHovered, slices, total };
+  return { containerRef, handleMouseMove, hovered, hoveredSlice, popoverPos, popoverRef, setHovered, slices, total };
 }
 
 export function PieChart({ entries, name, size = 300 }: PieChartProps) {
-  const { containerRef, handleMouseMove, hovered, hoveredSlice, popoverPos, setHovered, slices, total } = usePieState(entries);
+  const { containerRef, handleMouseMove, hovered, hoveredSlice, popoverPos, popoverRef, setHovered, slices, total } = usePieState(entries);
   const shouldRenderPopover = hoveredSlice !== undefined;
 
   return (
@@ -187,9 +194,9 @@ export function PieChart({ entries, name, size = 300 }: PieChartProps) {
         {slices.map(slice => slice.value * maxPercentage > hideInnerLabelBelowPercents && <PieSliceLabel key={slice.label} {...slice} isHovered={hovered === slice.label} size={size} total={total} />)}
       </svg>
       {shouldRenderPopover && (
-        <div className="absolute z-50 rounded-lg border bg-base-100 px-3 py-2 whitespace-nowrap shadow-md" style={{ left: popoverPos.left, top: popoverPos.top }} data-testid="pie-popover">
+        <div className="fixed rounded-lg border bg-base-100 px-3 py-2 whitespace-nowrap shadow-md" ref={popoverRef} style={{ left: popoverPos.left, top: popoverPos.top }} data-testid="pie-popover">
           <span className="font-bold">{hoveredSlice.label}</span>
-          <span className="ml-2 text-base-content">{formatPercent(hoveredSlice.fraction * maxPercentage)}</span>
+          <span className="ml-2 text-base-content">{`${Math.round(hoveredSlice.fraction * maxPercentage)}%`}</span>
         </div>
       )}
     </div>

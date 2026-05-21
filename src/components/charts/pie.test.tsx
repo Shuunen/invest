@@ -109,9 +109,35 @@ describe("PieChart", () => {
     const chart = screen.getByTestId("move-chart");
     const container = chart.parentElement;
     invariant(container, "Expected chart to have a parent container");
-    // oxlint-disable-next-line id-length
-    container.getBoundingClientRect = () => ({ bottom: 300, height: 300, left: 0, right: 300, toJSON: () => ({}), top: 0, width: 300, x: 0, y: 0 }) as DOMRect;
     fireEvent.mouseMove(container, { clientX: 100, clientY: 100 });
-    expect(screen.getByTestId("pie-popover")).toBeInTheDocument();
+    const popover = screen.getByTestId("pie-popover");
+    expect(popover).toBeInTheDocument();
+    expect(popover.style.left).toBe("114px");
+    expect(popover.style.top).toBe("114px");
+  });
+
+  it("handles mouse move when popover is not mounted", () => {
+    expect.hasAssertions();
+    render(<PieChart entries={mixedEntries} name="no-popover-yet" />);
+    const chart = screen.getByTestId("no-popover-yet-chart");
+    const container = chart.parentElement;
+    invariant(container, "Expected chart to have a parent container");
+    fireEvent.mouseMove(container, { clientX: 24, clientY: 36 });
+    expect(screen.queryByTestId("pie-popover")).not.toBeInTheDocument();
+  });
+
+  it("clamps popover position to remain inside viewport", () => {
+    expect.hasAssertions();
+    render(<PieChart entries={mixedEntries} name="clamped" />);
+    fireEvent.mouseEnter(screen.getByTestId("slice-us"));
+    const chart = screen.getByTestId("clamped-chart");
+    const container = chart.parentElement;
+    invariant(container, "Expected chart to have a parent container");
+    const popover = screen.getByTestId("pie-popover");
+    // oxlint-disable-next-line id-length
+    popover.getBoundingClientRect = () => ({ bottom: 80, height: 80, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 }) as DOMRect;
+    fireEvent.mouseMove(container, { clientX: window.innerWidth - 2, clientY: window.innerHeight - 2 });
+    expect(popover.style.left).toBe(`${window.innerWidth - 180 - 14}px`);
+    expect(popover.style.top).toBe(`${window.innerHeight - 80 - 14}px`);
   });
 });
