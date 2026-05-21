@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.0] - 2026-05-21
+
+### Added in 0.10.0
+
+- Save modal trend and reset controls — the save modal now highlights trends and includes per-row reset actions so edits can be reviewed and reverted with less friction
+- Page header animations — header text animations were added and now correctly reset when the animated content changes
+- Investment amount popover details — the portfolio view now surfaces an amount-to-invest popover to make investment context easier to understand while reviewing charts
+
+### Changed in 0.10.0
+
+- Chart popover behavior — portfolio chart popovers are now always visible and better positioned for readability
+- Portfolio metric presentation — metrics were refined and chart/advice sections were reorganized so allocations stay visible below the table and key indicators are easier to scan
+- Layout and readability polish — asset edit/view sections are more responsive, table cells avoid wrapping for dense data, and offline-warning background opacity is more balanced
+- Save modal copy was simplified to keep trend feedback focused and easier to parse
+
+### Fixed in 0.10.0
+
+- Target portfolio chart and asset picker review feedback fixes were applied to stabilize target-chart behavior and picker interactions
+
 ## [0.9.0] - 2026-05-14
 
 ### Added in 0.9.0
