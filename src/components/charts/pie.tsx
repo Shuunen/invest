@@ -126,11 +126,23 @@ type PieChartProps = {
   size?: number;
 };
 
-const popoverOffset = 14;
+const popoverBoundaryPadding = 14;
+const popoverCursorOffset = 42;
 const hideInnerLabelBelowPercents = 7;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function computePopoverCoordinate(containerSize: number, cursorPosition: number, popoverSize: number) {
+  const minPos = popoverBoundaryPadding;
+  const maxPos = Math.max(minPos, containerSize - popoverSize - popoverBoundaryPadding);
+  const forwardPos = cursorPosition + popoverCursorOffset;
+  const backwardPos = cursorPosition - popoverSize - popoverCursorOffset;
+
+  if (forwardPos <= maxPos) return forwardPos;
+  if (backwardPos >= minPos) return backwardPos;
+  return clamp(forwardPos, minPos, maxPos);
 }
 
 function usePieState(entries: Entry[]) {
@@ -154,15 +166,18 @@ function usePieState(entries: Entry[]) {
   }, [entries, total]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
+    const containerRect = containerRef.current?.getBoundingClientRect();
     const popoverRect = popoverRef.current?.getBoundingClientRect();
+    if (!containerRect) return;
+
     const popoverWidth = popoverRect?.width ?? 0;
     const popoverHeight = popoverRect?.height ?? 0;
-    const minPos = popoverOffset;
-    const maxLeft = Math.max(minPos, window.innerWidth - popoverWidth - popoverOffset);
-    const maxTop = Math.max(minPos, window.innerHeight - popoverHeight - popoverOffset);
+    const relativeX = event.clientX - containerRect.left;
+    const relativeY = event.clientY - containerRect.top;
+
     setPopoverPos({
-      left: clamp(event.clientX + popoverOffset, minPos, maxLeft),
-      top: clamp(event.clientY + popoverOffset, minPos, maxTop),
+      left: computePopoverCoordinate(containerRect.width, relativeX, popoverWidth),
+      top: computePopoverCoordinate(containerRect.height, relativeY, popoverHeight),
     });
   }, []);
 
@@ -194,7 +209,7 @@ export function PieChart({ entries, name, size = 300 }: PieChartProps) {
         {slices.map(slice => slice.value * maxPercentage > hideInnerLabelBelowPercents && <PieSliceLabel key={slice.label} {...slice} isHovered={hovered === slice.label} size={size} total={total} />)}
       </svg>
       {shouldRenderPopover && (
-        <div className="fixed rounded-lg border bg-base-100 px-3 py-2 whitespace-nowrap shadow-md" ref={popoverRef} style={{ left: popoverPos.left, top: popoverPos.top }} data-testid="pie-popover">
+        <div className="absolute rounded-lg border bg-base-100 px-3 py-2 whitespace-nowrap shadow-md" ref={popoverRef} style={{ left: `${popoverPos.left}px`, top: `${popoverPos.top}px` }} data-testid="pie-popover">
           <span className="font-bold">{hoveredSlice.label}</span>
           <span className="ml-2 text-base-content">{`${Math.round(hoveredSlice.fraction * maxPercentage)}%`}</span>
         </div>
