@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.0] - 2026-05-22
+
+### Added in 0.11.0
+
+- Theme switcher — a DaisyUI-powered dropdown in the navbar lets users pick from ten light and dark themes; the selection persists across sessions and the PWA theme-color meta tag updates accordingly
+- Dedicated Navbar component — navbar logic was extracted from app.tsx into its own component, improving separation of concerns and making the layout easier to extend
+
+### Changed in 0.11.0
+
+- Responsive layout improvements — asset and portfolio pages are more adaptive at different viewport widths
+- Style normalization — shared styles were consolidated and utility class usage was streamlined across components
+- Popover positioning logic was refined for more reliable anchor alignment
+
+### Fixed in 0.11.0
+
+- clearTimeout cleanup added to theme-color sync hook to prevent stale timers on rapid theme changes
+
 ## [0.10.0] - 2026-05-21
 
 ### Added in 0.10.0
