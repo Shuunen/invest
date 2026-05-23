@@ -93,6 +93,20 @@ describe("useAppStore - settings mutations", () => {
     unsub();
     expect(received.length).toBeGreaterThan(0);
   });
+
+  it("setTheme updates settings.theme", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    useAppStore.getState().setTheme("dracula");
+    expect(useAppStore.getState().data.settings.theme).toBe("dracula");
+  });
+
+  it("setTheme does not increment editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: { ...defaultAppData, settings: { ...defaultAppData.settings, editCount: 3 } }, isLoading: false, loadError: undefined });
+    useAppStore.getState().setTheme("light");
+    expect(useAppStore.getState().data.settings.editCount).toBe(3);
+  });
 });
 
 function makePortfolioEntry(isin: string) {

@@ -1,4 +1,5 @@
 import { invariant } from "es-toolkit";
+import { themes } from "../utils/theme.ts";
 import { AppDataSchema, AssetSchema, maxIsins, maxPortfolios, PortfolioEntrySchema, PortfolioSchema, SettingsSchema, safeImportJson } from "./index";
 
 // Shared minimal ISIN fixture — all optional fields omitted (they have defaults or are nullable)
@@ -195,6 +196,16 @@ describe("SettingsSchema: default values", () => {
     expect(result.columnOrder).toStrictEqual([]);
     expect(result.columnVisibility).toStrictEqual({});
     expect(result.sort).toStrictEqual({ column: "score", direction: "desc" });
+  });
+});
+
+describe("SettingsSchema: theme enum", () => {
+  it("accepts all valid themes", () => {
+    expect.hasAssertions();
+    for (const themeName of themes) {
+      const result = SettingsSchema.safeParse({ theme: themeName });
+      expect(result.success).toBe(true);
+    }
   });
 });
 

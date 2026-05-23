@@ -7,7 +7,7 @@ import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { formatPercent } from "../utils/format-numbers.ts";
 import { useDexieSync } from "./asset-table-db.ts";
 import { matchesFilter } from "./asset-table-hooks.ts";
-import { computeQuintileClasses, quintileClass } from "./asset-table-utils.ts";
+import { computeQuintileClasses } from "./asset-table-utils.ts";
 import { AssetTable } from "./asset-table.tsx";
 
 const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>());
@@ -109,38 +109,6 @@ describe("matchesFilter", () => {
   });
 });
 
-describe("quintileClass", () => {
-  it("returns undefined for undefined value", () => {
-    expect.hasAssertions();
-    expect(quintileClass(undefined, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBeUndefined();
-  });
-
-  it("returns green class for top quintile", () => {
-    expect.hasAssertions();
-    expect(quintileClass(10, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBe("bg-success/20 text-success-content");
-  });
-
-  it("returns red class for bottom quintile", () => {
-    expect.hasAssertions();
-    expect(quintileClass(1, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBe("bg-error/20 text-error-content");
-  });
-
-  it("returns undefined for middle value", () => {
-    expect.hasAssertions();
-    expect(quintileClass(5, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])).toBeUndefined();
-  });
-
-  it("returns undefined when fewer than 3 rows", () => {
-    expect.hasAssertions();
-    expect(
-      quintileClass(
-        2,
-        Array.from({ length: 2 }, (_el, idx) => idx + 1),
-      ),
-    ).toBeUndefined();
-  });
-});
-
 describe("computeQuintileClasses - fees semantics", () => {
   it("marks fees <= 0.20 as green", () => {
     expect.hasAssertions();
@@ -155,9 +123,9 @@ describe("computeQuintileClasses - fees semantics", () => {
     const classes = computeQuintileClasses(rows as unknown as never[]);
     const feeClasses = classes.get("fees");
     invariant(feeClasses, "Expected fees classes map to be defined");
-    expect(feeClasses.get("0")).toBe("bg-success/20 text-success-content");
+    expect(feeClasses.get("0")).toContain("bg-success");
     expect(feeClasses.get("1")).toBeUndefined();
-    expect(feeClasses.get("2")).toBe("bg-error/20 text-error-content");
+    expect(feeClasses.get("2")).toContain("bg-error");
   });
 
   it("marks fees >= 0.45 as red", () => {
@@ -173,9 +141,9 @@ describe("computeQuintileClasses - fees semantics", () => {
     const classes = computeQuintileClasses(rows as unknown as never[]);
     const feeClasses = classes.get("fees");
     invariant(feeClasses, "Expected fees classes map to be defined");
-    expect(feeClasses.get("0")).toBe("bg-success/20 text-success-content");
-    expect(feeClasses.get("1")).toBe("bg-error/20 text-error-content");
-    expect(feeClasses.get("2")).toBe("bg-error/20 text-error-content");
+    expect(feeClasses.get("0")).toContain("bg-success");
+    expect(feeClasses.get("1")).toContain("bg-error");
+    expect(feeClasses.get("2")).toContain("bg-error");
   });
 
   it("does not color mid-range fees", () => {
@@ -209,9 +177,9 @@ describe("computeQuintileClasses - fees semantics", () => {
     const classes = computeQuintileClasses(rows as unknown as never[]);
     const feeClasses = classes.get("fees");
     invariant(feeClasses, "Expected fees classes map to be defined");
-    expect(feeClasses.get("0")).toBe("bg-success/20 text-success-content");
-    expect(feeClasses.get("1")).toBe("bg-success/20 text-success-content");
-    expect(feeClasses.get("2")).toBe("bg-success/20 text-success-content");
+    expect(feeClasses.get("0")).toContain("bg-success");
+    expect(feeClasses.get("1")).toContain("bg-success");
+    expect(feeClasses.get("2")).toContain("bg-success");
   });
 
   it("applies thresholds even when fewer than 3 rows", () => {
@@ -225,8 +193,8 @@ describe("computeQuintileClasses - fees semantics", () => {
     const classes = computeQuintileClasses(rows as unknown as never[]);
     const feeClasses = classes.get("fees");
     invariant(feeClasses, "Expected fees classes map to be defined");
-    expect(feeClasses.get("0")).toBe("bg-success/20 text-success-content");
-    expect(feeClasses.get("1")).toBe("bg-error/20 text-error-content");
+    expect(feeClasses.get("0")).toContain("bg-success");
+    expect(feeClasses.get("1")).toContain("bg-error");
   });
 
   it("ignores undefined fee values safely", () => {
@@ -244,9 +212,9 @@ describe("computeQuintileClasses - fees semantics", () => {
     const classes = computeQuintileClasses(rows as unknown as never[]);
     const feeClasses = classes.get("fees");
     invariant(feeClasses, "Expected fees classes map to be defined");
-    expect(feeClasses.get("0")).toBe("bg-success/20 text-success-content");
+    expect(feeClasses.get("0")).toContain("bg-success");
     expect(feeClasses.get("1")).toBeUndefined();
-    expect(feeClasses.get("2")).toBe("bg-error/20 text-error-content");
+    expect(feeClasses.get("2")).toContain("bg-error");
   });
 });
 

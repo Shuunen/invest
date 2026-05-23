@@ -1,5 +1,10 @@
-import { z } from "zod/v4";
+import { z, type ZodType } from "zod/v4";
 import { maxPercentage } from "../utils/constants";
+import { themes } from "../utils/theme.ts";
+
+function fallback<Type>(value: Type): ZodType<Type> {
+  return z.any().transform(() => value);
+}
 
 // --- Geography ---
 
@@ -204,7 +209,7 @@ export const SettingsSchema = z.object({
       direction: z.enum(["asc", "desc"]),
     })
     .default({ column: "score", direction: "desc" }),
-  theme: z.enum(["light", "dark"]).default("light"),
+  theme: z.enum(themes).prefault("light").or(fallback("light")),
 });
 
 export type Settings = z.infer<typeof SettingsSchema>;

@@ -20,11 +20,11 @@ export function AssetForm({ disableSave = false, errors, form, isinDisplay, onCa
   return (
     <div className="max-w-8xl mx-auto mt-6">
       <div className="mb-6 flex items-center justify-between">
-        <button type="button" data-testid="cancel-button" className="btn gap-1 btn-soft btn-sm" onClick={onCancel}>
+        <button type="button" data-testid="cancel-button" className="btn btn-soft" onClick={onCancel}>
           <ArrowLeft size={16} />
           Cancel
         </button>
-        <button type="button" data-testid="save-button" className="btn btn-sm btn-primary" onClick={onSave} disabled={disableSave}>
+        <button type="button" data-testid="save-button" className="btn btn-primary" onClick={onSave} disabled={disableSave}>
           Save
         </button>
       </div>

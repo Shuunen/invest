@@ -62,32 +62,34 @@ export function PageHeader({ actions, assets, metrics, replaceDefaultMetrics = f
     return [...metricItems(assets), ...(metrics ?? [])];
   }, [assets, metrics, replaceDefaultMetrics]);
   return (
-    <div className="bg-base-100 px-4 pt-5">
-      <div className="flex items-center justify-between">
-        <div className="mb-4">
-          <h1 aria-label={title} data-testid="page-title" className="text-2xl font-bold tracking-tight">
-            <TextAnimate animation="scaleUp" by="character">
-              {title}
-            </TextAnimate>
-          </h1>
-          <p data-testid="page-subtitle" className="mt-1 text-sm text-base-content/60">
-            <TextAnimate animation="scaleDown" by="character">
-              {subtitle}
-            </TextAnimate>
-          </p>
-        </div>
-        {actions && actions.length > 0 && (
-          <div className="flex gap-2">
-            {actions.map(action => (
-              <button key={action.label} type="button" data-testid={`action-${kebabCase(action.label)}`} className="btn btn-soft btn-primary" onClick={action.onClick}>
-                {action.label}
-                {action.icon}
-              </button>
-            ))}
+    <div className="flex grow bg-base-200 py-4" data-testid="page-header">
+      <div className="container mx-auto flex grow">
+        <div className="flex grow flex-col justify-center gap-4">
+          <div className="flex items-center gap-4">
+            <h1 aria-label={title} data-testid="page-title" className="text-2xl font-bold tracking-tight">
+              <TextAnimate animation="scaleUp" by="character">
+                {title}
+              </TextAnimate>
+            </h1>
+            <span data-testid="page-subtitle" className="mt-1 text-sm text-base-content/60">
+              <TextAnimate animation="scaleDown" by="character">
+                {subtitle}
+              </TextAnimate>
+            </span>
+            {actions && actions.length > 0 && (
+              <div className="ml-auto flex gap-2">
+                {actions.map(action => (
+                  <button key={action.label} type="button" data-testid={`action-${kebabCase(action.label)}`} className="btn btn-soft" onClick={action.onClick}>
+                    {action.label}
+                    {action.icon}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+          <Metrics items={combinedMetrics} />
+        </div>
       </div>
-      <Metrics items={combinedMetrics} />
     </div>
   );
 }

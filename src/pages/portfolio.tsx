@@ -208,7 +208,7 @@ function renderNoAssets() {
         No assets yet
       </h2>
       <p className="mb-4 text-base-content/60">
-        Click <strong className="text-primary">Select assets</strong> to add instruments to this portfolio.
+        Click <strong className="text-accent">Select assets</strong> to add instruments to this portfolio.
       </p>
     </div>
   );
@@ -249,14 +249,11 @@ function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDele
 
 function renderAllocationCharts(portfolioAllocations: { geo: Allocation; sector: Allocation }, targetAllocations: { geo: Allocation; sector: Allocation }) {
   return (
-    <div className="p-4">
-      <hr />
-      <div data-testid="allocation-charts" className="flex h-72 justify-evenly gap-4 p-4">
-        <AllocationChart data={portfolioAllocations.geo} title="Actual geography" name="portfolio-geo" />
-        <AllocationChart data={targetAllocations.geo} title="Target geography" name="target-geo" />
-        <AllocationChart data={portfolioAllocations.sector} title="Actual sectors" name="portfolio-sector" />
-        <AllocationChart data={targetAllocations.sector} title="Target sectors" name="target-sector" />
-      </div>
+    <div data-testid="allocation-charts" className="container mx-auto mt-4 flex grow items-center justify-between gap-4 border-t border-base-content/20 pt-4">
+      <AllocationChart data={portfolioAllocations.geo} title="Actual geography" name="portfolio-geo" />
+      <AllocationChart data={targetAllocations.geo} title="Target geography" name="target-geo" />
+      <AllocationChart data={portfolioAllocations.sector} title="Actual sectors" name="portfolio-sector" />
+      <AllocationChart data={targetAllocations.sector} title="Target sectors" name="target-sector" />
     </div>
   );
 }
@@ -296,7 +293,7 @@ function renderAssetTableSection(
 ) {
   return (
     <div className="flex grow flex-col">
-      <div className={config.totalValue > 0 || config.targetTotalValue > 0 ? "flex max-h-[calc(100dvh-37rem)] grow overflow-y-auto" : undefined}>
+      <div className={config.totalValue > 0 || config.targetTotalValue > 0 ? "flex grow justify-stretch overflow-y-auto" : undefined}>
         <AssetTable
           assets={portfolioAssets}
           onRemoveAsset={setIsinToDelete}

@@ -1,28 +1,13 @@
-import { Link, Outlet } from "@tanstack/react-router";
-import { PlusCircle } from "lucide-react";
+import { Outlet } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import { useDexieSync, useHydration } from "./components/asset-table-db.ts";
 import { CreatePortfolioModal } from "./components/create-portfolio-modal.tsx";
-import { ImportExportButtons } from "./components/import-export-buttons.tsx";
-import { InvestIcon } from "./components/invest-icon.tsx";
+import { Navbar } from "./components/navbar.tsx";
 import { OfflineWarning } from "./components/offline-warning.tsx";
 import { setupPwa } from "./pwa.ts";
 import { useAppStore } from "./store/use-app-store.ts";
-import { cn } from "./utils/browser-styles";
-
-const activeMenuClass = cn("bg-primary/10 font-bold text-primary", "hover:border-primary/50");
-
-function PortfolioNavLinks() {
-  const portfolios = useAppStore(state => state.data.portfolios);
-  return portfolios.map(portfolio => (
-    <li key={portfolio.id}>
-      <Link to="/portfolios/$id" title={`My ${portfolio.name} portfolio`} params={{ id: portfolio.id }} activeProps={{ className: activeMenuClass }}>
-        {portfolio.name}
-      </Link>
-    </li>
-  ));
-}
+import { useThemeColorSync } from "./utils/theme.ts";
 
 function useOfflineStatus() {
   const [isOffline, setIsOffline] = useState(() => !globalThis.navigator.onLine);
@@ -44,44 +29,15 @@ function useOfflineStatus() {
 export function App() {
   const [createOpen, setCreateOpen] = useState(false);
   const isOffline = useOfflineStatus();
-
+  const theme = useAppStore(state => state.data.settings.theme);
   useEffect(setupPwa, []);
-
+  useThemeColorSync(theme);
   useHydration(0);
   useDexieSync();
   return (
     <div className="flex min-h-screen flex-col bg-base-200">
       <OfflineWarning isOffline={isOffline} />
-      <nav className="navbar px-4 shadow-sm">
-        <div className="navbar-start">
-          <Link to="/">
-            <div className="flex items-center gap-3 text-2xl font-bold text-primary">
-              <InvestIcon /> Invest
-            </div>
-          </Link>
-        </div>
-        <div className="navbar-center">
-          <ul className="menu menu-horizontal gap-1 px-1">
-            <li>
-              <Link to="/" title="All assets available" activeProps={{ className: activeMenuClass }}>
-                Assets
-              </Link>
-            </li>
-            <PortfolioNavLinks />
-            <li>
-              <Link to="/about" activeProps={{ className: activeMenuClass }}>
-                About
-              </Link>
-            </li>
-          </ul>
-        </div>
-        <div className="navbar-end gap-2">
-          <button type="button" className="btn btn-soft btn-sm btn-primary" aria-label="New portfolio" title="Add portfolio" onClick={() => setCreateOpen(true)}>
-            <PlusCircle size={16} />
-          </button>
-          <ImportExportButtons />
-        </div>
-      </nav>
+      <Navbar onCreatePortfolio={() => setCreateOpen(true)} />
       <main className="flex h-full grow flex-col">
         <Outlet />
       </main>

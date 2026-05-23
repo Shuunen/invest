@@ -12,7 +12,15 @@ export type MetricItem = {
   value: string | number | undefined;
 };
 
-export function Metric({ label, value, color, index = 0 }: MetricItem & { index?: number }) {
+const metricColorClass: Record<MetricItem["color"], string> = {
+  error: "text-error",
+  info: "text-info",
+  neutral: "text-base-content",
+  success: "text-success",
+  warning: "text-warning",
+};
+
+export function Metric({ color, label, value, index = 0 }: MetricItem & { index?: number }) {
   const displayValue = typeof value === "number" ? formatNumber(value) : (value ?? "—");
   const testAnimationDuration = 1;
   const defaultAnimationDuration = 300;
@@ -27,17 +35,8 @@ export function Metric({ label, value, color, index = 0 }: MetricItem & { index?
 
   return (
     // oxlint-disable-next-line id-length
-    <motion.div className="flex flex-col gap-2 py-2" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (index * animationDuration) / nbMsInSecond, duration: animationDuration / nbMsInSecond }}>
-      <span
-        data-testid={`metric-${kebabCase(String(label))}-value`}
-        className={cn(`font-mono text-xl font-bold tracking-tight`, {
-          "text-error": color === "error",
-          "text-info": color === "info",
-          "text-neutral": color === "neutral",
-          "text-success": color === "success",
-          "text-warning": color === "warning",
-        })}
-      >
+    <motion.div className="flex flex-col" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (index * animationDuration) / nbMsInSecond, duration: animationDuration / nbMsInSecond }}>
+      <span data-testid={`metric-${kebabCase(String(label))}-value`} className={cn(`font-mono text-xl font-bold tracking-tight`, metricColorClass[color])}>
         {ready && <TextHyper text={displayValue} duration={animationDuration} />}
       </span>
       <span data-testid={`metric-${kebabCase(String(label))}-label`} className="text-xs font-medium tracking-widest text-base-content/40 uppercase">

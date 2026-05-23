@@ -22,7 +22,7 @@ function renderExportStatusSection({ editCount, lastExportedAt, setEditCount }: 
         <h3 className="mb-2 text-sm font-semibold text-base-content/70">Test reminder tiers</h3>
         <div className="flex flex-wrap gap-2">
           {stalenessTierPresets.map(({ editCount: presetEditCount, label, tier }) => (
-            <button key={tier} type="button" data-testid={`set-edit-count-${tier}`} className="btn btn-soft btn-xs btn-primary" onClick={() => setEditCount(presetEditCount)}>
+            <button key={tier} type="button" data-testid={`set-edit-count-${tier}`} className="btn btn-soft btn-xs" onClick={() => setEditCount(presetEditCount)}>
               {label}
             </button>
           ))}

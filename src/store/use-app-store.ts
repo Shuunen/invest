@@ -2,6 +2,7 @@ import { invariant } from "es-toolkit";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { maxIsins, maxPortfolios, SettingsSchema, type AppData, type Asset, type Portfolio, type PortfolioEntry, type Settings } from "../schemas/index.ts";
+import type { Theme } from "../utils/theme.ts";
 
 const defaultSettings: Settings = SettingsSchema.parse({});
 
@@ -51,6 +52,7 @@ type AppStore = {
   updatePortfolio: (id: string, patch: Partial<Pick<Portfolio, "name" | "broker">>) => void;
   updatePortfolioEntryAmount: (portfolioId: string, isin: string, amount: number) => void;
   updatePortfolioEntryNote: (portfolioId: string, isin: string, note: string) => void;
+  setTheme: (theme: Theme) => void;
   updatePortfolioEntryTargetAmount: (portfolioId: string, isin: string, targetAmount: number) => void;
 };
 
@@ -148,6 +150,10 @@ export const useAppStore = create<AppStore>()(
     setSort: sort =>
       set(state => ({
         data: { ...state.data, settings: { ...state.data.settings, sort } },
+      })),
+    setTheme: theme =>
+      set(state => ({
+        data: { ...state.data, settings: { ...state.data.settings, theme } },
       })),
     unDismissSimilarity: (isin, matchedIsin) =>
       set(state => ({

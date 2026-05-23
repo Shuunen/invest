@@ -95,7 +95,7 @@ export function makeSelectColumn(): ColumnDef<Asset> {
         <input
           type="checkbox"
           data-testid={`select-${row.original.isin.toLowerCase()}`}
-          className="checkbox checkbox-sm checkbox-primary"
+          className="checkbox checkbox-sm"
           checked={meta?.selectedIsins?.has(row.original.isin) ?? false}
           onChange={() => meta?.onToggleSelect?.(row.original.isin)}
           onClick={event => event.stopPropagation()}

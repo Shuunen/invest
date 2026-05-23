@@ -48,7 +48,7 @@ function renderStalenessDecoration(tier: Exclude<StalenessTier, "1-ok">, unexpor
 function getExportButtonClassName(tier: StalenessTier) {
   const baseClasses = "btn relative overflow-visible transition-all btn-soft btn-sm";
   const tierClasses: Record<StalenessTier, string> = {
-    "1-ok": "btn-primary w-9 min-w-9 px-0",
+    "1-ok": "w-9 min-w-9 px-0",
     "2-low": "btn-primary w-9 min-w-9 px-0",
     "3-medium": "btn-warning pr-8 w-12 min-w-12 px-0",
     "4-high": "btn-error animate-pulse pr-4 pl-4",
@@ -151,9 +151,9 @@ export function ImportExportButtons() {
   const { data, fileInputRef, handleExport, handleFileChange, handleImportClick, stalenessTier, unexportedChanges } = useImportExport();
   const exportTitle = getExportTitle(unexportedChanges);
   return (
-    <div className="flex items-center gap-2">
+    <>
       <input ref={fileInputRef} type="file" data-testid="file-input" accept=".json,application/json" className="hidden" onChange={handleFileChange} />
-      <button type="button" data-testid="import-button" className="btn btn-soft btn-sm btn-primary" aria-label="Import data" title="Import data" onClick={handleImportClick}>
+      <button type="button" data-testid="import-button" className="btn btn-soft btn-sm" aria-label="Import data" title="Import data" onClick={handleImportClick}>
         <Upload size={16} />
       </button>
       <div className="relative">
@@ -170,6 +170,6 @@ export function ImportExportButtons() {
         </button>
         {stalenessTier !== "1-ok" && renderStalenessDecoration(stalenessTier, unexportedChanges)}
       </div>
-    </div>
+    </>
   );
 }

@@ -5,10 +5,10 @@ import type { Asset } from "../schemas/index.ts";
 export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number) {
   return (
     <div className="dropdown dropdown-end">
-      <button type="button" tabIndex={0} className="btn text-gray-500 btn-ghost btn-sm">
+      <button type="button" tabIndex={0} className="btn btn-sm">
         Columns <EyeIcon size={16} />
       </button>
-      <div tabIndex={0} className="dropdown-content menu z-9999 w-lg rounded-box bg-base-100 p-2 shadow-2xl">
+      <div tabIndex={0} className="dropdown-content menu z-9999 w-lg rounded-box bg-base-100 p-2">
         <div className="grid grid-cols-2 gap-x-4">
           {table
             .getAllLeafColumns()
@@ -37,7 +37,7 @@ export function renderSearchFilter(filterText: string, setFilterText: (value: st
     <input
       data-testid="input-filter"
       type="search"
-      className="input-bordered input input-sm w-full max-w-sm outline-gray-300"
+      className="input-bordered input input-sm w-full max-w-sm outline-base-100"
       placeholder="Search ISIN, name, tickers…"
       value={filterText}
       onChange={event => {

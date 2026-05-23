@@ -51,16 +51,6 @@ describe("AppDataSchema", () => {
   });
 });
 
-describe("safeImportJson", () => {
-  it("returns schema error when valid JSON fails Zod validation", () => {
-    expect.hasAssertions();
-    // theme must be "light" or "dark" — passing an invalid enum value triggers Zod failure
-    const result = safeImportJson(JSON.stringify({ assets: [], portfolios: [], settings: { theme: "invalid" } }));
-    expect(result).toHaveProperty("error");
-    expect((result as { error: string }).error).toMatch(/Schema error at/u);
-  });
-});
-
 describe("parseAppData", () => {
   it("returns parsed data for valid input", () => {
     expect.hasAssertions();
@@ -69,12 +59,6 @@ describe("parseAppData", () => {
     expect(data.assets.length).toBeGreaterThan(0);
     expect(Array.isArray(data.portfolios)).toBe(true);
     expect(data.settings.theme).toBeTypeOf("string");
-  });
-
-  it("throws for invalid input", () => {
-    expect.hasAssertions();
-    // theme must be "light" or "dark" — passing an invalid enum value triggers a Zod throw
-    expect(() => parseAppData({ assets: [], portfolios: [], settings: { theme: "invalid" } })).toThrow(/invalid_value/u);
   });
 });
 

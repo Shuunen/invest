@@ -47,9 +47,9 @@ function renderThContent(header: Header<Asset, unknown>) {
   const title = header.column.columnDef.meta?.title;
   if (!header.column.getCanSort()) return <span>{label}</span>;
   return (
-    <button type="button" data-testid={`sort-${header.id}`} title={title} className={cn("btn", sorted ? "btn-soft btn-primary" : "btn-ghost")} onClick={header.column.getToggleSortingHandler()}>
+    <button type="button" data-testid={`sort-${header.id}`} title={title} className={cn("btn btn-ghost", { "text-base-content": sorted })} onClick={header.column.getToggleSortingHandler()}>
       {label}
-      <span className="scale-75">{getSortIndicator(sorted)}</span>
+      <span className={cn("scale-75")}>{getSortIndicator(sorted)}</span>
     </button>
   );
 }
@@ -231,7 +231,7 @@ function renderAssetsHeader(assets: Asset[], actions: { icon: React.ReactNode; l
 
 function renderTableHeader(table: Table<Asset>) {
   return (
-    <thead className="sticky top-12 z-10 bg-base-200">
+    <thead className="sticky top-12 z-10 bg-base-100">
       {table.getHeaderGroups().map(headerGroup => (
         <tr key={headerGroup.id}>
           {headerGroup.headers.map(header => (
@@ -248,7 +248,7 @@ function renderTableHeader(table: Table<Asset>) {
         </tr>
       ))}
       <tr>
-        <th colSpan={table.getVisibleLeafColumns().length} className="p-0 shadow" />
+        <th colSpan={table.getVisibleLeafColumns().length} className="p-0" />
       </tr>
     </thead>
   );
@@ -261,7 +261,7 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
         <tr
           key={row.id}
           data-testid={`asset-row-${row.original.isin}`}
-          className={cn("rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary hover:backdrop-brightness-105", onRowClick && "cursor-pointer select-none")}
+          className={cn("rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-base-content/30 hover:backdrop-brightness-105", onRowClick && "cursor-pointer select-none")}
           onClick={onRowClick ? () => onRowClick(row.original.isin) : undefined}
         >
           {row.getVisibleCells().map(cell => {
@@ -313,10 +313,10 @@ export function AssetTable(props: Props = {}) {
   if (!propAssets && data.assets.length === 0) return renderEmpty();
   const filterReturnedNoResults = filterText.trim() !== "" && table.getRowModel().rows.length === 0;
   return (
-    <>
+    <div className="flex grow flex-col bg-base-100">
       {!propAssets && renderAssetsHeader(data.assets, priceEditActions)}
-      <div className="relative p-4 pt-0 text-left">
-        <div className="sticky top-0 z-20 flex gap-4 bg-base-200 pt-4">
+      <div className="relative container mx-auto overflow-auto" data-testid="asset-table">
+        <div className="sticky top-0 z-20 flex gap-4 bg-base-100 pt-4">
           {renderSearchFilter(filterText, setFilterText)}
           {renderColumnFilter(table, visibleLeafCount)}
         </div>
@@ -326,6 +326,6 @@ export function AssetTable(props: Props = {}) {
           {filterReturnedNoResults ? renderNoResults(table.getVisibleLeafColumns().length, filterText) : renderTableBody(table, quintileClasses, props.onToggleSelect)}
         </table>
       </div>
-    </>
+    </div>
   );
 }

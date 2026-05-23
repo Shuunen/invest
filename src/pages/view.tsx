@@ -28,7 +28,7 @@ export function AssetViewPage({ isin }: Props) {
         <button
           type="button"
           data-testid="back-button"
-          className="btn btn-sm"
+          className="btn btn-soft btn-primary"
           onClick={() => {
             if (globalThis.history.length > 1) globalThis.history.back();
             else void navigate({ to: "/" });
@@ -37,7 +37,7 @@ export function AssetViewPage({ isin }: Props) {
           <ArrowLeft size={16} />
           Back
         </button>
-        <button type="button" data-testid="edit-button" className="btn btn-soft btn-sm btn-primary" onClick={() => void navigate({ params: { isin }, replace: true, to: "/assets/$isin/edit" })}>
+        <button type="button" data-testid="edit-button" className="btn btn-primary" onClick={() => void navigate({ params: { isin }, replace: true, to: "/assets/$isin/edit" })}>
           <Pencil size={14} />
           Edit
         </button>

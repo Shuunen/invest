@@ -33,6 +33,9 @@ const sliceHoverInset = 6;
 const hoverRingGap = 5;
 const hoverDashPattern = "8 4";
 const hoverDashCycle = 12;
+const themedStrokeColor = "var(--color-base-100)";
+const themedLabelColor = "white";
+const themedShadowColor = "color-mix(in oklab, black 35%, transparent)";
 
 function deriveSliceGeometry({ end, fraction = 0, inset = 0, mid, size, start }: SliceGeometryArgs) {
   const cx = size / 2;
@@ -73,15 +76,15 @@ function PieSliceFill({ end, fill, isHovered, label, onEnter, size, start }: Pie
   if (fullCircle)
     return (
       <g onMouseEnter={onEnter} data-testid={testId}>
-        <circle cx={cx} cy={cy} fill={fill} r={outerR} stroke="white" strokeWidth="2" style={fillHoverStyle} />
-        <circle cx={cx} cy={cy} r={outerR - hoverRingGap} fill="none" stroke="white" strokeWidth="2" strokeDasharray={hoverDashPattern} className="pie-dash" style={hoverRingStyle} />
+        <circle cx={cx} cy={cy} fill={fill} r={outerR} stroke={themedStrokeColor} strokeWidth="2" style={fillHoverStyle} />
+        <circle cx={cx} cy={cy} r={outerR - hoverRingGap} fill="none" stroke={themedStrokeColor} strokeWidth="2" strokeDasharray={hoverDashPattern} className="pie-dash" style={hoverRingStyle} />
       </g>
     );
 
   return (
     <g onMouseEnter={onEnter} data-testid={testId}>
-      <path d={path} fill={fill} stroke="white" strokeWidth="2" style={fillHoverStyle} />
-      <path d={hoverArcPath} fill="none" stroke="white" strokeWidth="2" strokeDasharray={hoverDashPattern} strokeLinecap="round" className="pie-dash" style={hoverRingStyle} />
+      <path d={path} fill={fill} stroke={themedStrokeColor} strokeWidth="2" style={fillHoverStyle} />
+      <path d={hoverArcPath} fill="none" stroke={themedStrokeColor} strokeWidth="2" strokeDasharray={hoverDashPattern} strokeLinecap="round" className="pie-dash" style={hoverRingStyle} />
     </g>
   );
 }
@@ -101,12 +104,12 @@ function PieSliceLabel({ end, fill, fraction, isHovered, label, mid, size, start
 
   return (
     <g style={{ pointerEvents: "none" }} data-testid={`slice-label-${kebabCase(label)}`}>
-      <rect x={badgeX} y={badgeY} width={badgeWidth} height={badgeHeight} fill={fill} fillOpacity="0.8" rx="4" style={{ filter: "drop-shadow(0 2px 4px rgb(0 0 0 / 0.3))" }} />
+      <rect x={badgeX} y={badgeY} width={badgeWidth} height={badgeHeight} fill={fill} fillOpacity="0.8" rx="4" style={{ filter: `drop-shadow(0 2px 4px ${themedShadowColor})` }} />
       <text dominantBaseline="middle" fontSize="14" fontWeight={fontWeight} textAnchor="middle" x={anchor.x} y={anchor.y} data-testid={textTestId}>
-        <tspan dy="-0.6em" fill="white" x={anchor.x}>
+        <tspan dy="-0.6em" fill={themedLabelColor} x={anchor.x}>
           {label}
         </tspan>
-        <tspan dy="1.4em" fill="white" x={anchor.x}>
+        <tspan dy="1.4em" fill={themedLabelColor} x={anchor.x}>
           {pctText}
         </tspan>
       </text>
