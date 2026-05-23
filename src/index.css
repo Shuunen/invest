@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @plugin "daisyui/index.js" {
   logs: false;
-  themes: all;
+  themes: business, dark, dim, dracula, forest, bumblebee, caramellatte, cupcake, light, winter;
 }
 
 [data-theme="bumblebee"] {
