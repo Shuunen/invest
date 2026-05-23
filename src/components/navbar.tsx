@@ -37,7 +37,7 @@ export function Navbar({ onCreatePortfolio }: NavbarProps) {
               </div>
             </Link>
             <div className="flex gap-2 md:absolute md:right-0" data-testid="navbar-actions">
-              <button type="button" className="btn btn-soft btn-sm" aria-label="New portfolio" title="Add portfolio" onClick={onCreatePortfolio}>
+              <button type="button" className="btn btn-soft btn-sm" aria-label="New portfolio" title="Add portfolio" data-testid="navbar-create-portfolio" onClick={onCreatePortfolio}>
                 <PlusCircle size={16} />
               </button>
               <ImportExportButtons />
@@ -46,7 +46,7 @@ export function Navbar({ onCreatePortfolio }: NavbarProps) {
           </div>
           <ul className="menu menu-horizontal gap-1 self-center px-1" data-testid="navbar-links">
             {useNavLinks().map(link => (
-              <li key={link.id}>
+              <li key={link.id} data-testid={`navbar-link-${link.id}`}>
                 <Link to={link.to} title={link.title} params={link.params} activeProps={{ className: cn("bg-accent/20 font-bold", "hover:bg-accent/30") }}>
                   {link.label}
                 </Link>

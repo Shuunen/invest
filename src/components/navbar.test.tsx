@@ -20,8 +20,8 @@ describe("Navbar", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<Navbar onCreatePortfolio={vi.fn<() => void>()} />);
 
-    expect(screen.getByText("Assets")).toBeInTheDocument();
-    expect(screen.getByText("About")).toBeInTheDocument();
+    expect(screen.getByTestId("navbar-link-assets")).toHaveTextContent("Assets");
+    expect(screen.getByTestId("navbar-link-about")).toHaveTextContent("About");
   });
 
   it("renders portfolio links", () => {
@@ -42,8 +42,8 @@ describe("Navbar", () => {
 
     render(<Navbar onCreatePortfolio={vi.fn<() => void>()} />);
 
-    expect(screen.getByText("Test Portfolio")).toBeInTheDocument();
-    expect(screen.getByText("Another Portfolio")).toBeInTheDocument();
+    expect(screen.getByTestId("navbar-link-1")).toHaveTextContent("Test Portfolio");
+    expect(screen.getByTestId("navbar-link-2")).toHaveTextContent("Another Portfolio");
   });
 
   it("calls onCreatePortfolio when button is clicked", () => {
@@ -53,7 +53,7 @@ describe("Navbar", () => {
     const onCreatePortfolio = vi.fn<() => void>();
     render(<Navbar onCreatePortfolio={onCreatePortfolio} />);
 
-    const button = screen.getByRole("button", { name: /New portfolio/u });
+    const button = screen.getByTestId("navbar-create-portfolio");
     button.click();
 
     expect(onCreatePortfolio).toHaveBeenCalledOnce();
