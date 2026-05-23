@@ -36,3 +36,13 @@
 hr {
   @apply border-base-content/10;
 }
+
+.container {
+  @apply px-4;
+}
+
+@media (width >= 140rem) {
+  .container {
+    @apply max-w-480;
+  }
+}

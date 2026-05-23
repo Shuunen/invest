@@ -249,7 +249,7 @@ function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDele
 
 function renderAllocationCharts(portfolioAllocations: { geo: Allocation; sector: Allocation }, targetAllocations: { geo: Allocation; sector: Allocation }) {
   return (
-    <div data-testid="allocation-charts" className="container mx-auto mt-4 flex grow items-center justify-between gap-4 border-t border-base-content/20 pt-4">
+    <div data-testid="allocation-charts" className="container mx-auto grid grow grid-cols-2 items-center justify-between gap-4 md:grid-cols-4">
       <AllocationChart data={portfolioAllocations.geo} title="Actual geography" name="portfolio-geo" />
       <AllocationChart data={targetAllocations.geo} title="Target geography" name="target-geo" />
       <AllocationChart data={portfolioAllocations.sector} title="Actual sectors" name="portfolio-sector" />
@@ -292,7 +292,7 @@ function renderAssetTableSection(
   },
 ) {
   return (
-    <div className="flex grow flex-col">
+    <div className="flex grow flex-col gap-4">
       <div className={config.totalValue > 0 || config.targetTotalValue > 0 ? "flex grow justify-stretch overflow-y-auto" : undefined}>
         <AssetTable
           assets={portfolioAssets}

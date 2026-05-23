@@ -62,24 +62,26 @@ export function PageHeader({ actions, assets, metrics, replaceDefaultMetrics = f
     return [...metricItems(assets), ...(metrics ?? [])];
   }, [assets, metrics, replaceDefaultMetrics]);
   return (
-    <div className="flex grow bg-base-200 py-4" data-testid="page-header">
+    <div className="flex bg-base-200 py-4 md:py-8" data-testid="page-header">
       <div className="container mx-auto flex grow">
         <div className="flex grow flex-col justify-center gap-4">
           <div className="flex items-center gap-4">
-            <h1 aria-label={title} data-testid="page-title" className="text-2xl font-bold tracking-tight">
-              <TextAnimate animation="scaleUp" by="character">
-                {title}
-              </TextAnimate>
-            </h1>
-            <span data-testid="page-subtitle" className="mt-1 text-sm text-base-content/60">
-              <TextAnimate animation="scaleDown" by="character">
-                {subtitle}
-              </TextAnimate>
-            </span>
+            <div className="grid">
+              <h1 aria-label={title} data-testid="page-title" className="text-lg font-bold tracking-tight md:text-2xl">
+                <TextAnimate animation="scaleUp" by="character">
+                  {title}
+                </TextAnimate>
+              </h1>
+              <span data-testid="page-subtitle" className="mt-1 text-xs text-base-content/60 md:text-sm">
+                <TextAnimate animation="scaleDown" by="character">
+                  {subtitle}
+                </TextAnimate>
+              </span>
+            </div>
             {actions && actions.length > 0 && (
               <div className="ml-auto flex gap-2">
                 {actions.map(action => (
-                  <button key={action.label} type="button" data-testid={`action-${kebabCase(action.label)}`} className="btn btn-soft" onClick={action.onClick}>
+                  <button key={action.label} type="button" data-testid={`action-${kebabCase(action.label)}`} className="btn btn-soft btn-sm md:btn-md" onClick={action.onClick}>
                     {action.label}
                     {action.icon}
                   </button>

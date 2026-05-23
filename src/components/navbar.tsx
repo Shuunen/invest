@@ -27,15 +27,24 @@ type NavbarProps = {
 
 export function Navbar({ onCreatePortfolio }: NavbarProps) {
   return (
-    <nav className="flex grow items-end bg-base-100">
+    <nav className="flex bg-base-100" data-testid="navbar">
       <div className="container mx-auto">
-        <div className="flex items-center py-4">
-          <Link to="/">
-            <div className="flex items-center gap-3 text-2xl font-bold text-base-content transition-colors hover:text-accent" data-testid="logo">
-              <InvestIcon /> Invest
+        <div className="relative flex flex-col gap-4 pt-4 md:flex-row md:items-center md:justify-between md:pb-4">
+          <div className="flex justify-between">
+            <Link to="/" data-testid="navbar-home">
+              <div className="flex items-center gap-3 text-2xl font-bold text-base-content transition-colors hover:text-accent" data-testid="logo">
+                <InvestIcon /> Invest
+              </div>
+            </Link>
+            <div className="flex gap-2 md:absolute md:right-0" data-testid="navbar-actions">
+              <button type="button" className="btn btn-soft btn-sm" aria-label="New portfolio" title="Add portfolio" onClick={onCreatePortfolio}>
+                <PlusCircle size={16} />
+              </button>
+              <ImportExportButtons />
+              <ThemeSwitcher />
             </div>
-          </Link>
-          <ul className="menu menu-horizontal ml-auto gap-1 px-1">
+          </div>
+          <ul className="menu menu-horizontal gap-1 self-center px-1" data-testid="navbar-links">
             {useNavLinks().map(link => (
               <li key={link.id}>
                 <Link to={link.to} title={link.title} params={link.params} activeProps={{ className: cn("bg-accent/20 font-bold", "hover:bg-accent/30") }}>
@@ -44,13 +53,7 @@ export function Navbar({ onCreatePortfolio }: NavbarProps) {
               </li>
             ))}
           </ul>
-          <div className="ml-auto flex gap-2">
-            <button type="button" className="btn btn-soft btn-sm" aria-label="New portfolio" title="Add portfolio" onClick={onCreatePortfolio}>
-              <PlusCircle size={16} />
-            </button>
-            <ImportExportButtons />
-            <ThemeSwitcher />
-          </div>
+          <div data-testid="navbar-actions-placeholder" className="hidden md:block md:w-48" />
         </div>
       </div>
     </nav>

@@ -36,7 +36,7 @@ export function Metric({ color, label, value, index = 0 }: MetricItem & { index?
   return (
     // oxlint-disable-next-line id-length
     <motion.div className="flex flex-col" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: (index * animationDuration) / nbMsInSecond, duration: animationDuration / nbMsInSecond }}>
-      <span data-testid={`metric-${kebabCase(String(label))}-value`} className={cn(`font-mono text-xl font-bold tracking-tight`, metricColorClass[color])}>
+      <span data-testid={`metric-${kebabCase(String(label))}-value`} className={cn(`font-mono font-bold tracking-tight md:text-xl`, metricColorClass[color])}>
         {ready && <TextHyper text={displayValue} duration={animationDuration} />}
       </span>
       <span data-testid={`metric-${kebabCase(String(label))}-label`} className="text-xs font-medium tracking-widest text-base-content/40 uppercase">
