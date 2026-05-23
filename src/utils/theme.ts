@@ -35,7 +35,7 @@ export type Theme = (typeof themes)[number];
 
 export function useThemeColorSync(theme: string) {
   useEffect(() => {
-    setTimeout(() => {
+    const id = setTimeout(() => {
       document.documentElement.dataset.theme = theme;
       const meta =
         document.querySelector<HTMLMetaElement>("meta[name='theme-color']") ??
@@ -47,7 +47,7 @@ export function useThemeColorSync(theme: string) {
         })();
       const color = globalThis.getComputedStyle(document.documentElement).getPropertyValue("--color-base-200").trim();
       meta.content = color;
-      console.log(`Updated theme-color meta to ${color} based on theme ${theme}`);
     }, 1);
+    return () => clearTimeout(id);
   }, [theme]);
 }
