@@ -29,12 +29,14 @@ export function ThemeSwitcher() {
       <button aria-label="Switch theme" className="btn btn-soft btn-sm" data-testid="theme-switcher" title="Switch theme" type="button">
         <PaletteIcon size={16} />
       </button>
-      <ul className="dropdown-content menu z-50 mt-2 rounded-box bg-base-100 p-2 shadow-md">
-        <li className="menu-title px-3 py-2 text-xs whitespace-nowrap uppercase">Light</li>
-        {lightThemes.map(themeName => renderThemeOption(themeName, theme, setTheme))}
-        <li className="menu-title px-3 py-2 text-xs uppercase">Dark</li>
-        {darkThemes.map(themeName => renderThemeOption(themeName, theme, setTheme))}
-      </ul>
+      <div className="dropdown-content w-64">
+        <div className="grid grid-cols-2 gap-x-4">
+          <div className="px-3 pt-2 text-xs uppercase opacity-50">Light</div>
+          <div className="px-3 pt-2 text-xs uppercase opacity-50">Dark</div>
+          <ul className="menu pl-0">{lightThemes.map(themeName => renderThemeOption(themeName, theme, setTheme))}</ul>
+          <ul className="menu pl-0">{darkThemes.map(themeName => renderThemeOption(themeName, theme, setTheme))}</ul>
+        </div>
+      </div>
     </div>
   );
 }

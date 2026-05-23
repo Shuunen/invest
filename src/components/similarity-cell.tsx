@@ -57,7 +57,7 @@ export function SimilarityCell({ asset, assets, onDismiss, result }: Props) {
   return (
     <span data-testid={`similarity-wrapper-${isin.toLowerCase()}`} className="relative flex items-center gap-1.5" onMouseEnter={showPopover} onMouseLeave={scheduleHide}>
       <span data-testid={`similarity-${isin.toLowerCase()}`} className="flex items-center gap-1.5">
-        <span data-testid={`similarity-dot-${isin.toLowerCase()}`} className={cn("inline-block h-2 w-2 shrink-0 rounded-full", dotClass)} />
+        <span data-testid={`similarity-dot-${isin.toLowerCase()}`} className={cn("score-dot", dotClass)} />
         <span className="w-8 text-center">{pct}</span>
       </span>
       {visible && <SimilarityPopover isin={isin} matchedIsin={matchedIsin} matchedName={matchedName} onDismiss={onDismiss} onMouseEnter={showPopover} onMouseLeave={scheduleHide} pct={pct} />}

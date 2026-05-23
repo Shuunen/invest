@@ -52,7 +52,7 @@ describe("PortfolioPage - not found", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<PortfolioPage portfolioId="nonexistent" />);
-    expect(screen.getByTestId("not-found")).toBeInTheDocument();
+    expect(screen.getByTestId("empty-portfolio-not-found")).toBeInTheDocument();
   });
 });
 
@@ -67,7 +67,7 @@ describe("PortfolioPage - empty portfolio", () => {
     });
     render(<PortfolioPage portfolioId={portfolio.id} />);
     expect(screen.getByTestId("page-title")).toHaveTextContent("My Portfolio");
-    expect(screen.getByTestId("no-assets-message")).toBeInTheDocument();
+    expect(screen.getByTestId("empty-portfolio-no-assets")).toBeInTheDocument();
   });
 
   it("renders broker name when set", () => {

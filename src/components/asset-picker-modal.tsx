@@ -97,11 +97,9 @@ type RenderSelectionInvestmentInputArgs = {
 
 function renderSelectionInvestmentInput({ newSelectionCount, onChange, value }: RenderSelectionInvestmentInputArgs) {
   return (
-    <div className="flex w-52 items-center justify-center bg-transparent">
-      <label className="form-control w-full max-w-xs" data-testid="new-selection-investment-control">
-        <div className="label">
-          <span className="label-text text-xs">Investment for new selection (€)</span>
-        </div>
+    <div className="flex w-72 items-center justify-center">
+      <label className="flex flex-col gap-2" data-testid="new-selection-investment-control">
+        <span>Investment for selection (€)</span>
         <input
           type="number"
           min={0}
@@ -111,12 +109,10 @@ function renderSelectionInvestmentInput({ newSelectionCount, onChange, value }: 
             const next = Number(event.target.value);
             onChange(Number.isFinite(next) && next >= 0 ? next : 0);
           }}
-          className="input-bordered input input-sm w-full"
+          className="input-bordered input input-sm w-1/2"
           data-testid="new-selection-investment-input"
         />
-        <div className="label">
-          <span className="label-text-alt text-xs text-base-content/60">Split equally across {newSelectionCount} new asset(s)</span>
-        </div>
+        <small>Split equally across {newSelectionCount} new asset(s)</small>
       </label>
     </div>
   );

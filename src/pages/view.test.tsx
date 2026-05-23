@@ -39,7 +39,7 @@ describe("AssetViewPage - not found", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<AssetViewPage isin="XX0000000000" />);
-    expect(screen.getByTestId("not-found")).toBeInTheDocument();
+    expect(screen.getByTestId("empty-view-asset-not-found")).toBeInTheDocument();
   });
 
   it("renders asset name and ISIN", () => {

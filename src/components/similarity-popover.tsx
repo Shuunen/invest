@@ -12,12 +12,7 @@ type Props = {
 
 export function SimilarityPopover({ isin, matchedIsin, matchedName, onDismiss, onMouseEnter, onMouseLeave, pct }: Props) {
   return (
-    <span
-      data-testid={`similarity-popover-${isin.toLowerCase()}`}
-      className="absolute top-1/2 right-full z-50 mr-2 flex -translate-y-1/2 items-center gap-2 rounded-lg border bg-base-100 px-3 py-2 whitespace-nowrap shadow-md"
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
+    <span data-testid={`similarity-popover-${isin.toLowerCase()}`} className="popover-content top-1/2 right-full mr-2 -translate-y-1/2" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <span className="text-sm">
         {pct} similar to <strong>{matchedName}</strong>
       </span>

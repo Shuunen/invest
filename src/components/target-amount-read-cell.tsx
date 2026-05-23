@@ -35,18 +35,13 @@ export function TargetAmountReadCell({ amount, amountPercentageLabel, isin, targ
 
   return (
     <span className="relative flex items-center justify-center" onMouseEnter={showPopover} onMouseLeave={scheduleHide}>
-      <span className={cn("flex items-center justify-center gap-1", { "opacity-40": targetAmount === amount })} data-testid="target-amount-read">
+      <span className={cn("cell-centered", { "opacity-40": targetAmount === amount })} data-testid="target-amount-read">
         <span data-testid={`target-amount-${normalizedIsin}`}>{targetAmount ?? "—"}</span>
         {trendIcon}
         <span data-testid={`target-percent-${normalizedIsin}`}>{amountPercentageLabel}</span>
       </span>
       {visible && isPopoverVisible && (
-        <span
-          data-testid={`target-worth-popover-${normalizedIsin}`}
-          className="absolute top-1/2 left-full z-50 ml-2 -translate-y-1/2 rounded-lg border bg-base-100 px-3 py-2 text-sm whitespace-nowrap shadow-md"
-          onMouseEnter={showPopover}
-          onMouseLeave={scheduleHide}
-        >
+        <span data-testid={`target-worth-popover-${normalizedIsin}`} className="popover-content top-1/2 left-full ml-2 -translate-y-1/2 text-sm" onMouseEnter={showPopover} onMouseLeave={scheduleHide}>
           {`To invest : ${targetInvestmentLabel}`}
         </span>
       )}

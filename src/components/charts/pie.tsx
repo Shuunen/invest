@@ -212,9 +212,9 @@ export function PieChart({ entries, name, size = 300 }: PieChartProps) {
         {slices.map(slice => slice.value * maxPercentage > hideInnerLabelBelowPercents && <PieSliceLabel key={slice.label} {...slice} isHovered={hovered === slice.label} size={size} total={total} />)}
       </svg>
       {shouldRenderPopover && (
-        <div className="absolute rounded-lg border bg-base-100 px-3 py-2 whitespace-nowrap shadow-md" ref={popoverRef} style={{ left: `${popoverPos.left}px`, top: `${popoverPos.top}px` }} data-testid="pie-popover">
+        <div className="popover-content" ref={popoverRef} style={{ left: `${popoverPos.left}px`, top: `${popoverPos.top}px` }} data-testid="pie-popover">
           <span className="font-bold">{hoveredSlice.label}</span>
-          <span className="ml-2 text-base-content">{`${Math.round(hoveredSlice.fraction * maxPercentage)}%`}</span>
+          <span>{`${Math.round(hoveredSlice.fraction * maxPercentage)}%`}</span>
         </div>
       )}
     </div>

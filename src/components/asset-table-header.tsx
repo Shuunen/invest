@@ -8,7 +8,7 @@ export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number
       <button type="button" tabIndex={0} className="btn btn-sm">
         Columns <EyeIcon size={16} />
       </button>
-      <div tabIndex={0} className="dropdown-content menu z-9999 w-lg rounded-box bg-base-100 p-2">
+      <div tabIndex={0} className="dropdown-content w-lg">
         <div className="grid grid-cols-2 gap-x-4">
           {table
             .getAllLeafColumns()
@@ -23,7 +23,7 @@ export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number
                   disabled={column.getIsVisible() && visibleLeafCount <= 1}
                   onChange={column.getToggleVisibilityHandler()}
                 />
-                <span className="label-text">{column.columnDef.meta?.title ?? String(column.columnDef.header)}</span>
+                <small>{column.columnDef.meta?.title ?? String(column.columnDef.header)}</small>
               </label>
             ))}
         </div>
@@ -37,7 +37,7 @@ export function renderSearchFilter(filterText: string, setFilterText: (value: st
     <input
       data-testid="input-filter"
       type="search"
-      className="input-bordered input input-sm w-full max-w-xs outline-base-100"
+      className="input-bordered max-w-xm input input-sm w-full outline-base-100 md:max-w-sm"
       placeholder="Search ISIN, name, tickers…"
       value={filterText}
       onChange={event => {

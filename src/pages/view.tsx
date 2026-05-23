@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Pencil } from "lucide-react";
+import { Empty } from "../components/empty.tsx";
 import { useAppStore } from "../store/use-app-store.ts";
 import { DismissedSimilaritiesSection } from "./edit/dismissed-similarities.tsx";
 import { ViewAllocationsSection } from "./view/allocations.tsx";
@@ -13,14 +14,7 @@ export function AssetViewPage({ isin }: Props) {
   const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === isin));
   const allAssets = useAppStore(state => state.data.assets);
 
-  if (!asset)
-    return (
-      <div className="p-8 text-center">
-        <p data-testid="not-found" className="text-base-content/60">
-          Asset not found: {isin}
-        </p>
-      </div>
-    );
+  if (!asset) return <Empty name="view-asset-not-found" description={`Asset not found : ${isin}`} title="Not found" />;
 
   return (
     <div className="mx-auto max-w-7xl p-6">

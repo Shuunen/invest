@@ -193,7 +193,7 @@ describe("AssetPickerModal - with assets", () => {
     expect.hasAssertions();
     render(<AssetPickerModal assets={singleAssetList} initialSelected={new Set<string>()} onCancel={vi.fn<() => void>()} onConfirm={vi.fn<(isins: string[]) => void>()} title="Select assets" />);
     await userEvent.type(screen.getByTestId("input-filter"), "zzznomatch");
-    expect(screen.getByTestId("no-results-message")).toBeInTheDocument();
+    expect(screen.getByTestId("empty-filter-no-results")).toBeInTheDocument();
   });
 
   it("calls onCancel when Cancel button is clicked", async () => {

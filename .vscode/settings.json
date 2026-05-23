@@ -1,4 +1,7 @@
 {
+  "[markdown]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
   "cSpell.words": ["autoplan", "dexie", "Dexie", "financials", "gstack", "indexeddb", "isins", "misalign", "prefault", "tsgo"],
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,

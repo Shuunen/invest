@@ -253,7 +253,7 @@ describe("AssetTable - data display", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([]), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    expect(screen.getByTestId("empty-table-message")).toHaveTextContent("No instruments added yet");
+    expect(screen.getByTestId("empty-no-assets")).toHaveTextContent("No instruments added yet");
   });
 
   it("renders all ISIN rows", () => {
@@ -314,7 +314,7 @@ describe("AssetTable - score column", () => {
     ];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const dotEl = document.querySelector(".bg-success.rounded-full");
+    const dotEl = document.querySelector(".bg-success.score-dot");
     expect(dotEl).toBeInTheDocument();
   });
 
@@ -327,7 +327,7 @@ describe("AssetTable - score column", () => {
     const assets = [lowAsset, makeAsset({ fees: 0, isin: "HIGH0000001", performance3y: 200, riskReward3y: 0 }), makeAsset({ fees: 0, isin: "HIGH0000002", performance3y: 200, riskReward3y: 0 })];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const dotEl = document.querySelector(".bg-error.rounded-full");
+    const dotEl = document.querySelector(".bg-error.score-dot");
     expect(dotEl).toBeInTheDocument();
   });
 
@@ -343,7 +343,7 @@ describe("AssetTable - score column", () => {
     ];
     useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
     render(<AssetTable />);
-    const dotEl = document.querySelector(".bg-warning.rounded-full");
+    const dotEl = document.querySelector(".bg-warning.score-dot");
     expect(dotEl).toBeInTheDocument();
   });
 });

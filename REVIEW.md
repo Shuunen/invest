@@ -165,13 +165,9 @@
 
 ### UI/UX Inconsistencies
 
-| Issue                                    | Severity  | Example                                                                                      | Fix                                         |
-| ---------------------------------------- | --------- | -------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| **Mixed edit patterns**                  | 🟡 MEDIUM | Assets have modals (confirm save), portfolios edit inline; inconsistent mental model         | Use modals for all high-risk edits          |
-| **No clear affordances for actions**     | 🟡 MEDIUM | "Select assets" button unclear; should be "Add/Remove" or have icon                          | Better naming, consistent button sizing     |
-| **Allocation charts collapse on mobile** | 🟡 MEDIUM | On small screens, charts stack poorly                                                        | Horizontal scroll or swipe carousel         |
-| **No empty state on first load**         | 🟠 LOW    | App shows empty table immediately; should guide toward "import sample" or "create portfolio" | Onboarding flow                             |
-| **Tooltip timing**                       | 🟠 LOW    | Hover tooltips on pie slices too fast; miss on mobile                                        | Increase delay, add click-to-show for touch |
+| Issue                   | Severity  | Example                                                                              | Fix                                |
+| ----------------------- | --------- | ------------------------------------------------------------------------------------ | ---------------------------------- |
+| **Mixed edit patterns** | 🟡 MEDIUM | Assets have modals (confirm save), portfolios edit inline; inconsistent mental model | Use modals for all high-risk edits |
 
 ### Data Model Inconsistencies
 
@@ -179,7 +175,6 @@
 | ------------------------------------------ | --------- | --------------------------------------------------------------------------------------------- |
 | **Target amounts mix units and currency**  | 🟡 MEDIUM | Can set target as # of units OR € amount; unclear which is canonical                          |
 | **`inPEA` flag unused in most UX**         | 🟠 LOW    | Stored (French tax-advantaged account) but no filtering/UI signals its importance             |
-| **No timestamp on portfolio entries**      | 🟡 MEDIUM | Can't tell when a position was added or last changed                                          |
 | **Similarity dismissal keyed to old ISIN** | 🟡 MEDIUM | If ISIN renamed, dismissed similarities don't cascade (partially fixed but edge cases remain) |
 
 ### Data Freshness Issues

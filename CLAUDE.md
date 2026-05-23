@@ -38,6 +38,7 @@ Never disable a lint rule without asking the user. Try to fix the code first the
 - **Null coercion in Zod**: `.nullish().transform(x => x ?? undefined)`
 - **Narrowing**: use `invariant(x, "msg")` from es-toolkit — never `x!` or silent `if (!x) return`
 - **Dynamic classNames**: use `cn` from `utils/browser-styles.ts`, never ternaries
+- **Semantic CSS**: Use only semantic class names in markup; centralize shared styling in `src/index.css` via CSS selectors with `@apply`, not scattered utility classes
 
 ## Testing practices
 

@@ -23,12 +23,12 @@ export function IsinFetchRow({ fetchError, isin, isinError, isFetching, onFetch,
         </button>
       </div>
       {isinError && (
-        <p className="mt-1 text-xs text-error" data-testid="isin-error">
+        <p className="field-error" data-testid="isin-error">
           {isinError}
         </p>
       )}
-      {fetchError !== undefined && (
-        <p className="mt-1 text-xs text-error" data-testid="fetch-error">
+      {fetchError && (
+        <p className="field-error" data-testid="fetch-error">
           {fetchError}
         </p>
       )}

@@ -27,6 +27,7 @@ import { renderColumnFilter, renderSearchFilter } from "./asset-table-header.tsx
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
 import { renderSkeleton } from "./asset-table-skeleton.tsx";
 import { computeQuintileClasses, defaultColumnVisibility, getAriaSortValue, getScoreDotClass } from "./asset-table-utils.ts";
+import { Empty } from "./empty.tsx";
 import { PageHeader } from "./page-header.tsx";
 
 type Props = AssetTableMeta & {
@@ -200,25 +201,12 @@ function renderError(error: Error, handleRetry: () => void) {
   );
 }
 
-function renderEmpty() {
-  return (
-    <div className="p-8 text-center">
-      <p className="mb-4 text-4xl">📊</p>
-      <h2 data-testid="empty-table-message">No instruments added yet</h2>
-      <p className="mb-4 text-base-content/60">Use the Import button in the top bar to get started</p>
-    </div>
-  );
-}
-
 function renderNoResults(colCount: number, filterText: string) {
   return (
     <tbody>
       <tr>
-        <td colSpan={colCount} className="p-8 text-center">
-          <p data-testid="no-results-message" className="mb-4 text-2xl">
-            No results found for &quot;{filterText}&quot;
-          </p>
-          <p className="text-base-content/60">Try adjusting your search criteria</p>
+        <td colSpan={colCount}>
+          <Empty name="filter-no-results" title={`No results found for "${filterText}"`} description="Try adjusting your search criteria" />
         </td>
       </tr>
     </tbody>
@@ -273,7 +261,7 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
               <td key={cell.id} className={tdClass}>
                 {isScoreCol && (
                   <span className="flex items-center gap-1.5">
-                    <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${getScoreDotClass(qClass)}`} />
+                    <span className={`score-dot ${getScoreDotClass(qClass)}`} />
                     <span className="w-6 text-center">{cellNode}</span>
                   </span>
                 )}
@@ -310,7 +298,7 @@ export function AssetTable(props: Props = {}) {
   const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({ ...props, onPriceChange });
   if (!propAssets && isLoading) return renderSkeleton();
   if (!propAssets && loadError) return renderError(loadError, handleRetry);
-  if (!propAssets && data.assets.length === 0) return renderEmpty();
+  if (!propAssets && data.assets.length === 0) return <Empty name="no-assets" title="No instruments added yet" description="Use the Import button in the top bar to get started" />;
   const filterReturnedNoResults = filterText.trim() !== "" && table.getRowModel().rows.length === 0;
   return (
     <div className="flex grow flex-col bg-base-100">
