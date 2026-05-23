@@ -192,7 +192,7 @@ function renderError(error: Error, handleRetry: () => void) {
   return (
     <div className="p-4 text-left">
       <div role="alert" data-testid="error-alert" className="alert alert-error">
-        <span data-testid="error-message">Failed to load data: {error.message}</span>
+        <span data-testid="error-message">Failed to load data : {error.message}</span>
         <button type="button" data-testid="retry-button" className="btn btn-sm" onClick={handleRetry}>
           Retry
         </button>

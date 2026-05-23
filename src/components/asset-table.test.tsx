@@ -234,7 +234,7 @@ describe("AssetTable - loading and error states", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: new Error("DB failed") });
     render(<AssetTable />);
-    expect(screen.getByTestId("error-message")).toHaveTextContent("Failed to load data: DB failed");
+    expect(screen.getByTestId("error-message")).toHaveTextContent("Failed to load data : DB failed");
     expect(screen.getByTestId("retry-button")).toHaveTextContent("Retry");
   });
 

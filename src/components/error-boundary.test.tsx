@@ -29,8 +29,8 @@ describe("ErrorBoundary - error state", () => {
         <Bomb shouldThrow />
       </ErrorBoundary>,
     );
-    expect(screen.getByTestId("error-alert")).toHaveTextContent("Something went wrong: test explosion");
-    expect(screen.getByTestId("error-message")).toHaveTextContent("Something went wrong: test explosion");
+    expect(screen.getByTestId("error-alert")).toHaveTextContent("Something went wrong : test explosion");
+    expect(screen.getByTestId("error-message")).toHaveTextContent("Something went wrong : test explosion");
   });
 
   it("Retry button renders when onReset provided and calls it on click", () => {

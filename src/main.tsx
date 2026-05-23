@@ -15,5 +15,5 @@ try {
     </StrictMode>,
   );
 } catch (error) {
-  root.textContent = `Failed to start: ${error instanceof Error ? error.message : String(error)}`;
+  root.textContent = `Failed to start : ${error instanceof Error ? error.message : String(error)}`;
 }

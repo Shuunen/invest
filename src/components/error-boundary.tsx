@@ -24,7 +24,7 @@ export class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="p-6">
           <div role="alert" data-testid="error-alert" className="alert alert-error">
-            <span data-testid="error-message">Something went wrong: {this.state.error.message}</span>
+            <span data-testid="error-message">Something went wrong : {this.state.error.message}</span>
             {this.props.onReset !== undefined && (
               <button type="button" data-testid="retry-button" className="btn btn-sm" onClick={this.props.onReset}>
                 Retry
