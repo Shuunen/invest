@@ -7,14 +7,12 @@
       "entries": [
         {
           "isin": "IE00B4L5Y983",
-          "positionValue": 5000,
           "targetAmount": 0,
           "notes": "the base of my portfolio",
           "inPEA": false
         },
         {
           "isin": "FR0011871128",
-          "positionValue": 2000,
           "targetAmount": 0,
           "notes": "improve tech exposure",
           "inPEA": true

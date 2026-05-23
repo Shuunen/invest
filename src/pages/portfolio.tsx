@@ -193,7 +193,7 @@ function usePortfolioData(portfolioId: string) {
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
   return selectedIsins.map(isin => {
     const existing = existingEntries.find(entry => entry.isin === isin);
-    return existing ?? { amount: 0, inPEA: false, isin, notes: "", positionValue: 0, targetAmount: 0 };
+    return existing ?? { amount: 0, inPEA: false, isin, notes: "", targetAmount: 0 };
   });
 }
 

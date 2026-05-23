@@ -37,7 +37,7 @@ describe("AppDataSchema", () => {
       portfolios: [
         {
           ...firstPortfolio,
-          entries: [...firstPortfolio.entries, { amount: 0, inPEA: false, isin: "XX0000000000", notes: "", positionValue: 100, targetAmount: 0 }],
+          entries: [...firstPortfolio.entries, { amount: 0, inPEA: false, isin: "XX0000000000", notes: "", targetAmount: 0 }],
         },
         ...valid.portfolios.slice(1),
       ],
@@ -111,7 +111,6 @@ const fullEntry: PortfolioEntry = {
   inPEA: false,
   isin: fullAsset.isin,
   notes: "",
-  positionValue: 0,
   targetAmount: 0,
 };
 

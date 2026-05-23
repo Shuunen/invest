@@ -82,7 +82,6 @@ describe("AssetSchema happy paths", () => {
 describe("PortfolioEntrySchema", () => {
   const validEntry = {
     isin: "IE00B4L5Y983",
-    positionValue: 1000,
     targetAmount: 500,
   };
 
@@ -92,9 +91,9 @@ describe("PortfolioEntrySchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects negative positionValue", () => {
+  it("rejects negative amount", () => {
     expect.hasAssertions();
-    const result = PortfolioEntrySchema.safeParse({ ...validEntry, positionValue: -1 });
+    const result = PortfolioEntrySchema.safeParse({ ...validEntry, amount: -1 });
     expect(result.success).toBe(false);
   });
 
@@ -214,13 +213,13 @@ describe("SettingsSchema: theme enum", () => {
 describe("safeImportJson error message format", () => {
   it("joins multiple schema errors with newlines", () => {
     expect.hasAssertions();
-    // Two violations: invalid theme AND negative positionValue on a portfolio entry
+    // Two violations: invalid theme AND negative targetAmount on a portfolio entry
     const bad = {
       assets: [],
       portfolios: [
         {
           broker: "Broker",
-          entries: [{ isin: "IE00B4L5Y983", positionValue: -1, targetAmount: 0 }],
+          entries: [{ isin: "IE00B4L5Y983", targetAmount: -1 }],
           id: "87b67f15-e6f2-480b-8388-5440cc1c7423",
           name: "P",
         },

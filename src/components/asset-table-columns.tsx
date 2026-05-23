@@ -395,7 +395,6 @@ export function makeDataScoreColumn(amountMap?: Map<string, number>, amountUpdat
         inPEA: false,
         isin: row.isin,
         notes: "",
-        positionValue: 0,
         targetAmount: 0,
       };
       return computeDataScore(row, entry);

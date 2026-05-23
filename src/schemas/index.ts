@@ -176,7 +176,6 @@ export const PortfolioEntrySchema = z.object({
   inPEA: z.boolean().default(false),
   isin: z.string().min(1),
   notes: z.string().default(""),
-  positionValue: z.number().nonnegative(),
   targetAmount: z.number().nonnegative(),
   targetAmountUpdatedAt: z.iso.datetime().optional(),
 });

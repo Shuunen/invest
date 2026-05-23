@@ -99,7 +99,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -114,7 +114,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const asset = makeAsset({ tickers: [] });
     const portfolio = makePortfolio({
-      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -129,7 +129,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -145,7 +145,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const asset = makeAsset({ price: 200 });
     const portfolio = makePortfolio({
-      entries: [{ amount: 3, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 3, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -161,7 +161,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const asset = makeAsset({ price: 200 });
     const portfolio = makePortfolio({
-      entries: [{ amount: 3, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 4 }],
+      entries: [{ amount: 3, inPEA: false, isin: asset.isin, notes: "", targetAmount: 4 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -179,8 +179,8 @@ describe("PortfolioPage - empty portfolio", () => {
     const asset = makeAsset({ price: 200 });
     const portfolio = makePortfolio({
       entries: [
-        { amount: 3, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 4 },
-        { amount: 0, inPEA: false, isin: "ZZ9999999999", notes: "", positionValue: 0, targetAmount: 1 },
+        { amount: 3, inPEA: false, isin: asset.isin, notes: "", targetAmount: 4 },
+        { amount: 0, inPEA: false, isin: "ZZ9999999999", notes: "", targetAmount: 1 },
       ],
     });
     useAppStore.setState({
@@ -199,8 +199,8 @@ describe("PortfolioPage - empty portfolio", () => {
     const asset = makeAsset({ price: 100 });
     const portfolio = makePortfolio({
       entries: [
-        { amount: 2, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 },
-        { amount: 5, inPEA: false, isin: "ZZ9999999999", notes: "", positionValue: 0, targetAmount: 0 },
+        { amount: 2, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 },
+        { amount: 5, inPEA: false, isin: "ZZ9999999999", notes: "", targetAmount: 0 },
       ],
     });
     useAppStore.setState({
@@ -221,8 +221,8 @@ describe("PortfolioPage - empty portfolio", () => {
     const asset = makeAsset({ price: 100 });
     const portfolio = makePortfolio({
       entries: [
-        { amount: 2, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 },
-        { amount: 5, inPEA: false, isin: "ZZ9999999999", notes: "", positionValue: 0, targetAmount: 0 },
+        { amount: 2, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 },
+        { amount: 5, inPEA: false, isin: "ZZ9999999999", notes: "", targetAmount: 0 },
       ],
     });
     useAppStore.setState({
@@ -240,7 +240,7 @@ describe("PortfolioPage - empty portfolio", () => {
     const now = new Date().toISOString();
     const asset = makeAsset({ geoAllocation: { europe: 0.4, us: 0.6 }, price: 200, sectorAllocation: { financials: 0.3, technology: 0.7 }, updatedAt: now });
     const portfolio = makePortfolio({
-      entries: [{ amount: 3, amountUpdatedAt: now, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 3, amountUpdatedAt: now, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -260,8 +260,8 @@ describe("PortfolioPage - empty portfolio", () => {
     const secondAsset = makeAsset({ geoAllocation: { europe: 0.4, us: 0.6 }, isin: "LU2222222222", price: 100, sectorAllocation: { financials: 0.3, technology: 0.7 }, updatedAt: staleDate });
     const portfolio = makePortfolio({
       entries: [
-        { amount: 1, amountUpdatedAt: now, inPEA: false, isin: firstAsset.isin, notes: "", positionValue: 0, targetAmount: 0 },
-        { amount: 1, amountUpdatedAt: now, inPEA: false, isin: secondAsset.isin, notes: "", positionValue: 0, targetAmount: 0 },
+        { amount: 1, amountUpdatedAt: now, inPEA: false, isin: firstAsset.isin, notes: "", targetAmount: 0 },
+        { amount: 1, amountUpdatedAt: now, inPEA: false, isin: secondAsset.isin, notes: "", targetAmount: 0 },
       ],
     });
     useAppStore.setState({
@@ -280,7 +280,7 @@ describe("PortfolioPage - empty portfolio", () => {
     const staleDate = "2000-01-01T00:00:00.000Z";
     const asset = makeAsset({ geoAllocation: { europe: 0.4, us: 0.6 }, price: 100, sectorAllocation: { financials: 0.3, technology: 0.7 }, updatedAt: staleDate });
     const portfolio = makePortfolio({
-      entries: [{ amount: 1, amountUpdatedAt: now, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 1, amountUpdatedAt: now, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -296,7 +296,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -315,7 +315,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ amount: 5, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 5, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -333,7 +333,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -353,7 +353,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ amount: 5, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 5, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -371,7 +371,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -390,7 +390,7 @@ describe("PortfolioPage - empty portfolio", () => {
     expect.hasAssertions();
     const asset = makeAsset();
     const portfolio = makePortfolio({
-      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -414,7 +414,7 @@ describe("PortfolioPage - editing mode", () => {
     expect.hasAssertions();
     const asset = makeAsset({ isin: "LU1111111111", price: 50 });
     const portfolio = makePortfolio({
-      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -433,7 +433,7 @@ describe("PortfolioPage - editing mode", () => {
     expect.hasAssertions();
     const asset = makeAsset({ isin: "LU1111111111", price: 50 });
     const portfolio = makePortfolio({
-      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -452,7 +452,7 @@ describe("PortfolioPage - editing mode", () => {
     expect.hasAssertions();
     const asset = makeAsset({ isin: "LU1111111111" });
     const portfolio = makePortfolio({
-      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "my note", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "my note", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -470,7 +470,7 @@ describe("PortfolioPage - editing mode", () => {
     expect.hasAssertions();
     const asset = makeAsset({ isin: "LU1111111111" });
     const portfolio = makePortfolio({
-      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -491,7 +491,7 @@ describe("PortfolioPage - target amount column", () => {
     expect.hasAssertions();
     const asset = makeAsset({ isin: "LU1111111111" });
     const portfolio = makePortfolio({
-      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 50 }],
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", targetAmount: 50 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -506,7 +506,7 @@ describe("PortfolioPage - target amount column", () => {
     expect.hasAssertions();
     const asset = makeAsset({ isin: "LU1111111111" });
     const portfolio = makePortfolio({
-      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 25 }],
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", targetAmount: 25 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -523,7 +523,7 @@ describe("PortfolioPage - target amount column", () => {
     expect.hasAssertions();
     const asset = makeAsset({ isin: "LU1111111111" });
     const portfolio = makePortfolio({
-      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 10 }],
+      entries: [{ amount: 1, inPEA: false, isin: asset.isin, notes: "", targetAmount: 10 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -572,7 +572,7 @@ describe("PortfolioPage - asset picker modal", () => {
     expect.hasAssertions();
     const asset1 = makeAsset({ isin: "LU1234567890", name: "ETF A" });
     const asset2 = makeAsset({ isin: "LU0987654321", name: "ETF B" });
-    const existingEntry = { amount: 0, inPEA: true, isin: asset1.isin, notes: "keep", positionValue: 100, targetAmount: 200 };
+    const existingEntry = { amount: 0, inPEA: true, isin: asset1.isin, notes: "keep", targetAmount: 200 };
     const portfolio = makePortfolio({ entries: [existingEntry] });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset1, asset2], portfolios: [portfolio] },
@@ -602,7 +602,7 @@ describe("PortfolioPage - allocation charts", () => {
       sectorAllocation: { financials: 0.5, technology: 0.5 },
     });
     const portfolio = makePortfolio({
-      entries: [{ amount: 100, inPEA: false, isin: asset.isin, notes: "", positionValue: 10_000, targetAmount: 0 }],
+      entries: [{ amount: 100, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -623,7 +623,7 @@ describe("PortfolioPage - allocation charts", () => {
       sectorAllocation: { financials: 0.5, technology: 0.5 },
     });
     const portfolio = makePortfolio({
-      entries: [{ amount: 100, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 0 }],
+      entries: [{ amount: 100, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -644,7 +644,7 @@ describe("PortfolioPage - allocation charts", () => {
       sectorAllocation: { financials: 0.5, technology: 0.5 },
     });
     const portfolio = makePortfolio({
-      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", positionValue: 0, targetAmount: 100 }],
+      entries: [{ amount: 0, inPEA: false, isin: asset.isin, notes: "", targetAmount: 100 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -665,7 +665,7 @@ describe("PortfolioPage - allocation charts", () => {
       sectorAllocation: { technology: 1 },
     });
     const portfolio = makePortfolio({
-      entries: [{ amount: 100, inPEA: false, isin: asset.isin, notes: "", positionValue: 10_000, targetAmount: 0 }],
+      entries: [{ amount: 100, inPEA: false, isin: asset.isin, notes: "", targetAmount: 0 }],
     });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset], portfolios: [portfolio] },
@@ -699,8 +699,8 @@ describe("PortfolioPage - allocation charts", () => {
     // 50-50 portfolio
     const portfolio = makePortfolio({
       entries: [
-        { amount: 50, inPEA: false, isin: asset1.isin, notes: "", positionValue: 5000, targetAmount: 0 },
-        { amount: 50, inPEA: false, isin: asset2.isin, notes: "", positionValue: 5000, targetAmount: 0 },
+        { amount: 50, inPEA: false, isin: asset1.isin, notes: "", targetAmount: 0 },
+        { amount: 50, inPEA: false, isin: asset2.isin, notes: "", targetAmount: 0 },
       ],
     });
     useAppStore.setState({

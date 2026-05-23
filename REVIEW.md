@@ -123,19 +123,18 @@
 
 ### 🔴 Critical Gaps (Expected in Modern Portfolio Apps)
 
-| Feature                              | Impact    | Why It Matters                                                       | Effort   |
-| ------------------------------------ | --------- | -------------------------------------------------------------------- | -------- |
-| **Portfolio performance tracking**   | 🔴 HIGH   | Users can't see portfolio-level returns over time (1y/3y/5y)         | 2–3 days |
-| **Rebalancing calculator**           | 🔴 HIGH   | Users must manually calculate how much to buy/sell to hit targets    | 1–2 days |
-| **Dividend/income tracking**         | 🔴 HIGH   | Can't track distributions, yields, or reinvestment                   | 3–4 days |
-| **Transaction history**              | 🔴 HIGH   | No buy/sell record, can't compute cost basis or tax lot tracking     | 2–3 days |
-| **Contribution history**             | 🔴 HIGH   | Can't distinguish between gains and new money invested               | 1–2 days |
-| **Export to spreadsheet** (CSV/XLSX) | 🟡 MEDIUM | Users stuck with JSON; no easy Excel integration                     | 1 day    |
-| **Alerts/rebalance thresholds**      | 🟡 MEDIUM | No notifications when allocation drifts beyond target                | 1–2 days |
-| **Individual stock support**         | 🟡 MEDIUM | App is ETF-only; users with individual stocks left out               | 2–3 days |
-| **Multi-currency handling**          | 🟡 MEDIUM | All prices assumed in EUR; no FX conversion                          | 2–3 days |
-| **Bond/fixed-income tracking**       | 🟡 MEDIUM | Focuses on equities/ETFs; no fixed income data                       | 1–2 days |
-| **Crypto support**                   | 🟠 LOW    | Out of scope for a serious investor tool, but requested increasingly | 3–4 days |
+| Feature                              | Impact    | Why It Matters                                                    | Effort   |
+| ------------------------------------ | --------- | ----------------------------------------------------------------- | -------- |
+| **Portfolio performance tracking**   | 🔴 HIGH   | Users can't see portfolio-level returns over time (1y/3y/5y)      | 2–3 days |
+| **Rebalancing calculator**           | 🔴 HIGH   | Users must manually calculate how much to buy/sell to hit targets | 1–2 days |
+| **Dividend/income tracking**         | 🔴 HIGH   | Can't track distributions, yields, or reinvestment                | 3–4 days |
+| **Transaction history**              | 🔴 HIGH   | No buy/sell record, can't compute cost basis or tax lot tracking  | 2–3 days |
+| **Contribution history**             | 🔴 HIGH   | Can't distinguish between gains and new money invested            | 1–2 days |
+| **Export to spreadsheet** (CSV/XLSX) | 🟡 MEDIUM | Users stuck with JSON; no easy Excel integration                  | 1 day    |
+| **Alerts/rebalance thresholds**      | 🟡 MEDIUM | No notifications when allocation drifts beyond target             | 1–2 days |
+| **Individual stock support**         | 🟡 MEDIUM | App is ETF-only; users with individual stocks left out            | 2–3 days |
+| **Multi-currency handling**          | 🟡 MEDIUM | All prices assumed in EUR; no FX conversion                       | 2–3 days |
+| **Bond/fixed-income tracking**       | 🟡 MEDIUM | Focuses on equities/ETFs; no fixed income data                    | 1–2 days |
 
 ### 🟡 Moderate Gaps (Nice-to-Haves, High-Impact)
 
@@ -157,8 +156,6 @@
 | **No app-level search**           | Finding an asset across 500+ requires scrolling                  | 0.5 days |
 | **No drag-drop table reordering** | Column order is fixed (sortable, but not movable)                | 1 day    |
 | **No bulk actions**               | Can't select 10 assets and change them at once                   | 1 day    |
-| **No keyboard shortcuts**         | Power users stuck with mouse                                     | 0.5 days |
-| **No custom themes**              | Only Nord; users want light/dark toggle                          | 0.5 days |
 | **No account linking**            | Manual import only; can't sync from brokers (Fortuneo, IB, etc.) | 3–5 days |
 | **No undo/redo**                  | User hits delete, it's gone forever                              | 1 day    |
 
@@ -178,13 +175,12 @@
 
 ### Data Model Inconsistencies
 
-| Issue                                           | Severity  | Notes                                                                                         |
-| ----------------------------------------------- | --------- | --------------------------------------------------------------------------------------------- |
-| **`positionValue` never used for calculations** | 🔴 HIGH   | Stored but ignored in favor of `amount * price`; redundant, causes stale data bugs            |
-| **Target amounts mix units and currency**       | 🟡 MEDIUM | Can set target as # of units OR € amount; unclear which is canonical                          |
-| **`inPEA` flag unused in most UX**              | 🟠 LOW    | Stored (French tax-advantaged account) but no filtering/UI signals its importance             |
-| **No timestamp on portfolio entries**           | 🟡 MEDIUM | Can't tell when a position was added or last changed                                          |
-| **Similarity dismissal keyed to old ISIN**      | 🟡 MEDIUM | If ISIN renamed, dismissed similarities don't cascade (partially fixed but edge cases remain) |
+| Issue                                      | Severity  | Notes                                                                                         |
+| ------------------------------------------ | --------- | --------------------------------------------------------------------------------------------- |
+| **Target amounts mix units and currency**  | 🟡 MEDIUM | Can set target as # of units OR € amount; unclear which is canonical                          |
+| **`inPEA` flag unused in most UX**         | 🟠 LOW    | Stored (French tax-advantaged account) but no filtering/UI signals its importance             |
+| **No timestamp on portfolio entries**      | 🟡 MEDIUM | Can't tell when a position was added or last changed                                          |
+| **Similarity dismissal keyed to old ISIN** | 🟡 MEDIUM | If ISIN renamed, dismissed similarities don't cascade (partially fixed but edge cases remain) |
 
 ### Data Freshness Issues
 
