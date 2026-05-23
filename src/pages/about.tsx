@@ -1,6 +1,5 @@
 import { version as APP_VERSION } from "../../package.json";
 import { stalenessTierPresets } from "../components/import-export-utils.ts";
-import { InvestIcon } from "../components/invest-icon.tsx";
 import { useAppStore } from "../store/use-app-store.ts";
 import { formatDate } from "../utils/format-numbers.ts";
 
@@ -22,7 +21,7 @@ function renderExportStatusSection({ editCount, lastExportedAt, setEditCount }: 
         <h3 className="mb-2 text-sm font-semibold text-base-content/70">Test reminder tiers</h3>
         <div className="flex flex-wrap gap-2">
           {stalenessTierPresets.map(({ editCount: presetEditCount, label, tier }) => (
-            <button key={tier} type="button" data-testid={`set-edit-count-${tier}`} className="btn btn-soft btn-xs btn-primary" onClick={() => setEditCount(presetEditCount)}>
+            <button key={tier} type="button" data-testid={`set-edit-count-${tier}`} className="btn btn-soft btn-xs" onClick={() => setEditCount(presetEditCount)}>
               {label}
             </button>
           ))}
@@ -38,10 +37,10 @@ export function AboutPage() {
 
   return (
     <div className="mx-auto max-w-lg p-8">
-      <h1 data-testid="page-title" className="mb-2 flex items-center gap-3 text-3xl font-bold">
-        <InvestIcon size={32} /> Invest
+      <h1 data-testid="page-title" className="mb-2 flex items-center gap-3 font-bold md:text-3xl">
+        Invest
+        <span className="text-base-content/60">v{APP_VERSION}</span>
       </h1>
-      <p className="mb-6 text-base-content/60">v{APP_VERSION}</p>
       <p className="mb-4">A personal ETF &amp; stock reference tracker. Browse your instruments, compare scores, and manage which ones belong in your portfolios.</p>
       <div className="divider" />
       {renderExportStatusSection({ editCount: settings.editCount, lastExportedAt: settings.lastExportedAt, setEditCount })}

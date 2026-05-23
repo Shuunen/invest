@@ -44,7 +44,7 @@ describe("AssetEditPage - not found", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<AssetEditPage isin="XX0000000000" />);
-    expect(screen.getByTestId("not-found")).toBeInTheDocument();
+    expect(screen.getByTestId("empty-edit-asset-not-found")).toBeInTheDocument();
   });
 
   it("renders form after store loads asynchronously", async () => {
@@ -52,7 +52,7 @@ describe("AssetEditPage - not found", () => {
     const asset = makeAsset();
     useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
     render(<AssetEditPage isin={asset.isin} />);
-    expect(screen.getByTestId("not-found")).toBeInTheDocument();
+    expect(screen.getByTestId("empty-edit-asset-not-found")).toBeInTheDocument();
     useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
     await waitFor(() => {
       expect(screen.getByTestId("name")).toBeInTheDocument();

@@ -9,7 +9,6 @@ export function jsonParse<Type>(jsonString: string): Type | undefined {
   try {
     return JSON.parse(jsonString) as Type;
   } catch (error) {
-    // oxlint-disable-next-line no-console
     console.error("Failed to parse JSON :", error);
     return undefined;
   }
@@ -26,7 +25,6 @@ export function jsonStringify(data: unknown): string | undefined {
   try {
     return JSON.stringify(data, undefined, nbSpaces);
   } catch (error) {
-    // oxlint-disable-next-line no-console
     console.error("Failed to stringify JSON :", error);
     return undefined;
   }

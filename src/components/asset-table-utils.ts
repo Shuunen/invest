@@ -10,8 +10,8 @@ const feeBadThreshold = 0.45;
 
 function feeThresholdClass(value: number | undefined): string | undefined {
   if (value === undefined) return undefined;
-  if (value <= feeGoodThreshold) return "bg-success/20 text-success-content";
-  if (value >= feeBadThreshold) return "bg-error/20 text-error-content";
+  if (value <= feeGoodThreshold) return "bg-success/20";
+  if (value >= feeBadThreshold) return "bg-error/20";
   return undefined;
 }
 
@@ -39,25 +39,14 @@ export const defaultColumnVisibility: Record<string, boolean> = {
 
 const numericColIds = ["fees", "performance1y", "performance3y", "performance5y", "riskReward1y", "riskReward3y", "riskReward5y", "score"];
 
-export function quintileClass(value: number | undefined, allValues: (number | undefined)[]): string | undefined {
-  if (value === undefined) return undefined;
-  const defined = allValues.filter((val): val is number => val !== undefined);
-  if (defined.length < minRowsForFormatting) return undefined;
-  const below = defined.filter(num => num < value).length;
-  const pct = below / defined.length;
-  if (pct >= quintileHighThreshold) return "bg-success/20 text-success-content";
-  if (pct < quintileLowThreshold) return "bg-error/20 text-error-content";
-  return undefined;
-}
-
 // Private: O(log n) quintile lookup using a pre-sorted defined-values array.
 function quintileClassFromSorted(value: number | undefined, sortedDefined: number[]): string | undefined {
   if (value === undefined) return undefined;
   if (sortedDefined.length < minRowsForFormatting) return undefined;
   const below = sortedDefined.filter(val => val < value).length;
   const pct = below / sortedDefined.length;
-  if (pct >= quintileHighThreshold) return "bg-success/20 text-success-content";
-  if (pct < quintileLowThreshold) return "bg-error/20 text-error-content";
+  if (pct >= quintileHighThreshold) return "bg-success/20";
+  if (pct < quintileLowThreshold) return "bg-error/20";
   return undefined;
 }
 

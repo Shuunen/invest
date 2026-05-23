@@ -93,10 +93,24 @@ describe("useAppStore - settings mutations", () => {
     unsub();
     expect(received.length).toBeGreaterThan(0);
   });
+
+  it("setTheme updates settings.theme", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    useAppStore.getState().setTheme("dracula");
+    expect(useAppStore.getState().data.settings.theme).toBe("dracula");
+  });
+
+  it("setTheme does not increment editCount", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: { ...defaultAppData, settings: { ...defaultAppData.settings, editCount: 3 } }, isLoading: false, loadError: undefined });
+    useAppStore.getState().setTheme("light");
+    expect(useAppStore.getState().data.settings.editCount).toBe(3);
+  });
 });
 
 function makePortfolioEntry(isin: string) {
-  return { amount: 100, amountUpdatedAt: "2024-01-01T00:00:00.000Z", inPEA: false, isin, notes: "", positionValue: 0, targetAmount: 0, targetAmountUpdatedAt: "2024-01-01T00:00:00.000Z" };
+  return { amount: 100, amountUpdatedAt: "2024-01-01T00:00:00.000Z", inPEA: false, isin, notes: "", targetAmount: 0, targetAmountUpdatedAt: "2024-01-01T00:00:00.000Z" };
 }
 
 describe("useAppStore - asset mutations", () => {
@@ -341,7 +355,7 @@ describe("useAppStore - portfolio mutations", () => {
 
   it("setPortfolioAssets replaces entries for the given portfolio", () => {
     expect.hasAssertions();
-    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", targetAmount: 0 };
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [basePortfolio] },
       isLoading: false,
@@ -354,7 +368,7 @@ describe("useAppStore - portfolio mutations", () => {
 
   it("setPortfolioAssets increments editCount", () => {
     expect.hasAssertions();
-    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", targetAmount: 0 };
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [basePortfolio] },
       isLoading: false,
@@ -373,11 +387,10 @@ describe("useAppStore - portfolio mutations", () => {
       inPEA: false,
       isin: "LU1234567890",
       notes: "",
-      positionValue: 0,
       targetAmount: 0,
       targetAmountUpdatedAt: "2024-01-02T00:00:00.000Z",
     };
-    const newEntry = { amount: 0, inPEA: false, isin: "LU0987654321", notes: "", positionValue: 0, targetAmount: 0 };
+    const newEntry = { amount: 0, inPEA: false, isin: "LU0987654321", notes: "", targetAmount: 0 };
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [basePortfolio] },
       isLoading: false,
@@ -395,7 +408,7 @@ describe("useAppStore - portfolio mutations", () => {
   it("setPortfolioAssets does not affect other portfolios", () => {
     expect.hasAssertions();
     const other = { ...basePortfolio, id: "00000000-0000-4000-8000-000000000002", name: "Other" };
-    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", targetAmount: 0 };
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [basePortfolio, other] },
       isLoading: false,
@@ -419,7 +432,7 @@ describe("useAppStore - portfolio mutations", () => {
 
   it("updatePortfolioEntryAmount updates the shares for the given entry", () => {
     expect.hasAssertions();
-    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", targetAmount: 0 };
     const portfolio = { ...basePortfolio, entries: [entry] };
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [portfolio] },
@@ -432,7 +445,7 @@ describe("useAppStore - portfolio mutations", () => {
 
   it("updatePortfolioEntryAmount increments editCount", () => {
     expect.hasAssertions();
-    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+    const entry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", targetAmount: 0 };
     const portfolio = { ...basePortfolio, entries: [entry] };
     useAppStore.setState({
       data: { ...defaultAppData, portfolios: [portfolio] },
@@ -446,8 +459,8 @@ describe("useAppStore - portfolio mutations", () => {
 
   it("updatePortfolioEntryAmount does not affect other entries or portfolios", () => {
     expect.hasAssertions();
-    const entry1 = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
-    const entry2 = { amount: 5, inPEA: false, isin: "LU0987654321", notes: "", positionValue: 0, targetAmount: 0 };
+    const entry1 = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", targetAmount: 0 };
+    const entry2 = { amount: 5, inPEA: false, isin: "LU0987654321", notes: "", targetAmount: 0 };
     const other = { ...basePortfolio, entries: [entry2], id: "00000000-0000-4000-8000-000000000002" };
     const portfolio = { ...basePortfolio, entries: [entry1, entry2] };
     useAppStore.setState({
@@ -462,7 +475,7 @@ describe("useAppStore - portfolio mutations", () => {
 });
 
 describe("useAppStore - updatePortfolioEntryNote", () => {
-  const baseEntry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+  const baseEntry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", targetAmount: 0 };
   const basePortfolioId = "00000000-0000-4000-8000-000000000001";
   const basePort = { broker: "Test", entries: [baseEntry], id: basePortfolioId, name: "Test" };
 
@@ -494,7 +507,7 @@ describe("useAppStore - updatePortfolioEntryNote", () => {
 });
 
 describe("useAppStore - updatePortfolioEntryTargetAmount", () => {
-  const baseEntry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", positionValue: 0, targetAmount: 0 };
+  const baseEntry = { amount: 0, inPEA: false, isin: "LU1234567890", notes: "", targetAmount: 0 };
   const basePortfolioId = "00000000-0000-4000-8000-000000000001";
   const basePort = { broker: "Test", entries: [baseEntry], id: basePortfolioId, name: "Test" };
 

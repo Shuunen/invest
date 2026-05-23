@@ -40,7 +40,7 @@ export type AssetTableMeta = {
 
 function booleanCell(isin: string, field: string, value: boolean) {
   return (
-    <span data-testid={`bool-${field}-${isin.toLowerCase()}`} aria-label={value ? "Yes" : "No"} className={cn("badge", { "bg-error/10": !value, "bg-success/10": value })}>
+    <span data-testid={`bool-${field}-${isin.toLowerCase()}`} aria-label={value ? "Yes" : "No"} className={cn("badge", { "bg-error/20": !value, "bg-success/20": value })}>
       {value ? "Yes" : "No"}
     </span>
   );
@@ -95,7 +95,7 @@ export function makeSelectColumn(): ColumnDef<Asset> {
         <input
           type="checkbox"
           data-testid={`select-${row.original.isin.toLowerCase()}`}
-          className="checkbox checkbox-sm checkbox-primary"
+          className="checkbox checkbox-sm"
           checked={meta?.selectedIsins?.has(row.original.isin) ?? false}
           onChange={() => meta?.onToggleSelect?.(row.original.isin)}
           onClick={event => event.stopPropagation()}
@@ -131,14 +131,14 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
       const amountPercentageLabel = amountPercentage === undefined ? "—" : `${Math.round(amountPercentage)}%`;
       if (!meta?.isEditing)
         return (
-          <span className={cn("flex items-center justify-center gap-1", { "text-warning": value === 0 })} data-testid={`amount-${isin.toLowerCase()}`}>
+          <span className={cn("cell-centered", { "text-warning": value === 0 })} data-testid={`amount-${isin.toLowerCase()}`}>
             <span data-testid={`amount-value-${isin.toLowerCase()}`}>{value === 0 ? "—" : value}</span>
             <DotIcon size={12} aria-hidden="true" />
             <span data-testid={`amount-percent-${isin.toLowerCase()}`}>{amountPercentageLabel}</span>
           </span>
         );
       return (
-        <span className="flex items-center justify-center gap-1" data-testid={`amount-${isin.toLowerCase()}`}>
+        <span className="cell-centered" data-testid={`amount-${isin.toLowerCase()}`}>
           {makeNumberInput({
             ariaLabel: `Amount for ${row.original.name}`,
             className: cn("input input-xs w-14 text-center", { "bg-warning/10 input-warning": value === 0 }),
@@ -395,7 +395,6 @@ export function makeDataScoreColumn(amountMap?: Map<string, number>, amountUpdat
         inPEA: false,
         isin: row.isin,
         notes: "",
-        positionValue: 0,
         targetAmount: 0,
       };
       return computeDataScore(row, entry);
@@ -407,7 +406,7 @@ export function makeDataScoreColumn(amountMap?: Map<string, number>, amountUpdat
       else if (score >= dataScoreWarnThreshold) dotClass = "bg-warning";
       return (
         <span className="flex items-center gap-1.5" data-testid={`data-score-${row.original.isin.toLowerCase()}`}>
-          <span className={cn("inline-block h-2 w-2 shrink-0 rounded-full", dotClass)} />
+          <span className={cn("score-dot", dotClass)} />
           <span className="w-8 text-center">{score}%</span>
         </span>
       );
@@ -427,7 +426,7 @@ function makeTargetTrendIcon(isin: string, targetAmount: number, amount: number)
 
 function renderTargetAmountEditCell({ amountInput, percentInput, trendIcon }: { amountInput: ReactNode; percentInput: ReactNode; trendIcon: ReactNode }) {
   return (
-    <span className="flex items-center justify-center gap-1" data-testid="target-amount-edit">
+    <span className="cell-centered" data-testid="target-amount-edit">
       {amountInput}
       {trendIcon}
       {percentInput}
@@ -528,7 +527,7 @@ export function makeSimilarityColumn(assets: Asset[], onDismiss?: (isin: string,
 export function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
   return {
     cell: ({ row }) => (
-      <button type="button" data-testid={`remove-${row.original.isin.toLowerCase()}`} className="btn text-error btn-ghost btn-xs" aria-label={`Remove ${row.original.name}`} onClick={() => onRemove(row.original.isin)}>
+      <button type="button" data-testid={`remove-${row.original.isin.toLowerCase()}`} className="btn-ghost-error" aria-label={`Remove ${row.original.name}`} onClick={() => onRemove(row.original.isin)}>
         <Trash2 size={14} />
       </button>
     ),

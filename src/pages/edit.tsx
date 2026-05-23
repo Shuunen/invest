@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { invariant } from "es-toolkit";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
+import { Empty } from "../components/empty.tsx";
 import type { Asset } from "../schemas/index.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { AssetForm } from "./edit/asset-form.tsx";
@@ -119,14 +120,7 @@ export function AssetEditPage({ isin: originalIsin }: Props) {
   const allAssets = useAppStore(state => state.data.assets);
   const unDismissSimilarity = useAppStore(state => state.unDismissSimilarity);
 
-  if (!form)
-    return (
-      <div className="p-8 text-center">
-        <p data-testid="not-found" className="text-base-content/60">
-          Asset not found: {originalIsin}
-        </p>
-      </div>
-    );
+  if (!form) return <Empty name="edit-asset-not-found" description={`Asset not found : ${originalIsin}`} title="Not found" />;
 
   const goBack = () => void navigate({ params: { isin: originalIsin }, replace: true, to: "/assets/$isin" });
 

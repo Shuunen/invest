@@ -27,6 +27,7 @@ import { renderColumnFilter, renderSearchFilter } from "./asset-table-header.tsx
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
 import { renderSkeleton } from "./asset-table-skeleton.tsx";
 import { computeQuintileClasses, defaultColumnVisibility, getAriaSortValue, getScoreDotClass } from "./asset-table-utils.ts";
+import { Empty } from "./empty.tsx";
 import { PageHeader } from "./page-header.tsx";
 
 type Props = AssetTableMeta & {
@@ -47,9 +48,9 @@ function renderThContent(header: Header<Asset, unknown>) {
   const title = header.column.columnDef.meta?.title;
   if (!header.column.getCanSort()) return <span>{label}</span>;
   return (
-    <button type="button" data-testid={`sort-${header.id}`} title={title} className={cn("btn", sorted ? "btn-soft btn-primary" : "btn-ghost")} onClick={header.column.getToggleSortingHandler()}>
+    <button type="button" data-testid={`sort-${header.id}`} title={title} className={cn("btn btn-ghost", { "text-base-content": sorted })} onClick={header.column.getToggleSortingHandler()}>
       {label}
-      <span className="scale-75">{getSortIndicator(sorted)}</span>
+      <span className={cn("scale-75")}>{getSortIndicator(sorted)}</span>
     </button>
   );
 }
@@ -191,7 +192,7 @@ function renderError(error: Error, handleRetry: () => void) {
   return (
     <div className="p-4 text-left">
       <div role="alert" data-testid="error-alert" className="alert alert-error">
-        <span data-testid="error-message">Failed to load data: {error.message}</span>
+        <span data-testid="error-message">Failed to load data : {error.message}</span>
         <button type="button" data-testid="retry-button" className="btn btn-sm" onClick={handleRetry}>
           Retry
         </button>
@@ -200,25 +201,12 @@ function renderError(error: Error, handleRetry: () => void) {
   );
 }
 
-function renderEmpty() {
-  return (
-    <div className="p-8 text-center">
-      <p className="mb-4 text-4xl">📊</p>
-      <h2 data-testid="empty-table-message">No instruments added yet</h2>
-      <p className="mb-4 text-base-content/60">Use the Import button in the top bar to get started</p>
-    </div>
-  );
-}
-
 function renderNoResults(colCount: number, filterText: string) {
   return (
     <tbody>
       <tr>
-        <td colSpan={colCount} className="p-8 text-center">
-          <p data-testid="no-results-message" className="mb-4 text-2xl">
-            No results found for &quot;{filterText}&quot;
-          </p>
-          <p className="text-base-content/60">Try adjusting your search criteria</p>
+        <td colSpan={colCount}>
+          <Empty name="filter-no-results" title={`No results found for "${filterText}"`} description="Try adjusting your search criteria" />
         </td>
       </tr>
     </tbody>
@@ -231,7 +219,7 @@ function renderAssetsHeader(assets: Asset[], actions: { icon: React.ReactNode; l
 
 function renderTableHeader(table: Table<Asset>) {
   return (
-    <thead className="sticky top-12 z-10 bg-base-200">
+    <thead className="sticky top-12 z-10 bg-base-100">
       {table.getHeaderGroups().map(headerGroup => (
         <tr key={headerGroup.id}>
           {headerGroup.headers.map(header => (
@@ -248,7 +236,7 @@ function renderTableHeader(table: Table<Asset>) {
         </tr>
       ))}
       <tr>
-        <th colSpan={table.getVisibleLeafColumns().length} className="p-0 shadow" />
+        <th colSpan={table.getVisibleLeafColumns().length} className="p-0" />
       </tr>
     </thead>
   );
@@ -261,7 +249,7 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
         <tr
           key={row.id}
           data-testid={`asset-row-${row.original.isin}`}
-          className={cn("rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-primary hover:backdrop-brightness-105", onRowClick && "cursor-pointer select-none")}
+          className={cn("rounded outline-1 -outline-offset-1 outline-transparent transition-colors hover:outline-base-content/30 hover:backdrop-brightness-105", onRowClick && "cursor-pointer select-none")}
           onClick={onRowClick ? () => onRowClick(row.original.isin) : undefined}
         >
           {row.getVisibleCells().map(cell => {
@@ -273,7 +261,7 @@ function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<s
               <td key={cell.id} className={tdClass}>
                 {isScoreCol && (
                   <span className="flex items-center gap-1.5">
-                    <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${getScoreDotClass(qClass)}`} />
+                    <span className={`score-dot ${getScoreDotClass(qClass)}`} />
                     <span className="w-6 text-center">{cellNode}</span>
                   </span>
                 )}
@@ -310,13 +298,13 @@ export function AssetTable(props: Props = {}) {
   const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({ ...props, onPriceChange });
   if (!propAssets && isLoading) return renderSkeleton();
   if (!propAssets && loadError) return renderError(loadError, handleRetry);
-  if (!propAssets && data.assets.length === 0) return renderEmpty();
+  if (!propAssets && data.assets.length === 0) return <Empty name="no-assets" title="No instruments added yet" description="Use the Import button in the top bar to get started" />;
   const filterReturnedNoResults = filterText.trim() !== "" && table.getRowModel().rows.length === 0;
   return (
-    <>
+    <div className="flex grow flex-col bg-base-100">
       {!propAssets && renderAssetsHeader(data.assets, priceEditActions)}
-      <div className="relative p-4 pt-0 text-left">
-        <div className="sticky top-0 z-20 flex gap-4 bg-base-200 pt-4">
+      <div className="relative container mx-auto overflow-auto" data-testid="asset-table">
+        <div className="sticky top-0 z-20 flex gap-4 bg-base-100 pt-4">
           {renderSearchFilter(filterText, setFilterText)}
           {renderColumnFilter(table, visibleLeafCount)}
         </div>
@@ -326,6 +314,6 @@ export function AssetTable(props: Props = {}) {
           {filterReturnedNoResults ? renderNoResults(table.getVisibleLeafColumns().length, filterText) : renderTableBody(table, quintileClasses, props.onToggleSelect)}
         </table>
       </div>
-    </>
+    </div>
   );
 }

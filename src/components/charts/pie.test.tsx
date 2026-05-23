@@ -109,11 +109,15 @@ describe("PieChart", () => {
     const chart = screen.getByTestId("move-chart");
     const container = chart.parentElement;
     invariant(container, "Expected chart to have a parent container");
-    fireEvent.mouseMove(container, { clientX: 100, clientY: 100 });
     const popover = screen.getByTestId("pie-popover");
+    // oxlint-disable-next-line id-length
+    popover.getBoundingClientRect = () => ({ bottom: 80, height: 80, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 }) as DOMRect;
+    // oxlint-disable-next-line id-length
+    container.getBoundingClientRect = () => ({ bottom: 300, height: 300, left: 0, right: 400, toJSON: () => ({}), top: 0, width: 400, x: 0, y: 0 }) as DOMRect;
+    fireEvent.mouseMove(container, { clientX: 100, clientY: 100 });
     expect(popover).toBeInTheDocument();
-    expect(popover.style.left).toBe("114px");
-    expect(popover.style.top).toBe("114px");
+    expect(popover.style.left).toBe("142px");
+    expect(popover.style.top).toBe("142px");
   });
 
   it("handles mouse move when popover is not mounted", () => {
@@ -126,6 +130,22 @@ describe("PieChart", () => {
     expect(screen.queryByTestId("pie-popover")).not.toBeInTheDocument();
   });
 
+  it("handles mouse move when container getBoundingClientRect fails", () => {
+    expect.hasAssertions();
+    render(<PieChart entries={mixedEntries} name="bcr-fail" />);
+    fireEvent.mouseEnter(screen.getByTestId("slice-eu"));
+    const chart = screen.getByTestId("bcr-fail-chart");
+    const container = chart.parentElement;
+    invariant(container, "Expected chart to have a parent container");
+    // Mock getBoundingClientRect to return undefined
+    container.getBoundingClientRect = () => undefined as unknown as DOMRect;
+    fireEvent.mouseMove(container, { clientX: 100, clientY: 100 });
+    const popover = screen.getByTestId("pie-popover");
+    expect(popover).toBeInTheDocument();
+    expect(popover.style.left).toBe("0px");
+    expect(popover.style.top).toBe("0px");
+  });
+
   it("clamps popover position to remain inside viewport", () => {
     expect.hasAssertions();
     render(<PieChart entries={mixedEntries} name="clamped" />);
@@ -136,8 +156,49 @@ describe("PieChart", () => {
     const popover = screen.getByTestId("pie-popover");
     // oxlint-disable-next-line id-length
     popover.getBoundingClientRect = () => ({ bottom: 80, height: 80, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 }) as DOMRect;
-    fireEvent.mouseMove(container, { clientX: window.innerWidth - 2, clientY: window.innerHeight - 2 });
-    expect(popover.style.left).toBe(`${window.innerWidth - 180 - 14}px`);
-    expect(popover.style.top).toBe(`${window.innerHeight - 80 - 14}px`);
+    // Mock container with dimensions of 400x300 and position at (0, 0)
+    // oxlint-disable-next-line id-length
+    container.getBoundingClientRect = () => ({ bottom: 300, height: 300, left: 0, right: 400, toJSON: () => ({}), top: 0, width: 400, x: 0, y: 0 }) as DOMRect;
+    // Move mouse near the bottom-right corner of the container
+    fireEvent.mouseMove(container, { clientX: 390, clientY: 290 });
+    // The popover should flip to the opposite side of the cursor instead of being clamped underneath it.
+    expect(popover.style.left).toBe("168px");
+    expect(popover.style.top).toBe("168px");
+  });
+
+  it("keeps the popover away from the cursor near the right and bottom edges", () => {
+    expect.hasAssertions();
+    render(<PieChart entries={mixedEntries} name="flip-away" />);
+    fireEvent.mouseEnter(screen.getByTestId("slice-us"));
+    const chart = screen.getByTestId("flip-away-chart");
+    const container = chart.parentElement;
+    invariant(container, "Expected chart to have a parent container");
+    const popover = screen.getByTestId("pie-popover");
+    // oxlint-disable-next-line id-length
+    popover.getBoundingClientRect = () => ({ bottom: 80, height: 80, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 }) as DOMRect;
+    // oxlint-disable-next-line id-length
+    container.getBoundingClientRect = () => ({ bottom: 300, height: 300, left: 0, right: 400, toJSON: () => ({}), top: 0, width: 400, x: 0, y: 0 }) as DOMRect;
+    fireEvent.mouseMove(container, { clientX: 390, clientY: 290 });
+    const left = Number.parseInt(popover.style.left, 10);
+    const top = Number.parseInt(popover.style.top, 10);
+    expect(left + 180).toBeLessThan(390);
+    expect(top + 80).toBeLessThan(290);
+  });
+
+  it("falls back to boundary clamping when the popover cannot fit on either side of the cursor", () => {
+    expect.hasAssertions();
+    render(<PieChart entries={mixedEntries} name="fallback-clamp" />);
+    fireEvent.mouseEnter(screen.getByTestId("slice-us"));
+    const chart = screen.getByTestId("fallback-clamp-chart");
+    const container = chart.parentElement;
+    invariant(container, "Expected chart to have a parent container");
+    const popover = screen.getByTestId("pie-popover");
+    // oxlint-disable-next-line id-length
+    popover.getBoundingClientRect = () => ({ bottom: 120, height: 120, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 }) as DOMRect;
+    // oxlint-disable-next-line id-length
+    container.getBoundingClientRect = () => ({ bottom: 150, height: 150, left: 0, right: 150, toJSON: () => ({}), top: 0, width: 150, x: 0, y: 0 }) as DOMRect;
+    fireEvent.mouseMove(container, { clientX: 60, clientY: 60 });
+    expect(popover.style.left).toBe("14px");
+    expect(popover.style.top).toBe("16px");
   });
 });

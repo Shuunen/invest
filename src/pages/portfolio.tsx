@@ -1,10 +1,11 @@
 // oxlint-disable max-lines
 import { invariant } from "es-toolkit";
-import { CheckIcon, ListIcon, PencilLineIcon } from "lucide-react";
+import { CheckIcon, FolderOpenIcon, ListIcon, PencilLineIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { AssetPickerModal } from "../components/asset-picker-modal.tsx";
 import { AssetTable } from "../components/asset-table.tsx";
 import { AllocationChart } from "../components/charts/allocation.tsx";
+import { Empty } from "../components/empty.tsx";
 import type { MetricItem } from "../components/metric.tsx";
 import { ModalActions } from "../components/modal-actions.tsx";
 import { ModalHeader } from "../components/modal-header.tsx";
@@ -193,7 +194,7 @@ function usePortfolioData(portfolioId: string) {
 function buildEntries(selectedIsins: string[], existingEntries: PortfolioEntry[]): PortfolioEntry[] {
   return selectedIsins.map(isin => {
     const existing = existingEntries.find(entry => entry.isin === isin);
-    return existing ?? { amount: 0, inPEA: false, isin, notes: "", positionValue: 0, targetAmount: 0 };
+    return existing ?? { amount: 0, inPEA: false, isin, notes: "", targetAmount: 0 };
   });
 }
 
@@ -201,27 +202,11 @@ function removeEntry(entries: PortfolioEntry[], isin: string): PortfolioEntry[] 
   return entries.filter(en => en.isin !== isin);
 }
 function renderNoAssets() {
-  return (
-    <div className="p-8 text-center">
-      <p className="mb-4 text-4xl">📂</p>
-      <h2 data-testid="no-assets-message" className="mb-2 text-lg font-semibold">
-        No assets yet
-      </h2>
-      <p className="mb-4 text-base-content/60">
-        Click <strong className="text-primary">Select assets</strong> to add instruments to this portfolio.
-      </p>
-    </div>
-  );
+  return <Empty icon={FolderOpenIcon} name="portfolio-no-assets" title="No assets yet" description='Click "Select assets" to add instruments to this portfolio.' />;
 }
 
 function renderNotFound() {
-  return (
-    <div className="p-8 text-center">
-      <p data-testid="not-found" className="text-base-content/60">
-        Portfolio not found.
-      </p>
-    </div>
-  );
+  return <Empty name="portfolio-not-found" title="Not found" description="Portfolio not found." />;
 }
 
 type RenderDeleteConfirmModalOptions = {
@@ -249,14 +234,11 @@ function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDele
 
 function renderAllocationCharts(portfolioAllocations: { geo: Allocation; sector: Allocation }, targetAllocations: { geo: Allocation; sector: Allocation }) {
   return (
-    <div className="p-4">
-      <hr />
-      <div data-testid="allocation-charts" className="flex h-72 justify-evenly gap-4 p-4">
-        <AllocationChart data={portfolioAllocations.geo} title="Actual geography" name="portfolio-geo" />
-        <AllocationChart data={targetAllocations.geo} title="Target geography" name="target-geo" />
-        <AllocationChart data={portfolioAllocations.sector} title="Actual sectors" name="portfolio-sector" />
-        <AllocationChart data={targetAllocations.sector} title="Target sectors" name="target-sector" />
-      </div>
+    <div data-testid="allocation-charts" className="container mx-auto grid grow grid-cols-2 items-center justify-between gap-4 md:grid-cols-4">
+      <AllocationChart data={portfolioAllocations.geo} title="Actual geography" name="portfolio-geo" />
+      <AllocationChart data={targetAllocations.geo} title="Target geography" name="target-geo" />
+      <AllocationChart data={portfolioAllocations.sector} title="Actual sectors" name="portfolio-sector" />
+      <AllocationChart data={targetAllocations.sector} title="Target sectors" name="target-sector" />
     </div>
   );
 }
@@ -295,8 +277,8 @@ function renderAssetTableSection(
   },
 ) {
   return (
-    <div className="flex grow flex-col">
-      <div className={config.totalValue > 0 || config.targetTotalValue > 0 ? "flex max-h-[calc(100dvh-37rem)] grow overflow-y-auto" : undefined}>
+    <div className="flex grow flex-col gap-4">
+      <div className={config.totalValue > 0 || config.targetTotalValue > 0 ? "flex grow justify-stretch overflow-y-auto" : undefined}>
         <AssetTable
           assets={portfolioAssets}
           onRemoveAsset={setIsinToDelete}

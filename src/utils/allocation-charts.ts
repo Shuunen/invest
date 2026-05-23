@@ -158,7 +158,6 @@ export function computeWeightedAllocationsFromSelection({ amountByIsin, assets, 
       inPEA: false,
       isin,
       notes: "",
-      positionValue: 0,
       targetAmount: 0,
     });
 

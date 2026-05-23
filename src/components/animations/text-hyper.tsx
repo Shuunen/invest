@@ -49,7 +49,7 @@ export const TextHyper = ({ className, duration = 800, text, animateOnLoad = tru
   }, [text, duration, trigger, animateOnLoad]);
 
   return (
-    <div className={cn("flex cursor-default overflow-hidden py-2 font-mono", className)} onMouseEnter={triggerAnimation}>
+    <div className={cn("flex cursor-default overflow-hidden font-mono", className)} onMouseEnter={triggerAnimation}>
       {displayText.map((letter, i) => (
         <span key={i} className="min-w-[0.1em]">
           {letter}

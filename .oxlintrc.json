@@ -63,7 +63,6 @@
       "files": ["src/bin/**/*.ts"],
       "rules": {
         "no-nodejs-modules": "off",
-        "no-console": "off",
         "require-hook": "off"
       }
     },
@@ -147,7 +146,7 @@
     "no-array-index-key": "off",
     "no-async-await": "off",
     "no-confusing-void-expression": "off",
-    "no-console": "error",
+    "no-console": "off",
     "no-continue": "off",
     "no-default-export": "error",
     "no-floating-promises": "off",

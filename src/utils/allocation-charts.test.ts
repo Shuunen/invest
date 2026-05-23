@@ -165,7 +165,6 @@ function makeEntry(overrides?: Partial<PortfolioEntry>): PortfolioEntry {
     inPEA: false,
     isin: "IE00B4L5Y983",
     notes: "",
-    positionValue: 100_000,
     targetAmount: 0,
     ...overrides,
   };

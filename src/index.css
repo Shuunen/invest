@@ -1,19 +1,35 @@
 @import "tailwindcss";
 @plugin "daisyui/index.js" {
   logs: false;
+  themes: business, dark, dim, dracula, forest, bumblebee, caramellatte, cupcake, light, winter;
 }
 
-:root {
-  --color-base-100: white;
-  --color-base-200: var(--color-taupe-50);
-  --color-base-300: var(--color-taupe-400);
-  --color-primary-content: white;
-  --color-primary: var(--color-sky-700);
-  --color-error: var(--color-red-600);
-  --color-base-content: var(--color-gray-900);
-  --color-success: var(--color-green-600);
-  --color-info: var(--color-primary);
-  --color-warning: var(--color-orange-500);
+[data-theme="bumblebee"] {
+  --color-accent: var(--color-orange-300);
+  --color-base-200: var(--color-orange-50);
+  --color-base-content: var(--color-stone-700);
+  --color-success: var(--color-emerald-500);
+  --color-info: var(--color-sky-500);
+  --color-warning: var(--color-orange-400);
+}
+
+[data-theme="caramellatte"] {
+  --color-primary: var(--color-orange-700);
+  --color-warning: var(--color-yellow-600);
+}
+
+[data-theme="winter"] {
+  --color-accent: var(--color-blue-400);
+  --color-info: var(--color-blue-400);
+  --color-warning: var(--color-yellow-500);
+}
+
+[data-theme="light"] {
+  --color-accent: var(--color-sky-600);
+  --color-error: var(--color-rose-400);
+  --color-success: var(--color-emerald-500);
+  --color-info: var(--color-sky-500);
+  --color-warning: var(--color-amber-500);
 }
 
 .btn-primary:hover {
@@ -33,7 +49,7 @@
 }
 
 .card {
-  @apply border border-gray-300 bg-base-100 shadow;
+  @apply border border-base-content/20 bg-base-100 shadow;
 }
 
 .card-body {
@@ -42,4 +58,42 @@
 
 hr {
   @apply border-base-content/10;
+}
+
+.container {
+  @apply px-4;
+}
+
+.dropdown-content {
+  @apply z-50 mt-2 rounded-box border border-base-content/30 bg-base-100 p-2 shadow-xl;
+}
+
+.label {
+  @apply mb-1 flex text-base-content/80;
+}
+
+.field-error {
+  @apply mt-1 text-xs text-error;
+}
+
+.score-dot {
+  @apply inline-block h-2 w-2 shrink-0 rounded-full;
+}
+
+.popover-content {
+  @apply absolute z-50 flex items-center gap-2 rounded-lg border bg-base-100 px-3 py-2 whitespace-nowrap shadow-md;
+}
+
+.btn-ghost-error {
+  @apply btn text-error btn-ghost btn-xs;
+}
+
+.cell-centered {
+  @apply flex items-center justify-center gap-1;
+}
+
+@media (width >= 140rem) {
+  .container {
+    @apply max-w-480;
+  }
 }

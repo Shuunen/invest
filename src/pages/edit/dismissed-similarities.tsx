@@ -38,7 +38,7 @@ export function DismissedSimilaritiesSection({ asset, allAssets, onUnDismiss }: 
                     <button
                       type="button"
                       data-testid={`un-dismiss-similarity-${matchedIsin.toLowerCase()}`}
-                      className="btn text-error btn-ghost btn-xs"
+                      className="btn-ghost-error"
                       aria-label={`Remove dismissed similarity with ${matchedName}`}
                       onClick={() => setConfirm({ isin: asset.isin, matchedIsin, matchedName })}
                     >

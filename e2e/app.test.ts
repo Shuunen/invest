@@ -177,8 +177,8 @@ test("editing an asset and saving reflects the new name on the view page", async
 
 test("navigating to an unknown asset ISIN shows a not-found message", async ({ page }) => {
   await page.goto("/assets/XX0000000000");
-  await expect(page.getByTestId("not-found")).toBeVisible();
-  await expect(page.getByTestId("not-found")).toContainText("XX0000000000");
+  await expect(page.getByTestId("empty-view-asset-not-found")).toBeVisible();
+  await expect(page.getByTestId("empty-view-asset-not-found")).toContainText("XX0000000000");
 });
 
 test("removing an asset from portfolio shows a confirmation dialog and cancel keeps it", async ({ page }) => {
