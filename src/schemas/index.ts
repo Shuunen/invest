@@ -3,7 +3,7 @@ import { maxPercentage } from "../utils/constants";
 import { themes } from "../utils/theme.ts";
 
 function fallback<Type>(value: Type): ZodType<Type> {
-  return z.any().transform(() => value);
+  return z.unknown().transform(() => value);
 }
 
 // --- Geography ---
