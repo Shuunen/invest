@@ -1,5 +1,5 @@
 import { AllocationChart } from "../../components/charts/allocation.tsx";
-import type { Asset } from "../../schemas/index.ts";
+import type { Asset } from "../../schemas/asset.ts";
 
 type Props = {
   geoAllocation: Asset["geoAllocation"];

@@ -1,5 +1,5 @@
 import { invariant, startCase } from "es-toolkit";
-import { countries, sectors } from "../../schemas/index.ts";
+import { countries, sectors } from "../../schemas/asset.ts";
 import { buildDiffRows } from "./form-diff.ts";
 import { emptyFormState, type FormState } from "./form-state.ts";
 

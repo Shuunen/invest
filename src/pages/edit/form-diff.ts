@@ -1,5 +1,5 @@
 import { startCase } from "es-toolkit";
-import { countries, sectors } from "../../schemas/index.ts";
+import { countries, sectors } from "../../schemas/asset.ts";
 import type { FormState } from "./form-state.ts";
 
 const emptyValue = "-";

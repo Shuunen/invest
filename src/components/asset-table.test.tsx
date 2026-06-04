@@ -2,7 +2,8 @@ import { act, fireEvent, render, screen, waitFor, within } from "@testing-librar
 import userEvent from "@testing-library/user-event";
 import { invariant } from "es-toolkit";
 import { db } from "../db/db.ts";
-import { computeScore, type AppData, type Asset } from "../schemas/index.ts";
+import type { AppData } from "../schemas/app-data.ts";
+import { computeScore, type Asset } from "../schemas/asset.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { formatPercent } from "../utils/format-numbers.ts";
 import { useDexieSync } from "./asset-table-db.ts";

@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { Asset } from "../schemas/index.ts";
+import type { Asset } from "../schemas/asset.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { fetchEtfData } from "../utils/fetch-etf-data.ts";
 import { fetchStockData } from "../utils/fetch-stock-data.ts";

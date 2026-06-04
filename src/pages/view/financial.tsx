@@ -1,4 +1,4 @@
-import type { Asset } from "../../schemas/index.ts";
+import type { Asset } from "../../schemas/asset.ts";
 import { formatNumber, formatPercent, formatPrice } from "../../utils/format-numbers.ts";
 import { FieldRow } from "./field-row.tsx";
 

@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
 import { CheckIcon, PencilLineIcon, PlusIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import type { Asset } from "../schemas/index.ts";
+import type { Asset } from "../schemas/asset.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
 import {

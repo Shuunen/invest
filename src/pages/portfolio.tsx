@@ -10,10 +10,12 @@ import type { MetricItem } from "../components/metric.tsx";
 import { ModalActions } from "../components/modal-actions.tsx";
 import { ModalHeader } from "../components/modal-header.tsx";
 import { PageHeader } from "../components/page-header.tsx";
-import { computeDataScore, computeScore, type Allocation, type Asset, type PortfolioEntry } from "../schemas/index.ts";
+import { computeScore, type Allocation, type Asset } from "../schemas/asset.ts";
+import type { PortfolioEntry } from "../schemas/portfolio.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { computePortfolioWeightedAllocations } from "../utils/allocation-charts.ts";
 import { maxPercentage } from "../utils/constants.ts";
+import { computeDataScore } from "../utils/data-score.ts";
 import { formatPrice } from "../utils/format-numbers.ts";
 
 const dataScoreHeaderWarnThreshold = 95;

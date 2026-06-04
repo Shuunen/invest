@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import type { Allocation } from "../../schemas/index.ts";
+import type { Allocation } from "../../schemas/asset.ts";
 import { AllocationChart } from "./allocation.tsx";
 
 const emptyAllocation: Allocation = {};

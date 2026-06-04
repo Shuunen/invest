@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
-import type { Asset, Portfolio } from "../schemas/index.ts";
+import type { Asset } from "../schemas/asset.ts";
+import type { Portfolio } from "../schemas/portfolio.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { PortfolioPage } from "./portfolio.tsx";
 

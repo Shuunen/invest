@@ -1,5 +1,5 @@
 import { invariant } from "es-toolkit";
-import type { Asset } from "../schemas/index.ts";
+import type { Asset } from "../schemas/asset.ts";
 import { computeAllocationSimilarity, computeAssetSimilarity, computeMaxSimilarity, similarityErrorThreshold, similarityWarningThreshold } from "./asset-similarity.ts";
 
 describe("similarityWarningThreshold", () => {

@@ -1,6 +1,6 @@
 import { invariant } from "es-toolkit";
 import { useEffect, useRef, useState } from "react";
-import type { Asset } from "../schemas/index.ts";
+import type { Asset } from "../schemas/asset.ts";
 import { similarityErrorThreshold, similarityWarningThreshold } from "../utils/asset-similarity.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { maxPercentage } from "../utils/constants.ts";

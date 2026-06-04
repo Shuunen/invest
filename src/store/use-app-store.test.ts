@@ -1,4 +1,4 @@
-import { maxIsins, type Asset } from "../schemas/index.ts";
+import { maxIsins, type Asset } from "../schemas/asset.ts";
 import { useAppStore, defaultAppData } from "./use-app-store.ts";
 
 describe("useAppStore - initial state and load", () => {

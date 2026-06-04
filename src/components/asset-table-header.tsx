@@ -1,6 +1,6 @@
 import type { Table } from "@tanstack/react-table";
 import { EyeIcon } from "lucide-react";
-import type { Asset } from "../schemas/index.ts";
+import type { Asset } from "../schemas/asset.ts";
 
 export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number) {
   return (

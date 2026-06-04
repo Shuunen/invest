@@ -1,5 +1,5 @@
 import { getCoreRowModel, getSortedRowModel, useReactTable, type ColumnDef, type SortingState } from "@tanstack/react-table";
-import type { Asset } from "../schemas/index.ts";
+import type { Asset } from "../schemas/asset.ts";
 
 export function matchesFilter(asset: Asset, lower: string): boolean {
   if (asset.isin.toLowerCase().includes(lower)) return true;

@@ -1,4 +1,4 @@
-import type { Allocation, Asset } from "../schemas/index.ts";
+import type { Allocation, Asset } from "../schemas/asset.ts";
 
 export const similarityWarningThreshold = 0.6;
 

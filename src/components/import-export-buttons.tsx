@@ -1,7 +1,7 @@
 import { Download, Upload } from "lucide-react";
 import { type ChangeEvent, useRef } from "react";
 import { toast } from "react-hot-toast";
-import { safeImportJson, type AppData } from "../schemas/index.ts";
+import { safeImportJson, type AppData } from "../schemas/app-data.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { jsonStringify } from "../utils/json.ts";

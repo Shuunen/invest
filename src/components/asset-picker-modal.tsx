@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import type { Asset } from "../schemas/index.ts";
+import type { Asset } from "../schemas/asset.ts";
 import { computeWeightedAllocationsFromSelection } from "../utils/allocation-charts.ts";
 import { AssetTable } from "./asset-table.tsx";
 import { AllocationChart } from "./charts/allocation.tsx";

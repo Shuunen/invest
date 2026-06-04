@@ -1,7 +1,7 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { PortfolioSchema } from "../schemas/index.ts";
+import { PortfolioSchema } from "../schemas/portfolio.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { FormControl } from "./form/control.tsx";
 import { ModalActions } from "./modal-actions.tsx";

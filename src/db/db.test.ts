@@ -1,5 +1,5 @@
 import { invariant } from "es-toolkit";
-import { AppDataSchema } from "../schemas/index.ts";
+import { AppDataSchema } from "../schemas/app-data.ts";
 import { type AppDataRecord, db } from "./db.ts";
 
 describe("AppDataDb", () => {

@@ -1,7 +1,10 @@
 import { invariant } from "es-toolkit";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { maxIsins, maxPortfolios, SettingsSchema, type AppData, type Asset, type Portfolio, type PortfolioEntry, type Settings } from "../schemas/index.ts";
+import type { AppData } from "../schemas/app-data.ts";
+import { maxIsins, type Asset } from "../schemas/asset.ts";
+import { maxPortfolios, type Portfolio, type PortfolioEntry } from "../schemas/portfolio.ts";
+import { SettingsSchema, type Settings } from "../schemas/settings.ts";
 import type { Theme } from "../utils/theme.ts";
 
 const defaultSettings: Settings = SettingsSchema.parse({});

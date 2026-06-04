@@ -1,4 +1,4 @@
-import type { Allocation } from "../schemas/index.ts";
+import type { Allocation } from "../schemas/asset.ts";
 import { computeBalanceScore } from "./allocation-balance.ts";
 
 describe("computeBalanceScore", () => {

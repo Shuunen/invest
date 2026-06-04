@@ -1,6 +1,6 @@
 import { startCase } from "es-toolkit";
 import { NumberField } from "../../components/form/number-field.tsx";
-import { countries, sectors, type Country, type Sector } from "../../schemas/index.ts";
+import { countries, sectors, type Country, type Sector } from "../../schemas/asset.ts";
 import { ProgressBar } from "../view/progress-bar.tsx";
 import type { FormState, PatchFn } from "./form-state.ts";
 

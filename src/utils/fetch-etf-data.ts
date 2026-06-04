@@ -1,4 +1,4 @@
-import type { Country, Sector } from "../schemas/index.ts";
+import type { Country, Sector } from "../schemas/asset.ts";
 
 export type EtfPrefillData = {
   fees: string | undefined;

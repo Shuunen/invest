@@ -1,7 +1,7 @@
 import { invariant } from "es-toolkit";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { Asset } from "../../schemas/index.ts";
+import type { Asset } from "../../schemas/asset.ts";
 import { UnDismissConfirmModal, type UnDismissConfirmState } from "./un-dismiss-confirm-modal.tsx";
 
 type Props = {

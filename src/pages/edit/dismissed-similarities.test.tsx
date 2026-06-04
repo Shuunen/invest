@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import type { Asset } from "../../schemas/index.ts";
+import type { Asset } from "../../schemas/asset.ts";
 import { DismissedSimilaritiesSection } from "./dismissed-similarities.tsx";
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {

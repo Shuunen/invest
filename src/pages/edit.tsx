@@ -3,7 +3,7 @@ import { invariant } from "es-toolkit";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Empty } from "../components/empty.tsx";
-import type { Asset } from "../schemas/index.ts";
+import type { Asset } from "../schemas/asset.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { AssetForm } from "./edit/asset-form.tsx";
 import { DismissedSimilaritiesSection } from "./edit/dismissed-similarities.tsx";

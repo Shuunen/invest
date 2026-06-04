@@ -1,6 +1,6 @@
 import { kebabCase } from "es-toolkit";
 import { useMemo } from "react";
-import { computeScore, type Asset } from "../schemas";
+import { computeScore, type Asset } from "../schemas/asset.ts";
 import { formatPercent } from "../utils/format-numbers";
 import { TextAnimate } from "./animations/text-animate";
 import type { MetricItem } from "./metric";

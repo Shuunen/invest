@@ -2,10 +2,12 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { DotIcon, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
-import { computeDataScore, computeScore, dataScoreWarnThreshold, type Asset, type PortfolioEntry } from "../schemas/index.ts";
+import { computeScore, type Asset } from "../schemas/asset.ts";
+import type { PortfolioEntry } from "../schemas/portfolio.ts";
 import { computeMaxSimilarity } from "../utils/asset-similarity.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { maxPercentage } from "../utils/constants.ts";
+import { computeDataScore, dataScoreWarnThreshold } from "../utils/data-score.ts";
 import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
 import { computeTrend } from "../utils/trend.ts";
 import { AnimatedLink } from "./animations/link.tsx";

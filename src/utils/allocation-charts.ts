@@ -1,5 +1,6 @@
 import { invariant, startCase } from "es-toolkit";
-import type { Allocation, Asset, PortfolioEntry } from "../schemas/index.ts";
+import type { Allocation, Asset } from "../schemas/asset.ts";
+import type { PortfolioEntry } from "../schemas/portfolio.ts";
 
 const otherColor = "#777";
 const fallbackColors = ["#0072B2", "#E69F00", "#009E73", "#D55E00", "#56B4E9", "#CC79A7", "#F0E442", "#117733", "#AA4499", "#882255", "#332288"];

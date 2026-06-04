@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { Allocation } from "../../schemas/index.ts";
+import type { Allocation } from "../../schemas/asset.ts";
 import { computeBalanceScore } from "../../utils/allocation-balance.ts";
 import { buildAllocationEntries } from "../../utils/allocation-charts.ts";
 import { cn } from "../../utils/browser-styles.ts";

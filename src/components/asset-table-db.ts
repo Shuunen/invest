@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import sampleJson from "../../data/sample.json";
 import { db } from "../db/db.ts";
-import { AppDataSchema, type AppData } from "../schemas/index.ts";
+import { AppDataSchema, type AppData } from "../schemas/app-data.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 
 const debounceMs = 300;

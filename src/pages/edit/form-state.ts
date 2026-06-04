@@ -1,4 +1,4 @@
-import { AssetSchema, type Asset, type Country, type Sector } from "../../schemas/index.ts";
+import { AssetSchema, type Asset, type Country, type Sector } from "../../schemas/asset.ts";
 import { maxPercentage } from "../../utils/constants.ts";
 import { maxDecimals } from "../../utils/format-numbers.ts";
 

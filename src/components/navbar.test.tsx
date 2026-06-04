@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import type { AppData } from "../schemas/index.ts";
+import type { AppData } from "../schemas/app-data.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { Navbar } from "./navbar.tsx";
 

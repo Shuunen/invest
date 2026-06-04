@@ -1,5 +1,6 @@
 import { invariant } from "es-toolkit";
-import type { Allocation, Asset, PortfolioEntry } from "../schemas/index.ts";
+import type { Allocation, Asset } from "../schemas/asset.ts";
+import type { PortfolioEntry } from "../schemas/portfolio.ts";
 import { buildAllocationEntries, computePortfolioWeightedAllocations, computeWeightedAllocationsFromSelection } from "./allocation-charts.ts";
 
 describe("buildAllocationEntries", () => {

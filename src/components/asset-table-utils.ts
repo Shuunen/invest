@@ -1,5 +1,5 @@
 import type { Row } from "@tanstack/react-table";
-import { computeScore, type Asset } from "../schemas/index.ts";
+import { computeScore, type Asset } from "../schemas/asset.ts";
 
 const minRowsForFormatting = 3;
 const quintileHighThreshold = 0.8;

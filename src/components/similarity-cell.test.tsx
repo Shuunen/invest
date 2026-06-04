@@ -1,7 +1,7 @@
 import type { AccessorFnColumnDef } from "@tanstack/react-table";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { invariant } from "es-toolkit";
-import type { Asset } from "../schemas/index.ts";
+import type { Asset } from "../schemas/asset.ts";
 import { computeMaxSimilarity } from "../utils/asset-similarity.ts";
 import { makeSimilarityColumn } from "./asset-table-columns.tsx";
 import { SimilarityCell } from "./similarity-cell.tsx";

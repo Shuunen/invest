@@ -1,5 +1,5 @@
 import { Dexie, type Table } from "dexie";
-import type { AppData } from "../schemas/index.ts";
+import type { AppData } from "../schemas/app-data.ts";
 
 export type AppDataRecord = {
   data: AppData;

@@ -1,5 +1,5 @@
 import { invariant } from "es-toolkit";
-import type { Asset } from "../../schemas/index.ts";
+import type { Asset } from "../../schemas/asset.ts";
 import { buildAssetFromForm, parseOptionalNumber, parseZodErrors, toFormState, type FormState } from "./form-state.ts";
 
 describe("parseZodErrors", () => {
