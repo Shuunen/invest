@@ -1,12 +1,12 @@
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import path from "node:path";
 import { invariant } from "es-toolkit";
 import { jsonParse } from "../utils/json.ts";
 import { AppDataSchema, parseAppData, safeImportJson, type AppData } from "./app-data.ts";
 import { maxIsins } from "./asset.ts";
 import { maxPortfolios } from "./portfolio.ts";
 
-const sampleRaw = readFileSync(join(process.cwd(), "data/sample.json"), "utf8");
+const sampleRaw = readFileSync(path.join(process.cwd(), "data/sample.json"), "utf8");
 
 describe("AppDataSchema", () => {
   it("parses sample.json without errors", () => {

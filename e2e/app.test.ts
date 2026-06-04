@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import path from "node:path";
 import { type Page, test, expect } from "@playwright/test";
 import sampleJson from "../data/sample.json" with { type: "json" };
 
@@ -107,7 +107,7 @@ test("export includes portfolio data", async ({ page }) => {
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export data" }).click();
   const download = await downloadPromise;
-  const exportPath = join(tmpdir(), `invest-export-test-${Date.now()}.json`);
+  const exportPath = path.join(tmpdir(), `invest-export-test-${Date.now()}.json`);
   await download.saveAs(exportPath);
   const content = await fs.readFile(exportPath, "utf8");
   await fs.unlink(exportPath);

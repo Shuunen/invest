@@ -158,10 +158,10 @@ async function fetchQuotePrice(proxyBase: string, quotePath: string): Promise<st
 }
 
 export function parseSectorsFromAjaxXml(xml: string): Partial<Record<Sector, number>> {
-  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(.*?)\]\]>/gsu)];
+  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(?<cdata>.*?)\]\]>/gsu)];
   for (const match of cdataMatches) {
     const [, html] = match;
-    if (!html.includes('data-testid="etf-holdings_sectors_table"')) continue;
+    if (!html?.includes('data-testid="etf-holdings_sectors_table"')) continue;
     const doc = new DOMParser().parseFromString(html, "text/html");
     return parseAllocation(doc, { keyMap: sectorNameToKey, nameTestId: "tl_etf-holdings_sectors_value_name", pctTestId: "tl_etf-holdings_sectors_value_percentage", rowTestId: "etf-holdings_sectors_row" });
   }
@@ -169,10 +169,10 @@ export function parseSectorsFromAjaxXml(xml: string): Partial<Record<Sector, num
 }
 
 export function parseCountriesFromAjaxXml(xml: string): Partial<Record<Country, number>> {
-  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(.*?)\]\]>/gsu)];
+  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(?<cdata>.*?)\]\]>/gsu)];
   for (const match of cdataMatches) {
     const [, html] = match;
-    if (!html.includes('data-testid="etf-holdings_countries_table"')) continue;
+    if (!html?.includes('data-testid="etf-holdings_countries_table"')) continue;
     const doc = new DOMParser().parseFromString(html, "text/html");
     return parseAllocation(doc, { keyMap: geoNameToKey, nameTestId: "tl_etf-holdings_countries_value_name", pctTestId: "tl_etf-holdings_countries_value_percentage", rowTestId: "etf-holdings_countries_row" });
   }

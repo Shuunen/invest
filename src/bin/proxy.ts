@@ -4,6 +4,7 @@
 import { execSync } from "node:child_process";
 import http from "node:http";
 import https from "node:https";
+
 const targetHost = "www.justetf.com";
 const stockHost = "logical-invest.com";
 const flareSolverrUrl = "http://192.168.1.142:8191/v1";
@@ -11,7 +12,7 @@ const flareSolverrTimeoutMs = 60_000;
 const port = 8010;
 const pathPrefix = "/proxy";
 const stockPathPrefix = "/stock/";
-const stockAssetPattern = /var\s+asset\s*=\s*(\{[\s\S]*?\})\s*;/u;
+const stockAssetPattern = /var\s+asset\s*=\s*(?<asset>\{[\s\S]*?\})\s*;/u;
 const httpNoContent = 204;
 const httpNotFound = 404;
 const httpBadRequest = 400;
@@ -109,9 +110,9 @@ async function fetchTextFromHost(hostname: string, path: string): Promise<string
 }
 
 function parseAssetObject(html: string): unknown {
-  const objectLiteral = stockAssetPattern.exec(html)?.[1];
+  const objectLiteral = stockAssetPattern.exec(html)?.groups?.asset;
   if (objectLiteral === undefined) throw new Error("Asset object not found in upstream HTML");
-  const jsonLike = objectLiteral.replaceAll(/,\s*([}\]])/gu, "$1");
+  const jsonLike = objectLiteral.replaceAll(/,\s*(?<bracket>[}\]])/gu, "$<bracket>");
   return JSON.parse(jsonLike);
 }
 

@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import path from "node:path";
 import { invariant } from "es-toolkit";
 import { jsonParse } from "../utils/json.ts";
 import { AppDataSchema } from "./app-data.ts";
 import { AssetSchema, computeScore, type Asset } from "./asset.ts";
 
-const sampleRaw = readFileSync(join(process.cwd(), "data/sample.json"), "utf8");
+const sampleRaw = readFileSync(path.join(process.cwd(), "data/sample.json"), "utf8");
 
 // Shared minimal asset fixture — all optional fields omitted (they have defaults or are nullable)
 const validAsset = {

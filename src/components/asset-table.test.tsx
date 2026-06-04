@@ -666,16 +666,17 @@ describe("AssetTable - useHydration", () => {
   });
 });
 
+function DexieSyncWrapper() {
+  useDexieSync();
+  return <span />;
+}
+
 describe("useDexieSync", () => {
   it("writes data to DB after debounce when store changes", async () => {
     expect.hasAssertions();
     await db.delete();
     await db.open();
     useAppStore.setState({ data: makeTestData([makeAsset()]), isLoading: false, loadError: undefined });
-    function DexieSyncWrapper() {
-      useDexieSync();
-      return <span />;
-    }
     render(<DexieSyncWrapper />);
     act(() => {
       useAppStore.getState().setSort({ column: "fees", direction: "asc" });
