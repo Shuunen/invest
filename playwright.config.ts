@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 // oxlint-disable-next-line import/no-default-export
 export default defineConfig({
   fullyParallel: true,
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], channel: "chromium-headless-shell" } }],
   reporter: "./e2e/summary-reporter.ts",
   testDir: "./e2e",
   use: { baseURL: "http://localhost:5173" },
