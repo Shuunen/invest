@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.1] - 2026-06-12
+
+### Changed in 0.11.1
+
+- Updated all dependencies to latest versions: `@tanstack/react-router` ^1.170.15, `@types/node` ^25.9.3, `@types/react` ^19.2.17, `@typescript/native-preview` 20260612 nightly, `daisyui` ^5.5.23, `es-toolkit` ^1.47.1, `happy-dom` ^20.10.2, `knip` ^6.16.1, `lucide-react` ^1.18.0, `oxfmt` ^0.54.0, `oxlint` ^1.69.0, `turbo` ^2.9.18
+
 ## [0.11.0] - 2026-05-22
 
 ### Added in 0.11.0
