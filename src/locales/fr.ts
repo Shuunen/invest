@@ -1,3 +1,5 @@
+import type { messages as Messages } from "./en.ts";
+
 export const messages = {
   "action-back": "Retour",
   "action-cancel": "Annuler",
@@ -35,6 +37,7 @@ export const messages = {
   "section-tech-stack": "Technologies",
   "section-test-reminder-tiers": "Niveaux de rappel de test",
   "similarity-similar-to": "similaire à",
+  "status-never": "Jamais",
   "status-no-changes": "Aucune modification détectée. L'enregistrement conservera les valeurs actuelles.",
   "status-offline": "Vous êtes hors ligne. Vos données locales sont toujours disponibles.",
   "table-actions": "Actions",
@@ -57,4 +60,4 @@ export const messages = {
   "time-second-short": "{count}s",
   "time-year": "{count} ans | {count} an | {count} ans",
   "time-year-short": "{count}a",
-} as const;
+} as const satisfies Record<keyof typeof Messages, string>;

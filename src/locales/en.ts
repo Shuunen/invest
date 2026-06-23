@@ -35,6 +35,7 @@ export const messages = {
   "section-tech-stack": "Tech stack",
   "section-test-reminder-tiers": "Test reminder tiers",
   "similarity-similar-to": "similar to",
+  "status-never": "Never",
   "status-no-changes": "No form changes detected. Saving will keep the current values.",
   "status-offline": "You are offline. Your local data is still available.",
   "table-actions": "Actions",

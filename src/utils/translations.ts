@@ -13,7 +13,7 @@ type IsPlural<Key extends MessageKey> = Messages[Key] extends `${string} | ${str
 type TranslateArgs<Key extends MessageKey> = [Placeholders<Key>] extends [never] ? (IsPlural<Key> extends true ? [params: { count: number }] : [params?: undefined]) : [params: Record<Placeholders<Key>, string | number>];
 type TranslationContextValue = {
   locale: Locale;
-  messages: Messages;
+  messages: Record<keyof Messages, string>;
   setLocale: (code: Locale) => void;
 };
 

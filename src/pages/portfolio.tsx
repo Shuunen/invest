@@ -222,13 +222,13 @@ function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDele
   return (
     <dialog className="modal-open modal" aria-modal="true">
       <div className="modal-box">
-        <ModalHeader title="Remove asset" onClose={onCancel} type="error" />
+        <ModalHeader title={translate("action-remove")} onClose={onCancel} type="error" />
         {translate("action-remove")}{" "}
         <span data-testid="modal-asset-name" className="font-semibold">
           {assetName}
         </span>{" "}
         {translate("modal-remove-from-portfolio")}
-        <ModalActions onCancel={onCancel} onConfirm={onConfirm} confirmText="Remove" type="error" />
+        <ModalActions onCancel={onCancel} onConfirm={onConfirm} confirmText={translate("action-remove")} type="error" />
       </div>
       <div className="modal-backdrop" onClick={onCancel} />
     </dialog>

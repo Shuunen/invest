@@ -21,7 +21,7 @@ export function UnDismissConfirmModal({ confirm, onClose, onConfirm }: Props) {
           {translate("modal-un-dismiss-before")} <strong>{confirm.matchedName}</strong>
           {translate("modal-un-dismiss-suffix")}
         </p>
-        <ModalActions onCancel={onClose} onConfirm={onConfirm} confirmText="Remove" type="error" />
+        <ModalActions onCancel={onClose} onConfirm={onConfirm} confirmText={translate("action-remove")} type="error" />
       </div>
       <div data-testid="un-dismiss-confirm-backdrop" className="modal-backdrop" onClick={onClose} />
     </dialog>

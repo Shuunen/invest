@@ -17,17 +17,20 @@ describe("TranslationProvider", () => {
     consoleInfo.mockRestore();
   });
 
-  it("falls back to en messages and logs a warning for an unrecognized locale", async () => {
+  it("keeps en messages and throws for an unrecognized locale", async () => {
     expect.hasAssertions();
     const consoleInfo = vi.spyOn(console, "info").mockReturnValue(undefined);
+    const rejectionHandler = vi.fn<() => void>();
+    process.on("unhandledRejection", rejectionHandler);
     useAppStore.setState({
       data: { ...defaultAppData, settings: { ...defaultAppData.settings, locale: "de" as unknown as Locale } },
       isLoading: false,
       loadError: undefined,
     });
     const { result } = renderHook(() => useTranslation(), { wrapper: TranslationProvider });
-    await waitFor(() => expect(consoleInfo).toHaveBeenCalledWith('no loader found for locale "de", falling back to "en"'));
+    await waitFor(() => expect(consoleInfo).toHaveBeenCalledWith('locale changed to "de"'));
     expect(result.current.translate("export-title")).toBe("Export status");
+    process.off("unhandledRejection", rejectionHandler);
     consoleInfo.mockRestore();
   });
 });

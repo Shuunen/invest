@@ -1,12 +1,14 @@
+import { invariant } from "es-toolkit";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { messages as en } from "../locales/en.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { TranslationContext } from "./translations.ts";
 
-type Messages = typeof en;
+type Messages = Record<keyof typeof en, string>;
 
-const localeLoaders: Partial<Record<string, () => Promise<{ messages: Messages }>>> = {
-  fr: () => import("../locales/fr.ts") as unknown as Promise<{ messages: Messages }>,
+const localeLoaders: Record<string, () => Promise<{ messages: Messages }>> = {
+  en: () => Promise.resolve({ messages: en }),
+  fr: () => import("../locales/fr.ts"),
 };
 
 export function TranslationProvider({ children }: { children: ReactNode }) {
@@ -16,12 +18,9 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     async function main() {
+      console.info(`locale changed to "${locale}"`);
       const loader = localeLoaders[locale];
-      if (!loader) {
-        console.info(`no loader found for locale "${locale}", falling back to "en"`);
-        setMessages(en);
-        return;
-      }
+      invariant(loader, `no loader found for locale "${locale}"`);
       const data = await loader();
       console.info(`loaded locale "${locale}"`);
       setMessages(data.messages);
