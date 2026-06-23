@@ -157,15 +157,18 @@ function usePieState(entries: Entry[]) {
   const total = useMemo(() => entries.reduce((sum, { value }) => sum + value, 0), [entries]);
 
   const slices = useMemo(() => {
+    type Slice = { end: number; fill: string; fraction: number; label: string; mid: number; start: number; value: number };
+    const result: Slice[] = [];
     let cursor = 0;
-    return entries.map(({ label, value, fill }) => {
+    for (const { label, value, fill } of entries) {
       const fraction = total === 0 ? 0 : value / total;
       const sweep = fraction * 360;
       const start = cursor;
-      const mid = cursor + sweep / 2;
-      cursor += sweep;
-      return { end: cursor, fill, fraction, label, mid, start, value };
-    });
+      const end = cursor + sweep;
+      cursor = end;
+      result.push({ end, fill, fraction, label, mid: start + sweep / 2, start, value });
+    }
+    return result;
   }, [entries, total]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {

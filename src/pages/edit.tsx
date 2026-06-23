@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { invariant } from "es-toolkit";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Empty } from "../components/empty.tsx";
 import type { Asset } from "../schemas/asset.ts";
@@ -75,11 +75,9 @@ function useAssetEditForm(originalIsin: string) {
   const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === originalIsin));
   const updateAsset = useAppStore(state => state.updateAsset);
 
-  const [form, setForm] = useState<FormState | undefined>(() => (asset ? toFormState(asset) : undefined));
-
-  useEffect(() => {
-    if (asset && !form) setForm(toFormState(asset));
-  }, [asset, form]);
+  const [form, setForm] = useState<FormState | undefined>(asset ? toFormState(asset) : undefined);
+  // when we reload the page on the edit page, the asset is undefined at first, but then it is loaded from the store, so we need to update the form state when the asset is loaded
+  if (!form && asset) setForm(toFormState(asset));
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   function patch<Key extends keyof FormState>(key: Key, value: FormState[Key]) {

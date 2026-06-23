@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { Asset } from "../../schemas/asset.ts";
+import { TranslationProvider } from "../../utils/translations-provider.tsx";
 import { DismissedSimilaritiesSection } from "./dismissed-similarities.tsx";
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
@@ -27,7 +28,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
 }
 
 function renderSection(asset: Asset, allAssets: Asset[], onUnDismiss: (isin: string, matchedIsin: string) => void) {
-  render(<DismissedSimilaritiesSection asset={asset} allAssets={allAssets} onUnDismiss={onUnDismiss} />);
+  render(<DismissedSimilaritiesSection asset={asset} allAssets={allAssets} onUnDismiss={onUnDismiss} />, { wrapper: TranslationProvider });
 }
 
 describe("EditDismissedSimilaritiesSection", () => {

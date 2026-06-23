@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render as baseRender, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { invariant } from "es-toolkit";
 import { db } from "../db/db.ts";
@@ -6,10 +6,13 @@ import type { AppData } from "../schemas/app-data.ts";
 import { computeScore, type Asset } from "../schemas/asset.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { formatPercent } from "../utils/format-numbers.ts";
+import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { useDexieSync } from "./asset-table-db.ts";
 import { matchesFilter } from "./asset-table-hooks.ts";
 import { computeQuintileClasses } from "./asset-table-utils.ts";
 import { AssetTable } from "./asset-table.tsx";
+
+const render = (ui: Parameters<typeof baseRender>[0], options?: Parameters<typeof baseRender>[1]) => baseRender(ui, { ...options, wrapper: TranslationProvider });
 
 const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>());
 

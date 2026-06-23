@@ -2,6 +2,7 @@ import { kebabCase } from "es-toolkit";
 import type { Asset } from "../../schemas/asset.ts";
 import { cn } from "../../utils/browser-styles.ts";
 import { formatDate } from "../../utils/format-numbers.ts";
+import { useTranslation } from "../../utils/translations.ts";
 import { FieldRow } from "./field-row.tsx";
 
 function booleanBadge(value: boolean, label: string) {
@@ -15,10 +16,11 @@ function booleanBadge(value: boolean, label: string) {
 type Props = { asset: Asset };
 
 export function ViewGeneralSection({ asset }: Props) {
+  const { translate } = useTranslation();
   return (
     <div className="card">
       <div className="card-body">
-        <h2 className="card-title">General</h2>
+        <h2 className="card-title">{translate("section-general")}</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FieldRow label="ISIN" name="isin" value={asset.isin} />
           <FieldRow label="Provider" value={asset.provider || "—"} name="provider" />

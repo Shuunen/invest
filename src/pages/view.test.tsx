@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { Asset } from "../schemas/asset.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { AssetViewPage } from "./view.tsx";
 
 const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>());
@@ -38,7 +39,7 @@ describe("AssetViewPage - not found", () => {
   it("shows not found message for unknown ISIN", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<AssetViewPage isin="XX0000000000" />);
+    render(<AssetViewPage isin="XX0000000000" />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("empty-view-asset-not-found")).toBeInTheDocument();
   });
 
@@ -50,7 +51,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("asset-name")).toHaveTextContent("Test ETF");
     expect(screen.getByTestId("field-row-isin")).toBeInTheDocument();
   });
@@ -63,7 +64,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("field-row-provider")).toBeInTheDocument();
     expect(screen.getByTestId("field-row-tickers")).toBeInTheDocument();
   });
@@ -76,7 +77,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("field-row-fees")).toHaveTextContent("0.20 %");
   });
 
@@ -88,7 +89,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("field-row-price")).toHaveTextContent("—");
   });
 
@@ -100,7 +101,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("edit-button"));
     expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin/edit" });
   });
@@ -115,7 +116,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("back-button"));
     expect(spy).toHaveBeenCalledWith();
     Object.defineProperty(globalThis.history, "length", { configurable: true, value: 1, writable: true });
@@ -130,7 +131,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("back-button"));
     expect(mockNavigate).toHaveBeenCalledWith({ to: "/" });
   });
@@ -143,7 +144,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("accumulating-badge")).toHaveTextContent("No");
   });
 
@@ -155,7 +156,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId("geo-allocation-chart")).not.toBeInTheDocument();
     expect(screen.getByTestId("geo-allocation-empty")).toHaveTextContent("No allocation data");
     expect(screen.queryByTestId("sector-allocation-chart")).not.toBeInTheDocument();
@@ -170,7 +171,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("field-row-provider")).toHaveTextContent("—");
     expect(screen.getByTestId("field-row-tickers")).toHaveTextContent("—");
   });
@@ -190,7 +191,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("field-row-performance-1-y")).toHaveTextContent("—");
     expect(screen.getByTestId("field-row-risk-reward-1-y")).toHaveTextContent("—");
   });
@@ -203,7 +204,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId("geo-allocation-chart")).not.toBeInTheDocument();
     expect(screen.getByTestId("geo-allocation-empty")).toBeInTheDocument();
   });
@@ -216,7 +217,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("geo-allocation-chart")).toBeInTheDocument();
   });
 
@@ -228,7 +229,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("geo-allocation-chart")).toBeInTheDocument();
   });
 
@@ -240,7 +241,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("geo-allocation-chart")).toBeInTheDocument();
     expect(screen.getByTestId("slice-other")).toBeInTheDocument();
   });
@@ -253,7 +254,7 @@ describe("AssetViewPage - not found", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("geo-allocation-chart")).toBeInTheDocument();
   });
 });
@@ -263,7 +264,7 @@ describe("AssetViewPage - dismissed similarities", () => {
     expect.hasAssertions();
     const asset = makeAsset({ dismissedSimilarities: [] });
     useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId("dismissed-similarities-card")).not.toBeInTheDocument();
   });
 
@@ -273,7 +274,7 @@ describe("AssetViewPage - dismissed similarities", () => {
     const other = makeAsset({ isin: otherIsin, name: "Other Fund" });
     const asset = makeAsset({ dismissedSimilarities: [otherIsin] });
     useAppStore.setState({ data: { ...defaultAppData, assets: [asset, other] }, isLoading: false, loadError: undefined });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("dismissed-similarities-card")).toHaveTextContent("Other Fund");
   });
 
@@ -282,7 +283,7 @@ describe("AssetViewPage - dismissed similarities", () => {
     const unknownIsin = "XX0000000001";
     const asset = makeAsset({ dismissedSimilarities: [unknownIsin] });
     useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
-    render(<AssetViewPage isin={asset.isin} />);
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("dismissed-similarities-card")).toHaveTextContent(unknownIsin);
   });
 });

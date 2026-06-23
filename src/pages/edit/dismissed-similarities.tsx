@@ -2,6 +2,7 @@ import { invariant } from "es-toolkit";
 import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Asset } from "../../schemas/asset.ts";
+import { useTranslation } from "../../utils/translations.ts";
 import { UnDismissConfirmModal, type UnDismissConfirmState } from "./un-dismiss-confirm-modal.tsx";
 
 type Props = {
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function DismissedSimilaritiesSection({ asset, allAssets, onUnDismiss }: Props) {
+  const { translate } = useTranslation();
   const [confirm, setConfirm] = useState<UnDismissConfirmState>(undefined);
 
   if (asset.dismissedSimilarities.length === 0) return undefined;
@@ -26,7 +28,7 @@ export function DismissedSimilaritiesSection({ asset, allAssets, onUnDismiss }: 
     <>
       <div data-testid="dismissed-similarities-card" className="card">
         <div className="card-body">
-          <h2 className="card-title">Dismissed similarities</h2>
+          <h2 className="card-title">{translate("section-dismissed-similarities")}</h2>
           <ul className="list-inside list-disc">
             {asset.dismissedSimilarities.map(matchedIsin => {
               const matched = allAssets.find(ast => ast.isin === matchedIsin);

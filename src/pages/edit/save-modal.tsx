@@ -3,6 +3,7 @@ import { TriangleAlertIcon } from "lucide-react";
 import { ModalActions } from "../../components/modal-actions";
 import { ModalHeader } from "../../components/modal-header";
 import { cn } from "../../utils/browser-styles.ts";
+import { useTranslation, type Translate } from "../../utils/translations.ts";
 import { computeTrend } from "../../utils/trend.ts";
 import type { DiffRow } from "./form-diff.ts";
 
@@ -39,16 +40,16 @@ function renderAfterCell(row: DiffRow) {
   );
 }
 
-function renderDiffRowsTable(diffRows: DiffRow[], onResetRow?: (row: DiffRow) => void) {
+function renderDiffRowsTable(diffRows: DiffRow[], translate: Translate, onResetRow?: (row: DiffRow) => void) {
   return (
     <div className="mt-4 max-h-96 overflow-auto rounded-box">
       <table className="table table-zebra table-sm" data-testid="confirm-save-diff-table">
         <thead>
           <tr>
-            <th>Field</th>
-            <th>Before</th>
-            <th>After</th>
-            <th>Actions</th>
+            <th>{translate("table-field")}</th>
+            <th>{translate("table-before")}</th>
+            <th>{translate("table-after")}</th>
+            <th>{translate("table-actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -64,7 +65,7 @@ function renderDiffRowsTable(diffRows: DiffRow[], onResetRow?: (row: DiffRow) =>
                   className="btn h-auto min-h-0 p-0 btn-link opacity-0 transition-opacity btn-xs group-hover:opacity-100 focus-visible:opacity-100"
                   onClick={() => onResetRow?.(row)}
                 >
-                  Reset
+                  {translate("action-reset")}
                 </button>
               </td>
             </tr>
@@ -75,20 +76,21 @@ function renderDiffRowsTable(diffRows: DiffRow[], onResetRow?: (row: DiffRow) =>
   );
 }
 
-function renderNoChangesNotice() {
+function renderNoChangesNotice(translate: Translate) {
   return (
     <div className="mt-4 alert alert-outline alert-info" data-testid="confirm-save-no-changes">
-      <span>No form changes detected. Saving will keep the current values.</span>
+      <span>{translate("status-no-changes")}</span>
     </div>
   );
 }
 
 export function SaveModal({ diffRows, onClose, onConfirm, onReset, onResetRow }: Props) {
+  const { translate } = useTranslation();
   return (
     <dialog className="modal-open modal" aria-modal="true" data-testid="confirm-save-modal">
       <div className="modal-box max-w-3xl">
         <ModalHeader title="Confirm changes before saving" subtitle="Review what changed in this asset before applying the update." onClose={onClose} />
-        {diffRows.length > 0 ? renderDiffRowsTable(diffRows, onResetRow) : renderNoChangesNotice()}
+        {diffRows.length > 0 ? renderDiffRowsTable(diffRows, translate, onResetRow) : renderNoChangesNotice(translate)}
         <ModalActions onCancel={onClose} onConfirm={onConfirm} onReset={onReset} confirmText="Confirm and save" />
       </div>
       <div className="modal-backdrop" onClick={onClose} />

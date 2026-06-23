@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.12.0] - 2026-06-22
+
+### Added in 0.12.0
+
+- i18n support — the app now ships with English and French translations; a locale switcher in the navbar lets users toggle between languages, and the selected locale persists across sessions
+- `TranslationProvider` and `useTranslation` hook — a type-safe translation context with compile-time enforcement of message keys, placeholder interpolation, and plural selection
+- `readableTime` utility — displays durations in a human-readable, translated format (e.g. "3 days", "4 months") for both long and short variants
+- `LocaleSwitcher` component — a compact button in the navbar that cycles through available locales
+
+### Fixed in 0.12.0
+
+- Switching back to English after activating French now correctly restores English messages; previously the UI remained in French until a hard reload
+
 ## [0.11.1] - 2026-06-12
 
 ### Changed in 0.11.1

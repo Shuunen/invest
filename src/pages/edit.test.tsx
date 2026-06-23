@@ -3,6 +3,7 @@ import type { Asset } from "../schemas/asset.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { fetchEtfData } from "../utils/fetch-etf-data.ts";
 import { fetchStockData } from "../utils/fetch-stock-data.ts";
+import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { AssetEditPage } from "./edit.tsx";
 
 const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>());
@@ -43,7 +44,7 @@ describe("AssetEditPage - not found", () => {
   it("shows not found message for unknown ISIN", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<AssetEditPage isin="XX0000000000" />);
+    render(<AssetEditPage isin="XX0000000000" />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("empty-edit-asset-not-found")).toBeInTheDocument();
   });
 
@@ -51,7 +52,7 @@ describe("AssetEditPage - not found", () => {
     expect.hasAssertions();
     const asset = makeAsset();
     useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("empty-edit-asset-not-found")).toBeInTheDocument();
     useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
     await waitFor(() => {
@@ -69,7 +70,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("name")).toBeInTheDocument();
     expect(screen.getByTestId("provider")).toBeInTheDocument();
     expect(screen.getByTestId("tickers")).toBeInTheDocument();
@@ -83,7 +84,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
     fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
@@ -103,7 +104,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
     fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.4" } });
     fireEvent.click(screen.getByTestId("is-accumulating"));
@@ -125,7 +126,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Changed Name" } });
     fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.4" } });
     fireEvent.click(screen.getByTestId("save-button"));
@@ -152,7 +153,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
     fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
@@ -177,7 +178,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
     fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
@@ -198,7 +199,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("save-button")).toBeDisabled();
   });
 
@@ -210,7 +211,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
     expect(screen.getByTestId("save-button")).not.toBeDisabled();
   });
@@ -225,7 +226,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("dismissed-similarities-card")).toHaveTextContent("Other Fund");
   });
 
@@ -238,7 +239,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("name"), { target: { value: "Changed Name" } });
     fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
@@ -260,7 +261,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     const nameInput = screen.getByTestId("name");
     fireEvent.change(nameInput, { target: { value: "Renamed ETF" } });
     fireEvent.click(screen.getByTestId("save-button"));
@@ -281,7 +282,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("cancel-button"));
     expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
   });
@@ -295,7 +296,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("fees"), { target: { value: "-1" } });
     fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
@@ -320,7 +321,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.3" } });
     fireEvent.change(screen.getByTestId("price"), { target: { value: "110" } });
     fireEvent.change(screen.getByTestId("performance-1-y"), { target: { value: "11" } });
@@ -347,7 +348,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("is-accumulating"));
     fireEvent.click(screen.getByTestId("available-on-broker"));
     fireEvent.click(screen.getByTestId("available-for-plan"));
@@ -365,7 +366,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("name"), { target: { value: "" } });
     fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
@@ -383,7 +384,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("isin"), { target: { value: "" } });
     fireEvent.click(screen.getByTestId("save-button"));
     await waitFor(() => {
@@ -402,7 +403,7 @@ describe("AssetEditPage - form", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     fireEvent.change(screen.getByTestId("geo-allocation-us"), { target: { value: "60" } });
     fireEvent.change(screen.getByTestId("geo-allocation-france"), { target: { value: "40" } });
     fireEvent.click(screen.getByTestId("save-button"));
@@ -423,7 +424,7 @@ describe("AssetEditPage - fetch", () => {
     mockNavigate.mockClear();
     const asset = makeAsset();
     useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
-    render(<AssetEditPage isin={asset.isin} />);
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
     return asset;
   }
 

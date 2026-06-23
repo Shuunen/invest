@@ -18,6 +18,7 @@ type UseTableInstanceOptions = {
   sorting: SortingState;
 };
 
+// oxlint-disable-next-line react/react-compiler
 export function useTableInstance({ columns, filteredAssets, meta, resolvedVisibility, setColumnVisibility, setSort, sorting }: UseTableInstanceOptions) {
   return useReactTable({
     columns,

@@ -1,12 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { TextRoll } from "./text-roll.tsx";
 
+const rollTextDefault = "AB";
+const rollTextCentered = "XYZ";
+
 describe("TextRoll", () => {
   it("renders text and custom classes with default delay mode", () => {
     expect.hasAssertions();
     render(
       <span data-testid="text-roll-default" className="text-success">
-        <TextRoll>AB</TextRoll>
+        <TextRoll>{rollTextDefault}</TextRoll>
       </span>,
     );
     const roll = screen.getByTestId("text-roll-default");
@@ -18,7 +21,7 @@ describe("TextRoll", () => {
     expect.hasAssertions();
     render(
       <span data-testid="text-roll-centered">
-        <TextRoll center>XYZ</TextRoll>
+        <TextRoll center>{rollTextCentered}</TextRoll>
       </span>,
     );
     expect(screen.getByTestId("text-roll-centered")).toHaveTextContent("XYZXYZ");

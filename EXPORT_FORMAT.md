@@ -96,6 +96,7 @@ Asian countries: `china` `japan` `taiwan` `hongKong` `southKorea` `malaysia` `in
 ```json
 {
   "theme": "light", // string — UI theme: "light" or "dark"
+  "locale": "en", // string — UI language: "en" (English) or "fr" (French); defaults to "en"
   "columnOrder": ["name", "fees", "score"], // string[] — ordered column IDs as shown in the assets table
   "columnVisibility": { "provider": false }, // record — columnId → bool; false means hidden
   "sort": { "column": "score", "direction": "desc" }, // active sort column and direction ("asc" or "desc")

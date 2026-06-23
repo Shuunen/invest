@@ -122,6 +122,18 @@ test("about page shows the app title and score formula", async ({ page }) => {
   await expect(page.getByTestId("page-title")).toBeVisible();
 });
 
+test("locale switcher loads French translations and cycles back to en", async ({ page }) => {
+  await page.goto("/about");
+  await expect(page.getByTestId("locale-switcher")).toHaveText("en");
+  await expect(page.getByTestId("export-status-title")).toHaveText("Export status");
+  await page.getByTestId("locale-switcher").click();
+  await expect(page.getByTestId("locale-switcher")).toHaveText("fr");
+  await expect(page.getByTestId("export-status-title")).toHaveText("Statut d'export");
+  await page.getByTestId("locale-switcher").click();
+  await expect(page.getByTestId("locale-switcher")).toHaveText("en");
+  await expect(page.getByTestId("export-status-title")).toHaveText("Export status");
+});
+
 test("add asset button navigates to the create asset page", async ({ page }) => {
   await page.goto("/");
   await page.getByTestId("action-add-asset").click();

@@ -2,6 +2,7 @@ import { upperFirst } from "es-toolkit";
 import { CheckIcon, PaletteIcon } from "lucide-react";
 import { useAppStore } from "../store/use-app-store.ts";
 import { darkThemes, lightThemes, type Theme } from "../utils/theme.ts";
+import { useTranslation } from "../utils/translations.ts";
 
 function renderThemeOption(themeName: Theme, theme: string, setTheme: (themeName: Theme) => void) {
   return (
@@ -22,6 +23,7 @@ function renderThemeOption(themeName: Theme, theme: string, setTheme: (themeName
 }
 
 export function ThemeSwitcher() {
+  const { translate } = useTranslation();
   const theme = useAppStore(state => state.data.settings.theme);
   const setTheme = useAppStore(state => state.setTheme);
   return (
@@ -31,8 +33,8 @@ export function ThemeSwitcher() {
       </button>
       <div className="dropdown-content w-64">
         <div className="grid grid-cols-2 gap-x-4">
-          <div className="px-3 pt-2 text-xs uppercase opacity-50">Light</div>
-          <div className="px-3 pt-2 text-xs uppercase opacity-50">Dark</div>
+          <div className="px-3 pt-2 text-xs uppercase opacity-50">{translate("theme-light")}</div>
+          <div className="px-3 pt-2 text-xs uppercase opacity-50">{translate("theme-dark")}</div>
           <ul className="menu pl-0">{lightThemes.map(themeName => renderThemeOption(themeName, theme, setTheme))}</ul>
           <ul className="menu pl-0">{darkThemes.map(themeName => renderThemeOption(themeName, theme, setTheme))}</ul>
         </div>

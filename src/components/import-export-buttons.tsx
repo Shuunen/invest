@@ -5,6 +5,7 @@ import { safeImportJson, type AppData } from "../schemas/app-data.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { jsonStringify } from "../utils/json.ts";
+import { useTranslation, type Translate } from "../utils/translations.ts";
 import { getStalenessTier, type StalenessTier } from "./import-export-utils.ts";
 
 const isoDateSliceEnd = 10;
@@ -59,11 +60,11 @@ function getExportButtonClassName(tier: StalenessTier) {
   return cn(baseClasses, tierClasses[tier]);
 }
 
-function renderExportButtonContent(tier: StalenessTier) {
+function renderExportButtonContent(tier: StalenessTier, translate: Translate) {
   if (tier === "4-high" || tier === "5-critical")
     return (
       <>
-        <span className="relative z-10 text-[10px] font-bold tracking-[0.12em] uppercase">Export</span>
+        <span className="relative z-10 text-[10px] font-bold tracking-[0.12em] uppercase">{translate("action-export")}</span>
         <span className="relative z-10">
           <Download size={16} />
         </span>
@@ -148,6 +149,7 @@ function useImportExport() {
 }
 
 export function ImportExportButtons() {
+  const { translate } = useTranslation();
   const { data, fileInputRef, handleExport, handleFileChange, handleImportClick, stalenessTier, unexportedChanges } = useImportExport();
   const exportTitle = getExportTitle(unexportedChanges);
   return (
@@ -166,7 +168,7 @@ export function ImportExportButtons() {
           disabled={data.assets.length === 0 && data.portfolios.length === 0}
           onClick={handleExport}
         >
-          {renderExportButtonContent(stalenessTier)}
+          {renderExportButtonContent(stalenessTier, translate)}
         </button>
         {stalenessTier !== "1-ok" && renderStalenessDecoration(stalenessTier, unexportedChanges)}
       </div>

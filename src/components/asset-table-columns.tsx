@@ -409,7 +409,7 @@ export function makeDataScoreColumn(amountMap?: Map<string, number>, amountUpdat
       return (
         <span className="flex items-center gap-1.5" data-testid={`data-score-${row.original.isin.toLowerCase()}`}>
           <span className={cn("score-dot", dotClass)} />
-          <span className="w-8 text-center">{score}%</span>
+          <span className="w-8 text-center">{`${score}%`}</span>
         </span>
       );
     },

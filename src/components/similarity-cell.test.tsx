@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { invariant } from "es-toolkit";
 import type { Asset } from "../schemas/asset.ts";
 import { computeMaxSimilarity } from "../utils/asset-similarity.ts";
+import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { makeSimilarityColumn } from "./asset-table-columns.tsx";
 import { SimilarityCell } from "./similarity-cell.tsx";
 
@@ -32,12 +33,12 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
 
 function renderSimilarityCell(asset: Asset, assets: Asset[], onDismiss: ((isin: string, matchedIsin: string) => void) | undefined) {
   const result = computeMaxSimilarity(asset, assets, asset.dismissedSimilarities);
-  render(<SimilarityCell asset={asset} assets={assets} onDismiss={onDismiss} result={result} />);
+  render(<SimilarityCell asset={asset} assets={assets} onDismiss={onDismiss} result={result} />, { wrapper: TranslationProvider });
 }
 
 function renderSimilarityCellWithCustomDisplay(asset: Asset, similarAssets: Asset[], displayAssets: Asset[]) {
   const result = computeMaxSimilarity(asset, similarAssets, asset.dismissedSimilarities);
-  render(<SimilarityCell asset={asset} assets={displayAssets} onDismiss={undefined} result={result} />);
+  render(<SimilarityCell asset={asset} assets={displayAssets} onDismiss={undefined} result={result} />, { wrapper: TranslationProvider });
 }
 
 describe("SimilarityCell", () => {

@@ -1,6 +1,7 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import type { Asset } from "../schemas/asset.ts";
 import { computeWeightedAllocationsFromSelection } from "../utils/allocation-charts.ts";
+import { useTranslation, type Translate } from "../utils/translations.ts";
 import { AssetTable } from "./asset-table.tsx";
 import { AllocationChart } from "./charts/allocation.tsx";
 import { ModalActions } from "./modal-actions.tsx";
@@ -38,13 +39,13 @@ function useAssetPicker(initialSelected: Set<string>, onConfirm: (selectedIsins:
   return { handleConfirm, selected, toggle };
 }
 
-type RenderListArgs = { assets: Asset[]; selected: Set<string>; toggle: (isin: string) => void };
+type RenderListArgs = { assets: Asset[]; selected: Set<string>; toggle: (isin: string) => void; translate: Translate };
 
-function renderPickerList({ assets, selected, toggle }: RenderListArgs) {
+function renderPickerList({ assets, selected, toggle, translate }: RenderListArgs) {
   if (assets.length === 0)
     return (
       <p data-testid="no-assets-message" className="p-4 text-center text-base-content/60">
-        No instruments available. Import assets first.
+        {translate("picker-no-instruments")}
       </p>
     );
   return <AssetTable assets={assets} selectedIsins={selected} onToggleSelect={toggle} />;
@@ -93,13 +94,14 @@ type RenderSelectionInvestmentInputArgs = {
   newSelectionCount: number;
   value: number;
   onChange: (nextValue: number) => void;
+  translate: Translate;
 };
 
-function renderSelectionInvestmentInput({ newSelectionCount, onChange, value }: RenderSelectionInvestmentInputArgs) {
+function renderSelectionInvestmentInput({ newSelectionCount, onChange, translate, value }: RenderSelectionInvestmentInputArgs) {
   return (
     <div className="flex w-72 items-center justify-center">
       <label className="flex flex-col gap-2" data-testid="new-selection-investment-control">
-        <span>Investment for selection (€)</span>
+        <span>{translate("picker-investment-label")}</span>
         <input
           type="number"
           min={0}
@@ -112,19 +114,19 @@ function renderSelectionInvestmentInput({ newSelectionCount, onChange, value }: 
           className="input-bordered input input-sm w-1/2"
           data-testid="new-selection-investment-input"
         />
-        <small>Split equally across {newSelectionCount} new asset(s)</small>
+        <small>{translate("picker-split-equally", { count: newSelectionCount })}</small>
       </label>
     </div>
   );
 }
 
 export function AssetPickerModal({ assets, initialSelected, amountByIsin, onCancel, onConfirm, title }: Props) {
+  const { translate } = useTranslation();
   const { handleConfirm, selected, toggle } = useAssetPicker(initialSelected, onConfirm);
-  const initialSelectedRef = useRef(initialSelected);
   const { afterAllocations, beforeAllocations, newSelectionInvestmentAmount, selectedWithoutAmount, setNewSelectionInvestmentAmount } = useAllocationPreview({
     amountByIsin,
     assets,
-    initialSelected: initialSelectedRef.current,
+    initialSelected,
     selected,
   });
 
@@ -135,13 +137,13 @@ export function AssetPickerModal({ assets, initialSelected, amountByIsin, onCanc
         <div className="mb-3 flex justify-between pb-2" data-testid="allocation-preview-row">
           <AllocationChart data={beforeAllocations.geo} title="Current geography" name="before-geo-allocation" />
           <AllocationChart data={afterAllocations.geo} title="Selected geography" name="after-geo-allocation" />
-          {selectedWithoutAmount.length > 0 && renderSelectionInvestmentInput({ newSelectionCount: selectedWithoutAmount.length, onChange: setNewSelectionInvestmentAmount, value: newSelectionInvestmentAmount })}
+          {selectedWithoutAmount.length > 0 && renderSelectionInvestmentInput({ newSelectionCount: selectedWithoutAmount.length, onChange: setNewSelectionInvestmentAmount, translate, value: newSelectionInvestmentAmount })}
           <AllocationChart data={beforeAllocations.sector} title="Current sectors" name="before-sector-allocation" />
           <AllocationChart data={afterAllocations.sector} title="Selected sectors" name="after-sector-allocation" />
         </div>
-        <div className="max-h-144 overflow-y-auto rounded-box border border-base-200">{renderPickerList({ assets, selected, toggle })}</div>
+        <div className="max-h-144 overflow-y-auto rounded-box border border-base-200">{renderPickerList({ assets, selected, toggle, translate })}</div>
         <p data-testid="selected-count" className="mt-2 text-sm text-base-content/60">
-          {selected.size} selected
+          {translate("picker-selected-count", { count: selected.size })}
         </p>
         <ModalActions onCancel={onCancel} onConfirm={handleConfirm} confirmText="Confirm" type="default" />
       </div>

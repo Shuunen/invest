@@ -1,5 +1,6 @@
 import { z, type ZodType } from "zod/v4";
 import { themes } from "../utils/theme.ts";
+import { defaultLocale, locales } from "../utils/translations.ts";
 
 function fallback<Type>(value: Type): ZodType<Type> {
   return z.unknown().transform(() => value);
@@ -19,6 +20,8 @@ export const SettingsSchema = z.object({
     .datetime()
     .nullish()
     .transform(str => str ?? undefined),
+  /** UI locale. */
+  locale: z.enum(locales).prefault(defaultLocale).or(fallback(defaultLocale)),
   /** Sensitivity of the asset deduplication detector (0–1). */
   similarityThreshold: z.number().min(0).max(1).default(defaultSimilarityThreshold),
   /** Active sort applied to the assets table. */

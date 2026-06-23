@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
+import { TranslationProvider } from "../../utils/translations-provider.tsx";
 import type { DiffRow } from "./form-diff.ts";
 import { SaveModal } from "./save-modal.tsx";
 
@@ -11,7 +12,7 @@ describe("SaveModal", () => {
     const onClose = vi.fn<() => void>();
     const onConfirm = vi.fn<() => void>();
     const onReset = vi.fn<() => void>();
-    render(<SaveModal diffRows={noDiffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />);
+    render(<SaveModal diffRows={noDiffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
     expect(screen.getByTestId("confirm-save-no-changes")).toBeInTheDocument();
   });
@@ -25,7 +26,7 @@ describe("SaveModal", () => {
       { after: "0.4", before: "0.2", field: "Fees (%)", reset: noopReset },
       { after: "No", before: "Yes", field: "Accumulating", reset: noopReset },
     ];
-    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />);
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("after-trend-fees")).toBeInTheDocument();
     expect(screen.queryByTestId("after-trend-accumulating")).not.toBeInTheDocument();
   });
@@ -36,7 +37,7 @@ describe("SaveModal", () => {
     const onConfirm = vi.fn<() => void>();
     const onReset = vi.fn<() => void>();
     const diffRows: DiffRow[] = [{ after: "2", before: "1.2.3", field: "Price (EUR)", reset: noopReset }];
-    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />);
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId("after-trend-price-eur")).not.toBeInTheDocument();
   });
 
@@ -46,7 +47,7 @@ describe("SaveModal", () => {
     const onConfirm = vi.fn<() => void>();
     const onReset = vi.fn<() => void>();
     const diffRows: DiffRow[] = [{ after: "2", before: "+.", field: "Price (EUR)", reset: noopReset }];
-    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />);
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId("after-trend-price-eur")).not.toBeInTheDocument();
   });
 
@@ -56,7 +57,7 @@ describe("SaveModal", () => {
     const onConfirm = vi.fn<() => void>();
     const onReset = vi.fn<() => void>();
     const diffRows: DiffRow[] = [{ after: "IWFV,IS3S", before: "IS3S", field: "Tickers", reset: noopReset }];
-    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />);
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId("after-trend-tickers")).not.toBeInTheDocument();
   });
 
@@ -67,7 +68,7 @@ describe("SaveModal", () => {
     const onReset = vi.fn<() => void>();
     const onResetRow = vi.fn<(row: DiffRow) => void>();
     const diffRows: DiffRow[] = [{ after: "Updated ETF", before: "Test ETF", field: "Name", reset: noopReset }];
-    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} onResetRow={onResetRow} />);
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} onResetRow={onResetRow} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("reset-row-name"));
     expect(onResetRow).toHaveBeenCalledWith(diffRows[0]);
   });
