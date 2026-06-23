@@ -1,3 +1,4 @@
+import { invariant } from "es-toolkit";
 import { createContext, useContext, useMemo } from "react";
 import type { messages as en } from "../locales/en.ts";
 
@@ -24,11 +25,12 @@ function interpolate(template: string, params: Record<string, string | number>):
 }
 
 export function selectPlural(template: string, count: number): string {
-  const variants = template.split(" | ");
+  const variants = template.split(" | ") as Array<string | undefined>;
   const [zero, one, many] = variants;
   if (zero === undefined || one === undefined) return template;
   if (count === 0) return zero;
   if (count === 1) return one;
+  invariant(many, `invalid plural template "${template}"`);
   return many;
 }
 
@@ -37,9 +39,12 @@ export function createTranslate(messages: Record<MessageKey, string>) {
     const template = messages[key];
     const [params] = args;
     if (!params) return template;
-    const { count } = params as Record<string, string | number>;
-    const selected = count === undefined ? template : selectPlural(template, Number(count));
-    return interpolate(selected, params as Record<string, string | number>);
+    const paramsRecord = params as Record<string, string | number>;
+    if (!template.includes(" | ")) return interpolate(template, paramsRecord);
+    const keys = Object.keys(paramsRecord);
+    invariant("count" in paramsRecord || keys.length === 1, `plural key "${key}" with multiple interpolations requires a "count" variable`);
+    const countValue = "count" in paramsRecord ? Number(paramsRecord.count) : Number(paramsRecord[keys[0]]);
+    return interpolate(selectPlural(template, countValue), paramsRecord);
   };
 }
 

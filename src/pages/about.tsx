@@ -15,7 +15,7 @@ function renderExportStatusSection({ editCount, lastExportedAt, setEditCount }: 
       </h2>
       <div className="space-y-2 text-sm text-base-content/80">
         <p data-testid="last-exported-at">{translate("export-last-export", { timeAgo: lastExportedDate ? readableTime(lastExportedDate, translate) : translate("status-never") })}</p>
-        <p data-testid="unexported-edit-count">{translate("export-un-exported", { count: editCount })}</p>
+        <p data-testid="unexported-edit-count">{translate("export-un-exported", { nbModifications: editCount })}</p>
       </div>
       <div className="mt-4">
         <h3 className="mb-2 text-sm font-semibold text-base-content/70">{translate("section-test-reminder-tiers")}</h3>
