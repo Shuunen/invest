@@ -1,4 +1,5 @@
 import { NumberField } from "../../components/form/number-field.tsx";
+import { useTranslation } from "../../utils/translations.ts";
 import type { FormState, PatchFn } from "./form-state.ts";
 
 type Props = {
@@ -8,10 +9,11 @@ type Props = {
 };
 
 export function FinancialSection({ form, errors, patch }: Props) {
+  const { translate } = useTranslation();
   return (
     <div className="card">
       <div className="card-body">
-        <h2 className="card-title">Financial</h2>
+        <h2 className="card-title">{translate("section-financial")}</h2>
         <div className="grid grid-cols-2 gap-3">
           <NumberField label="Fees (%)" name="fees" value={form.fees} onChange={val => patch("fees", val)} placeholder="0.20" />
           {errors.fees && <p className="col-span-2 text-xs text-error">{errors.fees}</p>}

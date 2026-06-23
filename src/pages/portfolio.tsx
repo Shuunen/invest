@@ -17,6 +17,7 @@ import { computePortfolioWeightedAllocations } from "../utils/allocation-charts.
 import { maxPercentage } from "../utils/constants.ts";
 import { computeDataScore } from "../utils/data-score.ts";
 import { formatPrice } from "../utils/format-numbers.ts";
+import { useTranslation, type Translate } from "../utils/translations.ts";
 
 const dataScoreHeaderWarnThreshold = 95;
 
@@ -217,16 +218,16 @@ type RenderDeleteConfirmModalOptions = {
   onConfirm: () => void;
 };
 
-function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDeleteConfirmModalOptions) {
+function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDeleteConfirmModalOptions, translate: Translate) {
   return (
     <dialog className="modal-open modal" aria-modal="true">
       <div className="modal-box">
         <ModalHeader title="Remove asset" onClose={onCancel} type="error" />
-        Remove{" "}
+        {translate("action-remove")}{" "}
         <span data-testid="modal-asset-name" className="font-semibold">
           {assetName}
         </span>{" "}
-        from this portfolio? This cannot be undone.
+        {translate("modal-remove-from-portfolio")}
         <ModalActions onCancel={onCancel} onConfirm={onConfirm} confirmText="Remove" type="error" />
       </div>
       <div className="modal-backdrop" onClick={onCancel} />
@@ -310,6 +311,7 @@ type Props = {
 
 // oxlint-disable-next-line max-lines-per-function
 export function PortfolioPage({ portfolioId }: Props) {
+  const { translate } = useTranslation();
   const {
     amountMap,
     amountUpdatedAtMap,
@@ -364,11 +366,14 @@ export function PortfolioPage({ portfolioId }: Props) {
           })}
       {pickerOpen && <AssetPickerModal assets={assets} initialSelected={selectedIsins} amountByIsin={amountMap} onCancel={() => setPickerOpen(false)} onConfirm={handlePickerConfirm} title={`${name} portfolio assets`} />}
       {isinToDelete !== undefined &&
-        renderDeleteConfirmModal({
-          assetName: assetToDelete?.name ?? isinToDelete,
-          onCancel: () => setIsinToDelete(undefined),
-          onConfirm: handleConfirmDelete,
-        })}
+        renderDeleteConfirmModal(
+          {
+            assetName: assetToDelete?.name ?? isinToDelete,
+            onCancel: () => setIsinToDelete(undefined),
+            onConfirm: handleConfirmDelete,
+          },
+          translate,
+        )}
     </div>
   );
 }

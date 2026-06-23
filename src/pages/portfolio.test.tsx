@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import type { Asset } from "../schemas/asset.ts";
 import type { Portfolio } from "../schemas/portfolio.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { PortfolioPage } from "./portfolio.tsx";
 
 const mockLink = vi.hoisted(
@@ -52,7 +53,7 @@ describe("PortfolioPage - not found", () => {
   it("renders not found message when portfolio id does not exist", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<PortfolioPage portfolioId="nonexistent" />);
+    render(<PortfolioPage portfolioId="nonexistent" />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("empty-portfolio-not-found")).toBeInTheDocument();
   });
 });
@@ -66,7 +67,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("page-title")).toHaveTextContent("My Portfolio");
     expect(screen.getByTestId("empty-portfolio-no-assets")).toBeInTheDocument();
   });
@@ -79,7 +80,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("page-subtitle")).toHaveTextContent(/broker : interactive brokers/iu);
   });
 
@@ -91,7 +92,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("metric-nb-assets-value")).toHaveTextContent("0");
     expect(screen.getByTestId("metric-nb-assets-label")).toBeInTheDocument();
   });
@@ -107,7 +108,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("metric-nb-assets-label")).toBeInTheDocument();
   });
 
@@ -122,7 +123,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("metric-performer-value")).toHaveTextContent(asset.isin);
   });
 
@@ -137,7 +138,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("name-lu1234567890")).toBeInTheDocument();
     expect(screen.getByTestId("isin-lu1234567890")).toBeInTheDocument();
   });
@@ -153,7 +154,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("metric-total-value-label")).toBeInTheDocument();
     expect(screen.getByTestId("metric-total-value-value")).toHaveTextContent("600 €");
   });
@@ -169,7 +170,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId("metric-target-assets-value")).toBeNull();
     expect(screen.getByTestId("metric-target-invest-value")).toHaveTextContent("200 €");
     expect(screen.getAllByTestId(/metric-.*-label/u).map(label => label.textContent)).toStrictEqual(["Avg Score", "Avg Data", "Performer", "Nb Assets", "Total Value", "Target Invest"]);
@@ -189,7 +190,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("metric-target-assets-value")).toHaveTextContent("2");
     expect(screen.getByTestId("metric-target-invest-value")).toHaveTextContent("200 €");
     expect(screen.getAllByTestId(/metric-.*-label/u).map(label => label.textContent)).toStrictEqual(["Avg Score", "Avg Data", "Performer", "Nb Assets", "Total Value", "Target Assets", "Target Invest"]);
@@ -209,7 +210,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("metric-total-value-label")).toBeInTheDocument();
     expect(screen.getByTestId("metric-total-value-value")).toHaveTextContent("200 €");
     expect(screen.queryByTestId("metric-target-assets-label")).toBeNull();
@@ -231,7 +232,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("metric-total-value-label")).toBeInTheDocument();
     expect(screen.getByTestId("metric-total-value-value")).toHaveTextContent("200 €");
   });
@@ -248,7 +249,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("metric-avg-data-value")).toHaveTextContent("100%");
     expect(screen.getByTestId("metric-avg-data-value")).toHaveClass("text-success");
   });
@@ -270,7 +271,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("metric-avg-data-value")).toHaveTextContent("97%");
     expect(screen.getByTestId("metric-avg-data-value")).toHaveClass("text-warning");
   });
@@ -288,7 +289,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("metric-avg-data-value")).toHaveTextContent("93%");
     expect(screen.getByTestId("metric-avg-data-value")).toHaveClass("text-error");
   });
@@ -304,7 +305,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("remove-lu1234567890"));
     // confirmation modal should appear; deletion is not yet applied
     expect(useAppStore.getState().data.portfolios[0]?.entries).toHaveLength(1);
@@ -323,7 +324,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId("amount-input-lu1234567890")).not.toBeInTheDocument();
     expect(screen.getByTestId("amount-lu1234567890")).toHaveTextContent("5");
     fireEvent.click(screen.getByTestId("action-edit"));
@@ -341,7 +342,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("action-edit"));
     const input = screen.getByTestId("amount-input-lu1234567890");
     fireEvent.click(input);
@@ -361,7 +362,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("action-edit"));
     const input = screen.getByTestId("amount-input-lu1234567890");
     fireEvent.blur(input);
@@ -379,7 +380,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("remove-lu1234567890"));
     expect(screen.getByTestId("modal-title")).toBeInTheDocument();
     fireEvent.click(screen.getByTestId("form-cancel-button"));
@@ -398,7 +399,7 @@ describe("PortfolioPage - empty portfolio", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("remove-lu1234567890"));
     act(() => {
       useAppStore.setState(prev => ({
@@ -422,7 +423,7 @@ describe("PortfolioPage - editing mode", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId(`price-input-${asset.isin.toLowerCase()}`)).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId("action-edit"));
     expect(screen.getByTestId("action-done")).toBeInTheDocument();
@@ -441,7 +442,7 @@ describe("PortfolioPage - editing mode", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("action-edit"));
     const input = screen.getByTestId(`price-input-${asset.isin.toLowerCase()}`);
     fireEvent.change(input, { target: { value: "99" } });
@@ -460,7 +461,7 @@ describe("PortfolioPage - editing mode", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId(`note-input-${asset.isin.toLowerCase()}`)).not.toBeInTheDocument();
     expect(screen.getByTestId(`note-${asset.isin.toLowerCase()}`)).toHaveTextContent("my note");
     fireEvent.click(screen.getByTestId("action-edit"));
@@ -478,7 +479,7 @@ describe("PortfolioPage - editing mode", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("action-edit"));
     const input = screen.getByTestId(`note-input-${asset.isin.toLowerCase()}`);
     fireEvent.change(input, { target: { value: "great fund" } });
@@ -499,7 +500,7 @@ describe("PortfolioPage - target amount column", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId(`target-amount-${asset.isin.toLowerCase()}`)).toHaveTextContent("50");
   });
 
@@ -514,7 +515,7 @@ describe("PortfolioPage - target amount column", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId(`target-amount-input-${asset.isin.toLowerCase()}`)).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId("action-edit"));
     expect(screen.getByTestId(`target-amount-input-${asset.isin.toLowerCase()}`)).toBeInTheDocument();
@@ -531,7 +532,7 @@ describe("PortfolioPage - target amount column", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("action-edit"));
     const input = screen.getByTestId(`target-amount-input-${asset.isin.toLowerCase()}`);
     fireEvent.change(input, { target: { value: "75" } });
@@ -549,7 +550,7 @@ describe("PortfolioPage - asset picker modal", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId("modal-title")).not.toBeInTheDocument();
     fireEvent.click(screen.getByTestId("action-select-assets"));
     expect(screen.getByTestId("modal-title")).toBeInTheDocument();
@@ -563,7 +564,7 @@ describe("PortfolioPage - asset picker modal", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("action-select-assets"));
     fireEvent.click(screen.getByTestId("form-cancel-button"));
     expect(screen.queryByTestId("modal-title")).not.toBeInTheDocument();
@@ -580,7 +581,7 @@ describe("PortfolioPage - asset picker modal", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("action-select-assets"));
     // Click ETF B row to select it (it starts unselected)
     fireEvent.click(screen.getByTestId("asset-row-LU0987654321"));
@@ -610,7 +611,7 @@ describe("PortfolioPage - allocation charts", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("portfolio-geo-card")).toHaveTextContent("Actual geography");
     expect(screen.getByTestId("portfolio-sector-card")).toHaveTextContent("Actual sectors");
   });
@@ -631,7 +632,7 @@ describe("PortfolioPage - allocation charts", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.queryByText("Portfolio geography")).not.toBeInTheDocument();
     expect(screen.queryByText("Portfolio sectors")).not.toBeInTheDocument();
   });
@@ -652,7 +653,7 @@ describe("PortfolioPage - allocation charts", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("portfolio-geo-card")).toHaveTextContent("Actual geography");
     expect(screen.getByTestId("target-geo-card")).toHaveTextContent("Target geography");
   });
@@ -673,7 +674,7 @@ describe("PortfolioPage - allocation charts", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("portfolio-geo-card")).toHaveTextContent("Actual geography");
     // Change amount via store update (simulating price edit)
     act(() => {
@@ -709,7 +710,7 @@ describe("PortfolioPage - allocation charts", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<PortfolioPage portfolioId={portfolio.id} />);
+    render(<PortfolioPage portfolioId={portfolio.id} />, { wrapper: TranslationProvider });
     // Initial 50-50 split
     expect(screen.getByTestId("portfolio-geo-card")).toHaveTextContent("Actual geography");
     // Update price of asset1 to double its weight

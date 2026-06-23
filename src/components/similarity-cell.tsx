@@ -7,6 +7,7 @@ import { maxPercentage } from "../utils/constants.ts";
 import { SimilarityPopover } from "./similarity-popover.tsx";
 
 const popoverHideDelayMs = 150;
+const enDash = "–";
 
 type SimilarityResult = { score: number; matchedIsin: string };
 
@@ -38,7 +39,7 @@ export function SimilarityCell({ asset, assets, onDismiss, result }: Props) {
   if (score === undefined)
     return (
       <span data-testid={`similarity-${isin.toLowerCase()}`} className="flex items-center justify-center">
-        –
+        {enDash}
       </span>
     );
 

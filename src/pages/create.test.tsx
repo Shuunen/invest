@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { fetchEtfData } from "../utils/fetch-etf-data.ts";
+import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { AssetCreatePage } from "./create.tsx";
 
 const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>());
@@ -15,7 +16,7 @@ vi.mock(import("../utils/fetch-etf-data.ts"));
 function setup() {
   mockNavigate.mockClear();
   useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-  render(<AssetCreatePage />);
+  render(<AssetCreatePage />, { wrapper: TranslationProvider });
 }
 
 const emptyPrefill = {

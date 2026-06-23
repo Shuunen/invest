@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import type { AppData } from "../schemas/app-data.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { Navbar } from "./navbar.tsx";
 
 const mockLink = vi.hoisted(
@@ -14,11 +15,15 @@ vi.mock(import("@tanstack/react-router"), async () => {
   return { ...actual, Link: mockLink as unknown as typeof actual.Link };
 });
 
+function renderNavbar(onCreatePortfolio = vi.fn<() => void>()) {
+  return render(<Navbar onCreatePortfolio={onCreatePortfolio} />, { wrapper: TranslationProvider });
+}
+
 describe("Navbar", () => {
   it("renders navigation links", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<Navbar onCreatePortfolio={vi.fn<() => void>()} />);
+    renderNavbar();
 
     expect(screen.getByTestId("navbar-link-assets")).toHaveTextContent("Assets");
     expect(screen.getByTestId("navbar-link-about")).toHaveTextContent("About");
@@ -40,7 +45,7 @@ describe("Navbar", () => {
       loadError: undefined,
     });
 
-    render(<Navbar onCreatePortfolio={vi.fn<() => void>()} />);
+    renderNavbar();
 
     expect(screen.getByTestId("navbar-link-1")).toHaveTextContent("Test Portfolio");
     expect(screen.getByTestId("navbar-link-2")).toHaveTextContent("Another Portfolio");
@@ -51,7 +56,7 @@ describe("Navbar", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
 
     const onCreatePortfolio = vi.fn<() => void>();
-    render(<Navbar onCreatePortfolio={onCreatePortfolio} />);
+    renderNavbar(onCreatePortfolio);
 
     const button = screen.getByTestId("navbar-create-portfolio");
     button.click();
@@ -63,9 +68,9 @@ describe("Navbar", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
 
-    render(<Navbar onCreatePortfolio={vi.fn<() => void>()} />);
+    renderNavbar();
 
     const logo = screen.getByTestId("logo");
-    expect(logo).toBeInTheDocument();
+    expect(logo).toHaveTextContent("Invest");
   });
 });

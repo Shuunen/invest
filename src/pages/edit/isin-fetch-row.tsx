@@ -1,5 +1,6 @@
 import { RefreshCw } from "lucide-react";
 import { TextField } from "../../components/form/text-field.tsx";
+import { useTranslation } from "../../utils/translations.ts";
 
 type Props = {
   fetchError: string | undefined;
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function IsinFetchRow({ fetchError, isin, isinError, isFetching, onFetch, onIsinChange }: Props) {
+  const { translate } = useTranslation();
   return (
     <div className="mt-3">
       <div className="flex items-end gap-2">
@@ -19,7 +21,7 @@ export function IsinFetchRow({ fetchError, isin, isinError, isFetching, onFetch,
         </div>
         <button type="button" data-testid="fetch-etf-button" className="btn btn-outline btn-sm" disabled={isin.trim() === "" || isFetching} onClick={onFetch}>
           {isFetching ? <span className="loading loading-xs loading-spinner" data-testid="fetch-spinner" /> : <RefreshCw size={14} />}
-          Fetch
+          {translate("action-fetch")}
         </button>
       </div>
       {isinError && (

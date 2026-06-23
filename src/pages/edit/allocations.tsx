@@ -1,6 +1,7 @@
 import { startCase } from "es-toolkit";
 import { NumberField } from "../../components/form/number-field.tsx";
 import { countries, sectors, type Country, type Sector } from "../../schemas/asset.ts";
+import { useTranslation } from "../../utils/translations.ts";
 import { ProgressBar } from "../view/progress-bar.tsx";
 import type { FormState, PatchFn } from "./form-state.ts";
 
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export function AllocationsSection({ form, patch }: Props) {
+  const { translate } = useTranslation();
   const totalGeo = Object.values(form.geoAllocation).reduce((sum, val) => sum + Number(val), 0);
   const totalSector = Object.values(form.sectorAllocation).reduce((sum, val) => sum + Number(val), 0);
 
@@ -25,7 +27,7 @@ export function AllocationsSection({ form, patch }: Props) {
     <>
       <div className="card">
         <div className="card-body">
-          <h2 className="card-title">Geographic allocation</h2>
+          <h2 className="card-title">{translate("section-geo-allocation")}</h2>
           <ProgressBar name="geo-allocation" total={totalGeo} />
           <div className="grid grid-cols-2 gap-x-4 gap-y-1 md:grid-cols-3">
             {countries.map(country => (
@@ -36,7 +38,7 @@ export function AllocationsSection({ form, patch }: Props) {
       </div>
       <div className="card">
         <div className="card-body">
-          <h2 className="card-title">Sector allocation</h2>
+          <h2 className="card-title">{translate("section-sector-allocation")}</h2>
           <ProgressBar name="sector-allocation" total={totalSector} />
           <div className="grid gap-x-4 gap-y-2 md:grid-cols-2">
             {sectors.map(sector => (

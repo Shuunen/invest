@@ -1,8 +1,11 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render as baseRender, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { invariant } from "es-toolkit";
 import type { Asset } from "../schemas/asset.ts";
+import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { AssetPickerModal } from "./asset-picker-modal.tsx";
+
+const render = (ui: Parameters<typeof baseRender>[0], options?: Parameters<typeof baseRender>[1]) => baseRender(ui, { ...options, wrapper: TranslationProvider });
 
 const mockLink = vi.hoisted(
   () =>

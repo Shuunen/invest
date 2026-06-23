@@ -17,6 +17,10 @@ Always invoke a skill FIRST for matching requests — do not answer directly.
 - Save / resume progress → context-save / context-restore
 - Code quality → health
 
+## Versioning
+
+Version lives in `VERSION` and `package.json`. Must follow SEMVER `major.minor.patch` format only (e.g. `1.2.3`) — no fourth segment.
+
 ## Project docs
 
 - `CHANGELOG.md` — release history

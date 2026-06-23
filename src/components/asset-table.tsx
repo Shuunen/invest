@@ -6,6 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { Asset } from "../schemas/asset.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
+import { useTranslation, type Translate } from "../utils/translations.ts";
 import {
   type AssetTableMeta,
   columns,
@@ -188,13 +189,13 @@ function useAssetTableState(props: Props = {}) {
   return { data, filterText, handleRetry, isLoading, loadError, quintileClasses: computeQuintileClasses(table.getRowModel().rows), setFilterText, table, visibleLeafCount: table.getVisibleLeafColumns().length };
 }
 
-function renderError(error: Error, handleRetry: () => void) {
+function renderError(error: Error, handleRetry: () => void, translate: Translate) {
   return (
     <div className="p-4 text-left">
       <div role="alert" data-testid="error-alert" className="alert alert-error">
-        <span data-testid="error-message">Failed to load data : {error.message}</span>
+        <span data-testid="error-message">{translate("error-failed-to-load", { message: error.message })}</span>
         <button type="button" data-testid="retry-button" className="btn btn-sm" onClick={handleRetry}>
-          Retry
+          {translate("action-retry")}
         </button>
       </div>
     </div>
@@ -294,10 +295,11 @@ function useAssetsPriceEditState(propAssets: Asset[] | undefined, propOnPriceCha
 
 export function AssetTable(props: Props = {}) {
   const { assets: propAssets, onPriceChange: propOnPriceChange } = props;
+  const { translate } = useTranslation();
   const { onPriceChange, priceEditActions } = useAssetsPriceEditState(propAssets, propOnPriceChange);
   const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({ ...props, onPriceChange });
   if (!propAssets && isLoading) return renderSkeleton();
-  if (!propAssets && loadError) return renderError(loadError, handleRetry);
+  if (!propAssets && loadError) return renderError(loadError, handleRetry, translate);
   if (!propAssets && data.assets.length === 0) return <Empty name="no-assets" title="No instruments added yet" description="Use the Import button in the top bar to get started" />;
   const filterReturnedNoResults = filterText.trim() !== "" && table.getRowModel().rows.length === 0;
   return (
@@ -306,10 +308,10 @@ export function AssetTable(props: Props = {}) {
       <div className="relative container mx-auto overflow-auto" data-testid="asset-table">
         <div className="sticky top-0 z-20 flex gap-4 bg-base-100 pt-4">
           {renderSearchFilter(filterText, setFilterText)}
-          {renderColumnFilter(table, visibleLeafCount)}
+          {renderColumnFilter(table, visibleLeafCount, translate)}
         </div>
         <table className="table-hover table w-full">
-          <caption className="sr-only">ISINs reference data table</caption>
+          <caption className="sr-only">{translate("assets-table-caption")}</caption>
           {renderTableHeader(table)}
           {filterReturnedNoResults ? renderNoResults(table.getVisibleLeafColumns().length, filterText) : renderTableBody(table, quintileClasses, props.onToggleSelect)}
         </table>

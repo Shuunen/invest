@@ -3,7 +3,7 @@
   "duplicates": {
     "ignore": ["**/*.test.{ts,tsx}"]
   },
-  "dynamicallyLoaded": ["src/test/setup.ts"],
+  "dynamicallyLoaded": ["src/test/setup.ts", "src/locales/fr.ts"],
   "ignoreDependencies": ["bun"],
   "ignorePatterns": ["**/*.d.ts"],
   "overrides": [

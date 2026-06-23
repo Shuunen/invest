@@ -1,4 +1,5 @@
 import { ArrowLeft } from "lucide-react";
+import { useTranslation } from "../../utils/translations.ts";
 import { AllocationsSection } from "./allocations.tsx";
 import { FinancialSection } from "./financials.tsx";
 import type { FormState, PatchFn } from "./form-state.ts";
@@ -17,15 +18,16 @@ type Props = {
 };
 
 export function AssetForm({ disableSave = false, errors, form, isinDisplay, onCancel, onSave, patch, title }: Props) {
+  const { translate } = useTranslation();
   return (
     <div className="max-w-8xl mx-auto mt-6">
       <div className="mb-6 flex items-center justify-between">
         <button type="button" data-testid="cancel-button" className="btn btn-soft" onClick={onCancel}>
           <ArrowLeft size={16} />
-          Cancel
+          {translate("action-cancel")}
         </button>
         <button type="button" data-testid="save-button" className="btn btn-primary" onClick={onSave} disabled={disableSave}>
-          Save
+          {translate("action-save")}
         </button>
       </div>
       <div className="mb-6">

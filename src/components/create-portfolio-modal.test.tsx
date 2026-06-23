@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { invariant } from "es-toolkit";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { CreatePortfolioModal } from "./create-portfolio-modal.tsx";
 
 const mockNavigate = vi.fn<() => Promise<void>>();
@@ -15,7 +16,7 @@ describe("CreatePortfolioModal", () => {
   it("renders name and broker fields", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
+    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("portfolio-name")).toBeInTheDocument();
     expect(screen.getByTestId("portfolio-broker")).toBeInTheDocument();
   });
@@ -23,7 +24,7 @@ describe("CreatePortfolioModal", () => {
   it("shows validation error when submitting with empty name", async () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
+    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("form-confirm-button"));
     await expect(screen.findByTestId("portfolio-name-error")).resolves.toBeInTheDocument();
   });
@@ -31,7 +32,7 @@ describe("CreatePortfolioModal", () => {
   it("shows validation error when submitting with empty broker", async () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />);
+    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />, { wrapper: TranslationProvider });
     await userEvent.type(screen.getByTestId("portfolio-name"), "My Fund");
     fireEvent.click(screen.getByTestId("form-confirm-button"));
     await expect(screen.findByTestId("portfolio-broker-error")).resolves.toBeInTheDocument();
@@ -41,7 +42,7 @@ describe("CreatePortfolioModal", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
-    render(<CreatePortfolioModal onClose={onClose} />);
+    render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("form-cancel-button"));
     expect(onClose).toHaveBeenCalledOnce();
   });
@@ -50,7 +51,7 @@ describe("CreatePortfolioModal", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
-    render(<CreatePortfolioModal onClose={onClose} />);
+    render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("modal-close-button"));
     expect(onClose).toHaveBeenCalledOnce();
   });
@@ -59,7 +60,7 @@ describe("CreatePortfolioModal", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
-    const { container } = render(<CreatePortfolioModal onClose={onClose} />);
+    const { container } = render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider });
     const backdrop = container.querySelector(".modal-backdrop");
     expect(backdrop).not.toBeNull();
     invariant(backdrop, "Expected backdrop element to exist");
@@ -71,7 +72,7 @@ describe("CreatePortfolioModal", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     const onClose = vi.fn<() => void>();
-    render(<CreatePortfolioModal onClose={onClose} />);
+    render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider });
     await userEvent.type(screen.getByTestId("portfolio-name"), "My Fund");
     await userEvent.type(screen.getByTestId("portfolio-broker"), "Degiro");
     fireEvent.click(screen.getByTestId("form-confirm-button"));

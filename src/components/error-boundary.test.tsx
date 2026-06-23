@@ -1,9 +1,11 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { ErrorBoundary } from "./error-boundary.tsx";
 
+const safeContent = "Safe content";
+
 function Bomb({ shouldThrow }: { shouldThrow: boolean }) {
   if (shouldThrow) throw new Error("test explosion");
-  return <div data-testid="safe-content">Safe content</div>;
+  return <div data-testid="safe-content">{safeContent}</div>;
 }
 
 describe("ErrorBoundary - normal rendering", () => {

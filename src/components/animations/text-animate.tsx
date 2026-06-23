@@ -167,6 +167,7 @@ export function TextAnimate({ children, delay = 0, duration = 0.3, className, se
 
   return (
     <AnimatePresence mode="popLayout">
+      {/* oxlint-disable-next-line react/react-compiler */}
       <MotionComponent ref={ref} className={cn("whitespace-pre-wrap", className)} initial="hidden" animate={startOnView ? (isInView ? "show" : "hidden") : "show"} exit="exit" variants={containerVariants} {...props}>
         {segments.map((segment, i) => (
           <motion.span key={`${by}-${i}-${segment}`} className={cn("inline-block", segmentClassName)} variants={finalVariants}>

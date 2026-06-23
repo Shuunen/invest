@@ -2,8 +2,10 @@ import { Link } from "@tanstack/react-router";
 import { PlusCircle } from "lucide-react";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles";
+import { useTranslation } from "../utils/translations.ts";
 import { ImportExportButtons } from "./import-export-buttons.tsx";
 import { InvestIcon } from "./invest-icon.tsx";
+import { LocaleSwitcher } from "./locale-switcher.tsx";
 import { ThemeSwitcher } from "./theme-switcher.tsx";
 
 function useNavLinks() {
@@ -26,6 +28,7 @@ type NavbarProps = {
 };
 
 export function Navbar({ onCreatePortfolio }: NavbarProps) {
+  const { translate } = useTranslation();
   return (
     <nav className="flex bg-base-100" data-testid="navbar">
       <div className="container mx-auto">
@@ -33,7 +36,7 @@ export function Navbar({ onCreatePortfolio }: NavbarProps) {
           <div className="flex justify-between">
             <Link to="/" data-testid="navbar-home">
               <div className="flex items-center gap-3 text-2xl font-bold text-base-content transition-colors hover:text-accent" data-testid="logo">
-                <InvestIcon /> Invest
+                <InvestIcon /> {translate("app-title")}
               </div>
             </Link>
             <div className="flex gap-2 md:absolute md:right-0" data-testid="navbar-actions">
@@ -41,6 +44,7 @@ export function Navbar({ onCreatePortfolio }: NavbarProps) {
                 <PlusCircle size={16} />
               </button>
               <ImportExportButtons />
+              <LocaleSwitcher />
               <ThemeSwitcher />
             </div>
           </div>

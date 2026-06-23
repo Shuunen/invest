@@ -4,6 +4,7 @@ import { toast } from "react-hot-toast";
 import type { Asset } from "../schemas/asset.ts";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { jsonStringify } from "../utils/json.ts";
+import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { ImportExportButtons } from "./import-export-buttons.tsx";
 import { getStalenessTier } from "./import-export-utils.ts";
 
@@ -42,7 +43,7 @@ describe("ImportExportButtons", () => {
   it("renders Import and Export buttons", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("import-button")).toBeInTheDocument();
     expect(screen.getByTestId("export-button")).toBeInTheDocument();
   });
@@ -50,7 +51,7 @@ describe("ImportExportButtons", () => {
   it("Export is disabled when no assets and no portfolios", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("export-button")).toBeDisabled();
   });
 
@@ -64,7 +65,7 @@ describe("ImportExportButtons", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("export-button")).not.toBeDisabled();
   });
 
@@ -75,7 +76,7 @@ describe("ImportExportButtons", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("export-button")).not.toBeDisabled();
   });
 
@@ -88,7 +89,7 @@ describe("ImportExportButtons", () => {
     });
     const createObjectURLSpy = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock");
     vi.spyOn(URL, "revokeObjectURL");
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("export-button"));
     expect(createObjectURLSpy).toHaveBeenCalledWith(expect.any(Blob));
     expect(useAppStore.getState().data.settings.lastExportedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/u);
@@ -105,7 +106,7 @@ describe("ImportExportButtons", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("export-button")).toHaveAttribute("title", "Export data (12 un-exported changes)");
   });
 
@@ -116,7 +117,7 @@ describe("ImportExportButtons", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("export-button")).toHaveAttribute("title", "Export data");
   });
 
@@ -131,14 +132,14 @@ describe("ImportExportButtons", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("export-button")).toHaveAttribute("title", "Export data (1 un-exported change)");
   });
 
   it("clicking Import triggers the hidden file input click", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
     const clickSpy = vi.spyOn(fileInput, "click");
     fireEvent.click(screen.getByTestId("import-button"));
@@ -148,11 +149,11 @@ describe("ImportExportButtons", () => {
   it("file change with no file selected does nothing", async () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
     fireEvent.change(fileInput);
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     const fileInputAfter = screen.getAllByTestId("file-input").at(-1) as HTMLInputElement;
     const file = new File([validImportJson], "data.json", { type: "application/json" });
     await userEvent.upload(fileInputAfter, file);
@@ -165,7 +166,7 @@ describe("ImportExportButtons", () => {
     expect.hasAssertions();
     const errorSpy = vi.spyOn(toast, "error").mockReturnValue("");
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     const fileInput = screen.getByTestId("file-input") as HTMLInputElement;
     const file = new File(["not valid json {{"], "bad.json", { type: "application/json" });
     await userEvent.upload(fileInput, file);
@@ -181,7 +182,7 @@ describe("ImportExportButtons", () => {
     const asset = makeAsset();
     useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
     vi.mocked(jsonStringify).mockReturnValueOnce(undefined);
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("export-button"));
     expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/export failed/iu));
     vi.restoreAllMocks();
@@ -251,7 +252,7 @@ describe("ImportExportButtons staleness dot", () => {
       isLoading: false,
       loadError: undefined,
     });
-    render(<ImportExportButtons />);
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
   }
 
   it("shows no staleness dot when unexported edits < 5 (tier 0)", () => {

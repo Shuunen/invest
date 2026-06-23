@@ -107,6 +107,21 @@ describe("useAppStore - settings mutations", () => {
     useAppStore.getState().setTheme("light");
     expect(useAppStore.getState().data.settings.editCount).toBe(3);
   });
+
+  it("setLocale updates settings.locale", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    useAppStore.getState().setLocale("fr");
+    expect(useAppStore.getState().data.settings.locale).toBe("fr");
+  });
+
+  it("setLocale does not affect other settings", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: { ...defaultAppData, settings: { ...defaultAppData.settings, editCount: 5 } }, isLoading: false, loadError: undefined });
+    useAppStore.getState().setLocale("fr");
+    expect(useAppStore.getState().data.settings.editCount).toBe(5);
+    expect(useAppStore.getState().data.settings.locale).toBe("fr");
+  });
 });
 
 function makePortfolioEntry(isin: string) {

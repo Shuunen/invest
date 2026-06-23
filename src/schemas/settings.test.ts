@@ -48,6 +48,7 @@ describe("SettingsSchema: default values", () => {
     expect.hasAssertions();
     const result = SettingsSchema.parse({});
     expect(result.theme).toBe("light");
+    expect(result.locale).toBe("en");
     expect(result.editCount).toBe(0);
     expect(result.similarityThreshold).toBe(0.85);
   });
@@ -68,5 +69,19 @@ describe("SettingsSchema: theme enum", () => {
       const result = SettingsSchema.safeParse({ theme: themeName });
       expect(result.success).toBe(true);
     }
+  });
+});
+
+describe("SettingsSchema: locale enum", () => {
+  it("accepts en and fr", () => {
+    expect.hasAssertions();
+    expect(SettingsSchema.parse({ locale: "en" }).locale).toBe("en");
+    expect(SettingsSchema.parse({ locale: "fr" }).locale).toBe("fr");
+  });
+
+  it("falls back to en for invalid locale", () => {
+    expect.hasAssertions();
+    const result = SettingsSchema.parse({ locale: "de" });
+    expect(result.locale).toBe("en");
   });
 });

@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { Empty } from "../components/empty.tsx";
 import { useAppStore } from "../store/use-app-store.ts";
+import { useTranslation } from "../utils/translations.ts";
 import { DismissedSimilaritiesSection } from "./edit/dismissed-similarities.tsx";
 import { ViewAllocationsSection } from "./view/allocations.tsx";
 import { ViewFinancialSection } from "./view/financial.tsx";
@@ -10,6 +11,7 @@ import { ViewGeneralSection } from "./view/general.tsx";
 type Props = { isin: string };
 
 export function AssetViewPage({ isin }: Props) {
+  const { translate } = useTranslation();
   const navigate = useNavigate();
   const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === isin));
   const allAssets = useAppStore(state => state.data.assets);
@@ -29,11 +31,11 @@ export function AssetViewPage({ isin }: Props) {
           }}
         >
           <ArrowLeft size={16} />
-          Back
+          {translate("action-back")}
         </button>
         <button type="button" data-testid="edit-button" className="btn btn-primary" onClick={() => void navigate({ params: { isin }, replace: true, to: "/assets/$isin/edit" })}>
           <Pencil size={14} />
-          Edit
+          {translate("action-edit")}
         </button>
       </div>
 

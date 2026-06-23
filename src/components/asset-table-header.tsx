@@ -1,12 +1,13 @@
 import type { Table } from "@tanstack/react-table";
 import { EyeIcon } from "lucide-react";
 import type { Asset } from "../schemas/asset.ts";
+import type { Translate } from "../utils/translations.ts";
 
-export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number) {
+export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number, translate: Translate) {
   return (
     <div className="dropdown dropdown-end">
       <button type="button" tabIndex={0} className="btn btn-sm">
-        Columns <EyeIcon size={16} />
+        {translate("action-columns")} <EyeIcon size={16} />
       </button>
       <div tabIndex={0} className="dropdown-content w-lg">
         <div className="grid grid-cols-2 gap-x-4">

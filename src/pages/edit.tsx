@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
 import { invariant } from "es-toolkit";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import { Empty } from "../components/empty.tsx";
 import type { Asset } from "../schemas/asset.ts";
@@ -76,10 +76,7 @@ function useAssetEditForm(originalIsin: string) {
   const updateAsset = useAppStore(state => state.updateAsset);
 
   const [form, setForm] = useState<FormState | undefined>(() => (asset ? toFormState(asset) : undefined));
-
-  useEffect(() => {
-    if (asset && !form) setForm(toFormState(asset));
-  }, [asset, form]);
+  if (!form && asset) setForm(toFormState(asset));
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   function patch<Key extends keyof FormState>(key: Key, value: FormState[Key]) {

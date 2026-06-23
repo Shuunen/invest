@@ -47,6 +47,7 @@ type AppStore = {
   setEditCount: (count: number) => void;
   setLastExportedAt: (date: string) => void;
   setLoadError: (error: Error) => void;
+  setLocale: (locale: Settings["locale"]) => void;
   setPortfolioAssets: (portfolioId: string, entries: PortfolioEntry[]) => void;
   setSort: (sort: Settings["sort"]) => void;
   unDismissSimilarity: (isin: string, matchedIsin: string) => void;
@@ -128,6 +129,10 @@ export const useAppStore = create<AppStore>()(
         },
       })),
     setLoadError: loadError => set({ isLoading: false, loadError }),
+    setLocale: locale =>
+      set(state => ({
+        data: { ...state.data, settings: { ...state.data.settings, locale } },
+      })),
     setPortfolioAssets: (portfolioId, entries) =>
       set(state => {
         const now = new Date().toISOString();

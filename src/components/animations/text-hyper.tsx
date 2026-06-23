@@ -26,6 +26,7 @@ export const TextHyper = ({ className, duration = 800, text, animateOnLoad = tru
 
   useEffect(() => {
     iterations.current = 0;
+    // oxlint-disable-next-line react/react-compiler
     setDisplayText(text.split(""));
     const interval = setInterval(
       () => {
