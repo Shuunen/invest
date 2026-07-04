@@ -111,7 +111,7 @@ function renderSelectionInvestmentInput({ newSelectionCount, onChange, translate
             const next = Number(event.target.value);
             onChange(Number.isFinite(next) && next >= 0 ? next : 0);
           }}
-          className="input-bordered input input-sm w-1/2"
+          className="input-bordered input w-1/2 input-sm"
           data-testid="new-selection-investment-input"
         />
         <small>{translate("picker-split-equally", { nbAssets: newSelectionCount })}</small>

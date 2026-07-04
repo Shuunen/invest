@@ -85,7 +85,7 @@ hr {
 }
 
 .btn-ghost-error {
-  @apply btn text-error btn-ghost btn-xs;
+  @apply btn btn-ghost text-error btn-xs;
 }
 
 .cell-centered {

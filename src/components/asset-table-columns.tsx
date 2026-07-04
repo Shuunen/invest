@@ -1,5 +1,5 @@
 // oxlint-disable max-lines
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef, TableMeta } from "@tanstack/react-table";
 import { DotIcon, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { computeScore, type Asset } from "../schemas/asset.ts";
@@ -17,28 +17,30 @@ import { TargetAmountReadCell } from "./target-amount-read-cell.tsx";
 
 declare module "@tanstack/react-table" {
   // oxlint-disable-next-line typescript-eslint/consistent-type-definitions
+  interface TableMeta<TData> {
+    isEditing?: boolean;
+    noteMap?: Map<string, string>;
+    onAmountChange?: (isin: string, amount: number) => void;
+    onNoteChange?: (isin: string, note: string) => void;
+    onPriceChange?: (isin: string, price: number) => void;
+    onTargetAmountChange?: (isin: string, targetAmount: number) => void;
+    onToggleSelect?: (isin: string) => void;
+    selectedIsins?: Set<string>;
+    amountMap?: Map<string, number>;
+    amountUpdatedAtMap?: Map<string, string>;
+    totalValue?: number;
+    targetAmountMap?: Map<string, number>;
+    targetAmountUpdatedAtMap?: Map<string, string>;
+    targetTotalValue?: number;
+  }
+  // oxlint-disable-next-line typescript-eslint/consistent-type-definitions
   interface ColumnMeta<TData, TValue> {
     center?: boolean;
     title?: string;
   }
 }
 
-export type AssetTableMeta = {
-  isEditing?: boolean;
-  noteMap?: Map<string, string>;
-  onAmountChange?: (isin: string, amount: number) => void;
-  onNoteChange?: (isin: string, note: string) => void;
-  onPriceChange?: (isin: string, price: number) => void;
-  onTargetAmountChange?: (isin: string, targetAmount: number) => void;
-  onToggleSelect?: (isin: string) => void;
-  selectedIsins?: Set<string>;
-  amountMap?: Map<string, number>;
-  amountUpdatedAtMap?: Map<string, string>;
-  totalValue?: number;
-  targetAmountMap?: Map<string, number>;
-  targetAmountUpdatedAtMap?: Map<string, string>;
-  targetTotalValue?: number;
-};
+export type AssetTableMeta = TableMeta<Asset>;
 
 function booleanCell(isin: string, field: string, value: boolean) {
   return (
@@ -92,7 +94,7 @@ function computeAmountFromPercentage(percent: number, price: number | undefined,
 export function makeSelectColumn(): ColumnDef<Asset> {
   return {
     cell: ({ row, table }) => {
-      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { meta } = table.options;
       return (
         <input
           type="checkbox"
@@ -125,7 +127,7 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
   return {
     accessorFn: row => amountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
-      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { meta } = table.options;
       const { isin } = row.original;
       const value = meta?.amountMap?.get(isin) ?? 0;
       const { price } = row.original;
@@ -143,7 +145,7 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
         <span className="cell-centered" data-testid={`amount-${isin.toLowerCase()}`}>
           {makeNumberInput({
             ariaLabel: `Amount for ${row.original.name}`,
-            className: cn("input input-xs w-14 text-center", { "bg-warning/10 input-warning": value === 0 }),
+            className: cn("input w-14 text-center input-xs", { "bg-warning/10 input-warning": value === 0 }),
             dataTestid: `amount-input-${isin.toLowerCase()}`,
             onBlur: amount => meta?.onAmountChange?.(isin, amount),
             value,
@@ -163,13 +165,13 @@ export function makePriceEditColumn(): ColumnDef<Asset> {
   return {
     accessorKey: "price",
     cell: ({ row, table }) => {
-      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { meta } = table.options;
       const { isin } = row.original;
       const value = row.original.price;
       return (
         <input
           type="number"
-          className="input input-xs w-20 text-center"
+          className="input w-20 text-center input-xs"
           min={0}
           step={1}
           defaultValue={value}
@@ -194,14 +196,14 @@ export function makePortfolioPriceColumn(): ColumnDef<Asset> {
   return {
     accessorKey: "price",
     cell: ({ row, table }) => {
-      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { meta } = table.options;
       const { isin } = row.original;
       const value = row.original.price;
       if (!meta?.isEditing) return <span data-testid={`price-${isin.toLowerCase()}`}>{formatPrice(value)}</span>;
       return (
         <input
           type="number"
-          className="input input-xs w-20 text-center"
+          className="input w-20 text-center input-xs"
           min={0}
           step={1}
           defaultValue={value}
@@ -226,7 +228,7 @@ export function makeNoteColumn(noteMap?: Map<string, string>): ColumnDef<Asset> 
   return {
     accessorFn: row => noteMap?.get(row.isin) ?? "",
     cell: ({ row, table }) => {
-      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { meta } = table.options;
       const { isin } = row.original;
       const value = meta?.noteMap?.get(isin) ?? "";
       if (!meta?.isEditing)
@@ -238,7 +240,7 @@ export function makeNoteColumn(noteMap?: Map<string, string>): ColumnDef<Asset> 
       return (
         <input
           type="text"
-          className="input input-xs w-36"
+          className="input w-36 input-xs"
           defaultValue={value}
           key={value}
           data-testid={`note-input-${isin.toLowerCase()}`}
@@ -295,7 +297,7 @@ export const columns: ColumnDef<Asset>[] = [
   {
     accessorKey: "name",
     cell: ({ getValue, row, table }) => {
-      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { meta } = table.options;
       const name = getValue<string>();
       const { isin } = row.original;
       if (meta?.onToggleSelect)
@@ -440,7 +442,7 @@ export function makeTargetAmountColumn(targetAmountMap: Map<string, number> | un
   return {
     accessorFn: row => targetAmountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
-      const meta = table.options.meta as AssetTableMeta | undefined;
+      const { meta } = table.options;
       const { isin, price } = row.original;
       const value = meta?.targetAmountMap?.get(isin);
       const amount = meta?.amountMap?.get(isin) ?? 0;

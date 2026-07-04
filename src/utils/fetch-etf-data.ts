@@ -103,7 +103,7 @@ function parseAllocation<Key extends string>(doc: Document, { rowTestId, nameTes
     if (!name || !pctText) continue;
     const mappedKey = keyMap[name];
     if (mappedKey === undefined) continue;
-    const num = Number.parseFloat(pctText.replace("%", "").replace(",", "."));
+    const num = Number(pctText.replace("%", "").replace(",", "."));
     if (!Number.isNaN(num)) result[mappedKey] = num;
   }
   return result;
@@ -115,12 +115,13 @@ function getRiskTableValue(doc: Document, label: string): string | undefined {
   const labelCell = Array.from(panel.querySelectorAll("td.vallabel")).find(cell => cell.textContent?.trim() === label);
   const value = (labelCell?.nextElementSibling as HTMLElement | null)?.textContent?.trim();
   if (value === "" || value === undefined) return undefined;
-  const num = Number.parseFloat(value.replace(",", "."));
+  const num = Number(value.replace(",", "."));
   return Number.isNaN(num) ? undefined : String(num);
 }
 
 function parsePercentValue(raw: string | undefined): string | undefined {
   if (raw === undefined) return undefined;
+  // oxlint-disable-next-line unicorn/prefer-number-coercion -- raw can have trailing text after the number (e.g. "0.07% p.a."); parseFloat ignores it, Number() would yield NaN
   const num = Number.parseFloat(raw.replace(",", "."));
   return Number.isNaN(num) ? undefined : String(num);
 }

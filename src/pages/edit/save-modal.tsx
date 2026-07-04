@@ -62,7 +62,7 @@ function renderDiffRowsTable(diffRows: DiffRow[], translate: Translate, onResetR
                 <button
                   type="button"
                   data-testid={`reset-row-${kebabCase(row.field)}`}
-                  className="btn h-auto min-h-0 p-0 btn-link opacity-0 transition-opacity btn-xs group-hover:opacity-100 focus-visible:opacity-100"
+                  className="btn h-auto min-h-0 btn-link p-0 opacity-0 transition-opacity btn-xs group-hover:opacity-100 focus-visible:opacity-100"
                   onClick={() => onResetRow?.(row)}
                 >
                   {translate("action-reset")}

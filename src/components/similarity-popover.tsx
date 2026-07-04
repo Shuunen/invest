@@ -22,7 +22,7 @@ export function SimilarityPopover({ isin, matchedIsin, matchedName, onDismiss, o
         <button
           type="button"
           data-testid={`similarity-dismiss-${isin.toLowerCase()}`}
-          className="btn text-base-content/60 btn-ghost btn-xs hover:text-error"
+          className="btn btn-ghost text-base-content/60 btn-xs hover:text-error"
           aria-label={`Dismiss similarity with ${matchedName}`}
           title="Dismiss this similarity (reversible)"
           onClick={() => onDismiss(isin, matchedIsin)}
