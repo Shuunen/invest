@@ -92,6 +92,7 @@ function computeAmountFromPercentage(percent: number, price: number | undefined,
 export function makeSelectColumn(): ColumnDef<Asset> {
   return {
     cell: ({ row, table }) => {
+      // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- oxlint's type-aware resolution disagrees with tsc here; the cast is required, see AssetTableMeta module augmentation
       const meta = table.options.meta as AssetTableMeta | undefined;
       return (
         <input
@@ -125,6 +126,7 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
   return {
     accessorFn: row => amountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
+      // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- oxlint's type-aware resolution disagrees with tsc here; the cast is required, see AssetTableMeta module augmentation
       const meta = table.options.meta as AssetTableMeta | undefined;
       const { isin } = row.original;
       const value = meta?.amountMap?.get(isin) ?? 0;
@@ -143,7 +145,7 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
         <span className="cell-centered" data-testid={`amount-${isin.toLowerCase()}`}>
           {makeNumberInput({
             ariaLabel: `Amount for ${row.original.name}`,
-            className: cn("input input-xs w-14 text-center", { "bg-warning/10 input-warning": value === 0 }),
+            className: cn("input w-14 text-center input-xs", { "bg-warning/10 input-warning": value === 0 }),
             dataTestid: `amount-input-${isin.toLowerCase()}`,
             onBlur: amount => meta?.onAmountChange?.(isin, amount),
             value,
@@ -163,13 +165,14 @@ export function makePriceEditColumn(): ColumnDef<Asset> {
   return {
     accessorKey: "price",
     cell: ({ row, table }) => {
+      // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- oxlint's type-aware resolution disagrees with tsc here; the cast is required, see AssetTableMeta module augmentation
       const meta = table.options.meta as AssetTableMeta | undefined;
       const { isin } = row.original;
       const value = row.original.price;
       return (
         <input
           type="number"
-          className="input input-xs w-20 text-center"
+          className="input w-20 text-center input-xs"
           min={0}
           step={1}
           defaultValue={value}
@@ -194,6 +197,7 @@ export function makePortfolioPriceColumn(): ColumnDef<Asset> {
   return {
     accessorKey: "price",
     cell: ({ row, table }) => {
+      // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- oxlint's type-aware resolution disagrees with tsc here; the cast is required, see AssetTableMeta module augmentation
       const meta = table.options.meta as AssetTableMeta | undefined;
       const { isin } = row.original;
       const value = row.original.price;
@@ -201,7 +205,7 @@ export function makePortfolioPriceColumn(): ColumnDef<Asset> {
       return (
         <input
           type="number"
-          className="input input-xs w-20 text-center"
+          className="input w-20 text-center input-xs"
           min={0}
           step={1}
           defaultValue={value}
@@ -226,6 +230,7 @@ export function makeNoteColumn(noteMap?: Map<string, string>): ColumnDef<Asset> 
   return {
     accessorFn: row => noteMap?.get(row.isin) ?? "",
     cell: ({ row, table }) => {
+      // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- oxlint's type-aware resolution disagrees with tsc here; the cast is required, see AssetTableMeta module augmentation
       const meta = table.options.meta as AssetTableMeta | undefined;
       const { isin } = row.original;
       const value = meta?.noteMap?.get(isin) ?? "";
@@ -238,7 +243,7 @@ export function makeNoteColumn(noteMap?: Map<string, string>): ColumnDef<Asset> 
       return (
         <input
           type="text"
-          className="input input-xs w-36"
+          className="input w-36 input-xs"
           defaultValue={value}
           key={value}
           data-testid={`note-input-${isin.toLowerCase()}`}
@@ -295,6 +300,7 @@ export const columns: ColumnDef<Asset>[] = [
   {
     accessorKey: "name",
     cell: ({ getValue, row, table }) => {
+      // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- oxlint's type-aware resolution disagrees with tsc here; the cast is required, see AssetTableMeta module augmentation
       const meta = table.options.meta as AssetTableMeta | undefined;
       const name = getValue<string>();
       const { isin } = row.original;
@@ -440,6 +446,7 @@ export function makeTargetAmountColumn(targetAmountMap: Map<string, number> | un
   return {
     accessorFn: row => targetAmountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
+      // oxlint-disable-next-line typescript/no-unnecessary-type-assertion -- oxlint's type-aware resolution disagrees with tsc here; the cast is required, see AssetTableMeta module augmentation
       const meta = table.options.meta as AssetTableMeta | undefined;
       const { isin, price } = row.original;
       const value = meta?.targetAmountMap?.get(isin);

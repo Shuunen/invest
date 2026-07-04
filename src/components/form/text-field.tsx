@@ -15,7 +15,7 @@ export function TextField({ label, name, onChange, placeholder, readOnly, value 
       <label className="label" htmlFor={name}>
         {label}
       </label>
-      <input id={name} data-testid={kebabCase(name)} type="text" className="input-bordered input input-sm w-full" placeholder={placeholder} readOnly={readOnly} value={value} onChange={event => onChange(event.target.value)} />
+      <input id={name} data-testid={kebabCase(name)} type="text" className="input-bordered input w-full input-sm" placeholder={placeholder} readOnly={readOnly} value={value} onChange={event => onChange(event.target.value)} />
     </div>
   );
 }

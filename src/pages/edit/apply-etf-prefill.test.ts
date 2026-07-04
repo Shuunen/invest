@@ -177,7 +177,7 @@ describe("applyEtfPrefill — allocation fields", () => {
     expect.hasAssertions();
     const { patch, patched } = makePatch();
     // TypeScript cast to simulate runtime partial undefined values
-    applyEtfPrefill({ ...makeEmptyPrefill(), geoAllocation: { japan: undefined as unknown as number, us: 65.3 } }, patch, emptyFormState);
+    applyEtfPrefill({ ...makeEmptyPrefill(), geoAllocation: { japan: undefined, us: 65.3 } }, patch, emptyFormState);
     expect(patched.geoAllocation).toStrictEqual({ us: "65.3" });
     expect(patched.geoAllocation).not.toHaveProperty("japan");
   });

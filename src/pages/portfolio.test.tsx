@@ -7,7 +7,7 @@ import { PortfolioPage } from "./portfolio.tsx";
 
 const mockLink = vi.hoisted(
   () =>
-    ({ children, to: _to, ...rest }: { children: React.ReactNode; to?: string }): React.ReactElement => <span {...(rest as React.HTMLAttributes<HTMLSpanElement>)}>{children}</span>,
+    ({ children, to: _to, ...rest }: { children: React.ReactNode; to?: string }): React.ReactElement => <span {...rest}>{children}</span>,
 );
 
 vi.mock(import("@tanstack/react-router"), async () => {

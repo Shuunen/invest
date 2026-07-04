@@ -32,12 +32,12 @@ describe("buildDiffRows", () => {
     invariant(geoKey, "Expected at least one country key");
     invariant(sectorKey, "Expected at least one sector key");
     const initialForm = makeFormState({
-      geoAllocation: { [geoKey]: "20" } as FormState["geoAllocation"],
-      sectorAllocation: { [sectorKey]: "10" } as FormState["sectorAllocation"],
+      geoAllocation: { [geoKey]: "20" },
+      sectorAllocation: { [sectorKey]: "10" },
     });
     const currentForm = makeFormState({
-      geoAllocation: { [geoKey]: "35" } as FormState["geoAllocation"],
-      sectorAllocation: { [sectorKey]: "45" } as FormState["sectorAllocation"],
+      geoAllocation: { [geoKey]: "35" },
+      sectorAllocation: { [sectorKey]: "45" },
     });
     const rows = buildDiffRows(initialForm, currentForm);
     const geoRow = rows.find(row => row.field === `Geo ${startCase(geoKey)} (%)`);
@@ -58,8 +58,8 @@ describe("buildDiffRows", () => {
     invariant(sectorKey, "Expected at least one sector key");
     const initialForm = makeFormState({ geoAllocation: {}, sectorAllocation: {} });
     const currentForm = makeFormState({
-      geoAllocation: { [geoKey]: "35" } as FormState["geoAllocation"],
-      sectorAllocation: { [sectorKey]: "45" } as FormState["sectorAllocation"],
+      geoAllocation: { [geoKey]: "35" },
+      sectorAllocation: { [sectorKey]: "45" },
     });
     const rows = buildDiffRows(initialForm, currentForm);
     const geoRow = rows.find(row => row.field === `Geo ${startCase(geoKey)} (%)`);

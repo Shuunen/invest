@@ -38,7 +38,7 @@ export function renderSearchFilter(filterText: string, setFilterText: (value: st
     <input
       data-testid="input-filter"
       type="search"
-      className="input-bordered input input-sm w-full max-w-xs outline-base-100 md:max-w-sm"
+      className="input-bordered input w-full max-w-xs outline-base-100 input-sm md:max-w-sm"
       placeholder="Search ISIN, name, tickers…"
       value={filterText}
       onChange={event => {

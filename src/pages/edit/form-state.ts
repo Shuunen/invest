@@ -57,7 +57,7 @@ export function toFormState(asset: Asset): FormState {
     availableForPlan: asset.availableForPlan,
     availableOnBroker: asset.availableOnBroker,
     fees: String(asset.fees),
-    geoAllocation: Object.fromEntries(Object.entries(asset.geoAllocation).map(([key, val]) => [key, toPercentString(val)])) as Partial<Record<Country, string>>,
+    geoAllocation: Object.fromEntries(Object.entries(asset.geoAllocation).map(([key, val]) => [key, toPercentString(val)])),
     isAccumulating: asset.isAccumulating,
     isin: asset.isin,
     name: asset.name,
@@ -69,7 +69,7 @@ export function toFormState(asset: Asset): FormState {
     riskReward1y: asset.riskReward1y === undefined ? "" : String(asset.riskReward1y),
     riskReward3y: asset.riskReward3y === undefined ? "" : String(asset.riskReward3y),
     riskReward5y: asset.riskReward5y === undefined ? "" : String(asset.riskReward5y),
-    sectorAllocation: Object.fromEntries(Object.entries(asset.sectorAllocation).map(([key, val]) => [key, toPercentString(val)])) as Partial<Record<Sector, string>>,
+    sectorAllocation: Object.fromEntries(Object.entries(asset.sectorAllocation).map(([key, val]) => [key, toPercentString(val)])),
     tickers: asset.tickers.join(", "),
   };
 }

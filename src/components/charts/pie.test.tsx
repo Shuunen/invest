@@ -111,9 +111,9 @@ describe("PieChart", () => {
     invariant(container, "Expected chart to have a parent container");
     const popover = screen.getByTestId("pie-popover");
     // oxlint-disable-next-line id-length
-    popover.getBoundingClientRect = () => ({ bottom: 80, height: 80, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 }) as DOMRect;
+    popover.getBoundingClientRect = () => ({ bottom: 80, height: 80, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 });
     // oxlint-disable-next-line id-length
-    container.getBoundingClientRect = () => ({ bottom: 300, height: 300, left: 0, right: 400, toJSON: () => ({}), top: 0, width: 400, x: 0, y: 0 }) as DOMRect;
+    container.getBoundingClientRect = () => ({ bottom: 300, height: 300, left: 0, right: 400, toJSON: () => ({}), top: 0, width: 400, x: 0, y: 0 });
     fireEvent.mouseMove(container, { clientX: 100, clientY: 100 });
     expect(popover).toBeInTheDocument();
     expect(popover.style.left).toBe("142px");
@@ -155,10 +155,10 @@ describe("PieChart", () => {
     invariant(container, "Expected chart to have a parent container");
     const popover = screen.getByTestId("pie-popover");
     // oxlint-disable-next-line id-length
-    popover.getBoundingClientRect = () => ({ bottom: 80, height: 80, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 }) as DOMRect;
+    popover.getBoundingClientRect = () => ({ bottom: 80, height: 80, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 });
     // Mock container with dimensions of 400x300 and position at (0, 0)
     // oxlint-disable-next-line id-length
-    container.getBoundingClientRect = () => ({ bottom: 300, height: 300, left: 0, right: 400, toJSON: () => ({}), top: 0, width: 400, x: 0, y: 0 }) as DOMRect;
+    container.getBoundingClientRect = () => ({ bottom: 300, height: 300, left: 0, right: 400, toJSON: () => ({}), top: 0, width: 400, x: 0, y: 0 });
     // Move mouse near the bottom-right corner of the container
     fireEvent.mouseMove(container, { clientX: 390, clientY: 290 });
     // The popover should flip to the opposite side of the cursor instead of being clamped underneath it.
@@ -175,11 +175,13 @@ describe("PieChart", () => {
     invariant(container, "Expected chart to have a parent container");
     const popover = screen.getByTestId("pie-popover");
     // oxlint-disable-next-line id-length
-    popover.getBoundingClientRect = () => ({ bottom: 80, height: 80, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 }) as DOMRect;
+    popover.getBoundingClientRect = () => ({ bottom: 80, height: 80, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 });
     // oxlint-disable-next-line id-length
-    container.getBoundingClientRect = () => ({ bottom: 300, height: 300, left: 0, right: 400, toJSON: () => ({}), top: 0, width: 400, x: 0, y: 0 }) as DOMRect;
+    container.getBoundingClientRect = () => ({ bottom: 300, height: 300, left: 0, right: 400, toJSON: () => ({}), top: 0, width: 400, x: 0, y: 0 });
     fireEvent.mouseMove(container, { clientX: 390, clientY: 290 });
+    // oxlint-disable-next-line unicorn/prefer-number-coercion -- style.left/top are px strings like "210px"; Number() would yield NaN, parseInt is required
     const left = Number.parseInt(popover.style.left, 10);
+    // oxlint-disable-next-line unicorn/prefer-number-coercion -- style.left/top are px strings like "210px"; Number() would yield NaN, parseInt is required
     const top = Number.parseInt(popover.style.top, 10);
     expect(left + 180).toBeLessThan(390);
     expect(top + 80).toBeLessThan(290);
@@ -194,9 +196,9 @@ describe("PieChart", () => {
     invariant(container, "Expected chart to have a parent container");
     const popover = screen.getByTestId("pie-popover");
     // oxlint-disable-next-line id-length
-    popover.getBoundingClientRect = () => ({ bottom: 120, height: 120, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 }) as DOMRect;
+    popover.getBoundingClientRect = () => ({ bottom: 120, height: 120, left: 0, right: 180, toJSON: () => ({}), top: 0, width: 180, x: 0, y: 0 });
     // oxlint-disable-next-line id-length
-    container.getBoundingClientRect = () => ({ bottom: 150, height: 150, left: 0, right: 150, toJSON: () => ({}), top: 0, width: 150, x: 0, y: 0 }) as DOMRect;
+    container.getBoundingClientRect = () => ({ bottom: 150, height: 150, left: 0, right: 150, toJSON: () => ({}), top: 0, width: 150, x: 0, y: 0 });
     fireEvent.mouseMove(container, { clientX: 60, clientY: 60 });
     expect(popover.style.left).toBe("14px");
     expect(popover.style.top).toBe("16px");
