@@ -9,6 +9,7 @@ import { diffMessages, sortRows } from "./translation-diff.cli.ts";
 const cliPath = path.join(import.meta.dirname, "translation-diff.cli.ts");
 const demoRowCount = 11;
 const preI18nCommit = "6bf64e3";
+const preInterpolationFixCommit = "d146678^";
 
 async function withTempDistDir<Result>(run: (distDir: string) => Promise<Result> | Result): Promise<Result> {
   const distDir = mkdtempSync(path.join(tmpdir(), "translation-diff-test-"));
@@ -103,6 +104,27 @@ describe("cli --files (real diff mode)", () => {
       expect(statuses).toStrictEqual(new Set(["added"]));
     });
   });
+  it("diffs against real prior content from git history and marks edited keys as changed", async () => {
+    expect.hasAssertions();
+    await withTempDistDir(async distDir => {
+      execFileSync("bun", [cliPath, "--files=src/locales/en.ts", `--commit=${preInterpolationFixCommit}`, `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" });
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.readFile(path.join(distDir, "en.xlsx"));
+      const sheet = workbook.getWorksheet("diff");
+      invariant(sheet, "expected a 'diff' worksheet in en.xlsx");
+      const rowsByKey = new Map<unknown, unknown>();
+      for (const rowNumber of range(2, sheet.rowCount + 1)) {
+        const row = sheet.getRow(rowNumber);
+        rowsByKey.set(row.getCell(1).value, row.getCell(3).value);
+      }
+      // "export-un-exported" and "picker-split-equally" had their interpolation variable
+      // renamed between preInterpolationFixCommit and HEAD, so they must show as "changed".
+      expect(rowsByKey.get("export-un-exported")).toBe("changed");
+      expect(rowsByKey.get("picker-split-equally")).toBe("changed");
+      // "action-back" was untouched by that rename, so it must show as "un-touched".
+      expect(rowsByKey.get("action-back")).toBe("un-touched");
+    });
+  });
   it("writes one xlsx per matched file when the glob matches several locales", async () => {
     expect.hasAssertions();
     await withTempDistDir(distDir => {
@@ -149,6 +171,12 @@ describe("cli argument validation", () => {
           stdio: "pipe",
         }),
       ).toThrow(/No files matched pattern/u);
+    });
+  });
+  it("fails loudly when --commit is missing in diff mode", async () => {
+    expect.hasAssertions();
+    await withTempDistDir(distDir => {
+      expect(() => execFileSync("bun", [cliPath, "--files=src/locales/*.ts", `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" })).toThrow(/Missing required --commit=<hash> argument/u);
     });
   });
 });
