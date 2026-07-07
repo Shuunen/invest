@@ -4,6 +4,9 @@
  *
  * Usage:
  *   bun src/bin/translation-diff.cli.ts --files=src/locales/*.ts --commit=251316c --dist=src/locales
+ *
+ * Or, to preview the report styling without a real diff:
+ *   bun src/bin/translation-diff.cli.ts --demo --dist=src/locales
  */
 import { execFileSync } from "node:child_process";
 import { globSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -11,13 +14,36 @@ import { mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { invariant } from "es-toolkit";
+import { invariant, range } from "es-toolkit";
 import ExcelJS from "exceljs";
 
 type LocaleMessages = Record<string, string>;
 type RowStatus = "added" | "changed" | "deleted" | "un-touched";
 type DiffRow = { key: string; status: RowStatus; translation: string };
 type FileDiffContext = { absPath: string; commit: string; distDir: string; repoRoot: string; tempDir: string };
+type CliArgs = { dist: string; mode: "demo" } | { commit: string; dist: string; filesPattern: string; mode: "diff" };
+
+const demoFileName = "demo.xlsx";
+const demoLocale = "demo";
+
+/** Sample rows covering every status, so `--demo` can preview the report styling without a real diff */
+const demoRows: DiffRow[] = [
+  { key: "action-export", status: "changed", translation: "Export to spreadsheet" },
+  { key: "table-new-column", status: "added", translation: "Newly added column header" },
+  {
+    key: "app-description",
+    status: "changed",
+    translation: "Long text like this shows off the wrap-text column style.",
+  },
+  { key: "picker-new-feature", status: "added", translation: "Brand new picker label" },
+  { key: "modal-legacy-warning", status: "deleted", translation: "This modal copy no longer exists in the current file" },
+  { key: "action-back", status: "un-touched", translation: "Back" },
+  { key: "section-old-tab", status: "deleted", translation: "Removed section title" },
+  { key: "action-cancel", status: "un-touched", translation: "Cancel" },
+  { key: "theme-dark", status: "un-touched", translation: "Dark" },
+  { key: "action-import", status: "changed", translation: "Import from file" },
+  { key: "theme-light", status: "un-touched", translation: "Light" },
+];
 
 const flagPrefixLength = 2;
 const cliArgsStartIndex = 2;
@@ -42,7 +68,10 @@ const fillColorByStatus: Record<RowStatus, string> = {
   "un-touched": "FFFFFFFF",
 };
 
-function parseArgs(argv: readonly string[]) {
+/** Thin grey border on every side, so adjacent rows stay distinguishable even when they share a fill color */
+const cellBorder: ExcelJS.Border = { color: { argb: "FFB7B7B7" }, style: "thin" };
+
+function parseArgs(argv: readonly string[]): CliArgs {
   const flags = new Map(
     argv
       .filter(arg => arg.startsWith("--"))
@@ -51,13 +80,14 @@ function parseArgs(argv: readonly string[]) {
         return [key, rest.join("=")];
       }),
   );
+  const dist = flags.get("dist");
+  invariant(dist, "Missing required --dist=<dir> argument");
+  if (flags.has("demo")) return { dist, mode: "demo" };
   const filesPattern = flags.get("files");
   const commit = flags.get("commit");
-  const dist = flags.get("dist");
-  invariant(filesPattern, "Missing required --files=<glob> argument");
-  invariant(commit, "Missing required --commit=<hash> argument");
-  invariant(dist, "Missing required --dist=<dir> argument");
-  return { commit, dist, filesPattern };
+  invariant(filesPattern, "Missing required --files=<glob> argument (or use --demo)");
+  invariant(commit, "Missing required --commit=<hash> argument (or use --demo)");
+  return { commit, dist, filesPattern, mode: "diff" };
 }
 
 async function loadMessages(absPath: string): Promise<LocaleMessages> {
@@ -100,7 +130,15 @@ function applyStatusFills(sheet: ExcelJS.Worksheet, rows: readonly DiffRow[]) {
   }
 }
 
-async function writeReport(rows: readonly DiffRow[], outPath: string) {
+function applyTableBorders(sheet: ExcelJS.Worksheet, rowCount: number) {
+  const lastRowNumber = rowCount + firstDataRowNumber - 1;
+  for (const rowNumber of range(headerRowNumber, lastRowNumber + 1))
+    sheet.getRow(rowNumber).eachCell(cell => {
+      cell.border = { bottom: cellBorder, left: cellBorder, right: cellBorder, top: cellBorder };
+    });
+}
+
+async function writeReport(rows: readonly DiffRow[], outPath: string, locale: string) {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("diff", { views: [{ state: "frozen", ySplit: headerRowNumber }] });
 
@@ -111,8 +149,8 @@ async function writeReport(rows: readonly DiffRow[], outPath: string) {
 
   sheet.addTable({
     columns: [
-      { filterButton: true, name: "key" },
-      { filterButton: true, name: "translation" },
+      { filterButton: true, name: `key (${locale})` },
+      { filterButton: true, name: `translation (${locale})` },
       { filterButton: true, name: "status" },
     ],
     name: "translationDiff",
@@ -121,6 +159,7 @@ async function writeReport(rows: readonly DiffRow[], outPath: string) {
     style: { showRowStripes: true, theme: "TableStyleMedium9" },
   });
   applyStatusFills(sheet, rows);
+  applyTableBorders(sheet, rows.length);
 
   await workbook.xlsx.writeFile(outPath);
 }
@@ -134,23 +173,31 @@ async function processFile({ absPath, commit, distDir, repoRoot, tempDir }: File
   const [oldMessages, newMessages] = await Promise.all([loadMessages(tempPath), loadMessages(absPath)]);
   const rows = sortRows(diffMessages(oldMessages, newMessages));
 
-  const outPath = path.join(distDir, `${path.basename(absPath, ".ts")}.xlsx`);
-  await writeReport(rows, outPath);
+  const locale = path.basename(absPath, ".ts");
+  const outPath = path.join(distDir, `${locale}.xlsx`);
+  await writeReport(rows, outPath, locale);
   console.log(`Wrote ${outPath} (${String(rows.length)} keys)`);
 }
 
 async function main() {
-  const { commit, dist, filesPattern } = parseArgs(process.argv.slice(cliArgsStartIndex));
-  const repoRoot = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
-  const matches = globSync(filesPattern).map(match => path.resolve(match));
-  invariant(matches.length > 0, `No files matched pattern: ${filesPattern}`);
-
-  const distDir = path.resolve(dist);
+  const args = parseArgs(process.argv.slice(cliArgsStartIndex));
+  const distDir = path.resolve(args.dist);
   await mkdir(distDir, { recursive: true });
+
+  if (args.mode === "demo") {
+    const outPath = path.join(distDir, demoFileName);
+    await writeReport(sortRows(demoRows), outPath, demoLocale);
+    console.log(`Wrote ${outPath} (${String(demoRows.length)} sample keys)`);
+    return;
+  }
+
+  const repoRoot = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
+  const matches = globSync(args.filesPattern).map(match => path.resolve(match));
+  invariant(matches.length > 0, `No files matched pattern: ${args.filesPattern}`);
 
   const tempDir = mkdtempSync(path.join(tmpdir(), "translation-diff-"));
   try {
-    await Promise.all(matches.map(absPath => processFile({ absPath, commit, distDir, repoRoot, tempDir })));
+    await Promise.all(matches.map(absPath => processFile({ absPath, commit: args.commit, distDir, repoRoot, tempDir })));
   } finally {
     rmSync(tempDir, { force: true, recursive: true });
   }
