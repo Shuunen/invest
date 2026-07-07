@@ -192,6 +192,11 @@ async function main() {
   }
 
   const repoRoot = execFileSync("git", ["rev-parse", "--show-toplevel"], { encoding: "utf8" }).trim();
+  try {
+    execFileSync("git", ["rev-parse", "--verify", `${args.commit}^{commit}`], { cwd: repoRoot, encoding: "utf8" });
+  } catch {
+    throw new Error(`Unknown commit: ${args.commit}`);
+  }
   const matches = globSync(args.filesPattern).map(match => path.resolve(match));
   invariant(matches.length > 0, `No files matched pattern: ${args.filesPattern}`);
 

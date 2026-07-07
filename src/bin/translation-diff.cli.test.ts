@@ -1,4 +1,10 @@
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { diffMessages, sortRows } from "./translation-diff.cli.ts";
+
+const cliPath = path.join(import.meta.dirname, "translation-diff.cli.ts");
 
 describe("diffMessages", () => {
   it("marks a key only in new messages as added", () => {
@@ -24,6 +30,26 @@ describe("diffMessages", () => {
     const rows = diffMessages({ key: "before" }, { key: "after" });
     expect(rows).toHaveLength(1);
     expect(rows[0]).toStrictEqual({ key: "key", status: "changed", translation: "after" });
+  });
+});
+
+describe("cli --commit", () => {
+  // Regression: ISSUE-001 — an unknown commit hash was silently swallowed and treated
+  // as "file absent at that commit", reporting every key as added instead of failing.
+  // Found by /qa on 2026-07-07
+  it("fails loudly when --commit points at a hash that does not exist", () => {
+    expect.hasAssertions();
+    const distDir = mkdtempSync(path.join(tmpdir(), "translation-diff-test-"));
+    try {
+      expect(() =>
+        execFileSync("bun", [cliPath, "--files=src/locales/*.ts", "--commit=deadbeef", `--dist=${distDir}`], {
+          encoding: "utf8",
+          stdio: "pipe",
+        }),
+      ).toThrow(/Unknown commit: deadbeef/u);
+    } finally {
+      rmSync(distDir, { force: true, recursive: true });
+    }
   });
 });
 
