@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.12.1] - 2026-07-07
+
+### Added in 0.12.1
+
+- `translation-diff` CLI — compares a locale file's current state against a given commit and generates one `.xlsx` diff report per locale, with color-coded added/changed/deleted/un-touched rows; supports a `--demo` mode to preview the report styling without a real diff
+
+### Fixed in 0.12.1
+
+- CI now fetches full git history so `translation-diff` can resolve historical commits
+
 ## [0.12.0] - 2026-06-22
 
 ### Added in 0.12.0
