@@ -10,20 +10,56 @@
  *   bun src/bin/translation-diff.cli.ts --demo --dist=src/locales
  */
 import { execFile, execFileSync } from "node:child_process";
-import { globSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, globSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { invariant, range } from "es-toolkit";
-import ExcelJS from "exceljs";
 
 type LocaleMessages = Record<string, string>;
 type RowStatus = "added" | "changed" | "deleted" | "un-touched";
 type DiffRow = { key: string; status: RowStatus; translation: string };
 type FileDiffContext = { absPath: string; commit: string; distDir: string; repoRoot: string };
 type CliArgs = { dist: string; mode: "demo" } | { commit: string; dist: string; filesPattern: string; mode: "diff" };
+
+// exceljs is intentionally not a project dependency: this CLI is the only consumer, so it's
+// fetched into a persistent cache dir on first use instead of weighing down every `pnpm install`.
+type ExcelBorder = { color: { argb: string }; style: string };
+type ExcelCell = {
+  border?: { bottom?: ExcelBorder; left?: ExcelBorder; right?: ExcelBorder; top?: ExcelBorder };
+  fill?: { fgColor: { argb: string }; pattern: "solid"; type: "pattern" };
+  value?: unknown;
+};
+type ExcelRow = { eachCell: (callback: (cell: ExcelCell) => void) => void; getCell: (columnIndex: number) => ExcelCell };
+type ExcelColumn = { alignment?: { vertical: "top"; wrapText: boolean }; width: number };
+type ExcelTableOptions = {
+  columns: { filterButton: boolean; name: string }[];
+  name: string;
+  ref: string;
+  rows: (string | number)[][];
+  style: { showRowStripes: boolean; theme: string };
+};
+type ExcelWorksheet = { addTable: (options: ExcelTableOptions) => void; getColumn: (index: number) => ExcelColumn; getRow: (rowNumber: number) => ExcelRow; rowCount: number };
+type ExcelWorkbook = {
+  addWorksheet: (name: string, options: { views: { state: string; ySplit: number }[] }) => ExcelWorksheet;
+  getWorksheet: (name: string) => ExcelWorksheet | undefined;
+  xlsx: { readFile: (filePath: string) => Promise<void>; writeFile: (filePath: string) => Promise<void> };
+};
+export type ExcelJsModule = { Workbook: new () => ExcelWorkbook };
+
+const excelJsCacheDir = path.join(homedir(), ".cache", "invest-translation-diff");
+
+export async function loadExcelJs(): Promise<ExcelJsModule> {
+  const packageDir = path.join(excelJsCacheDir, "node_modules", "exceljs");
+  if (!existsSync(packageDir)) {
+    await mkdir(excelJsCacheDir, { recursive: true });
+    execFileSync("pnpm", ["add", "exceljs", "-C", excelJsCacheDir], { stdio: "inherit" });
+  }
+  const mod = (await import(pathToFileURL(path.join(packageDir, "excel.js")).href)) as { default: ExcelJsModule };
+  return mod.default;
+}
 
 const demoFileName = "demo.xlsx";
 const demoLocale = "demo";
@@ -71,7 +107,7 @@ const fillColorByStatus: Record<RowStatus, string> = {
 };
 
 /** Thin grey border on every side, so adjacent rows stay distinguishable even when they share a fill color */
-const cellBorder: ExcelJS.Border = { color: { argb: "FFB7B7B7" }, style: "thin" };
+const cellBorder: ExcelBorder = { color: { argb: "FFB7B7B7" }, style: "thin" };
 
 function parseArgs(argv: readonly string[]): CliArgs {
   const flags = new Map(
@@ -135,7 +171,7 @@ export function sortRows(rows: readonly DiffRow[]): DiffRow[] {
   return rows.toSorted((rowA, rowB) => statusSortOrder[rowA.status] - statusSortOrder[rowB.status] || rowA.key.localeCompare(rowB.key));
 }
 
-function applyStatusFills(sheet: ExcelJS.Worksheet, rows: readonly DiffRow[]) {
+function applyStatusFills(sheet: ExcelWorksheet, rows: readonly DiffRow[]) {
   for (const [index, row] of rows.entries()) {
     const fillColor = fillColorByStatus[row.status];
     if (fillColor === fillColorByStatus["un-touched"]) continue;
@@ -145,7 +181,7 @@ function applyStatusFills(sheet: ExcelJS.Worksheet, rows: readonly DiffRow[]) {
   }
 }
 
-function applyTableBorders(sheet: ExcelJS.Worksheet, rowCount: number) {
+function applyTableBorders(sheet: ExcelWorksheet, rowCount: number) {
   const lastRowNumber = rowCount + firstDataRowNumber - 1;
   for (const rowNumber of range(headerRowNumber, lastRowNumber + 1))
     sheet.getRow(rowNumber).eachCell(cell => {
@@ -154,6 +190,7 @@ function applyTableBorders(sheet: ExcelJS.Worksheet, rowCount: number) {
 }
 
 async function writeReport(rows: readonly DiffRow[], outPath: string, locale: string) {
+  const ExcelJS = await loadExcelJs();
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("diff", { views: [{ state: "frozen", ySplit: headerRowNumber }] });
 

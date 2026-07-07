@@ -3,8 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { invariant, range } from "es-toolkit";
-import ExcelJS from "exceljs";
-import { diffMessages, sortRows } from "./translation-diff.cli.ts";
+import { diffMessages, loadExcelJs, sortRows } from "./translation-diff.cli.ts";
 
 const cliPath = path.join(import.meta.dirname, "translation-diff.cli.ts");
 const demoRowCount = 11;
@@ -73,6 +72,7 @@ describe("cli --demo", () => {
     expect.hasAssertions();
     await withTempDistDir(async distDir => {
       execFileSync("bun", [cliPath, "--demo", `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" });
+      const ExcelJS = await loadExcelJs();
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.readFile(path.join(distDir, "demo.xlsx"));
       const sheet = workbook.getWorksheet("diff");
@@ -92,6 +92,7 @@ describe("cli --files (real diff mode)", () => {
         encoding: "utf8",
         stdio: "pipe",
       });
+      const ExcelJS = await loadExcelJs();
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.readFile(path.join(distDir, "en.xlsx"));
       const sheet = workbook.getWorksheet("diff");
@@ -108,6 +109,7 @@ describe("cli --files (real diff mode)", () => {
     expect.hasAssertions();
     await withTempDistDir(async distDir => {
       execFileSync("bun", [cliPath, "--files=src/locales/en.ts", `--commit=${preInterpolationFixCommit}`, `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" });
+      const ExcelJS = await loadExcelJs();
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.readFile(path.join(distDir, "en.xlsx"));
       const sheet = workbook.getWorksheet("diff");
