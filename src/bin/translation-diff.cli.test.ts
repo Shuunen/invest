@@ -9,6 +9,9 @@ const cliPath = path.join(import.meta.dirname, "translation-diff.cli.ts");
 const demoRowCount = 11;
 const preI18nCommit = "6bf64e3";
 const preInterpolationFixCommit = "d146678^";
+// On a cold CI cache, the cli's first exceljs load triggers a `pnpm add` that can take longer
+// than the default 5s test timeout, so tests exercising a successful write get a generous one.
+const cliWriteTestTimeout = 60_000;
 
 async function withTempDistDir<Result>(run: (distDir: string) => Promise<Result> | Result): Promise<Result> {
   const distDir = mkdtempSync(path.join(tmpdir(), "translation-diff-test-"));
@@ -68,76 +71,92 @@ describe("cli --commit", () => {
 });
 
 describe("cli --demo", () => {
-  it("writes a valid demo.xlsx with the sample rows", async () => {
-    expect.hasAssertions();
-    await withTempDistDir(async distDir => {
-      execFileSync("bun", [cliPath, "--demo", `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" });
-      const ExcelJS = await loadExcelJs();
-      const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.readFile(path.join(distDir, "demo.xlsx"));
-      const sheet = workbook.getWorksheet("diff");
-      invariant(sheet, "expected a 'diff' worksheet in demo.xlsx");
-      expect(sheet.rowCount).toBe(demoRowCount + 1);
-      expect(sheet.getRow(1).getCell(1).value).toBe("key (demo)");
-      expect(sheet.getRow(2).getCell(3).value).toBe("changed");
-    });
-  });
+  it(
+    "writes a valid demo.xlsx with the sample rows",
+    async () => {
+      expect.hasAssertions();
+      await withTempDistDir(async distDir => {
+        execFileSync("bun", [cliPath, "--demo", `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" });
+        const ExcelJS = await loadExcelJs();
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(path.join(distDir, "demo.xlsx"));
+        const sheet = workbook.getWorksheet("diff");
+        invariant(sheet, "expected a 'diff' worksheet in demo.xlsx");
+        expect(sheet.rowCount).toBe(demoRowCount + 1);
+        expect(sheet.getRow(1).getCell(1).value).toBe("key (demo)");
+        expect(sheet.getRow(2).getCell(3).value).toBe("changed");
+      });
+    },
+    cliWriteTestTimeout,
+  );
 });
 
 describe("cli --files (real diff mode)", () => {
-  it("writes one xlsx per matched locale file with the diffed rows", async () => {
-    expect.hasAssertions();
-    await withTempDistDir(async distDir => {
-      execFileSync("bun", [cliPath, "--files=src/locales/en.ts", `--commit=${preI18nCommit}`, `--dist=${distDir}`], {
-        encoding: "utf8",
-        stdio: "pipe",
+  it(
+    "writes one xlsx per matched locale file with the diffed rows",
+    async () => {
+      expect.hasAssertions();
+      await withTempDistDir(async distDir => {
+        execFileSync("bun", [cliPath, "--files=src/locales/en.ts", `--commit=${preI18nCommit}`, `--dist=${distDir}`], {
+          encoding: "utf8",
+          stdio: "pipe",
+        });
+        const ExcelJS = await loadExcelJs();
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(path.join(distDir, "en.xlsx"));
+        const sheet = workbook.getWorksheet("diff");
+        invariant(sheet, "expected a 'diff' worksheet in en.xlsx");
+        expect(sheet.rowCount).toBeGreaterThan(1);
+        expect(sheet.getRow(1).getCell(1).value).toBe("key (en)");
+        // en.ts did not exist at preI18nCommit, so every current key must show as "added"
+        const statuses = new Set<unknown>();
+        for (const rowNumber of range(2, sheet.rowCount + 1)) statuses.add(sheet.getRow(rowNumber).getCell(3).value);
+        expect(statuses).toStrictEqual(new Set(["added"]));
       });
-      const ExcelJS = await loadExcelJs();
-      const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.readFile(path.join(distDir, "en.xlsx"));
-      const sheet = workbook.getWorksheet("diff");
-      invariant(sheet, "expected a 'diff' worksheet in en.xlsx");
-      expect(sheet.rowCount).toBeGreaterThan(1);
-      expect(sheet.getRow(1).getCell(1).value).toBe("key (en)");
-      // en.ts did not exist at preI18nCommit, so every current key must show as "added"
-      const statuses = new Set<unknown>();
-      for (const rowNumber of range(2, sheet.rowCount + 1)) statuses.add(sheet.getRow(rowNumber).getCell(3).value);
-      expect(statuses).toStrictEqual(new Set(["added"]));
-    });
-  });
-  it("diffs against real prior content from git history and marks edited keys as changed", async () => {
-    expect.hasAssertions();
-    await withTempDistDir(async distDir => {
-      execFileSync("bun", [cliPath, "--files=src/locales/en.ts", `--commit=${preInterpolationFixCommit}`, `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" });
-      const ExcelJS = await loadExcelJs();
-      const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.readFile(path.join(distDir, "en.xlsx"));
-      const sheet = workbook.getWorksheet("diff");
-      invariant(sheet, "expected a 'diff' worksheet in en.xlsx");
-      const rowsByKey = new Map<unknown, unknown>();
-      for (const rowNumber of range(2, sheet.rowCount + 1)) {
-        const row = sheet.getRow(rowNumber);
-        rowsByKey.set(row.getCell(1).value, row.getCell(3).value);
-      }
-      // "export-un-exported" and "picker-split-equally" had their interpolation variable
-      // renamed between preInterpolationFixCommit and HEAD, so they must show as "changed".
-      expect(rowsByKey.get("export-un-exported")).toBe("changed");
-      expect(rowsByKey.get("picker-split-equally")).toBe("changed");
-      // "action-back" was untouched by that rename, so it must show as "un-touched".
-      expect(rowsByKey.get("action-back")).toBe("un-touched");
-    });
-  });
-  it("writes one xlsx per matched file when the glob matches several locales", async () => {
-    expect.hasAssertions();
-    await withTempDistDir(distDir => {
-      execFileSync("bun", [cliPath, "--files=src/locales/*.ts", `--commit=${preI18nCommit}`, `--dist=${distDir}`], {
-        encoding: "utf8",
-        stdio: "pipe",
+    },
+    cliWriteTestTimeout,
+  );
+  it(
+    "diffs against real prior content from git history and marks edited keys as changed",
+    async () => {
+      expect.hasAssertions();
+      await withTempDistDir(async distDir => {
+        execFileSync("bun", [cliPath, "--files=src/locales/en.ts", `--commit=${preInterpolationFixCommit}`, `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" });
+        const ExcelJS = await loadExcelJs();
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(path.join(distDir, "en.xlsx"));
+        const sheet = workbook.getWorksheet("diff");
+        invariant(sheet, "expected a 'diff' worksheet in en.xlsx");
+        const rowsByKey = new Map<unknown, unknown>();
+        for (const rowNumber of range(2, sheet.rowCount + 1)) {
+          const row = sheet.getRow(rowNumber);
+          rowsByKey.set(row.getCell(1).value, row.getCell(3).value);
+        }
+        // "export-un-exported" and "picker-split-equally" had their interpolation variable
+        // renamed between preInterpolationFixCommit and HEAD, so they must show as "changed".
+        expect(rowsByKey.get("export-un-exported")).toBe("changed");
+        expect(rowsByKey.get("picker-split-equally")).toBe("changed");
+        // "action-back" was untouched by that rename, so it must show as "un-touched".
+        expect(rowsByKey.get("action-back")).toBe("un-touched");
       });
-      const output = execFileSync("ls", [distDir], { encoding: "utf8" }).trim().split("\n");
-      expect(output.toSorted()).toStrictEqual(["en.xlsx", "fr.xlsx"]);
-    });
-  });
+    },
+    cliWriteTestTimeout,
+  );
+  it(
+    "writes one xlsx per matched file when the glob matches several locales",
+    async () => {
+      expect.hasAssertions();
+      await withTempDistDir(distDir => {
+        execFileSync("bun", [cliPath, "--files=src/locales/*.ts", `--commit=${preI18nCommit}`, `--dist=${distDir}`], {
+          encoding: "utf8",
+          stdio: "pipe",
+        });
+        const output = execFileSync("ls", [distDir], { encoding: "utf8" }).trim().split("\n");
+        expect(output.toSorted()).toStrictEqual(["en.xlsx", "fr.xlsx"]);
+      });
+    },
+    cliWriteTestTimeout,
+  );
   it("fails loudly instead of silently overwriting one report with another when two matched files share a locale basename", async () => {
     expect.hasAssertions();
     // Regression: adversarial review found that two matched files with the same basename in
