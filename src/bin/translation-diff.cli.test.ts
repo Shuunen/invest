@@ -136,18 +136,47 @@ describe("cli --files (real diff mode)", () => {
       expect(output.toSorted()).toStrictEqual(["en.xlsx", "fr.xlsx"]);
     });
   });
+  it("fails loudly instead of silently overwriting one report with another when two matched files share a locale basename", async () => {
+    expect.hasAssertions();
+    // Regression: adversarial review found that two matched files with the same basename in
+    // different directories would silently overwrite each other's report (and even alias each
+    // other's content via the module cache), with zero error signal.
+    const repoRoot = path.join(import.meta.dirname, "..", "..");
+    const dupDirA = mkdtempSync(path.join(repoRoot, "src", "locales", "tmp-dup-a-"));
+    const dupDirB = mkdtempSync(path.join(repoRoot, "src", "locales", "tmp-dup-b-"));
+    try {
+      writeFileSync(path.join(dupDirA, "en.ts"), 'export const messages = { k: "a" };\n', "utf8");
+      writeFileSync(path.join(dupDirB, "en.ts"), 'export const messages = { k: "b" };\n', "utf8");
+      await withTempDistDir(distDir => {
+        expect(() => execFileSync("bun", [cliPath, `--files=${path.join(repoRoot, "src", "locales", "tmp-dup-*", "en.ts")}`, `--commit=${preI18nCommit}`, `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" })).toThrow(
+          /Multiple matched files would write the same report: en\.xlsx/u,
+        );
+      });
+    } finally {
+      rmSync(dupDirA, { force: true, recursive: true });
+      rmSync(dupDirB, { force: true, recursive: true });
+    }
+  });
   it("fails with a descriptive error when a matched file has no messages export", async () => {
     expect.hasAssertions();
-    await withTempDistDir(distDir => {
-      const badFile = path.join(distDir, "broken.ts");
-      writeFileSync(badFile, "export const notMessages = {};\n", "utf8");
-      expect(() =>
-        execFileSync("bun", [cliPath, `--files=${path.join(distDir, "*.ts")}`, `--commit=${preI18nCommit}`, `--dist=${distDir}`], {
-          encoding: "utf8",
-          stdio: "pipe",
-        }),
-      ).toThrow(/Command failed/u);
-    });
+    // The broken file must live inside the repo (not a system tempdir) so `git show` can resolve
+    // a relative path for it and the failure actually exercises the loadMessages invariant,
+    // rather than "path is outside repository" from readFileAtCommit.
+    const repoRoot = path.join(import.meta.dirname, "..", "..");
+    const badDir = mkdtempSync(path.join(repoRoot, "src", "locales", "tmp-test-"));
+    try {
+      await withTempDistDir(distDir => {
+        writeFileSync(path.join(badDir, "broken.ts"), "export const notMessages = {};\n", "utf8");
+        expect(() =>
+          execFileSync("bun", [cliPath, `--files=${path.join(badDir, "*.ts")}`, `--commit=${preI18nCommit}`, `--dist=${distDir}`], {
+            encoding: "utf8",
+            stdio: "pipe",
+          }),
+        ).toThrow(/Expected .* to export a 'messages' object/u);
+      });
+    } finally {
+      rmSync(badDir, { force: true, recursive: true });
+    }
   });
 });
 

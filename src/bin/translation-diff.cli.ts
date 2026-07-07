@@ -21,7 +21,7 @@ import ExcelJS from "exceljs";
 type LocaleMessages = Record<string, string>;
 type RowStatus = "added" | "changed" | "deleted" | "un-touched";
 type DiffRow = { key: string; status: RowStatus; translation: string };
-type FileDiffContext = { absPath: string; commit: string; distDir: string; repoRoot: string; tempDir: string };
+type FileDiffContext = { absPath: string; commit: string; distDir: string; repoRoot: string };
 type CliArgs = { dist: string; mode: "demo" } | { commit: string; dist: string; filesPattern: string; mode: "diff" };
 
 const demoFileName = "demo.xlsx";
@@ -92,19 +92,29 @@ function parseArgs(argv: readonly string[]): CliArgs {
 }
 
 async function loadMessages(absPath: string): Promise<LocaleMessages> {
-  const mod = (await import(pathToFileURL(absPath).href)) as { messages: LocaleMessages };
+  const mod = (await import(pathToFileURL(absPath).href)) as { messages?: LocaleMessages };
+  invariant(mod.messages, `Expected ${absPath} to export a 'messages' object`);
   return mod.messages;
 }
 
+// Tolerant variant for historical content: older revisions may predate the `messages` export entirely.
+async function loadMessagesOrEmpty(absPath: string): Promise<LocaleMessages> {
+  const mod = (await import(pathToFileURL(absPath).href)) as { messages?: LocaleMessages };
+  return mod.messages ?? {};
+}
+
 const execFileAsync = promisify(execFile);
+const pathNotFoundPatterns = [/does not exist in/u, /exists on disk, but not in/u];
 
 async function readFileAtCommit(repoRoot: string, commit: string, absPath: string): Promise<string | undefined> {
   const relPath = path.relative(repoRoot, absPath);
   try {
     const { stdout } = await execFileAsync("git", ["show", `${commit}:${relPath}`], { cwd: repoRoot, encoding: "utf8" });
     return stdout;
-  } catch {
-    return undefined;
+  } catch (error) {
+    const stderr = error instanceof Error && "stderr" in error ? String(error.stderr) : "";
+    if (pathNotFoundPatterns.some(pattern => pattern.test(stderr))) return undefined;
+    throw error;
   }
 }
 
@@ -168,19 +178,28 @@ async function writeReport(rows: readonly DiffRow[], outPath: string, locale: st
   await workbook.xlsx.writeFile(outPath);
 }
 
-async function processFile({ absPath, commit, distDir, repoRoot, tempDir }: FileDiffContext) {
+async function processFile({ absPath, commit, distDir, repoRoot }: FileDiffContext) {
   const oldSource = await readFileAtCommit(repoRoot, commit, absPath);
   if (oldSource === undefined) console.warn(`Warning: ${path.relative(repoRoot, absPath)} not found at commit ${commit}, treating all keys as added`);
-  const tempPath = path.join(tempDir, path.basename(absPath));
-  writeFileSync(tempPath, oldSource ?? "export const messages = {};\n", "utf8");
 
-  const [oldMessages, newMessages] = await Promise.all([loadMessages(tempPath), loadMessages(absPath)]);
-  const rows = sortRows(diffMessages(oldMessages, newMessages));
+  // Each file gets its own temp directory so concurrent processFile calls never write to the
+  // same path or alias each other through the runtime's module cache (which is keyed by resolved
+  // file URL, not content).
+  const tempDir = mkdtempSync(path.join(tmpdir(), "translation-diff-file-"));
+  try {
+    const tempPath = path.join(tempDir, path.basename(absPath));
+    writeFileSync(tempPath, oldSource ?? "export const messages = {};\n", "utf8");
 
-  const locale = path.basename(absPath, ".ts");
-  const outPath = path.join(distDir, `${locale}.xlsx`);
-  await writeReport(rows, outPath, locale);
-  console.log(`Wrote ${outPath} (${String(rows.length)} keys)`);
+    const [oldMessages, newMessages] = await Promise.all([loadMessagesOrEmpty(tempPath), loadMessages(absPath)]);
+    const rows = sortRows(diffMessages(oldMessages, newMessages));
+
+    const locale = path.basename(absPath, ".ts");
+    const outPath = path.join(distDir, `${locale}.xlsx`);
+    await writeReport(rows, outPath, locale);
+    console.log(`Wrote ${outPath} (${String(rows.length)} keys)`);
+  } finally {
+    rmSync(tempDir, { force: true, recursive: true });
+  }
 }
 
 async function main() {
@@ -204,12 +223,11 @@ async function main() {
   const matches = globSync(args.filesPattern).map(match => path.resolve(match));
   invariant(matches.length > 0, `No files matched pattern: ${args.filesPattern}`);
 
-  const tempDir = mkdtempSync(path.join(tmpdir(), "translation-diff-"));
-  try {
-    await Promise.all(matches.map(absPath => processFile({ absPath, commit: args.commit, distDir, repoRoot, tempDir })));
-  } finally {
-    rmSync(tempDir, { force: true, recursive: true });
-  }
+  const locales = matches.map(absPath => path.basename(absPath, ".ts"));
+  const duplicateLocale = locales.find((locale, index) => locales.indexOf(locale) !== index);
+  invariant(!duplicateLocale, `Multiple matched files would write the same report: ${duplicateLocale}.xlsx`);
+
+  await Promise.all(matches.map(absPath => processFile({ absPath, commit: args.commit, distDir, repoRoot })));
 }
 
 if (process.argv[cliArgsStartIndex - 1] === import.meta.filename) await main();
