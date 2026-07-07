@@ -3,7 +3,8 @@
  * and generates one .xlsx diff report per locale.
  *
  * Usage:
- *   bun src/bin/translation-diff.cli.ts --files=src/locales/*.ts --commit=251316c --dist=src/locales
+ *   bun src/bin/translation-diff.cli.ts --files=src/locales/*.ts --dist=src/locales --commit=251316c
+ *   bun src/bin/translation-diff.cli.ts --files=src/locales/*.ts --dist=src/locales --commit=251316c3425733ebaea56180ee0df74b3bbe5aa1
  *
  * Or, to preview the report styling without a real diff:
  *   bun src/bin/translation-diff.cli.ts --demo --dist=src/locales
