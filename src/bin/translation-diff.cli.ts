@@ -8,12 +8,13 @@
  * Or, to preview the report styling without a real diff:
  *   bun src/bin/translation-diff.cli.ts --demo --dist=src/locales
  */
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { globSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { promisify } from "node:util";
 import { invariant, range } from "es-toolkit";
 import ExcelJS from "exceljs";
 
@@ -95,10 +96,13 @@ async function loadMessages(absPath: string): Promise<LocaleMessages> {
   return mod.messages;
 }
 
-function readFileAtCommit(repoRoot: string, commit: string, absPath: string): string | undefined {
+const execFileAsync = promisify(execFile);
+
+async function readFileAtCommit(repoRoot: string, commit: string, absPath: string): Promise<string | undefined> {
   const relPath = path.relative(repoRoot, absPath);
   try {
-    return execFileSync("git", ["show", `${commit}:${relPath}`], { cwd: repoRoot, encoding: "utf8" });
+    const { stdout } = await execFileAsync("git", ["show", `${commit}:${relPath}`], { cwd: repoRoot, encoding: "utf8" });
+    return stdout;
   } catch {
     return undefined;
   }
@@ -165,7 +169,7 @@ async function writeReport(rows: readonly DiffRow[], outPath: string, locale: st
 }
 
 async function processFile({ absPath, commit, distDir, repoRoot, tempDir }: FileDiffContext) {
-  const oldSource = readFileAtCommit(repoRoot, commit, absPath);
+  const oldSource = await readFileAtCommit(repoRoot, commit, absPath);
   if (oldSource === undefined) console.warn(`Warning: ${path.relative(repoRoot, absPath)} not found at commit ${commit}, treating all keys as added`);
   const tempPath = path.join(tempDir, path.basename(absPath));
   writeFileSync(tempPath, oldSource ?? "export const messages = {};\n", "utf8");

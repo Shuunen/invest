@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { invariant, range } from "es-toolkit";
@@ -9,6 +9,15 @@ import { diffMessages, sortRows } from "./translation-diff.cli.ts";
 const cliPath = path.join(import.meta.dirname, "translation-diff.cli.ts");
 const demoRowCount = 11;
 const preI18nCommit = "6bf64e3";
+
+async function withTempDistDir<Result>(run: (distDir: string) => Promise<Result> | Result): Promise<Result> {
+  const distDir = mkdtempSync(path.join(tmpdir(), "translation-diff-test-"));
+  try {
+    return await run(distDir);
+  } finally {
+    rmSync(distDir, { force: true, recursive: true });
+  }
+}
 
 describe("diffMessages", () => {
   it("marks a key only in new messages as added", () => {
@@ -35,33 +44,33 @@ describe("diffMessages", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]).toStrictEqual({ key: "key", status: "changed", translation: "after" });
   });
+  it("returns no rows when both old and new messages are empty", () => {
+    expect.hasAssertions();
+    expect(diffMessages({}, {})).toStrictEqual([]);
+  });
 });
 
 describe("cli --commit", () => {
   // Regression: ISSUE-001 — an unknown commit hash was silently swallowed and treated
   // as "file absent at that commit", reporting every key as added instead of failing.
   // Found by /qa on 2026-07-07
-  it("fails loudly when --commit points at a hash that does not exist", () => {
+  it("fails loudly when --commit points at a hash that does not exist", async () => {
     expect.hasAssertions();
-    const distDir = mkdtempSync(path.join(tmpdir(), "translation-diff-test-"));
-    try {
+    await withTempDistDir(distDir => {
       expect(() =>
         execFileSync("bun", [cliPath, "--files=src/locales/*.ts", "--commit=deadbeef", `--dist=${distDir}`], {
           encoding: "utf8",
           stdio: "pipe",
         }),
       ).toThrow(/Unknown commit: deadbeef/u);
-    } finally {
-      rmSync(distDir, { force: true, recursive: true });
-    }
+    });
   });
 });
 
 describe("cli --demo", () => {
   it("writes a valid demo.xlsx with the sample rows", async () => {
     expect.hasAssertions();
-    const distDir = mkdtempSync(path.join(tmpdir(), "translation-diff-test-"));
-    try {
+    await withTempDistDir(async distDir => {
       execFileSync("bun", [cliPath, "--demo", `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" });
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.readFile(path.join(distDir, "demo.xlsx"));
@@ -70,18 +79,18 @@ describe("cli --demo", () => {
       expect(sheet.rowCount).toBe(demoRowCount + 1);
       expect(sheet.getRow(1).getCell(1).value).toBe("key (demo)");
       expect(sheet.getRow(2).getCell(3).value).toBe("changed");
-    } finally {
-      rmSync(distDir, { force: true, recursive: true });
-    }
+    });
   });
 });
 
 describe("cli --files (real diff mode)", () => {
   it("writes one xlsx per matched locale file with the diffed rows", async () => {
     expect.hasAssertions();
-    const distDir = mkdtempSync(path.join(tmpdir(), "translation-diff-test-"));
-    try {
-      execFileSync("bun", [cliPath, "--files=src/locales/en.ts", `--commit=${preI18nCommit}`, `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" });
+    await withTempDistDir(async distDir => {
+      execFileSync("bun", [cliPath, "--files=src/locales/en.ts", `--commit=${preI18nCommit}`, `--dist=${distDir}`], {
+        encoding: "utf8",
+        stdio: "pipe",
+      });
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.readFile(path.join(distDir, "en.xlsx"));
       const sheet = workbook.getWorksheet("diff");
@@ -92,9 +101,31 @@ describe("cli --files (real diff mode)", () => {
       const statuses = new Set<unknown>();
       for (const rowNumber of range(2, sheet.rowCount + 1)) statuses.add(sheet.getRow(rowNumber).getCell(3).value);
       expect(statuses).toStrictEqual(new Set(["added"]));
-    } finally {
-      rmSync(distDir, { force: true, recursive: true });
-    }
+    });
+  });
+  it("writes one xlsx per matched file when the glob matches several locales", async () => {
+    expect.hasAssertions();
+    await withTempDistDir(distDir => {
+      execFileSync("bun", [cliPath, "--files=src/locales/*.ts", `--commit=${preI18nCommit}`, `--dist=${distDir}`], {
+        encoding: "utf8",
+        stdio: "pipe",
+      });
+      const output = execFileSync("ls", [distDir], { encoding: "utf8" }).trim().split("\n");
+      expect(output.toSorted()).toStrictEqual(["en.xlsx", "fr.xlsx"]);
+    });
+  });
+  it("fails with a descriptive error when a matched file has no messages export", async () => {
+    expect.hasAssertions();
+    await withTempDistDir(distDir => {
+      const badFile = path.join(distDir, "broken.ts");
+      writeFileSync(badFile, "export const notMessages = {};\n", "utf8");
+      expect(() =>
+        execFileSync("bun", [cliPath, `--files=${path.join(distDir, "*.ts")}`, `--commit=${preI18nCommit}`, `--dist=${distDir}`], {
+          encoding: "utf8",
+          stdio: "pipe",
+        }),
+      ).toThrow(/Command failed/u);
+    });
   });
 });
 
@@ -103,23 +134,22 @@ describe("cli argument validation", () => {
     expect.hasAssertions();
     expect(() => execFileSync("bun", [cliPath, "--demo"], { encoding: "utf8", stdio: "pipe" })).toThrow(/Missing required --dist=<dir> argument/u);
   });
-  it("fails loudly when --files is missing in diff mode", () => {
+  it("fails loudly when --files is missing in diff mode", async () => {
     expect.hasAssertions();
-    const distDir = mkdtempSync(path.join(tmpdir(), "translation-diff-test-"));
-    try {
+    await withTempDistDir(distDir => {
       expect(() => execFileSync("bun", [cliPath, `--commit=${preI18nCommit}`, `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" })).toThrow(/Missing required --files=<glob> argument/u);
-    } finally {
-      rmSync(distDir, { force: true, recursive: true });
-    }
+    });
   });
-  it("fails loudly when --files matches no file", () => {
+  it("fails loudly when --files matches no file", async () => {
     expect.hasAssertions();
-    const distDir = mkdtempSync(path.join(tmpdir(), "translation-diff-test-"));
-    try {
-      expect(() => execFileSync("bun", [cliPath, "--files=src/locales/nope-*.ts", `--commit=${preI18nCommit}`, `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" })).toThrow(/No files matched pattern/u);
-    } finally {
-      rmSync(distDir, { force: true, recursive: true });
-    }
+    await withTempDistDir(distDir => {
+      expect(() =>
+        execFileSync("bun", [cliPath, "--files=src/locales/nope-*.ts", `--commit=${preI18nCommit}`, `--dist=${distDir}`], {
+          encoding: "utf8",
+          stdio: "pipe",
+        }),
+      ).toThrow(/No files matched pattern/u);
+    });
   });
 });
 
@@ -134,5 +164,14 @@ describe("sortRows", () => {
       { key: "a-untouched", status: "un-touched", translation: "a" },
     ]);
     expect(rows.map(row => row.key)).toStrictEqual(["m-changed", "a-added", "z-deleted", "a-untouched", "b-untouched"]);
+  });
+  it("returns an empty array unchanged", () => {
+    expect.hasAssertions();
+    expect(sortRows([])).toStrictEqual([]);
+  });
+  it("returns a single-element array unchanged", () => {
+    expect.hasAssertions();
+    const rows = [{ key: "solo", status: "added" as const, translation: "alone" }];
+    expect(sortRows(rows)).toStrictEqual(rows);
   });
 });
