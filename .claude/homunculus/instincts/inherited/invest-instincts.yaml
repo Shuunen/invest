@@ -1,0 +1,740 @@
+# Instincts generated from https://github.com/Shuunen/invest
+# Generated: 2026-07-08T18:10:31.298Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: invest-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Commit Length
+
+## Action
+
+Keep commit messages concise (~32 characters)
+
+## Evidence
+
+- Average commit message length: 32 chars
+- Based on 80 commits
+
+---
+id: invest-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Naming Files
+
+## Action
+
+Use kebab-case naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: kebab-case
+
+---
+id: invest-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: invest-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: invest-arch-type-based
+trigger: "when adding new code"
+confidence: 0.8
+domain: architecture
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Arch Type Based
+
+## Action
+
+Place code in the appropriate type folder (components/, services/, utils/, etc.)
+
+## Evidence
+
+- Type-based module organization detected
+- Folders: assets, bin, components, db, locales
+
+---
+id: invest-test-colocate
+trigger: "when writing tests"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Test Colocate
+
+## Action
+
+Place test file next to the source file (e.g., Button.test.tsx next to Button.tsx)
+
+## Evidence
+
+- Colocated test pattern detected
+- Tests live alongside source files
+
+---
+id: invest-test-framework
+trigger: "when writing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Test Framework
+
+## Action
+
+Use playwright as the test framework
+
+## Evidence
+
+- Test framework detected: playwright
+- File pattern: *.test.tsx
+
+---
+id: invest-test-naming
+trigger: "when creating a test file"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Test Naming
+
+## Action
+
+Name test files using the pattern: *.test.tsx
+
+## Evidence
+
+- File pattern: *.test.tsx
+- Consistent across test files
+
+---
+id: invest-test-mocking
+trigger: "when mocking dependencies in tests"
+confidence: 0.75
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Test Mocking
+
+## Action
+
+Use vi.mock for mocking
+
+## Evidence
+
+- Mocking pattern detected: vi.mock
+- Consistent across test files
+
+---
+id: invest-test-types
+trigger: "when planning tests for a feature"
+confidence: 0.7
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Test Types
+
+## Action
+
+Write unit, e2e tests to match project standards
+
+## Evidence
+
+- Test types detected: unit, e2e
+- Coverage config: yes
+
+---
+id: invest-workflow-feature-development
+trigger: "when implementing a new feature"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Workflow Feature Development
+
+## Action
+
+Follow the feature-development workflow:
+1. Add feature implementation
+2. Add tests for feature
+3. Update documentation
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~7x per month
+- Files: src/components/animations/*, src/components/*, src/schemas/*
+
+---
+id: invest-workflow-test-driven-development
+trigger: "when adding new functionality"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Workflow Test Driven Development
+
+## Action
+
+Follow the test-driven-development workflow:
+1. Write failing test
+2. Implement code to pass test
+3. Refactor if needed
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: **/*.test.*, **/*.spec.*, src/**/*
+
+---
+id: invest-workflow-feature-development-with-tests-and-docs
+trigger: "when doing feature development with tests and docs"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Workflow Feature Development With Tests And Docs
+
+## Action
+
+Follow the feature-development-with-tests-and-docs workflow:
+1. Implement or update feature code (often in src/components, src/pages, or src/utils).
+2. Add or update corresponding test files (e.g., .test.tsx or .test.ts).
+3. Update documentation files (e.g., CLAUDE.md, TODOS.md, EXPORT_FORMAT.md, REVIEW.md).
+4. Update CHANGELOG.md and bump VERSION/package.json if release-worthy.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: src/components/*.tsx, src/pages/**/*.tsx, src/utils/**/*.ts
+
+---
+id: invest-workflow-dependency-bump-and-schema-augmentation
+trigger: "when doing dependency bump and schema augmentation"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Workflow Dependency Bump And Schema Augmentation
+
+## Action
+
+Follow the dependency-bump-and-schema-augmentation workflow:
+1. Update package.json and pnpm-lock.yaml with new dependency versions.
+2. Modify or refactor files in src/schemas/ (e.g., add fields, change types).
+3. Update related code in src/components/, src/pages/, src/utils/ to use new or changed schema.
+4. Update or add tests for schema or affected features.
+5. Optionally update CHANGELOG.md and bump VERSION.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: package.json, pnpm-lock.yaml, src/schemas/**/*.ts
+
+---
+id: invest-workflow-i18n-or-translation-workflow
+trigger: "when doing i18n or translation workflow"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Workflow I18n Or Translation Workflow
+
+## Action
+
+Follow the i18n-or-translation-workflow workflow:
+1. Add or update locale files in src/locales/ (e.g., en.ts, fr.ts).
+2. Update or add translation utilities (src/utils/translations.ts[x]).
+3. Update or add tests for translation logic.
+4. Update UI components/pages to use new or improved i18n logic.
+5. Update documentation for translation usage.
+6. Optionally update CHANGELOG.md and bump VERSION.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: src/locales/*.ts, src/utils/translations.ts, src/utils/translations.test.tsx
+
+---
+id: invest-workflow-ci-cd-pipeline-update
+trigger: "when doing ci cd pipeline update"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Workflow Ci Cd Pipeline Update
+
+## Action
+
+Follow the ci-cd-pipeline-update workflow:
+1. Modify .github/workflows/ci.yml or similar workflow files.
+2. Update test runner configs (e.g., playwright.config.ts).
+3. Optionally update package.json or dependencies related to CI.
+4. Update CHANGELOG.md and/or VERSION if user-facing.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: .github/workflows/ci.yml, playwright.config.ts, package.json
+
+---
+id: invest-workflow-version-bump-and-changelog-release
+trigger: "when doing version bump and changelog release"
+confidence: 0.6
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/Shuunen/invest
+---
+
+# Invest Workflow Version Bump And Changelog Release
+
+## Action
+
+Follow the version-bump-and-changelog-release workflow:
+1. Update CHANGELOG.md with new release notes.
+2. Update VERSION file.
+3. Update package.json version field.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~2x per month
+- Files: CHANGELOG.md, VERSION, package.json
+
+---
+id: invest-naming-convention-files
+trigger: "When creating or renaming a file"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Naming Convention Files
+
+## Action
+
+Use kebab-case for file names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.files
+- Consistent in src/components/*.tsx
+
+---
+id: invest-naming-convention-functions
+trigger: "When defining a function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Naming Convention Functions
+
+## Action
+
+Use camelCase for function names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.functions
+- Examples in src/utils/*.ts
+
+---
+id: invest-naming-convention-classes
+trigger: "When defining a class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Naming Convention Classes
+
+## Action
+
+Use PascalCase for class names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.classes
+- Examples in src/components/*.tsx
+
+---
+id: invest-naming-convention-constants
+trigger: "When defining a constant"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Naming Convention Constants
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for constant names
+
+## Evidence
+
+- Pattern in codeStyle.namingConventions.constants
+- Examples in src/utils/*.ts
+
+---
+id: invest-import-style
+trigger: "When importing modules"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Import Style
+
+## Action
+
+Use relative import paths
+
+## Evidence
+
+- Pattern in codeStyle.importStyle
+- Examples in src/components/*.tsx
+
+---
+id: invest-export-style
+trigger: "When exporting modules or functions"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Export Style
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in codeStyle.exportStyle
+- Examples in src/utils/*.ts
+
+---
+id: invest-testing-file-pattern
+trigger: "When creating a test file"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Testing File Pattern
+
+## Action
+
+Name the file with the pattern *.test.tsx
+
+## Evidence
+
+- Pattern in testing.filePattern
+- Examples in src/components/**/*.test.tsx
+
+---
+id: invest-testing-framework
+trigger: "When writing tests"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Testing Framework
+
+## Action
+
+Use Playwright as the testing framework
+
+## Evidence
+
+- Pattern in testing.framework
+- playwright.config.ts present
+
+---
+id: invest-testing-mocking-style
+trigger: "When mocking modules in tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Testing Mocking Style
+
+## Action
+
+Use vi.mock for mocking
+
+## Evidence
+
+- Pattern in testing.mockingStyle
+- Examples in src/utils/**/*.test.ts
+
+---
+id: invest-testing-coverage-config
+trigger: "When configuring tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Testing Coverage Config
+
+## Action
+
+Enable coverage reporting
+
+## Evidence
+
+- Pattern in testing.coverageConfig
+- Presence of coverage config in test setup
+
+---
+id: invest-git-commit-prefix
+trigger: "When writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Git Commit Prefix
+
+## Action
+
+Prefix the message with type (e.g., fix, chore, feat, test, docs)
+
+## Evidence
+
+- Pattern in commits.prefixes
+- Examples: 'fix: update tests', 'chore: bump version'
+
+---
+id: invest-git-commit-length
+trigger: "When writing a commit message"
+confidence: 0.7
+domain: git
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Git Commit Length
+
+## Action
+
+Keep the commit message concise (around 32 characters on average)
+
+## Evidence
+
+- Pattern in commits.averageLength
+- Examples in commit history
+
+---
+id: invest-git-commit-format-docs
+trigger: "When documenting changes"
+confidence: 0.8
+domain: git
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Git Commit Format Docs
+
+## Action
+
+Use 'docs:' prefix for documentation-related commits
+
+## Evidence
+
+- Example: 'docs: add export format documentation for JSON structure'
+
+---
+id: invest-workflow-feature-dev
+trigger: "When adding a new feature or major enhancement"
+confidence: 0.95
+domain: workflow
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Workflow Feature Dev
+
+## Action
+
+Implement code, add tests, update docs, and update changelog/version if needed
+
+## Evidence
+
+- Workflow: feature-development-with-tests-and-docs
+- Commit sequences and files in workflow example
+
+---
+id: invest-workflow-dependency-bump-schema
+trigger: "When updating dependencies or refactoring/extending schemas"
+confidence: 0.92
+domain: workflow
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Workflow Dependency Bump Schema
+
+## Action
+
+Update package.json and lockfile, modify schemas, update related code and tests, optionally update changelog/version
+
+## Evidence
+
+- Workflow: dependency-bump-and-schema-augmentation
+- Commit sequences and files in workflow example
+
+---
+id: invest-workflow-i18n
+trigger: "When adding or improving translations or i18n logic"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Workflow I18n
+
+## Action
+
+Update locale files, translation utilities, related tests, UI usage, and docs; optionally update changelog/version
+
+## Evidence
+
+- Workflow: i18n-or-translation-workflow
+- Commit sequences and files in workflow example
+
+---
+id: invest-workflow-ci-cd-update
+trigger: "When optimizing CI/CD or updating test runner configuration"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Workflow Ci Cd Update
+
+## Action
+
+Modify workflow files, update test runner configs, optionally update package.json/deps, update changelog/version if user-facing
+
+## Evidence
+
+- Workflow: ci-cd-pipeline-update
+- Commit sequences and files in workflow example
+
+---
+id: invest-workflow-release
+trigger: "When preparing a new release"
+confidence: 0.99
+domain: workflow
+source: repo-analysis
+source_repo: Shuunen/invest
+---
+
+# Invest Workflow Release
+
+## Action
+
+Update CHANGELOG.md, VERSION file, and package.json version field
+
+## Evidence
+
+- Workflow: version-bump-and-changelog-release
+- Commit sequences and files in workflow example
+
