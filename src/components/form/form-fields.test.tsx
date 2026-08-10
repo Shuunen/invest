@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { CheckboxField } from "./checkbox-field.tsx";
 import { NumberField } from "./number-field.tsx";
+import { TextareaField } from "./textarea-field.tsx";
 
 describe("NumberField", () => {
   it("renders suffix when provided", () => {
@@ -41,5 +42,21 @@ describe("CheckboxField", () => {
     render(<CheckboxField label="Accumulating" name="isAccumulating" value={false} onChange={onChange} />);
     fireEvent.click(screen.getByTestId("is-accumulating"));
     expect(onChange).toHaveBeenCalledWith(true);
+  });
+});
+
+describe("TextareaField", () => {
+  it("renders the current value", () => {
+    expect.hasAssertions();
+    render(<TextareaField label="Comments" name="comments" value="Some notes" onChange={() => undefined} />);
+    expect(screen.getByTestId("comments")).toHaveTextContent("Some notes");
+  });
+
+  it("calls onChange with the new value when edited", () => {
+    expect.hasAssertions();
+    const onChange = vi.fn<(value: string) => void>();
+    render(<TextareaField label="Comments" name="comments" value="" onChange={onChange} />);
+    fireEvent.change(screen.getByTestId("comments"), { target: { value: "Updated" } });
+    expect(onChange).toHaveBeenCalledWith("Updated");
   });
 });
