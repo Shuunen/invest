@@ -3,6 +3,7 @@ import type { PortfolioEntry } from "../schemas/portfolio.ts";
 import { computeDataScore } from "./data-score.ts";
 
 const baseAsset: Asset = {
+  availableForPea: true,
   availableForPlan: true,
   availableOnBroker: true,
   comments: "",

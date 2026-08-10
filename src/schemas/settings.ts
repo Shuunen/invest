@@ -22,6 +22,10 @@ export const SettingsSchema = z.object({
     .transform(str => str ?? undefined),
   /** UI locale. */
   locale: z.enum(locales).prefault(defaultLocale).or(fallback(defaultLocale)),
+  /** Quick filter: show only PEA-eligible assets. */
+  onlyPea: z.boolean().default(false),
+  /** Quick filter: show only assets with a score above 50. */
+  scoreAbove50: z.boolean().default(false),
   /** Sensitivity of the asset deduplication detector (0–1). */
   similarityThreshold: z.number().min(0).max(1).default(defaultSimilarityThreshold),
   /** Active sort applied to the assets table. */
@@ -33,6 +37,8 @@ export const SettingsSchema = z.object({
     .default({ column: "score", direction: "desc" }),
   /** UI theme. */
   theme: z.enum(themes).prefault("light").or(fallback("light")),
+  /** Quick filter: show only assets with a 5-year risk/reward value. */
+  withRr5y: z.boolean().default(false),
 });
 
 export type Settings = z.infer<typeof SettingsSchema>;

@@ -4,6 +4,7 @@ import { PageHeader } from "./page-header.tsx";
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
+    availableForPea: true,
     availableForPlan: false,
     availableOnBroker: true,
     comments: "",

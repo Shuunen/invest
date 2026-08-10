@@ -39,6 +39,8 @@ const knownCountries = new Set<string>(CountrySchema.options);
 const knownSectors = new Set<string>(SectorSchema.options);
 
 export const AssetSchema = z.object({
+  /** Whether the asset is eligible for a PEA account. */
+  availableForPea: z.boolean().default(false),
   /** Whether the asset is included in allocation planning. */
   availableForPlan: z.boolean(),
   /** Whether the asset is tradeable on the user's broker. */

@@ -3,7 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
 import { CheckIcon, PencilLineIcon, PlusIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import type { Asset } from "../schemas/asset.ts";
+import { computeScore, type Asset } from "../schemas/asset.ts";
 import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { useTranslation, type Translate } from "../utils/translations.ts";
@@ -24,7 +24,7 @@ import {
   makeValueColumn,
 } from "./asset-table-columns.tsx";
 import { useHydration } from "./asset-table-db.ts";
-import { renderColumnFilter, renderSearchFilter } from "./asset-table-header.tsx";
+import { renderColumnFilter, renderPresetFilters, renderSearchFilter, type PresetFilters } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
 import { renderSkeleton } from "./asset-table-skeleton.tsx";
 import { computeQuintileClasses, defaultColumnVisibility, getAriaSortValue, getScoreDotClass } from "./asset-table-utils.ts";
@@ -93,6 +93,39 @@ function buildActiveColumns({
   ];
 }
 
+function usePresetFilters(): PresetFilters {
+  const onlyPea = useAppStore(state => state.data.settings.onlyPea);
+  const withRr5y = useAppStore(state => state.data.settings.withRr5y);
+  const scoreAbove50 = useAppStore(state => state.data.settings.scoreAbove50);
+  const setPresetFilters = useAppStore(state => state.setPresetFilters);
+  const setOnlyPea = useCallback((value: boolean) => setPresetFilters({ onlyPea: value, scoreAbove50, withRr5y }), [setPresetFilters, scoreAbove50, withRr5y]);
+  const setWithRr5y = useCallback((value: boolean) => setPresetFilters({ onlyPea, scoreAbove50, withRr5y: value }), [setPresetFilters, onlyPea, scoreAbove50]);
+  const setScoreAbove50 = useCallback((value: boolean) => setPresetFilters({ onlyPea, scoreAbove50: value, withRr5y }), [setPresetFilters, onlyPea, withRr5y]);
+  return { onlyPea, scoreAbove50, setOnlyPea, setScoreAbove50, setWithRr5y, withRr5y };
+}
+
+const minScoreFilterThreshold = 50;
+
+type UseFilteredAssetsOpts = {
+  applyPresetFilters: boolean;
+  assets: Asset[];
+  filterText: string;
+  presetFilters: PresetFilters;
+};
+
+function useFilteredAssets({ applyPresetFilters, assets, filterText, presetFilters }: UseFilteredAssetsOpts) {
+  const { onlyPea, scoreAbove50, withRr5y } = presetFilters;
+  return useMemo(() => {
+    const lower = filterText.trim().toLowerCase();
+    const bySearch = assets.filter(row => !lower || matchesFilter(row, lower));
+    if (!applyPresetFilters) return bySearch;
+    return bySearch
+      .filter(row => !onlyPea || row.availableForPea)
+      .filter(row => !withRr5y || row.riskReward5y !== undefined)
+      .filter(row => !scoreAbove50 || (computeScore(row) ?? 0) > minScoreFilterThreshold);
+  }, [assets, filterText, onlyPea, scoreAbove50, withRr5y, applyPresetFilters]);
+}
+
 function useRetry() {
   const [retryKey, setRetryKey] = useState(0);
   const handleRetry = () => {
@@ -144,14 +177,15 @@ function buildTableMeta(
 }
 
 function useAssetTableState(props: Props = {}) {
-  const { amountMap, amountUpdatedAtMap, assets: propAssets, isEditing, noteMap, selectedIsins, targetAmountUpdatedAtMap, totalValue, targetTotalValue } = props;
-  const { onAmountChange, onDismissSimilarity, onNoteChange, onPriceChange, onRemoveAsset, onTargetAmountChange, onToggleSelect, targetAmountMap } = props;
+  const { amountMap, amountUpdatedAtMap, assets: propAssets, noteMap, targetAmountUpdatedAtMap } = props;
+  const { onAmountChange, onDismissSimilarity, onPriceChange, onRemoveAsset, onTargetAmountChange, onToggleSelect, targetAmountMap } = props;
   const data = useAppStore(state => state.data);
   const isLoading = useAppStore(state => state.isLoading);
   const loadError = useAppStore(state => state.loadError);
   const setSort = useAppStore(state => state.setSort);
   const setColumnVisibility = useAppStore(state => state.setColumnVisibility);
   const [filterText, setFilterText] = useState("");
+  const presetFilters = usePresetFilters();
   const handleRetry = useRetry();
   const resolvedVisibility = useMemo(() => ({ ...defaultColumnVisibility, ...data.settings.columnVisibility }), [data.settings.columnVisibility]);
   const activeColumns = useMemo(
@@ -164,29 +198,21 @@ function useAssetTableState(props: Props = {}) {
     if (column === "amount" && !onAmountChange) return [];
     return [{ desc: direction === "desc", id: column }];
   }, [data.settings.sort, onAmountChange]);
-  const filteredAssets = useMemo(() => {
-    const lower = filterText.trim().toLowerCase();
-    if (!lower) return propAssets ?? data.assets;
-    return (propAssets ?? data.assets).filter(row => matchesFilter(row, lower));
-  }, [data.assets, filterText, propAssets]);
-  const meta = buildTableMeta({
-    amountMap,
-    amountUpdatedAtMap,
-    isEditing,
-    noteMap,
-    onAmountChange,
-    onNoteChange,
-    onPriceChange,
-    onTargetAmountChange,
-    onToggleSelect,
-    selectedIsins,
-    targetAmountMap,
-    targetAmountUpdatedAtMap,
-    targetTotalValue,
-    totalValue,
-  });
+  const filteredAssets = useFilteredAssets({ applyPresetFilters: !propAssets, assets: propAssets ?? data.assets, filterText, presetFilters });
+  const meta = buildTableMeta(props);
   const table = useTableInstance({ columns: activeColumns, filteredAssets, meta, resolvedVisibility, setColumnVisibility, setSort, sorting });
-  return { data, filterText, handleRetry, isLoading, loadError, quintileClasses: computeQuintileClasses(table.getRowModel().rows), setFilterText, table, visibleLeafCount: table.getVisibleLeafColumns().length };
+  return {
+    data,
+    filterText,
+    handleRetry,
+    isLoading,
+    loadError,
+    presetFilters,
+    quintileClasses: computeQuintileClasses(table.getRowModel().rows),
+    setFilterText,
+    table,
+    visibleLeafCount: table.getVisibleLeafColumns().length,
+  };
 }
 
 function renderError(error: Error, handleRetry: () => void, translate: Translate) {
@@ -297,7 +323,7 @@ export function AssetTable(props: Props = {}) {
   const { assets: propAssets, onPriceChange: propOnPriceChange } = props;
   const { translate } = useTranslation();
   const { onPriceChange, priceEditActions } = useAssetsPriceEditState(propAssets, propOnPriceChange);
-  const { data, filterText, handleRetry, isLoading, loadError, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({ ...props, onPriceChange });
+  const { data, filterText, handleRetry, isLoading, loadError, presetFilters, quintileClasses, setFilterText, table, visibleLeafCount } = useAssetTableState({ ...props, onPriceChange });
   if (!propAssets && isLoading) return renderSkeleton();
   if (!propAssets && loadError) return renderError(loadError, handleRetry, translate);
   if (!propAssets && data.assets.length === 0) return <Empty name="no-assets" title="No instruments added yet" description="Use the Import button in the top bar to get started" />;
@@ -308,6 +334,7 @@ export function AssetTable(props: Props = {}) {
       <div className="relative container mx-auto overflow-auto" data-testid="asset-table">
         <div className="sticky top-0 z-20 flex gap-4 bg-base-100 pt-4">
           {renderSearchFilter(filterText, setFilterText)}
+          {!propAssets && renderPresetFilters(presetFilters, translate)}
           {renderColumnFilter(table, visibleLeafCount, translate)}
         </div>
         <table className="table-hover table w-full">

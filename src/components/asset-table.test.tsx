@@ -29,8 +29,10 @@ vi.mock(import("@tanstack/react-router"), async () => {
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
+    availableForPea: true,
     availableForPlan: false,
     availableOnBroker: true,
+    comments: "",
     dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: {},
@@ -438,8 +440,10 @@ describe("AssetTable - column visibility guard", () => {
   it("last visible column toggle is disabled", () => {
     expect.hasAssertions();
     const colsAllHidden: Record<string, boolean> = {
+      availableForPea: false,
       availableForPlan: false,
       availableOnBroker: false,
+      comments: false,
       "data-score": false,
       fees: false,
       isAccumulating: false,
@@ -524,18 +528,108 @@ describe("AssetTable - filter", () => {
       expect(screen.queryByTestId("asset-row-FR0000000001")).not.toBeInTheDocument();
     });
   });
+
+  it("Only PEA button narrows to PEA-eligible assets", async () => {
+    expect.hasAssertions();
+    const assets = [makeAsset({ availableForPea: true, isin: "LU1234567890", name: "Alpha ETF" }), makeAsset({ availableForPea: false, isin: "FR0000000001", name: "Beta ETF" })];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    fireEvent.click(screen.getByTestId("filter-only-pea"));
+    await waitFor(() => {
+      expect(screen.getByTestId("asset-row-LU1234567890")).toHaveTextContent("Alpha ETF");
+      expect(screen.queryByTestId("asset-row-FR0000000001")).not.toBeInTheDocument();
+    });
+  });
+
+  it("With RR5y button narrows to assets with a 5y risk/reward value", async () => {
+    expect.hasAssertions();
+    const assets = [makeAsset({ isin: "LU1234567890", name: "Alpha ETF", riskReward5y: 2 }), makeAsset({ isin: "FR0000000001", name: "Beta ETF", riskReward5y: undefined })];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    fireEvent.click(screen.getByTestId("filter-with-rr5y"));
+    await waitFor(() => {
+      expect(screen.getByTestId("asset-row-LU1234567890")).toHaveTextContent("Alpha ETF");
+      expect(screen.queryByTestId("asset-row-FR0000000001")).not.toBeInTheDocument();
+    });
+  });
+
+  it("Score > 50 button narrows to assets scoring above 50", async () => {
+    expect.hasAssertions();
+    const assets = [
+      makeAsset({ isin: "LU1234567890", name: "Alpha ETF" }),
+      makeAsset({ isin: "FR0000000001", name: "Beta ETF", performance1y: 0, performance3y: 0, performance5y: 0, riskReward1y: 0, riskReward3y: 0, riskReward5y: 0 }),
+      makeAsset({ isin: "FR0000000002", name: "Gamma ETF", performance3y: undefined, riskReward3y: undefined }),
+    ];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    fireEvent.click(screen.getByTestId("filter-score-above-50"));
+    await waitFor(() => {
+      expect(screen.getByTestId("asset-row-LU1234567890")).toHaveTextContent("Alpha ETF");
+      expect(screen.queryByTestId("asset-row-FR0000000001")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("asset-row-FR0000000002")).not.toBeInTheDocument();
+    });
+  });
+
+  it("preset filter buttons combine with each other", async () => {
+    expect.hasAssertions();
+    const assets = [
+      makeAsset({ availableForPea: true, isin: "LU1111111111", name: "Both", riskReward5y: 2 }),
+      makeAsset({ availableForPea: true, isin: "LU2222222222", name: "PeaOnly", riskReward5y: undefined }),
+      makeAsset({ availableForPea: false, isin: "LU3333333333", name: "Rr5yOnly", riskReward5y: 2 }),
+    ];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    fireEvent.click(screen.getByTestId("filter-only-pea"));
+    fireEvent.click(screen.getByTestId("filter-with-rr5y"));
+    await waitFor(() => {
+      expect(screen.getByTestId("asset-row-LU1111111111")).toHaveTextContent("Both");
+      expect(screen.queryByTestId("asset-row-LU2222222222")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("asset-row-LU3333333333")).not.toBeInTheDocument();
+    });
+  });
+
+  it("Only PEA button combines with the search text filter", async () => {
+    expect.hasAssertions();
+    const assets = [
+      makeAsset({ availableForPea: true, isin: "LU1111111111", name: "Alpha ETF" }),
+      makeAsset({ availableForPea: true, isin: "LU2222222222", name: "Beta ETF" }),
+      makeAsset({ availableForPea: false, isin: "LU3333333333", name: "Alpha Bond" }),
+    ];
+    useAppStore.setState({ data: makeTestData(assets), isLoading: false, loadError: undefined });
+    render(<AssetTable />);
+    fireEvent.click(screen.getByTestId("filter-only-pea"));
+    const input = screen.getByPlaceholderText(/search/iu);
+    fireEvent.change(input, { target: { value: "Alpha" } });
+    await waitFor(() => {
+      expect(screen.getByTestId("asset-row-LU1111111111")).toHaveTextContent("Alpha ETF");
+      expect(screen.queryByTestId("asset-row-LU2222222222")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("asset-row-LU3333333333")).not.toBeInTheDocument();
+    });
+  });
+
+  it("does not apply a globally-toggled preset filter when assets are passed via props", async () => {
+    expect.hasAssertions();
+    const tableAssets = [makeAsset({ availableForPea: true, isin: "LU1111111111", name: "Pea ETF" })];
+    useAppStore.setState({ data: { ...makeTestData(tableAssets), settings: { ...defaultAppData.settings, onlyPea: true } }, isLoading: false, loadError: undefined });
+    const propAssets = [makeAsset({ availableForPea: false, isin: "LU4444444444", name: "Non Pea ETF" })];
+    render(<AssetTable assets={propAssets} />);
+    expect(screen.queryByTestId("filter-only-pea")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("asset-row-LU4444444444")).toHaveTextContent("Non Pea ETF");
+    });
+  });
 });
 
 describe("AssetTable - boolean and hidden columns", () => {
   it("renders Yes/No badges for boolean columns when made visible", () => {
     expect.hasAssertions();
-    const asset = makeAsset({ availableForPlan: true, availableOnBroker: false, isAccumulating: true });
+    const asset = makeAsset({ availableForPea: true, availableForPlan: true, availableOnBroker: false, isAccumulating: true });
     useAppStore.setState({
       data: {
         ...makeTestData([asset]),
         settings: {
           ...defaultAppData.settings,
-          columnVisibility: { availableForPlan: true, availableOnBroker: true, isAccumulating: true },
+          columnVisibility: { availableForPea: true, availableForPlan: true, availableOnBroker: true, isAccumulating: true },
           sort: { column: "score", direction: "desc" },
         },
       },
@@ -585,6 +679,25 @@ describe("AssetTable - boolean and hidden columns", () => {
     });
     render(<AssetTable />);
     expect(screen.getByTestId("comments-lu1234567890")).toHaveTextContent("—");
+  });
+
+  it("renders the PEA cell for a specific asset row", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ availableForPea: true, isin: "LU1234567890" });
+    useAppStore.setState({
+      data: {
+        ...makeTestData([asset]),
+        settings: {
+          ...defaultAppData.settings,
+          columnVisibility: { availableForPea: true },
+          sort: { column: "score", direction: "desc" },
+        },
+      },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetTable />);
+    expect(screen.getByTestId("bool-available-for-pea-lu1234567890")).toHaveTextContent("Yes");
   });
 });
 

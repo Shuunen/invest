@@ -83,6 +83,7 @@ describe("AssetCreatePage", () => {
         ...state.data,
         assets: [
           {
+            availableForPea: false,
             availableForPlan: false,
             availableOnBroker: false,
             comments: "",

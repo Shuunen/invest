@@ -26,6 +26,7 @@ const baseIsin = "LU1234567890";
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
+    availableForPea: true,
     availableForPlan: false,
     availableOnBroker: true,
     comments: "",
@@ -51,6 +52,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
 
 function makeFormState(overrides: Partial<FormState> = {}): FormState {
   return {
+    availableForPea: true,
     availableForPlan: false,
     availableOnBroker: true,
     comments: "",

@@ -28,6 +28,7 @@ const scalarFields: DiffConfig[] = [
   { field: "Accumulating", key: "isAccumulating" },
   { field: "Available On Broker", key: "availableOnBroker" },
   { field: "Available For Plan", key: "availableForPlan" },
+  { field: "Available For Pea", key: "availableForPea" },
   { field: "Fees (%)", key: "fees" },
   { field: "Price (EUR)", key: "price" },
   { field: "Performance 1 Year (%)", key: "performance1y" },

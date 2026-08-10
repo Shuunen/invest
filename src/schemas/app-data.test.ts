@@ -91,8 +91,8 @@ describe("safeImportJson error message format", () => {
 
 describe("AppDataSchema uniqueness constraints", () => {
   const validSettings = {};
-  const asset1 = { availableForPlan: true, availableOnBroker: true, fees: 0.2, isAccumulating: true, isin: "IE00B4L5Y983", name: "Fund A" };
-  const asset2 = { availableForPlan: true, availableOnBroker: true, fees: 0.1, isAccumulating: false, isin: "LU0629460089", name: "Fund B" };
+  const asset1 = { availableForPea: true, availableForPlan: true, availableOnBroker: true, fees: 0.2, isAccumulating: true, isin: "IE00B4L5Y983", name: "Fund A" };
+  const asset2 = { availableForPea: true, availableForPlan: true, availableOnBroker: true, fees: 0.1, isAccumulating: false, isin: "LU0629460089", name: "Fund B" };
   const portfolio1 = { broker: "Broker A", entries: [], id: "87b67f15-e6f2-480b-8388-5440cc1c7423", name: "P1" };
   const portfolio2 = { broker: "Broker B", entries: [], id: "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d", name: "P2" };
 
@@ -143,6 +143,7 @@ describe("AppDataSchema limits", () => {
   it("rejects more than maxIsins ISINs", () => {
     expect.hasAssertions();
     const tooManyIsins = Array.from({ length: maxIsins + 1 }, (_val, idx) => ({
+      availableForPea: false,
       availableForPlan: false,
       availableOnBroker: false,
       fees: 0,

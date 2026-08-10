@@ -30,6 +30,7 @@ A single investable instrument (ETF, stock, etc.).
   "isAccumulating": true, // bool — true = dividends reinvested, false = distributed
   "availableOnBroker": true, // bool — tradeable on the user's broker
   "availableForPlan": true, // bool — included in allocation planning
+  "availableForPea": true, // bool — eligible for a PEA account
   "performance1y": 45, // number — total return over 1 year in % (45 = +45%)
   "performance3y": 87, // number — total return over 3 years in %
   "performance5y": 134, // number — total return over 5 years in %

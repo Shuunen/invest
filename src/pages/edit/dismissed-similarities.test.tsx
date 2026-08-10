@@ -5,6 +5,7 @@ import { DismissedSimilaritiesSection } from "./dismissed-similarities.tsx";
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
+    availableForPea: true,
     availableForPlan: false,
     availableOnBroker: true,
     comments: "",

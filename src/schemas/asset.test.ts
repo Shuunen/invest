@@ -9,6 +9,7 @@ const sampleRaw = readFileSync(path.join(process.cwd(), "data/sample.json"), "ut
 
 // Shared minimal asset fixture — all optional fields omitted (they have defaults or are nullable)
 const validAsset = {
+  availableForPea: true,
   availableForPlan: true,
   availableOnBroker: true,
   comments: "",
@@ -109,6 +110,7 @@ describe("computeScore", () => {
   it("matches weighted formula for fully populated data", () => {
     expect.hasAssertions();
     const asset: Asset = {
+      availableForPea: true,
       availableForPlan: true,
       availableOnBroker: true,
       comments: "",
@@ -144,6 +146,7 @@ describe("computeScore", () => {
   it("handles score with only 3y and risk data (no 1y or 5y)", () => {
     expect.hasAssertions();
     const assetOnly3y: Asset = {
+      availableForPea: true,
       availableForPlan: true,
       availableOnBroker: true,
       comments: "",
@@ -172,6 +175,7 @@ describe("computeScore", () => {
   it("penalizes missing 5y metrics versus complete data", () => {
     expect.hasAssertions();
     const complete: Asset = {
+      availableForPea: true,
       availableForPlan: true,
       availableOnBroker: true,
       comments: "",

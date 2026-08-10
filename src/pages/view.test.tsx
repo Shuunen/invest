@@ -13,6 +13,7 @@ vi.mock(import("@tanstack/react-router"), async () => {
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
+    availableForPea: true,
     availableForPlan: true,
     availableOnBroker: true,
     comments: "",

@@ -136,6 +136,7 @@ describe("buildAllocationEntries", () => {
 // Test helpers for weighted allocation tests
 function makeAsset(overrides?: Partial<Asset>): Asset {
   return {
+    availableForPea: true,
     availableForPlan: true,
     availableOnBroker: true,
     comments: "",
