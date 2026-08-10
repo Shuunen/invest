@@ -27,6 +27,7 @@ export function ViewGeneralSection({ asset }: Props) {
           <FieldRow label="Tickers" value={asset.tickers.length > 0 ? asset.tickers.join(", ") : "—"} name="tickers" />
           <FieldRow label="Accumulating" value={booleanBadge(asset.isAccumulating, "Accumulating")} name="accumulating" />
           <FieldRow label="Last updated" value={formatDate(asset.updatedAt)} name="updated-at" />
+          <FieldRow label="Comments" value={asset.comments || "—"} name="comments" />
         </div>
       </div>
     </div>
