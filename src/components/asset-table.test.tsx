@@ -548,6 +548,44 @@ describe("AssetTable - boolean and hidden columns", () => {
     const noBadge = screen.getByLabelText("No");
     expect(noBadge).toBeInTheDocument();
   });
+
+  it("renders the comments cell value when visible", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ comments: "Keep an eye on fees", isin: "LU1234567890" });
+    useAppStore.setState({
+      data: {
+        ...makeTestData([asset]),
+        settings: {
+          ...defaultAppData.settings,
+          columnVisibility: { comments: true },
+          sort: { column: "score", direction: "desc" },
+        },
+      },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetTable />);
+    expect(screen.getByTestId("comments-lu1234567890")).toHaveTextContent("Keep an eye on fees");
+  });
+
+  it("renders an em dash for an empty comments cell when visible", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ comments: "", isin: "LU1234567890" });
+    useAppStore.setState({
+      data: {
+        ...makeTestData([asset]),
+        settings: {
+          ...defaultAppData.settings,
+          columnVisibility: { comments: true },
+          sort: { column: "score", direction: "desc" },
+        },
+      },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetTable />);
+    expect(screen.getByTestId("comments-lu1234567890")).toHaveTextContent("—");
+  });
 });
 
 describe("AssetTable - tickers column", () => {

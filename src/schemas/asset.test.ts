@@ -11,6 +11,7 @@ const sampleRaw = readFileSync(path.join(process.cwd(), "data/sample.json"), "ut
 const validAsset = {
   availableForPlan: true,
   availableOnBroker: true,
+  comments: "",
   fees: 0.2,
   isAccumulating: true,
   isin: "IE00B4L5Y983",
@@ -110,6 +111,7 @@ describe("computeScore", () => {
     const asset: Asset = {
       availableForPlan: true,
       availableOnBroker: true,
+      comments: "",
       dismissedSimilarities: [],
       fees: 0.3,
       geoAllocation: {},
@@ -144,6 +146,7 @@ describe("computeScore", () => {
     const assetOnly3y: Asset = {
       availableForPlan: true,
       availableOnBroker: true,
+      comments: "",
       dismissedSimilarities: [],
       fees: 0.15,
       geoAllocation: {},
@@ -171,6 +174,7 @@ describe("computeScore", () => {
     const complete: Asset = {
       availableForPlan: true,
       availableOnBroker: true,
+      comments: "",
       dismissedSimilarities: [],
       fees: 0.3,
       geoAllocation: {},

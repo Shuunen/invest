@@ -40,7 +40,8 @@ A single investable instrument (ETF, stock, etc.).
   "updatedAt": "2025-12-01T10:00:00.000Z", // ISO 8601 — last data refresh
   "geoAllocation": { "us": 0.65, "europe": 0.15, "japan": 0.06 }, // country key → % as decimal (0.65 = 65%)
   "sectorAllocation": { "technology": 0.25, "financials": 0.15 }, // sector key → % as decimal (0.25 = 25%)
-  "dismissedSimilarities": ["IE00B0M62Q58"] // ISINs dismissed from deduplication warnings
+  "dismissedSimilarities": ["IE00B0M62Q58"], // ISINs dismissed from deduplication warnings
+  "comments": "Core holding, low fees" // string — free-form note about the asset
 }
 ```
 

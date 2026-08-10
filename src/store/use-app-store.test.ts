@@ -132,6 +132,7 @@ describe("useAppStore - asset mutations", () => {
   const baseAsset: Asset = {
     availableForPlan: false,
     availableOnBroker: true,
+    comments: "",
     dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: {},
@@ -558,6 +559,7 @@ describe("useAppStore - similarity dismiss", () => {
   const assetA: Asset = {
     availableForPlan: false,
     availableOnBroker: true,
+    comments: "",
     dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: {},

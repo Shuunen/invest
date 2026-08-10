@@ -5,6 +5,7 @@ import { computeDataScore } from "./data-score.ts";
 const baseAsset: Asset = {
   availableForPlan: true,
   availableOnBroker: true,
+  comments: "",
   dismissedSimilarities: [],
   fees: 0.2,
   geoAllocation: {},
