@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.13.0] - 2026-08-10
+
+### Added in 0.13.0
+
+- Free-form comments field on assets — jot notes ("Core holding, low fees") in the edit form, view page, and as a table column
+- PEA eligibility flag — mark assets as eligible for a PEA account, shown as a dedicated table column and edit-form checkbox
+- Quick preset filters on the assets table — "Only PEA", "With RR5y", and "Score > 50" buttons narrow the table instantly, correctly scoped to the main assets view only (they no longer affect the portfolio page or the asset-picker modal)
+
 ## [0.12.1] - 2026-07-07
 
 ### Added in 0.12.1
