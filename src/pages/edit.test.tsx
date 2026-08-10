@@ -18,6 +18,7 @@ vi.mock(import("../utils/fetch-stock-data.ts"));
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
+    availableForPea: true,
     availableForPlan: false,
     availableOnBroker: true,
     comments: "",
@@ -344,7 +345,7 @@ describe("AssetEditPage - form", () => {
 
   it("clicking checkboxes calls patch for each flag field", () => {
     expect.hasAssertions();
-    const asset = makeAsset({ availableForPlan: false, availableOnBroker: false, isAccumulating: false });
+    const asset = makeAsset({ availableForPea: false, availableForPlan: false, availableOnBroker: false, isAccumulating: false });
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
@@ -354,9 +355,11 @@ describe("AssetEditPage - form", () => {
     fireEvent.click(screen.getByTestId("is-accumulating"));
     fireEvent.click(screen.getByTestId("available-on-broker"));
     fireEvent.click(screen.getByTestId("available-for-plan"));
+    fireEvent.click(screen.getByTestId("available-for-pea"));
     expect(screen.getByTestId("is-accumulating")).toBeChecked();
     expect(screen.getByTestId("available-on-broker")).toBeChecked();
     expect(screen.getByTestId("available-for-plan")).toBeChecked();
+    expect(screen.getByTestId("available-for-pea")).toBeChecked();
   });
 
   it("shows name validation error when saving with empty name", async () => {

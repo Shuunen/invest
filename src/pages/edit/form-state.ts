@@ -3,6 +3,7 @@ import { maxPercentage } from "../../utils/constants.ts";
 import { maxDecimals } from "../../utils/format-numbers.ts";
 
 export type FormState = {
+  availableForPea: boolean;
   availableForPlan: boolean;
   availableOnBroker: boolean;
   comments: string;
@@ -34,6 +35,7 @@ function fromPercentString(pct: string): number {
 }
 
 export const emptyFormState: FormState = {
+  availableForPea: false,
   availableForPlan: false,
   availableOnBroker: false,
   comments: "",
@@ -56,6 +58,7 @@ export const emptyFormState: FormState = {
 
 export function toFormState(asset: Asset): FormState {
   return {
+    availableForPea: asset.availableForPea,
     availableForPlan: asset.availableForPlan,
     availableOnBroker: asset.availableOnBroker,
     comments: asset.comments,
@@ -117,6 +120,7 @@ function parseAllocation(record: Partial<Record<string, string>>): Record<string
 
 export function buildAssetFromForm(form: FormState): { data: Asset } | { errors: Record<string, string> } {
   const result = AssetSchema.safeParse({
+    availableForPea: form.availableForPea,
     availableForPlan: form.availableForPlan,
     availableOnBroker: form.availableOnBroker,
     comments: form.comments,

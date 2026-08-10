@@ -30,6 +30,7 @@ export function GeneralSection({ form, errors, patch }: Props) {
           <CheckboxField label="Accumulating" name="isAccumulating" value={form.isAccumulating} onChange={val => patch("isAccumulating", val)} />
           <CheckboxField label="Available on broker" name="availableOnBroker" value={form.availableOnBroker} onChange={val => patch("availableOnBroker", val)} />
           <CheckboxField label="Available for plan" name="availableForPlan" value={form.availableForPlan} onChange={val => patch("availableForPlan", val)} />
+          <CheckboxField label="Available for PEA" name="availableForPea" value={form.availableForPea} onChange={val => patch("availableForPea", val)} />
         </div>
       </div>
     </div>

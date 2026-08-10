@@ -49,6 +49,7 @@ type AppStore = {
   setLoadError: (error: Error) => void;
   setLocale: (locale: Settings["locale"]) => void;
   setPortfolioAssets: (portfolioId: string, entries: PortfolioEntry[]) => void;
+  setPresetFilters: (filters: Pick<Settings, "onlyPea" | "scoreAbove50" | "withRr5y">) => void;
   setSort: (sort: Settings["sort"]) => void;
   unDismissSimilarity: (isin: string, matchedIsin: string) => void;
   updateAsset: (isin: string, asset: Asset) => void;
@@ -155,6 +156,10 @@ export const useAppStore = create<AppStore>()(
           },
         };
       }),
+    setPresetFilters: filters =>
+      set(state => ({
+        data: { ...state.data, settings: { ...state.data.settings, ...filters } },
+      })),
     setSort: sort =>
       set(state => ({
         data: { ...state.data, settings: { ...state.data.settings, sort } },

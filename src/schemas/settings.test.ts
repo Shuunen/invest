@@ -60,6 +60,22 @@ describe("SettingsSchema: default values", () => {
     expect(result.columnVisibility).toStrictEqual({});
     expect(result.sort).toStrictEqual({ column: "score", direction: "desc" });
   });
+
+  it("defaults quick filter flags to false when no fields supplied", () => {
+    expect.hasAssertions();
+    const result = SettingsSchema.parse({});
+    expect(result.onlyPea).toBe(false);
+    expect(result.scoreAbove50).toBe(false);
+    expect(result.withRr5y).toBe(false);
+  });
+
+  it("accepts explicit quick filter flag values", () => {
+    expect.hasAssertions();
+    const result = SettingsSchema.parse({ onlyPea: true, scoreAbove50: true, withRr5y: true });
+    expect(result.onlyPea).toBe(true);
+    expect(result.scoreAbove50).toBe(true);
+    expect(result.withRr5y).toBe(true);
+  });
 });
 
 describe("SettingsSchema: theme enum", () => {

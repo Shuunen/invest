@@ -28,8 +28,10 @@ export function getScoreDotClass(qClass: string | undefined): string {
 }
 
 export const defaultColumnVisibility: Record<string, boolean> = {
+  availableForPea: false,
   availableForPlan: false,
   availableOnBroker: false,
+  comments: false,
   isAccumulating: false,
   performance1y: false,
   riskReward1y: false,

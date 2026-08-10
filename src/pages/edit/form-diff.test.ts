@@ -25,6 +25,18 @@ describe("buildDiffRows", () => {
     expect(resetForm.comments).toBe("Initial note");
   });
 
+  it("resets an availableForPea diff row to its initial value", () => {
+    expect.hasAssertions();
+    const initialForm = makeFormState({ availableForPea: false });
+    const currentForm = makeFormState({ availableForPea: true });
+    const rows = buildDiffRows(initialForm, currentForm);
+    const peaRow = rows.find(row => row.field === "Available For Pea");
+    expect(peaRow).toBeDefined();
+    invariant(peaRow, "Expected Available For Pea row to exist");
+    const resetForm = peaRow.reset(currentForm, initialForm);
+    expect(resetForm.availableForPea).toBe(false);
+  });
+
   it("resets a scalar diff row to its initial value", () => {
     expect.hasAssertions();
     const initialForm = makeFormState({ name: "Initial Name" });

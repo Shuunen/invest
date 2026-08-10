@@ -342,6 +342,12 @@ export const columns: ColumnDef<Asset>[] = [
     meta: { title: "Plan compatibility" },
   },
   {
+    accessorKey: "availableForPea",
+    cell: ({ getValue, row }) => booleanCell(row.original.isin, "available-for-pea", getValue<boolean>()),
+    header: "PEA",
+    meta: { title: "PEA eligibility" },
+  },
+  {
     accessorKey: "fees",
     cell: ({ getValue }) => formatPercent(getValue<number>()),
     header: "Fees",

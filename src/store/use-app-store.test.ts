@@ -48,6 +48,22 @@ describe("useAppStore - settings mutations", () => {
     expect(useAppStore.getState().data.settings.columnVisibility).toStrictEqual({ name: false });
   });
 
+  it("setPresetFilters updates settings quick filter flags", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+    useAppStore.getState().setPresetFilters({ onlyPea: true, scoreAbove50: true, withRr5y: true });
+    expect(useAppStore.getState().data.settings.onlyPea).toBe(true);
+    expect(useAppStore.getState().data.settings.scoreAbove50).toBe(true);
+    expect(useAppStore.getState().data.settings.withRr5y).toBe(true);
+  });
+
+  it("setPresetFilters merges without clobbering unrelated settings", () => {
+    expect.hasAssertions();
+    useAppStore.setState({ data: { ...defaultAppData, settings: { ...defaultAppData.settings, locale: "fr" } }, isLoading: false, loadError: undefined });
+    useAppStore.getState().setPresetFilters({ onlyPea: true, scoreAbove50: false, withRr5y: false });
+    expect(useAppStore.getState().data.settings.locale).toBe("fr");
+  });
+
   it("setColumnOrder updates settings.columnOrder", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
@@ -130,6 +146,7 @@ function makePortfolioEntry(isin: string) {
 
 describe("useAppStore - asset mutations", () => {
   const baseAsset: Asset = {
+    availableForPea: true,
     availableForPlan: false,
     availableOnBroker: true,
     comments: "",
@@ -557,6 +574,7 @@ describe("useAppStore - updatePortfolioEntryTargetAmount", () => {
 
 describe("useAppStore - similarity dismiss", () => {
   const assetA: Asset = {
+    availableForPea: true,
     availableForPlan: false,
     availableOnBroker: true,
     comments: "",

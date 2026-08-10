@@ -1,6 +1,7 @@
 import type { Table } from "@tanstack/react-table";
 import { EyeIcon } from "lucide-react";
 import type { Asset } from "../schemas/asset.ts";
+import { cn } from "../utils/browser-styles.ts";
 import type { Translate } from "../utils/translations.ts";
 
 export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number, translate: Translate) {
@@ -29,6 +30,31 @@ export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number
             ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+export type PresetFilters = {
+  onlyPea: boolean;
+  scoreAbove50: boolean;
+  setOnlyPea: (value: boolean) => void;
+  setScoreAbove50: (value: boolean) => void;
+  setWithRr5y: (value: boolean) => void;
+  withRr5y: boolean;
+};
+
+export function renderPresetFilters({ onlyPea, scoreAbove50, setOnlyPea, setScoreAbove50, setWithRr5y, withRr5y }: PresetFilters, translate: Translate) {
+  return (
+    <div className="flex gap-2">
+      <button type="button" data-testid="filter-only-pea" className={cn("btn btn-sm", { "btn-active": onlyPea })} onClick={() => setOnlyPea(!onlyPea)}>
+        {translate("filter-only-pea")}
+      </button>
+      <button type="button" data-testid="filter-with-rr5y" className={cn("btn btn-sm", { "btn-active": withRr5y })} onClick={() => setWithRr5y(!withRr5y)}>
+        {translate("filter-with-rr5y")}
+      </button>
+      <button type="button" data-testid="filter-score-above-50" className={cn("btn btn-sm", { "btn-active": scoreAbove50 })} onClick={() => setScoreAbove50(!scoreAbove50)}>
+        {translate("filter-score-above-50")}
+      </button>
     </div>
   );
 }

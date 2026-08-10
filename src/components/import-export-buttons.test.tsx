@@ -17,6 +17,7 @@ const validImportJson = JSON.stringify({ assets: [], portfolios: [], settings: {
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
+    availableForPea: true,
     availableForPlan: false,
     availableOnBroker: true,
     comments: "",
