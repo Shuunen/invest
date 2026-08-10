@@ -43,6 +43,8 @@ export const AssetSchema = z.object({
   availableForPlan: z.boolean(),
   /** Whether the asset is tradeable on the user's broker. */
   availableOnBroker: z.boolean(),
+  /** Free-form note about the asset. */
+  comments: z.string().default(""),
   /** ISINs of similar assets the user has dismissed from deduplication warnings. */
   dismissedSimilarities: z.array(z.string()).default([]),
   /** Annual fee in percent (0.2 = 0.20%). */

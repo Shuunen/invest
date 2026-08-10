@@ -15,6 +15,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPlan: true,
     availableOnBroker: true,
+    comments: "",
     dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: { us: 0.6 },
@@ -91,6 +92,30 @@ describe("AssetViewPage - not found", () => {
     });
     render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("field-row-price")).toHaveTextContent("—");
+  });
+
+  it("renders the comments value when present", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ comments: "Watch for fee changes" });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
+    expect(screen.getByTestId("field-row-comments")).toHaveTextContent("Watch for fee changes");
+  });
+
+  it("renders em dash for empty comments", () => {
+    expect.hasAssertions();
+    const asset = makeAsset({ comments: "" });
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [asset] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    render(<AssetViewPage isin={asset.isin} />, { wrapper: TranslationProvider });
+    expect(screen.getByTestId("field-row-comments")).toHaveTextContent("—");
   });
 
   it("edit button navigates to edit page", () => {

@@ -13,6 +13,18 @@ function makeFormState(overrides: Partial<FormState>): FormState {
 }
 
 describe("buildDiffRows", () => {
+  it("resets a comments diff row to its initial value", () => {
+    expect.hasAssertions();
+    const initialForm = makeFormState({ comments: "Initial note" });
+    const currentForm = makeFormState({ comments: "Changed note" });
+    const rows = buildDiffRows(initialForm, currentForm);
+    const commentsRow = rows.find(row => row.field === "Comments");
+    expect(commentsRow).toBeDefined();
+    invariant(commentsRow, "Expected Comments row to exist");
+    const resetForm = commentsRow.reset(currentForm, initialForm);
+    expect(resetForm.comments).toBe("Initial note");
+  });
+
   it("resets a scalar diff row to its initial value", () => {
     expect.hasAssertions();
     const initialForm = makeFormState({ name: "Initial Name" });

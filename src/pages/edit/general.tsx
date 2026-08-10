@@ -1,5 +1,6 @@
 import { CheckboxField } from "../../components/form/checkbox-field.tsx";
 import { TextField } from "../../components/form/text-field.tsx";
+import { TextareaField } from "../../components/form/textarea-field.tsx";
 import { useTranslation } from "../../utils/translations.ts";
 import type { FormState, PatchFn } from "./form-state.ts";
 
@@ -23,6 +24,7 @@ export function GeneralSection({ form, errors, patch }: Props) {
         )}
         <TextField label="Provider" name="provider" value={form.provider} onChange={val => patch("provider", val)} />
         <TextField label="Tickers (comma-separated)" name="tickers" value={form.tickers} onChange={val => patch("tickers", val)} placeholder="e.g. IWDA, SWRD" />
+        <TextareaField label="Comments" name="comments" value={form.comments} onChange={val => patch("comments", val)} placeholder="Notes about this asset…" />
         <h2 className="card-title">{translate("section-flags")}</h2>
         <div className="flex justify-between">
           <CheckboxField label="Accumulating" name="isAccumulating" value={form.isAccumulating} onChange={val => patch("isAccumulating", val)} />

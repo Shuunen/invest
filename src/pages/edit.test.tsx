@@ -20,6 +20,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPlan: false,
     availableOnBroker: true,
+    comments: "",
     dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: {},
@@ -337,6 +338,7 @@ describe("AssetEditPage - form", () => {
     fireEvent.change(screen.getByTestId("sector-allocation-technology"), { target: { value: "50" } });
     fireEvent.change(screen.getByTestId("provider"), { target: { value: "New Provider" } });
     fireEvent.change(screen.getByTestId("tickers"), { target: { value: "TST, ABC" } });
+    fireEvent.change(screen.getByTestId("comments"), { target: { value: "Updated comment" } });
     expect(screen.getByTestId("fees")).toHaveValue(0.3);
   });
 

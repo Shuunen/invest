@@ -28,6 +28,7 @@ function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPlan: false,
     availableOnBroker: true,
+    comments: "",
     dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: {},
@@ -52,6 +53,7 @@ function makeFormState(overrides: Partial<FormState> = {}): FormState {
   return {
     availableForPlan: false,
     availableOnBroker: true,
+    comments: "",
     fees: "0.20",
     geoAllocation: {},
     isAccumulating: true,

@@ -5,6 +5,7 @@ import { maxDecimals } from "../../utils/format-numbers.ts";
 export type FormState = {
   availableForPlan: boolean;
   availableOnBroker: boolean;
+  comments: string;
   fees: string;
   geoAllocation: Partial<Record<Country, string>>;
   isAccumulating: boolean;
@@ -35,6 +36,7 @@ function fromPercentString(pct: string): number {
 export const emptyFormState: FormState = {
   availableForPlan: false,
   availableOnBroker: false,
+  comments: "",
   fees: "0",
   geoAllocation: {},
   isAccumulating: false,
@@ -56,6 +58,7 @@ export function toFormState(asset: Asset): FormState {
   return {
     availableForPlan: asset.availableForPlan,
     availableOnBroker: asset.availableOnBroker,
+    comments: asset.comments,
     fees: String(asset.fees),
     geoAllocation: Object.fromEntries(Object.entries(asset.geoAllocation).map(([key, val]) => [key, toPercentString(val)])),
     isAccumulating: asset.isAccumulating,
@@ -116,6 +119,7 @@ export function buildAssetFromForm(form: FormState): { data: Asset } | { errors:
   const result = AssetSchema.safeParse({
     availableForPlan: form.availableForPlan,
     availableOnBroker: form.availableOnBroker,
+    comments: form.comments,
     fees: parseOptionalNumber(form.fees) ?? 0,
     geoAllocation: parseAllocation(form.geoAllocation),
     isAccumulating: form.isAccumulating,

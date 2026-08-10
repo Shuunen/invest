@@ -138,6 +138,7 @@ function makeAsset(overrides?: Partial<Asset>): Asset {
   return {
     availableForPlan: true,
     availableOnBroker: true,
+    comments: "",
     dismissedSimilarities: [],
     fees: 0.5,
     geoAllocation: { uk: 0.4, us: 0.6 },

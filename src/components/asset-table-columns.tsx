@@ -315,6 +315,15 @@ export const columns: ColumnDef<Asset>[] = [
     header: "Name",
   },
   {
+    accessorKey: "comments",
+    cell: ({ getValue, row }) => (
+      <span className="block max-w-xs truncate" data-testid={`comments-${row.original.isin.toLowerCase()}`} title={getValue<string>()}>
+        {getValue<string>() || "—"}
+      </span>
+    ),
+    header: "Comments",
+  },
+  {
     accessorKey: "isAccumulating",
     cell: ({ getValue, row }) => booleanCell(row.original.isin, "is-accumulating", getValue<boolean>()),
     header: "Acc",
