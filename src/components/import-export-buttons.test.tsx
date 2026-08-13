@@ -15,6 +15,10 @@ vi.mock(import("../utils/json.ts"), async () => {
 
 const validImportJson = JSON.stringify({ assets: [], portfolios: [], settings: {} });
 
+function pad(val: number): string {
+  return val.toString().padStart(2, "0");
+}
+
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPea: true,
@@ -95,6 +99,29 @@ describe("ImportExportButtons", () => {
     fireEvent.click(screen.getByTestId("export-button"));
     expect(createObjectURLSpy).toHaveBeenCalledWith(expect.any(Blob));
     expect(useAppStore.getState().data.settings.lastExportedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/u);
+  });
+
+  it("uses the local time, not UTC, for the exported filename", () => {
+    expect.hasAssertions();
+    useAppStore.setState({
+      data: { ...defaultAppData, assets: [makeAsset()] },
+      isLoading: false,
+      loadError: undefined,
+    });
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-11T23:30:00.000Z"));
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:mock");
+    vi.spyOn(URL, "revokeObjectURL");
+    let downloadAttr = "";
+    vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function click(this: HTMLAnchorElement) {
+      downloadAttr = this.download;
+    });
+    render(<ImportExportButtons />, { wrapper: TranslationProvider });
+    fireEvent.click(screen.getByTestId("export-button"));
+    const fixedDate = new Date("2026-08-11T23:30:00.000Z");
+    const expectedDatetime = `${fixedDate.getFullYear()}-${pad(fixedDate.getMonth() + 1)}-${pad(fixedDate.getDate())} ${pad(fixedDate.getHours())}h${pad(fixedDate.getMinutes())}`;
+    expect(downloadAttr).toBe(`invest-${expectedDatetime}.json`);
+    vi.useRealTimers();
   });
 
   it("export button title includes the number of un-exported changes", () => {

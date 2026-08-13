@@ -8,10 +8,15 @@ import { jsonStringify } from "../utils/json.ts";
 import { useTranslation, type Translate } from "../utils/translations.ts";
 import { getStalenessTier, type StalenessTier } from "./import-export-utils.ts";
 
-const isoDateSliceEnd = 10;
 const revokeDelayMs = 100;
-const isoTimeStart = 11;
-const isoTimeEnd = 16;
+const padWidth = 2;
+
+function formatLocalDatetimeForFilename(date: Date): string {
+  const pad = (val: number) => val.toString().padStart(padWidth, "0");
+  const datePart = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  const timePart = `${pad(date.getHours())}h${pad(date.getMinutes())}`;
+  return `${datePart} ${timePart}`;
+}
 
 function renderStalenessDecoration(tier: Exclude<StalenessTier, "1-ok">, unexportedChanges: number) {
   if (tier === "2-low")
@@ -110,8 +115,9 @@ function useImportExport() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleExport() {
-    const now = new Date().toISOString();
-    const datetime = `${now.slice(0, isoDateSliceEnd)} ${now.slice(isoTimeStart, isoTimeEnd).replace(":", "h")}`;
+    const nowDate = new Date();
+    const now = nowDate.toISOString();
+    const datetime = formatLocalDatetimeForFilename(nowDate);
     const blob = buildExportBlob(data, now);
     if (!blob) {
       toast.error("Export failed: could not serialize data.");
