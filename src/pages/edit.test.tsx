@@ -423,16 +423,16 @@ describe("AssetEditPage - form", () => {
   });
 });
 
-describe("AssetEditPage - fetch", () => {
-  function setup() {
-    vi.clearAllMocks();
-    mockNavigate.mockClear();
-    const asset = makeAsset();
-    useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    return asset;
-  }
+function setup() {
+  vi.clearAllMocks();
+  mockNavigate.mockClear();
+  const asset = makeAsset();
+  useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
+  render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
+  return asset;
+}
 
+describe("AssetEditPage - fetch", () => {
   it("shows editable isin input and an enabled fetch button", () => {
     expect.hasAssertions();
     setup();

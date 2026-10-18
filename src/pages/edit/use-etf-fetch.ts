@@ -18,9 +18,9 @@ export function useEtfFetch(isin: string, patch: PatchFn, form: FormState) {
       const identifier = isin.trim();
       const data = identifier.length <= maxStockSymbolLength ? await fetchStockData(identifier) : await fetchEtfData(identifier);
       applyEtfPrefill(data, patch, form);
+      setIsFetching(false);
     } catch (error) {
       setFetchError(error instanceof Error ? error.message : "Failed to fetch ETF data");
-    } finally {
       setIsFetching(false);
     }
   }

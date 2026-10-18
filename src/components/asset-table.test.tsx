@@ -83,6 +83,7 @@ const valueSortAssetsNoPrice = [valueSortAssetNoPrice];
 
 describe("matchesFilter", () => {
   const asset = makeAsset({ isin: "LU1234567890", name: "Alpha ETF", provider: "Amundi", tickers: ["IWDA"] });
+
   it("matches name case-insensitively", () => {
     expect.hasAssertions();
     expect(matchesFilter(asset, "alpha etf")).toBe(true);
@@ -993,6 +994,7 @@ describe("AssetTable - amount column", () => {
 
 describe("AssetTable - price editing", () => {
   const priceAsset = makeAsset({ isin: "LU9876543210", price: 50 });
+
   it("shows Add asset and Edit prices buttons in the page header", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([priceAsset]), isLoading: false, loadError: undefined });
@@ -1138,6 +1140,7 @@ const simErrorAssets = [makeAsset({ geoAllocation: { us: 1 }, isin: simIsinA }),
 
 describe("AssetTable - similarity column", () => {
   const onAmountChange = vi.fn<(isin: string, amount: number) => void>();
+
   it("does not render similarity column in global table (no onAmountChange)", () => {
     expect.hasAssertions();
     useAppStore.setState({ data: makeTestData([simGlobalAsset]), isLoading: false, loadError: undefined });
@@ -1310,6 +1313,7 @@ describe("AssetTable - target-amount column", () => {
   const targetAssets = [targetAsset];
   const targetAmountUpdatedAt = "2026-01-02T12:34:56.000Z";
   const editTargetAsset = makeAsset({ isin: "LU2222222222", price: 50 });
+
   it("sorts by target amount values", async () => {
     expect.hasAssertions();
     const first = makeAsset({ isin: "LU0000000001", name: "First ETF" });

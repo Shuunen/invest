@@ -32,7 +32,16 @@ export function useHydration(retryKey: number) {
     return () => {
       cancelled = true;
     };
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies -- retryKey is an intentional re-run trigger for the Retry button
   }, [retryKey]);
+}
+
+async function saveToDexie(data: AppData) {
+  try {
+    await db.appdata.put({ data, id: 1 });
+  } catch {
+    // Silently ignore: write failure is non-critical (in-memory state stays correct)
+  }
 }
 
 export function useDexieSync() {
@@ -43,14 +52,7 @@ export function useDexieSync() {
       newData => {
         clearTimeout(writeTimer);
         writeTimer = setTimeout(() => {
-          const save = async () => {
-            try {
-              await db.appdata.put({ data: newData, id: 1 });
-            } catch {
-              // Silently ignore: write failure is non-critical (in-memory state stays correct)
-            }
-          };
-          void save();
+          void saveToDexie(newData);
         }, debounceMs);
       },
     );

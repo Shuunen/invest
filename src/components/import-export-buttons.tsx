@@ -11,8 +11,11 @@ import { getStalenessTier, type StalenessTier } from "./import-export-utils.ts";
 const revokeDelayMs = 100;
 const padWidth = 2;
 
+function pad(val: number): string {
+  return val.toString().padStart(padWidth, "0");
+}
+
 function formatLocalDatetimeForFilename(date: Date): string {
-  const pad = (val: number) => val.toString().padStart(padWidth, "0");
   const datePart = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   const timePart = `${pad(date.getHours())}h${pad(date.getMinutes())}`;
   return `${datePart} ${timePart}`;

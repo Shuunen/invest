@@ -10,6 +10,8 @@ export const messages = {
   "action-reset": "Reset",
   "action-retry": "Retry",
   "action-save": "Save",
+  "allocation-empty": "No allocation data",
+  "allocation-summary": "{nbEntries} entries - {balance} balanced",
   "app-description": "A personal ETF & stock reference tracker. Browse your instruments, compare scores, and manage which ones belong in your portfolios.",
   "app-title": "Invest",
   "assets-table-caption": "ISINs reference data table",

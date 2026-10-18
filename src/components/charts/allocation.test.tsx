@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import type { Allocation } from "../../schemas/asset.ts";
+import { TranslationProvider } from "../../utils/translations-provider.tsx";
 import { AllocationChart } from "./allocation.tsx";
 
 const emptyAllocation: Allocation = {};
@@ -8,40 +9,40 @@ const simpleAllocation: Allocation = { europe: 0.4, us: 0.6 };
 describe("AllocationChart", () => {
   it("renders the card container with the given name testid", () => {
     expect.hasAssertions();
-    render(<AllocationChart data={simpleAllocation} title="Sectors" name="sectors" />);
+    render(<AllocationChart data={simpleAllocation} title="Sectors" name="sectors" />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("sectors-card")).toBeInTheDocument();
   });
 
   it("shows empty state when allocation has no positive values", () => {
     expect.hasAssertions();
-    render(<AllocationChart data={emptyAllocation} title="Geo" name="geo" />);
+    render(<AllocationChart data={emptyAllocation} title="Geo" name="geo" />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("geo-empty")).toBeInTheDocument();
     expect(screen.queryByTestId("geo-chart")).not.toBeInTheDocument();
   });
 
   it("renders the pie chart when allocation has data", () => {
     expect.hasAssertions();
-    render(<AllocationChart data={simpleAllocation} title="Geo" name="geo" />);
+    render(<AllocationChart data={simpleAllocation} title="Geo" name="geo" />, { wrapper: TranslationProvider });
     expect(screen.queryByTestId("geo-empty")).not.toBeInTheDocument();
     expect(screen.getByTestId("geo-chart")).toBeInTheDocument();
   });
 
   it("renders title text", () => {
     expect.hasAssertions();
-    render(<AllocationChart data={simpleAllocation} title="My Title" name="test" />);
+    render(<AllocationChart data={simpleAllocation} title="My Title" name="test" />, { wrapper: TranslationProvider });
     expect(screen.getByTestId("test-card")).toHaveTextContent("My Title");
   });
 
   it("applies card class when card prop is true", () => {
     expect.hasAssertions();
-    render(<AllocationChart data={simpleAllocation} title="Geo" name="geo" card />);
+    render(<AllocationChart data={simpleAllocation} title="Geo" name="geo" card />, { wrapper: TranslationProvider });
     const cardEl = screen.getByTestId("geo-card");
     expect(cardEl.className).toContain("card");
   });
 
   it("does not apply card class when card prop is false (default)", () => {
     expect.hasAssertions();
-    render(<AllocationChart data={simpleAllocation} title="Geo" name="geo" />);
+    render(<AllocationChart data={simpleAllocation} title="Geo" name="geo" />, { wrapper: TranslationProvider });
     const cardEl = screen.getByTestId("geo-card");
     expect(cardEl.className).not.toContain("card-body");
   });

@@ -13,7 +13,7 @@ type HyperTextProps = {
 
 const alphabets = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-export const TextHyper = ({ className, duration = 800, text, animateOnLoad = true }: HyperTextProps) => {
+export function TextHyper({ className, duration = 800, text, animateOnLoad = true }: HyperTextProps) {
   const [displayText, setDisplayText] = useState(text.split(""));
   const [trigger, setTrigger] = useState(false);
   const iterations = useRef(0);
@@ -26,7 +26,7 @@ export const TextHyper = ({ className, duration = 800, text, animateOnLoad = tru
 
   useEffect(() => {
     iterations.current = 0;
-    // oxlint-disable-next-line react/react-compiler
+    // oxlint-disable-next-line react/set-state-in-effect -- resets the scrambled letters when the text prop changes
     setDisplayText(text.split(""));
     const interval = setInterval(
       () => {
@@ -47,6 +47,7 @@ export const TextHyper = ({ className, duration = 800, text, animateOnLoad = tru
     );
     // Clean up interval on unmount
     return () => clearInterval(interval);
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies -- trigger is an intentional re-run trigger for the hover animation
   }, [text, duration, trigger, animateOnLoad]);
 
   return (
@@ -58,4 +59,4 @@ export const TextHyper = ({ className, duration = 800, text, animateOnLoad = tru
       ))}
     </div>
   );
-};
+}

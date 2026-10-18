@@ -220,7 +220,7 @@ type RenderDeleteConfirmModalOptions = {
 
 function renderDeleteConfirmModal({ assetName, onCancel, onConfirm }: RenderDeleteConfirmModalOptions, translate: Translate) {
   return (
-    <dialog className="modal-open modal" aria-modal="true">
+    <dialog className="modal modal-open" aria-modal="true">
       <div className="modal-box">
         <ModalHeader title={translate("action-remove")} onClose={onCancel} type="error" />
         {translate("action-remove")}{" "}

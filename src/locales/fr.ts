@@ -12,6 +12,8 @@ export const messages = {
   "action-reset": "Réinitialiser",
   "action-retry": "Réessayer",
   "action-save": "Enregistrer",
+  "allocation-empty": "Aucune donnée de répartition",
+  "allocation-summary": "{nbEntries} entrées - {balance} équilibré",
   "app-description": "Un tracker personnel de référence ETF & actions. Parcourez vos instruments, comparez les scores et gérez ceux qui appartiennent à vos portefeuilles.",
   "app-title": "Invest",
   "assets-table-caption": "Tableau de référence des ISIN",

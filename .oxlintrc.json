@@ -122,6 +122,7 @@
       }
     ],
     "group-exports": "off",
+    "one-var": "off",
     "jsdoc/require-param-type": "off",
     "jsdoc/require-returns-type": "off",
     "jsx-filename-extension": [

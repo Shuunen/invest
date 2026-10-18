@@ -87,7 +87,7 @@ function renderNoChangesNotice(translate: Translate) {
 export function SaveModal({ diffRows, onClose, onConfirm, onReset, onResetRow }: Props) {
   const { translate } = useTranslation();
   return (
-    <dialog className="modal-open modal" aria-modal="true" data-testid="confirm-save-modal">
+    <dialog className="modal modal-open" aria-modal="true" data-testid="confirm-save-modal">
       <div className="modal-box max-w-3xl">
         <ModalHeader title="Confirm changes before saving" subtitle="Review what changed in this asset before applying the update." onClose={onClose} />
         {diffRows.length > 0 ? renderDiffRowsTable(diffRows, translate, onResetRow) : renderNoChangesNotice(translate)}

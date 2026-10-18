@@ -29,24 +29,28 @@ describe("diffMessages", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]).toStrictEqual({ key: "new-key", status: "added", translation: "hello" });
   });
+
   it("marks a key only in old messages as deleted, keeping the old translation", () => {
     expect.hasAssertions();
     const rows = diffMessages({ "old-key": "bye" }, {});
     expect(rows).toHaveLength(1);
     expect(rows[0]).toStrictEqual({ key: "old-key", status: "deleted", translation: "bye" });
   });
+
   it("marks a key with the same value in both as un-touched", () => {
     expect.hasAssertions();
     const rows = diffMessages({ same: "value" }, { same: "value" });
     expect(rows).toHaveLength(1);
     expect(rows[0]).toStrictEqual({ key: "same", status: "un-touched", translation: "value" });
   });
+
   it("marks a key with a different value as changed, using the new translation", () => {
     expect.hasAssertions();
     const rows = diffMessages({ key: "before" }, { key: "after" });
     expect(rows).toHaveLength(1);
     expect(rows[0]).toStrictEqual({ key: "key", status: "changed", translation: "after" });
   });
+
   it("returns no rows when both old and new messages are empty", () => {
     expect.hasAssertions();
     expect(diffMessages({}, {})).toStrictEqual([]);
@@ -116,6 +120,7 @@ describe("cli --files (real diff mode)", () => {
     },
     cliWriteTestTimeout,
   );
+
   it(
     "diffs against real prior content from git history and marks edited keys as changed",
     async () => {
@@ -142,6 +147,7 @@ describe("cli --files (real diff mode)", () => {
     },
     cliWriteTestTimeout,
   );
+
   it(
     "writes one xlsx per matched file when the glob matches several locales",
     async () => {
@@ -157,6 +163,7 @@ describe("cli --files (real diff mode)", () => {
     },
     cliWriteTestTimeout,
   );
+
   it("fails loudly instead of silently overwriting one report with another when two matched files share a locale basename", async () => {
     expect.hasAssertions();
     // Regression: adversarial review found that two matched files with the same basename in
@@ -178,6 +185,7 @@ describe("cli --files (real diff mode)", () => {
       rmSync(dupDirB, { force: true, recursive: true });
     }
   });
+
   it("fails with a descriptive error when a matched file has no messages export", async () => {
     expect.hasAssertions();
     // The broken file must live inside the repo (not a system tempdir) so `git show` can resolve
@@ -206,12 +214,14 @@ describe("cli argument validation", () => {
     expect.hasAssertions();
     expect(() => execFileSync("bun", [cliPath, "--demo"], { encoding: "utf8", stdio: "pipe" })).toThrow(/Missing required --dist=<dir> argument/u);
   });
+
   it("fails loudly when --files is missing in diff mode", async () => {
     expect.hasAssertions();
     await withTempDistDir(distDir => {
       expect(() => execFileSync("bun", [cliPath, `--commit=${preI18nCommit}`, `--dist=${distDir}`], { encoding: "utf8", stdio: "pipe" })).toThrow(/Missing required --files=<glob> argument/u);
     });
   });
+
   it("fails loudly when --files matches no file", async () => {
     expect.hasAssertions();
     await withTempDistDir(distDir => {
@@ -223,6 +233,7 @@ describe("cli argument validation", () => {
       ).toThrow(/No files matched pattern/u);
     });
   });
+
   it("fails loudly when --commit is missing in diff mode", async () => {
     expect.hasAssertions();
     await withTempDistDir(distDir => {
@@ -243,10 +254,12 @@ describe("sortRows", () => {
     ]);
     expect(rows.map(row => row.key)).toStrictEqual(["m-changed", "a-added", "z-deleted", "a-untouched", "b-untouched"]);
   });
+
   it("returns an empty array unchanged", () => {
     expect.hasAssertions();
     expect(sortRows([])).toStrictEqual([]);
   });
+
   it("returns a single-element array unchanged", () => {
     expect.hasAssertions();
     const rows = [{ key: "solo", status: "added" as const, translation: "alone" }];
