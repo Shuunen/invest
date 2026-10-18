@@ -1,6 +1,6 @@
 // oxlint-disable max-lines
 import { useNavigate } from "@tanstack/react-router";
-import { flexRender, type ColumnDef, type Header, type SortingState, type Table } from "@tanstack/react-table";
+import { flexRender, type Header, type SortingState } from "@tanstack/react-table";
 import { CheckIcon, PencilLineIcon, PlusIcon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { computeScore, type Asset } from "../schemas/asset.ts";
@@ -8,7 +8,6 @@ import { useAppStore } from "../store/use-app-store.ts";
 import { cn } from "../utils/browser-styles.ts";
 import { useTranslation, type Translate } from "../utils/translations.ts";
 import {
-  type AssetTableMeta,
   columns,
   makeAmountColumn,
   makeAmountUpdatedAtColumn,
@@ -24,6 +23,7 @@ import {
   makeValueColumn,
 } from "./asset-table-columns.tsx";
 import { useHydration } from "./asset-table-db.ts";
+import type { AssetColumnDef, AssetTableInstance, AssetTableFeatures, AssetTableMeta } from "./asset-table-features.ts";
 import { renderColumnFilter, renderPresetFilters, renderSearchFilter, type PresetFilters } from "./asset-table-header.tsx";
 import { matchesFilter, useTableInstance } from "./asset-table-hooks.ts";
 import { renderSkeleton } from "./asset-table-skeleton.tsx";
@@ -43,7 +43,7 @@ function getSortIndicator(sorted: "asc" | "desc" | false): string {
   return "";
 }
 
-function renderThContent(header: Header<Asset, unknown>) {
+function renderThContent(header: Header<AssetTableFeatures, Asset, unknown>) {
   const sorted = header.column.getIsSorted();
   const label = flexRender(header.column.columnDef.header, header.getContext());
   const title = header.column.columnDef.meta?.title;
@@ -72,7 +72,7 @@ function buildActiveColumns({
 }: Pick<
   Props,
   "onToggleSelect" | "onRemoveAsset" | "onAmountChange" | "onTargetAmountChange" | "onDismissSimilarity" | "onPriceChange" | "noteMap" | "amountMap" | "amountUpdatedAtMap" | "targetAmountMap" | "targetAmountUpdatedAtMap" | "assets"
->): ColumnDef<Asset>[] {
+>): AssetColumnDef[] {
   const isPortfolioMode = Boolean(onAmountChange);
   const baseCols = onPriceChange || isPortfolioMode ? columns.filter(col => col.id !== "price") : columns;
   // Insert data-score right after the first column (Score) so the two quality indicators sit together
@@ -244,7 +244,7 @@ function renderAssetsHeader(assets: Asset[], actions: { icon: React.ReactNode; l
   return <PageHeader assets={assets} title="Assets" subtitle="This is the list of available assets you can use to create and manage your portfolios." actions={actions} />;
 }
 
-function renderTableHeader(table: Table<Asset>) {
+function renderTableHeader(table: AssetTableInstance) {
   return (
     <thead className="sticky top-12 z-10 bg-base-100">
       {table.getHeaderGroups().map(headerGroup => (
@@ -269,7 +269,7 @@ function renderTableHeader(table: Table<Asset>) {
   );
 }
 
-function renderTableBody(table: Table<Asset>, quintileClasses: Map<string, Map<string, string | undefined>>, onRowClick?: (isin: string) => void) {
+function renderTableBody(table: AssetTableInstance, quintileClasses: Map<string, Map<string, string | undefined>>, onRowClick?: (isin: string) => void) {
   return (
     <tbody>
       {table.getRowModel().rows.map(row => (

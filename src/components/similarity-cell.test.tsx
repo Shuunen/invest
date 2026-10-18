@@ -5,6 +5,7 @@ import type { Asset } from "../schemas/asset.ts";
 import { computeMaxSimilarity } from "../utils/asset-similarity.ts";
 import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { makeSimilarityColumn } from "./asset-table-columns.tsx";
+import type { AssetTableFeatures } from "./asset-table-features.ts";
 import { SimilarityCell } from "./similarity-cell.tsx";
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
@@ -100,7 +101,7 @@ describe("makeSimilarityColumn", () => {
     const firstAsset = makeAsset({ geoAllocation: { us: 1 }, isin: "LU0000000001" });
     const secondAsset = makeAsset({ geoAllocation: { us: 1 }, isin: "LU0000000002" });
     const assets = [firstAsset, secondAsset];
-    const column = makeSimilarityColumn(assets, undefined) as AccessorFnColumnDef<Asset, unknown>;
+    const column = makeSimilarityColumn(assets, undefined) as AccessorFnColumnDef<AssetTableFeatures, Asset, unknown>;
     invariant(column.accessorFn, "Expected similarity accessor function");
     expect(column.accessorFn(firstAsset, 0)).toBe(1);
   });

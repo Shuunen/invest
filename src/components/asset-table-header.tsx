@@ -1,10 +1,9 @@
-import type { Table } from "@tanstack/react-table";
 import { EyeIcon } from "lucide-react";
-import type { Asset } from "../schemas/asset.ts";
 import { cn } from "../utils/browser-styles.ts";
 import type { Translate } from "../utils/translations.ts";
+import type { AssetTableInstance } from "./asset-table-features.ts";
 
-export function renderColumnFilter(table: Table<Asset>, visibleLeafCount: number, translate: Translate) {
+export function renderColumnFilter(table: AssetTableInstance, visibleLeafCount: number, translate: Translate) {
   return (
     <div className="dropdown dropdown-end">
       <button type="button" tabIndex={0} className="btn btn-sm">

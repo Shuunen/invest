@@ -1,5 +1,6 @@
 import type { Row } from "@tanstack/react-table";
 import { computeScore, type Asset } from "../schemas/asset.ts";
+import type { AssetTableFeatures } from "./asset-table-features.ts";
 
 const minRowsForFormatting = 3;
 const quintileHighThreshold = 0.8;
@@ -52,7 +53,7 @@ function quintileClassFromSorted(value: number | undefined, sortedDefined: numbe
   return undefined;
 }
 
-export function computeQuintileClasses(rows: Row<Asset>[]): Map<string, Map<string, string | undefined>> {
+export function computeQuintileClasses(rows: Row<AssetTableFeatures, Asset>[]): Map<string, Map<string, string | undefined>> {
   // Pre-compute scores once per row to avoid redundant calls in the score column
   const scoreCache = new Map(rows.map(row => [row.id, computeScore(row.original)]));
   return new Map(
