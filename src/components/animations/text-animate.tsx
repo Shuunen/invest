@@ -1,11 +1,15 @@
 // oxlint-disable react/forbid-component-props, id-length, unicorn/no-nested-ternary, no-duplicate-imports, max-lines-per-function
 import type { MotionProps, Variants } from "framer-motion";
-import { AnimatePresence, motion, useInView } from "framer-motion";
-import type { ElementType } from "react";
+import { AnimatePresence, motion, stagger, useInView } from "framer-motion";
 import { useRef } from "react";
 import { cn } from "../../utils/browser-styles";
 
 // Source : https://www.componentry.fun/docs/components/text-animate
+
+const exitStaggerSeconds = 0.05;
+const showStaggerSeconds = 0.1;
+
+type MotionTag = "div" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p" | "span";
 
 type AnimationType = "fadeIn" | "blurIn" | "blurInUp" | "blurInDown" | "slideUp" | "slideDown" | "slideLeft" | "slideRight" | "scaleUp" | "scaleDown";
 
@@ -25,7 +29,7 @@ type TextAnimateProps = {
   /**
    * The base component to use for the wrapper
    */
-  as?: ElementType;
+  as?: MotionTag;
   /**
    * The base delay for the animation
    */
@@ -62,16 +66,14 @@ export function TextAnimate({ children, delay = 0, duration = 0.3, className, se
     exit: {
       opacity: 0,
       transition: {
-        staggerChildren: 0.05,
-        staggerDirection: -1,
+        delayChildren: stagger(exitStaggerSeconds, { from: "last" }),
       },
     },
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        delayChildren: delay,
-        staggerChildren: 0.1,
+        delayChildren: stagger(showStaggerSeconds, { startDelay: delay }),
       },
     },
   };
@@ -163,16 +165,15 @@ export function TextAnimate({ children, delay = 0, duration = 0.3, className, se
   const finalVariants = itemVariants[animation];
 
   // Use the 'as' prop to dynamically render the motion component
-  const MotionComponent = motion.create(Component);
+  const MotionComponent = motion[Component];
 
   return (
     <AnimatePresence mode="popLayout">
-      {/* oxlint-disable-next-line react/react-compiler */}
       <MotionComponent ref={ref} className={cn("whitespace-pre-wrap", className)} initial="hidden" animate={startOnView ? (isInView ? "show" : "hidden") : "show"} exit="exit" variants={containerVariants} {...props}>
         {segments.map((segment, i) => (
           <motion.span key={`${by}-${i}-${segment}`} className={cn("inline-block", segmentClassName)} variants={finalVariants}>
             {segment}
-            {by === "word" && i < segments.length - 1 && <span className="inline-block">&nbsp;</span>}
+            {by === "word" && i < segments.length - 1 && <span className="inline-block">{"\u00A0"}</span>}
           </motion.span>
         ))}
       </MotionComponent>

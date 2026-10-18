@@ -1,5 +1,4 @@
 // oxlint-disable max-lines
-import type { ColumnDef, TableMeta } from "@tanstack/react-table";
 import { DotIcon, Trash2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { computeScore, type Asset } from "../schemas/asset.ts";
@@ -11,36 +10,10 @@ import { computeDataScore, dataScoreWarnThreshold } from "../utils/data-score.ts
 import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
 import { computeTrend } from "../utils/trend.ts";
 import { AnimatedLink } from "./animations/link.tsx";
+import type { AssetColumnDef } from "./asset-table-features.ts";
 import { scoreMissingValue } from "./asset-table-utils.ts";
 import { SimilarityCell } from "./similarity-cell.tsx";
 import { TargetAmountReadCell } from "./target-amount-read-cell.tsx";
-
-declare module "@tanstack/react-table" {
-  // oxlint-disable-next-line typescript-eslint/consistent-type-definitions
-  interface TableMeta<TData> {
-    isEditing?: boolean;
-    noteMap?: Map<string, string>;
-    onAmountChange?: (isin: string, amount: number) => void;
-    onNoteChange?: (isin: string, note: string) => void;
-    onPriceChange?: (isin: string, price: number) => void;
-    onTargetAmountChange?: (isin: string, targetAmount: number) => void;
-    onToggleSelect?: (isin: string) => void;
-    selectedIsins?: Set<string>;
-    amountMap?: Map<string, number>;
-    amountUpdatedAtMap?: Map<string, string>;
-    totalValue?: number;
-    targetAmountMap?: Map<string, number>;
-    targetAmountUpdatedAtMap?: Map<string, string>;
-    targetTotalValue?: number;
-  }
-  // oxlint-disable-next-line typescript-eslint/consistent-type-definitions
-  interface ColumnMeta<TData, TValue> {
-    center?: boolean;
-    title?: string;
-  }
-}
-
-export type AssetTableMeta = TableMeta<Asset>;
 
 function booleanCell(isin: string, field: string, value: boolean) {
   return (
@@ -91,7 +64,7 @@ function computeAmountFromPercentage(percent: number, price: number | undefined,
   return ((percent / maxPercentage) * totalValue) / price;
 }
 
-export function makeSelectColumn(): ColumnDef<Asset> {
+export function makeSelectColumn(): AssetColumnDef {
   return {
     cell: ({ row, table }) => {
       const { meta } = table.options;
@@ -113,7 +86,7 @@ export function makeSelectColumn(): ColumnDef<Asset> {
   };
 }
 
-export function makeValueColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
+export function makeValueColumn(amountMap: Map<string, number> | undefined): AssetColumnDef {
   return {
     accessorFn: row => (amountMap?.get(row.isin) ?? 0) * (row.price ?? 0),
     cell: ({ getValue, row }) => <span data-testid={`value-${row.original.isin.toLowerCase()}`}>{`${formatNumber(getValue<number>())} €`}</span>,
@@ -123,7 +96,7 @@ export function makeValueColumn(amountMap: Map<string, number> | undefined): Col
   };
 }
 
-export function makeAmountColumn(amountMap: Map<string, number> | undefined): ColumnDef<Asset> {
+export function makeAmountColumn(amountMap: Map<string, number> | undefined): AssetColumnDef {
   return {
     accessorFn: row => amountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
@@ -161,7 +134,7 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): Co
   };
 }
 
-export function makePriceEditColumn(): ColumnDef<Asset> {
+export function makePriceEditColumn(): AssetColumnDef {
   return {
     accessorKey: "price",
     cell: ({ row, table }) => {
@@ -192,7 +165,7 @@ export function makePriceEditColumn(): ColumnDef<Asset> {
   };
 }
 
-export function makePortfolioPriceColumn(): ColumnDef<Asset> {
+export function makePortfolioPriceColumn(): AssetColumnDef {
   return {
     accessorKey: "price",
     cell: ({ row, table }) => {
@@ -224,7 +197,7 @@ export function makePortfolioPriceColumn(): ColumnDef<Asset> {
   };
 }
 
-export function makeNoteColumn(noteMap?: Map<string, string>): ColumnDef<Asset> {
+export function makeNoteColumn(noteMap?: Map<string, string>): AssetColumnDef {
   return {
     accessorFn: row => noteMap?.get(row.isin) ?? "",
     cell: ({ row, table }) => {
@@ -260,7 +233,7 @@ export function makeNoteColumn(noteMap?: Map<string, string>): ColumnDef<Asset> 
   };
 }
 
-export const columns: ColumnDef<Asset>[] = [
+export const columns: AssetColumnDef[] = [
   {
     accessorFn: row => computeScore(row) ?? scoreMissingValue,
     cell: ({ getValue }) => formatNumber(getValue<number>()),
@@ -288,7 +261,7 @@ export const columns: ColumnDef<Asset>[] = [
       </span>
     ),
     header: "Tickers",
-    sortingFn: (rowA, rowB) => {
+    sortFn: (rowA, rowB) => {
       const tickersA = rowA.original.tickers.join(", ");
       const tickersB = rowB.original.tickers.join(", ");
       return tickersA.localeCompare(tickersB);
@@ -404,7 +377,7 @@ export const columns: ColumnDef<Asset>[] = [
   },
 ];
 
-export function makeDataScoreColumn(amountMap?: Map<string, number>, amountUpdatedAtMap?: Map<string, string>): ColumnDef<Asset> {
+export function makeDataScoreColumn(amountMap?: Map<string, number>, amountUpdatedAtMap?: Map<string, string>): AssetColumnDef {
   return {
     accessorFn: row => {
       if (amountMap === undefined && amountUpdatedAtMap === undefined) return computeDataScore(row);
@@ -453,7 +426,7 @@ function renderTargetAmountEditCell({ amountInput, percentInput, trendIcon }: { 
   );
 }
 
-export function makeTargetAmountColumn(targetAmountMap: Map<string, number> | undefined): ColumnDef<Asset> {
+export function makeTargetAmountColumn(targetAmountMap: Map<string, number> | undefined): AssetColumnDef {
   return {
     accessorFn: row => targetAmountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
@@ -497,7 +470,7 @@ export function makeTargetAmountColumn(targetAmountMap: Map<string, number> | un
   };
 }
 
-export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string> | undefined): ColumnDef<Asset> {
+export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string> | undefined): AssetColumnDef {
   return makeUpdatedAtColumn({
     dateMap: amountUpdatedAtMap,
     header: "Amt. updated",
@@ -507,7 +480,7 @@ export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string
   });
 }
 
-function makeUpdatedAtColumn({ dateMap, header, id, testIdPrefix, title }: { dateMap: Map<string, string> | undefined; header: string; id: string; testIdPrefix: string; title: string }): ColumnDef<Asset> {
+function makeUpdatedAtColumn({ dateMap, header, id, testIdPrefix, title }: { dateMap: Map<string, string> | undefined; header: string; id: string; testIdPrefix: string; title: string }): AssetColumnDef {
   return {
     accessorFn: row => dateMap?.get(row.isin),
     cell: ({ getValue, row }) => (
@@ -521,7 +494,7 @@ function makeUpdatedAtColumn({ dateMap, header, id, testIdPrefix, title }: { dat
   };
 }
 
-export function makeTargetAmountUpdatedAtColumn(targetAmountUpdatedAtMap: Map<string, string> | undefined): ColumnDef<Asset> {
+export function makeTargetAmountUpdatedAtColumn(targetAmountUpdatedAtMap: Map<string, string> | undefined): AssetColumnDef {
   return makeUpdatedAtColumn({
     dateMap: targetAmountUpdatedAtMap,
     header: "Tgt. updated",
@@ -531,7 +504,7 @@ export function makeTargetAmountUpdatedAtColumn(targetAmountUpdatedAtMap: Map<st
   });
 }
 
-export function makeSimilarityColumn(assets: Asset[], onDismiss?: (isin: string, matchedIsin: string) => void): ColumnDef<Asset> {
+export function makeSimilarityColumn(assets: Asset[], onDismiss?: (isin: string, matchedIsin: string) => void): AssetColumnDef {
   const resultsMap = new Map(assets.map(asset => [asset.isin, computeMaxSimilarity(asset, assets, asset.dismissedSimilarities)]));
   return {
     accessorFn: row => resultsMap.get(row.isin)?.score,
@@ -543,7 +516,7 @@ export function makeSimilarityColumn(assets: Asset[], onDismiss?: (isin: string,
   };
 }
 
-export function makeRemoveColumn(onRemove: (isin: string) => void): ColumnDef<Asset> {
+export function makeRemoveColumn(onRemove: (isin: string) => void): AssetColumnDef {
   return {
     cell: ({ row }) => (
       <button type="button" data-testid={`remove-${row.original.isin.toLowerCase()}`} className="btn-ghost-error" aria-label={`Remove ${row.original.name}`} onClick={() => onRemove(row.original.isin)}>
