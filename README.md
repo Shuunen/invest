@@ -3,7 +3,9 @@
 [![Project license](https://img.shields.io/github/license/Shuunen/invest.svg?color=informational)](https://github.com/Shuunen/invest/blob/master/LICENSE)
 [![Visitors](https://hits.sh/github.com/Shuunen/invest.svg?label=visitors&color=informational)](https://hits.sh/github.com/Shuunen/invest/)
 
-Portfolio Tracker PWA — offline-first, local-persistence investment portfolio manager.
+![logo](docs/banner.svg)
+
+> Portfolio Tracker PWA — offline-first, local-persistence investment portfolio manager.
 
 ## Stack
 
@@ -17,6 +19,10 @@ Portfolio Tracker PWA — offline-first, local-persistence investment portfolio 
 - **Playwright** — E2E tests (including offline/PWA)
 - **vite-plugin-pwa** — PWA support
 - **Turborepo** — task caching and parallel build orchestration
+
+## Demo
+
+![demo](docs/demo.jpg)
 
 ## Dev
 
