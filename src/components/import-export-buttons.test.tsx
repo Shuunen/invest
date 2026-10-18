@@ -270,20 +270,20 @@ describe("getStalenessTier", () => {
   });
 });
 
-describe("ImportExportButtons staleness dot", () => {
-  function renderWithEdits(editCount: number) {
-    useAppStore.setState({
-      data: {
-        ...defaultAppData,
-        assets: [makeAsset()],
-        settings: { ...defaultAppData.settings, editCount },
-      },
-      isLoading: false,
-      loadError: undefined,
-    });
-    render(<ImportExportButtons />, { wrapper: TranslationProvider });
-  }
+function renderWithEdits(editCount: number) {
+  useAppStore.setState({
+    data: {
+      ...defaultAppData,
+      assets: [makeAsset()],
+      settings: { ...defaultAppData.settings, editCount },
+    },
+    isLoading: false,
+    loadError: undefined,
+  });
+  render(<ImportExportButtons />, { wrapper: TranslationProvider });
+}
 
+describe("ImportExportButtons staleness dot", () => {
   it("shows no staleness dot when unexported edits < 5 (tier 0)", () => {
     expect.hasAssertions();
     renderWithEdits(4);

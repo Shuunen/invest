@@ -5,14 +5,13 @@ import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
 import { TranslationProvider } from "../utils/translations-provider.tsx";
 import { PortfolioPage } from "./portfolio.tsx";
 
-const mockLink = vi.hoisted(
-  () =>
-    ({ children, to: _to, ...rest }: { children: React.ReactNode; to?: string }): React.ReactElement => <span {...rest}>{children}</span>,
-);
+function MockLink({ children, to: _to, ...rest }: { children: React.ReactNode; to?: string }): React.ReactElement {
+  return <span {...rest}>{children}</span>;
+}
 
 vi.mock(import("@tanstack/react-router"), async () => {
   const actual = await import("@tanstack/react-router");
-  return { ...actual, Link: mockLink as unknown as typeof actual.Link };
+  return { ...actual, Link: MockLink as unknown as typeof actual.Link };
 });
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {

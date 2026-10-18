@@ -131,7 +131,7 @@ export function AssetPickerModal({ assets, initialSelected, amountByIsin, onCanc
   });
 
   return (
-    <dialog className="modal-open modal" aria-modal="true">
+    <dialog className="modal modal-open" aria-modal="true">
       <div className="modal-box w-11/12 max-w-none bg-base-200">
         <ModalHeader title={title} onClose={onCancel} />
         <div className="mb-3 flex justify-between pb-2" data-testid="allocation-preview-row">

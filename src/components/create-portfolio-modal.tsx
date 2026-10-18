@@ -47,7 +47,7 @@ function useCreatePortfolioForm(onClose: () => void) {
 export function CreatePortfolioModal({ onClose }: { onClose: () => void }) {
   const { broker, brokerError, handleSubmit, name, nameError, setBroker, setName } = useCreatePortfolioForm(onClose);
   return (
-    <dialog className="modal-open modal" aria-modal="true">
+    <dialog className="modal modal-open" aria-modal="true">
       <div className="modal-box">
         <ModalHeader title="Create portfolio" onClose={onClose} />
         <form onSubmit={handleSubmit} noValidate>

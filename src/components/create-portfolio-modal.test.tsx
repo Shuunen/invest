@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { invariant } from "es-toolkit";
 import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
@@ -26,7 +26,9 @@ describe("CreatePortfolioModal", () => {
     useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
     render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />, { wrapper: TranslationProvider });
     fireEvent.click(screen.getByTestId("form-confirm-button"));
-    await expect(screen.findByTestId("portfolio-name-error")).resolves.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("portfolio-name-error")).toHaveTextContent(/\S/u);
+    });
   });
 
   it("shows validation error when submitting with empty broker", async () => {
@@ -35,7 +37,9 @@ describe("CreatePortfolioModal", () => {
     render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />, { wrapper: TranslationProvider });
     await userEvent.type(screen.getByTestId("portfolio-name"), "My Fund");
     fireEvent.click(screen.getByTestId("form-confirm-button"));
-    await expect(screen.findByTestId("portfolio-broker-error")).resolves.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId("portfolio-broker-error")).toHaveTextContent(/\S/u);
+    });
   });
 
   it("calls onClose when Cancel is clicked", () => {

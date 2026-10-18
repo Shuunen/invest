@@ -14,7 +14,7 @@ export function UnDismissConfirmModal({ confirm, onClose, onConfirm }: Props) {
   const { translate } = useTranslation();
   if (!confirm) return undefined;
   return (
-    <dialog data-testid="un-dismiss-confirm-modal" open className="modal-open modal">
+    <dialog data-testid="un-dismiss-confirm-modal" open className="modal modal-open">
       <div className="modal-box">
         <ModalHeader title="Remove dismissed similarity" onClose={onClose} />
         <p className="text-sm">
