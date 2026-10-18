@@ -58,7 +58,7 @@
     "url": "git+https://github.com/Shuunen/invest.git"
   },
   "scripts": {
-    "build": "turbo run build:tsc build:vite && echo build completed successfully || (echo Please fix build errors and run pnpm run build to check for remaining build issues && exit 1)",
+    "build": "turbo run build:tsc build:vite && pnpm mark && echo build completed successfully || (echo Please fix build errors and run pnpm run build to check for remaining build issues && exit 1)",
     "build:tsc": "tsc -b && echo build:tsc completed successfully || (echo Please fix type errors and run pnpm run build:tsc to check for remaining type issues && exit 1)",
     "build:vite": "vite build && echo build:vite completed successfully || (echo Please fix build errors and run pnpm run build:vite to check for remaining build issues && exit 1)",
     "check": "turbo run lint:types lint:format lint:fallow lint:issues build:tsc build:vite test:unit test:e2e && echo check completed successfully",
@@ -70,6 +70,7 @@
     "lint:issues": "oxlint --type-aware --deny-warnings --report-unused-disable-directives && echo lint:issues completed successfully || (echo Please run pnpm run lint:fix to automatically fix linting issues && exit 1)",
     "lint:issues:fix": "oxlint --fix --fix-suggestions --fix-dangerously --type-aware --deny-warnings --report-unused-disable-directives && echo lint:issues:fix completed successfully || (echo Please run pnpm run lint:issues to check for remaining linting issues && exit 1)",
     "lint:types": "tsgo -p tsconfig.app.json && tsgo -p tsconfig.node.json && echo lint:types completed successfully || (echo Please fix type errors and run pnpm run lint:types to check for remaining type issues && exit 1)",
+    "mark": "unique-mark ./dist/*.{html} && echo mark success",
     "postversion": "git push && git push --tags",
     "preversion": "pnpm check",
     "preview": "vite preview",
