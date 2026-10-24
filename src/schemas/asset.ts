@@ -116,9 +116,9 @@ export function computeScore(asset: Asset): number | undefined {
   // Collect available metrics with nominal weights
   type TimeFrame = typeof scoreTimeFrameShort | typeof scoreTimeFrameMedium | typeof scoreTimeFrameLong;
   const nominalWeights: Record<TimeFrame, number> = {
-    [scoreTimeFrameShort]: scoreWeightShort,
-    [scoreTimeFrameMedium]: scoreWeightMedium,
     [scoreTimeFrameLong]: scoreWeightLong,
+    [scoreTimeFrameMedium]: scoreWeightMedium,
+    [scoreTimeFrameShort]: scoreWeightShort,
   };
 
   const perfMetrics: Metric[] = [];
