@@ -66,6 +66,9 @@ export default defineConfig({
       },
     }),
   ],
+  // dedicated ports, so apps never collide when running together
+  preview: { port: 4105, strictPort: true },
+  server: { port: 5105, strictPort: true },
   test: {
     coverage: {
       exclude: ["src/bin/**/*", "src/pwa.ts", "src/*.tsx", "src/components/animations/**/*"],
