@@ -70,7 +70,7 @@
     "check": "repo-check && turbo run lint:types lint:format lint:fallow lint:issues build:tsc build:vite test:unit test:e2e && echo check completed successfully",
     "dev": "turbo run start:proxy start:vite",
     "lint": "turbo run lint:types lint:format lint:fallow lint:issues && echo lint completed successfully",
-    "lint:fallow": "pnpx fallow --only dead-code,dupes && pnpx fallow health --targets --baseline .fallow-baselines/health.json && echo lint:fallow completed successfully || (echo Please fix lint issues reported by fallow and run pnpm run lint:fallow to check for remaining issues && exit 1)",
+    "lint:fallow": "pnpm dlx fallow --only dead-code,dupes && pnpm dlx fallow health --targets --baseline .fallow-baselines/health.json && echo lint:fallow completed successfully || (echo Please fix lint issues reported by fallow and run pnpm run lint:fallow to check for remaining issues && exit 1)",
     "lint:format": "oxfmt --check && echo lint:format completed successfully || (echo Please run pnpm run lint:format:fix to automatically fix formatting issues && exit 1)",
     "lint:format:fix": "oxfmt --write && echo lint:format:fix completed successfully || (echo Please run pnpm run lint:format to check for remaining formatting issues && exit 1)",
     "lint:issues": "oxlint --type-aware --deny-warnings --report-unused-disable-directives && echo lint:issues completed successfully || (echo Please run pnpm run lint:fix to automatically fix linting issues && exit 1)",
