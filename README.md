@@ -58,6 +58,7 @@ Sample data lives in `data/sample.json`. Import it via the app's import function
 - [Knip](https://github.com/webpro/knip) : super tool to find & fix problems
 - [Oxc](https://oxc.rs) : a lovely super-fast collection of JavaScript tools written in Rust
 - [React](https://react.dev) : great library for web and native user interfaces
+- [Repo-checker](https://github.com/Shuunen/repo-checker) : eslint cover /src code and this tool the rest ^^
 - [Shields.io](https://shields.io) : for the nice badges on top of this readme
 - [Shuutils](https://github.com/Shuunen/shuutils) : collection of pure JS utils
 - [Svg Omg](https://jakearchibald.github.io/svgomg/) : the great king of svg file size reduction

@@ -38,6 +38,7 @@
     "HTMLInputElement": "readonly",
     "HTMLTextAreaElement": "readonly",
     "HTMLVideoElement": "readonly",
+    "indexedDB": "readonly",
     "KeyboardEvent": "readonly",
     "localStorage": "readonly",
     "Node": "readonly",
@@ -51,13 +52,15 @@
     "TextEncoder": "readonly",
     "URL": "readonly",
     "window": "readonly",
-    "indexedDB": "readonly",
     "XMLSerializer": "readonly",
     "XPathEvaluator": "readonly",
     "XPathResult": "readonly"
   },
   "ignorePatterns": [".git", ".nx", "*.d.ts", "coverage", "dist", "node_modules", "out-tsc", "routeTree.gen.ts", "shadcn", "storybook-static", "test-output"],
-  "plugins": ["import", "jsdoc", "oxc", "promise", "react", "react-perf", "typescript", "unicorn", "vitest"],
+  "options": {
+    "typeAware": true,
+    "typeCheck": true
+  },
   "overrides": [
     {
       "files": ["src/bin/**/*.ts"],
@@ -82,21 +85,22 @@
         "vi": "readonly"
       },
       "rules": {
-        "max-nested-callbacks": "off",
-        "max-lines-per-function": "off",
-        "max-lines": "off",
-        "prefer-ending-with-an-expect": "off",
-        "no-conditional-in-test": "off",
-        "vitest/prefer-lowercase-title": "off",
-        "prefer-importing-jest-globals": "off",
-        "prefer-describe-function-title": "off",
         "jsx-no-new-array-as-prop": "off",
-        "no-magic-numbers": "off",
+        "max-lines": "off",
+        "max-lines-per-function": "off",
+        "max-nested-callbacks": "off",
         "max-statements": "off",
-        "no-nodejs-modules": "off"
+        "no-conditional-in-test": "off",
+        "no-magic-numbers": "off",
+        "no-nodejs-modules": "off",
+        "prefer-describe-function-title": "off",
+        "prefer-ending-with-an-expect": "off",
+        "prefer-importing-jest-globals": "off",
+        "vitest/prefer-lowercase-title": "off"
       }
     }
   ],
+  "plugins": ["import", "jsdoc", "oxc", "promise", "react", "react-perf", "typescript", "unicorn", "vitest"],
   "rules": {
     "array-type": "off",
     "capitalized-comments": "off",
@@ -122,7 +126,6 @@
       }
     ],
     "group-exports": "off",
-    "one-var": "off",
     "jsdoc/require-param-type": "off",
     "jsdoc/require-returns-type": "off",
     "jsx-filename-extension": [
@@ -185,6 +188,7 @@
     "no-void": "off",
     "no-warning-comments": "off",
     "number-literal-case": "off",
+    "one-var": "off",
     "prefer-at": "error",
     "prefer-default-export": "off",
     "prefer-importing-vitest-globals": "off",
@@ -200,6 +204,12 @@
     "strict-void-return": "off",
     "switch-exhaustiveness-check": "off",
     "unambiguous": "off",
+    "unicorn/filename-case": [
+      "error",
+      {
+        "case": "kebabCase"
+      }
+    ],
     "unicorn/prefer-spread": "off",
     "vitest/prefer-called-times": "off",
     "vitest/prefer-to-be-falsy": "off",
