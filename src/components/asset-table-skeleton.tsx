@@ -1,5 +1,5 @@
-const nbCols = 9;
-const nbRows = 5;
+const nbCols = 9
+const nbRows = 5
 
 export function renderSkeleton() {
   return (
@@ -20,5 +20,5 @@ export function renderSkeleton() {
         </table>
       </div>
     </div>
-  );
+  )
 }

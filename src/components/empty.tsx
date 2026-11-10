@@ -1,12 +1,12 @@
-import { kebabCase } from "es-toolkit";
-import { FileQuestionMarkIcon, type LucideIcon } from "lucide-react";
+import { kebabCase } from 'es-toolkit'
+import { FileQuestionMarkIcon, type LucideIcon } from 'lucide-react'
 
 type EmptyProps = {
-  description: React.ReactNode;
-  icon?: LucideIcon;
-  title: React.ReactNode;
-  name: string;
-};
+  description: React.ReactNode
+  icon?: LucideIcon
+  title: React.ReactNode
+  name: string
+}
 
 export function Empty({ description, icon: Icon = FileQuestionMarkIcon, title, name }: EmptyProps) {
   return (
@@ -17,5 +17,5 @@ export function Empty({ description, icon: Icon = FileQuestionMarkIcon, title, n
       <h2 className="text-2xl">{title}</h2>
       {description !== undefined && <p>{description}</p>}
     </div>
-  );
+  )
 }

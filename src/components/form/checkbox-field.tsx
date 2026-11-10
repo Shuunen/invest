@@ -1,11 +1,11 @@
-import { kebabCase } from "es-toolkit";
+import { kebabCase } from 'es-toolkit'
 
 export type CheckboxFieldProps = {
-  label: string;
-  name: string;
-  onChange: (value: boolean) => void;
-  value: boolean;
-};
+  label: string
+  name: string
+  onChange: (value: boolean) => void
+  value: boolean
+}
 
 export function CheckboxField({ label, name, onChange, value }: CheckboxFieldProps) {
   return (
@@ -15,5 +15,5 @@ export function CheckboxField({ label, name, onChange, value }: CheckboxFieldPro
         <span className="label">{label}</span>
       </label>
     </div>
-  );
+  )
 }

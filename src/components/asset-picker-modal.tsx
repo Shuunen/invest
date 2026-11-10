@@ -1,134 +1,134 @@
-import { useMemo, useState } from "react";
-import type { Asset } from "../schemas/asset.ts";
-import { computeWeightedAllocationsFromSelection } from "../utils/allocation-charts.ts";
-import { useTranslation, type Translate } from "../utils/translations.ts";
-import { AssetTable } from "./asset-table.tsx";
-import { AllocationChart } from "./charts/allocation.tsx";
-import { ModalActions } from "./modal-actions.tsx";
-import { ModalHeader } from "./modal-header.tsx";
+import { useMemo, useState } from 'react'
+import type { Asset } from '../schemas/asset.ts'
+import { computeWeightedAllocationsFromSelection } from '../utils/allocation-charts.ts'
+import { useTranslation, type Translate } from '../utils/translations.ts'
+import { AssetTable } from './asset-table.tsx'
+import { AllocationChart } from './charts/allocation.tsx'
+import { ModalActions } from './modal-actions.tsx'
+import { ModalHeader } from './modal-header.tsx'
 
 type Props = {
   /** The list of all available assets to choose from in the picker */
-  assets: Asset[];
+  assets: Asset[]
   /** The ISINs of the assets that should be initially selected when the modal opens */
-  initialSelected: Set<string>;
+  initialSelected: Set<string>
   /** Optional amount map used to compute capital-weighted allocation previews */
-  amountByIsin?: Map<string, number>;
+  amountByIsin?: Map<string, number>
   /** Called when the user cancels the selection (e.g. by clicking outside the modal or on the Cancel button) */
-  onCancel: () => void;
+  onCancel: () => void
   /** Called with the new set of selected ISINs when the user confirms their selection */
-  onConfirm: (selectedIsins: string[]) => void;
+  onConfirm: (selectedIsins: string[]) => void
   /** The title of the modal */
-  title: string;
-};
+  title: string
+}
 
 function useAssetPicker(initialSelected: Set<string>, onConfirm: (selectedIsins: string[]) => void) {
-  const [selected, setSelected] = useState<Set<string>>(() => new Set(initialSelected));
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(initialSelected))
 
   function toggle(isin: string) {
-    const next = new Set(selected);
-    if (next.has(isin)) next.delete(isin);
-    else next.add(isin);
-    setSelected(next);
+    const next = new Set(selected)
+    if (next.has(isin)) next.delete(isin)
+    else next.add(isin)
+    setSelected(next)
   }
 
   function handleConfirm() {
-    onConfirm([...selected]);
+    onConfirm([...selected])
   }
 
-  return { handleConfirm, selected, toggle };
+  return { handleConfirm, selected, toggle }
 }
 
-type RenderListArgs = { assets: Asset[]; selected: Set<string>; toggle: (isin: string) => void; translate: Translate };
+type RenderListArgs = { assets: Asset[]; selected: Set<string>; toggle: (isin: string) => void; translate: Translate }
 
 function renderPickerList({ assets, selected, toggle, translate }: RenderListArgs) {
   if (assets.length === 0)
     return (
       <p data-testid="no-assets-message" className="p-4 text-center text-base-content/60">
-        {translate("picker-no-instruments")}
+        {translate('picker-no-instruments')}
       </p>
-    );
-  return <AssetTable assets={assets} selectedIsins={selected} onToggleSelect={toggle} />;
+    )
+  return <AssetTable assets={assets} selectedIsins={selected} onToggleSelect={toggle} />
 }
 
 type AllocationPreviewArgs = {
-  amountByIsin?: Map<string, number>;
-  assets: Asset[];
-  initialSelected: Set<string>;
-  selected: Set<string>;
-};
+  amountByIsin?: Map<string, number>
+  assets: Asset[]
+  initialSelected: Set<string>
+  selected: Set<string>
+}
 
 function useAllocationPreview({ amountByIsin, assets, initialSelected, selected }: AllocationPreviewArgs) {
-  const [newSelectionInvestmentAmount, setNewSelectionInvestmentAmount] = useState(0);
-  const assetByIsin = useMemo(() => new Map(assets.map(asset => [asset.isin, asset])), [assets]);
+  const [newSelectionInvestmentAmount, setNewSelectionInvestmentAmount] = useState(0)
+  const assetByIsin = useMemo(() => new Map(assets.map(asset => [asset.isin, asset])), [assets])
 
   const selectedWithoutAmount = useMemo(() => {
-    if (amountByIsin === undefined) return [];
-    return [...selected].filter(isin => !amountByIsin.has(isin));
-  }, [amountByIsin, selected]);
+    if (amountByIsin === undefined) return []
+    return [...selected].filter(isin => !amountByIsin.has(isin))
+  }, [amountByIsin, selected])
 
   const afterAmountByIsin = useMemo(() => {
-    if (amountByIsin === undefined) return undefined;
-    if (selectedWithoutAmount.length === 0) return amountByIsin;
+    if (amountByIsin === undefined) return undefined
+    if (selectedWithoutAmount.length === 0) return amountByIsin
 
-    const nextAmountByIsin = new Map(amountByIsin);
-    const eurosPerNewAsset = newSelectionInvestmentAmount / selectedWithoutAmount.length;
+    const nextAmountByIsin = new Map(amountByIsin)
+    const eurosPerNewAsset = newSelectionInvestmentAmount / selectedWithoutAmount.length
     for (const isin of selectedWithoutAmount) {
-      const price = assetByIsin.get(isin)?.price;
-      const amountInUnits = price === undefined || price <= 0 ? 0 : eurosPerNewAsset / price;
-      nextAmountByIsin.set(isin, amountInUnits);
+      const price = assetByIsin.get(isin)?.price
+      const amountInUnits = price === undefined || price <= 0 ? 0 : eurosPerNewAsset / price
+      nextAmountByIsin.set(isin, amountInUnits)
     }
-    return nextAmountByIsin;
-  }, [amountByIsin, assetByIsin, newSelectionInvestmentAmount, selectedWithoutAmount]);
+    return nextAmountByIsin
+  }, [amountByIsin, assetByIsin, newSelectionInvestmentAmount, selectedWithoutAmount])
 
-  const beforeAllocations = useMemo(() => computeWeightedAllocationsFromSelection({ amountByIsin, assets, defaultAmount: amountByIsin === undefined ? 1 : 0, selectedIsins: initialSelected }), [amountByIsin, assets, initialSelected]);
+  const beforeAllocations = useMemo(() => computeWeightedAllocationsFromSelection({ amountByIsin, assets, defaultAmount: amountByIsin === undefined ? 1 : 0, selectedIsins: initialSelected }), [amountByIsin, assets, initialSelected])
   const afterAllocations = useMemo(
     () => computeWeightedAllocationsFromSelection({ amountByIsin: afterAmountByIsin, assets, defaultAmount: amountByIsin === undefined ? 1 : 0, selectedIsins: selected }),
     [afterAmountByIsin, amountByIsin, assets, selected],
-  );
+  )
 
-  return { afterAllocations, beforeAllocations, newSelectionInvestmentAmount, selectedWithoutAmount, setNewSelectionInvestmentAmount };
+  return { afterAllocations, beforeAllocations, newSelectionInvestmentAmount, selectedWithoutAmount, setNewSelectionInvestmentAmount }
 }
 
 type RenderSelectionInvestmentInputArgs = {
-  newSelectionCount: number;
-  value: number;
-  onChange: (nextValue: number) => void;
-  translate: Translate;
-};
+  newSelectionCount: number
+  value: number
+  onChange: (nextValue: number) => void
+  translate: Translate
+}
 
 function renderSelectionInvestmentInput({ newSelectionCount, onChange, translate, value }: RenderSelectionInvestmentInputArgs) {
   return (
     <div className="flex w-72 items-center justify-center">
       <label className="flex flex-col gap-2" data-testid="new-selection-investment-control">
-        <span>{translate("picker-investment-label")}</span>
+        <span>{translate('picker-investment-label')}</span>
         <input
           type="number"
           min={0}
           step={100}
           value={value}
           onChange={event => {
-            const next = Number(event.target.value);
-            onChange(Number.isFinite(next) && next >= 0 ? next : 0);
+            const next = Number(event.target.value)
+            onChange(Number.isFinite(next) && next >= 0 ? next : 0)
           }}
           className="input-bordered input w-1/2 input-sm"
           data-testid="new-selection-investment-input"
         />
-        <small>{translate("picker-split-equally", { nbAssets: newSelectionCount })}</small>
+        <small>{translate('picker-split-equally', { nbAssets: newSelectionCount })}</small>
       </label>
     </div>
-  );
+  )
 }
 
 export function AssetPickerModal({ assets, initialSelected, amountByIsin, onCancel, onConfirm, title }: Props) {
-  const { translate } = useTranslation();
-  const { handleConfirm, selected, toggle } = useAssetPicker(initialSelected, onConfirm);
+  const { translate } = useTranslation()
+  const { handleConfirm, selected, toggle } = useAssetPicker(initialSelected, onConfirm)
   const { afterAllocations, beforeAllocations, newSelectionInvestmentAmount, selectedWithoutAmount, setNewSelectionInvestmentAmount } = useAllocationPreview({
     amountByIsin,
     assets,
     initialSelected,
     selected,
-  });
+  })
 
   return (
     <dialog className="modal modal-open" aria-modal="true">
@@ -143,11 +143,11 @@ export function AssetPickerModal({ assets, initialSelected, amountByIsin, onCanc
         </div>
         <div className="max-h-144 overflow-y-auto rounded-box border border-base-200">{renderPickerList({ assets, selected, toggle, translate })}</div>
         <p data-testid="selected-count" className="mt-2 text-sm text-base-content/60">
-          {translate("picker-selected-count", { count: selected.size })}
+          {translate('picker-selected-count', { count: selected.size })}
         </p>
         <ModalActions onCancel={onCancel} onConfirm={handleConfirm} confirmText="Confirm" type="default" />
       </div>
       <div className="modal-backdrop" onClick={onCancel} />
     </dialog>
-  );
+  )
 }

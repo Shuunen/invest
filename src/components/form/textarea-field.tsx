@@ -1,12 +1,12 @@
-import { kebabCase } from "es-toolkit";
+import { kebabCase } from 'es-toolkit'
 
 export type TextareaFieldProps = {
-  label: string;
-  name: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  value: string;
-};
+  label: string
+  name: string
+  onChange: (value: string) => void
+  placeholder?: string
+  value: string
+}
 
 export function TextareaField({ label, name, onChange, placeholder, value }: TextareaFieldProps) {
   return (
@@ -16,5 +16,5 @@ export function TextareaField({ label, name, onChange, placeholder, value }: Tex
       </label>
       <textarea id={name} data-testid={kebabCase(name)} className="textarea-bordered textarea w-full" placeholder={placeholder} value={value} onChange={event => onChange(event.target.value)} />
     </div>
-  );
+  )
 }

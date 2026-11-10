@@ -1,60 +1,60 @@
-import { AssetSchema, type Asset, type Country, type Sector } from "../../schemas/asset.ts";
-import { maxPercentage } from "../../utils/constants.ts";
-import { maxDecimals } from "../../utils/format-numbers.ts";
+import { AssetSchema, type Asset, type Country, type Sector } from '../../schemas/asset.ts'
+import { maxPercentage } from '../../utils/constants.ts'
+import { maxDecimals } from '../../utils/format-numbers.ts'
 
 export type FormState = {
-  availableForPea: boolean;
-  availableForPlan: boolean;
-  availableOnBroker: boolean;
-  comments: string;
-  fees: string;
-  geoAllocation: Partial<Record<Country, string>>;
-  isAccumulating: boolean;
-  isin: string;
-  name: string;
-  performance1y: string;
-  performance3y: string;
-  performance5y: string;
-  price: string;
-  provider: string;
-  riskReward1y: string;
-  riskReward3y: string;
-  riskReward5y: string;
-  sectorAllocation: Partial<Record<Sector, string>>;
-  tickers: string;
-};
+  availableForPea: boolean
+  availableForPlan: boolean
+  availableOnBroker: boolean
+  comments: string
+  fees: string
+  geoAllocation: Partial<Record<Country, string>>
+  isAccumulating: boolean
+  isin: string
+  name: string
+  performance1y: string
+  performance3y: string
+  performance5y: string
+  price: string
+  provider: string
+  riskReward1y: string
+  riskReward3y: string
+  riskReward5y: string
+  sectorAllocation: Partial<Record<Sector, string>>
+  tickers: string
+}
 
-export type PatchFn = <Key extends keyof FormState>(key: Key, value: FormState[Key]) => void;
+export type PatchFn = <Key extends keyof FormState>(key: Key, value: FormState[Key]) => void
 
 function toPercentString(decimal: number): string {
-  return String(Number((decimal * maxPercentage).toFixed(maxDecimals)));
+  return String(Number((decimal * maxPercentage).toFixed(maxDecimals)))
 }
 
 function fromPercentString(pct: string): number {
-  return Number(pct) / maxPercentage;
+  return Number(pct) / maxPercentage
 }
 
 export const emptyFormState: FormState = {
   availableForPea: false,
   availableForPlan: false,
   availableOnBroker: false,
-  comments: "",
-  fees: "0",
+  comments: '',
+  fees: '0',
   geoAllocation: {},
   isAccumulating: false,
-  isin: "",
-  name: "",
-  performance1y: "",
-  performance3y: "",
-  performance5y: "",
-  price: "",
-  provider: "",
-  riskReward1y: "",
-  riskReward3y: "",
-  riskReward5y: "",
+  isin: '',
+  name: '',
+  performance1y: '',
+  performance3y: '',
+  performance5y: '',
+  price: '',
+  provider: '',
+  riskReward1y: '',
+  riskReward3y: '',
+  riskReward5y: '',
   sectorAllocation: {},
-  tickers: "",
-};
+  tickers: '',
+}
 
 export function toFormState(asset: Asset): FormState {
   return {
@@ -67,55 +67,55 @@ export function toFormState(asset: Asset): FormState {
     isAccumulating: asset.isAccumulating,
     isin: asset.isin,
     name: asset.name,
-    performance1y: asset.performance1y === undefined ? "" : String(asset.performance1y),
-    performance3y: asset.performance3y === undefined ? "" : String(asset.performance3y),
-    performance5y: asset.performance5y === undefined ? "" : String(asset.performance5y),
-    price: asset.price === undefined ? "" : String(asset.price),
+    performance1y: asset.performance1y === undefined ? '' : String(asset.performance1y),
+    performance3y: asset.performance3y === undefined ? '' : String(asset.performance3y),
+    performance5y: asset.performance5y === undefined ? '' : String(asset.performance5y),
+    price: asset.price === undefined ? '' : String(asset.price),
     provider: asset.provider,
-    riskReward1y: asset.riskReward1y === undefined ? "" : String(asset.riskReward1y),
-    riskReward3y: asset.riskReward3y === undefined ? "" : String(asset.riskReward3y),
-    riskReward5y: asset.riskReward5y === undefined ? "" : String(asset.riskReward5y),
+    riskReward1y: asset.riskReward1y === undefined ? '' : String(asset.riskReward1y),
+    riskReward3y: asset.riskReward3y === undefined ? '' : String(asset.riskReward3y),
+    riskReward5y: asset.riskReward5y === undefined ? '' : String(asset.riskReward5y),
     sectorAllocation: Object.fromEntries(Object.entries(asset.sectorAllocation).map(([key, val]) => [key, toPercentString(val)])),
-    tickers: asset.tickers.join(", "),
-  };
+    tickers: asset.tickers.join(', '),
+  }
 }
 
 export function parseOptionalNumber(str: string): number | undefined {
-  const trimmed = str.trim();
-  if (trimmed === "") return undefined;
-  const num = Number(trimmed);
-  return Number.isNaN(num) ? undefined : num;
+  const trimmed = str.trim()
+  if (trimmed === '') return undefined
+  const num = Number(trimmed)
+  return Number.isNaN(num) ? undefined : num
 }
 
 function parseTickers(raw: string): string[] {
   return raw
-    .split(",")
+    .split(',')
     .map(ticker => ticker.trim())
-    .filter(Boolean);
+    .filter(Boolean)
 }
 
 export function parseZodErrors(issues: { message: string; path: unknown[] }[]): Record<string, string> {
-  const fieldErrors: Record<string, string> = {};
+  const fieldErrors: Record<string, string> = {}
   for (const issue of issues) {
-    const [field] = issue.path;
-    if (typeof field !== "string") {
-      fieldErrors.form = issue.message;
-      continue;
+    const [field] = issue.path
+    if (typeof field !== 'string') {
+      fieldErrors.form = issue.message
+      continue
     }
-    fieldErrors[field] = issue.message;
+    fieldErrors[field] = issue.message
   }
-  return fieldErrors;
+  return fieldErrors
 }
 
 function parseAllocation(record: Partial<Record<string, string>>): Record<string, number> {
   return Object.fromEntries(
     Object.entries(record)
       .filter((entry): entry is [string, string] => {
-        const [, pct] = entry;
-        return pct !== undefined && pct !== "" && Number(pct) !== 0;
+        const [, pct] = entry
+        return pct !== undefined && pct !== '' && Number(pct) !== 0
       })
       .map(([key, pct]) => [key, fromPercentString(pct)]),
-  );
+  )
 }
 
 export function buildAssetFromForm(form: FormState): { data: Asset } | { errors: Record<string, string> } {
@@ -139,9 +139,9 @@ export function buildAssetFromForm(form: FormState): { data: Asset } | { errors:
     riskReward5y: parseOptionalNumber(form.riskReward5y),
     sectorAllocation: parseAllocation(form.sectorAllocation),
     tickers: parseTickers(form.tickers),
-  });
+  })
 
-  if (!result.success) return { errors: parseZodErrors(result.error.issues) };
+  if (!result.success) return { errors: parseZodErrors(result.error.issues) }
 
-  return { data: result.data };
+  return { data: result.data }
 }

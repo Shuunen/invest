@@ -1,38 +1,38 @@
-import { invariant } from "es-toolkit";
-import { Trash2 } from "lucide-react";
-import { useState } from "react";
-import type { Asset } from "../../schemas/asset.ts";
-import { useTranslation } from "../../utils/translations.ts";
-import { UnDismissConfirmModal, type UnDismissConfirmState } from "./un-dismiss-confirm-modal.tsx";
+import { invariant } from 'es-toolkit'
+import { Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import type { Asset } from '../../schemas/asset.ts'
+import { useTranslation } from '../../utils/translations.ts'
+import { UnDismissConfirmModal, type UnDismissConfirmState } from './un-dismiss-confirm-modal.tsx'
 
 type Props = {
-  asset: Asset;
-  allAssets: Asset[];
-  onUnDismiss?: (isin: string, matchedIsin: string) => void;
-};
+  asset: Asset
+  allAssets: Asset[]
+  onUnDismiss?: (isin: string, matchedIsin: string) => void
+}
 
 export function DismissedSimilaritiesSection({ asset, allAssets, onUnDismiss }: Props) {
-  const { translate } = useTranslation();
-  const [confirm, setConfirm] = useState<UnDismissConfirmState>(undefined);
+  const { translate } = useTranslation()
+  const [confirm, setConfirm] = useState<UnDismissConfirmState>(undefined)
 
-  if (asset.dismissedSimilarities.length === 0) return undefined;
+  if (asset.dismissedSimilarities.length === 0) return undefined
 
   function handleConfirm() {
-    invariant(confirm, "confirm state must be set when handleConfirm is called");
-    invariant(onUnDismiss, "onUnDismiss callback is required to un-dismiss similarities");
-    onUnDismiss(confirm.isin, confirm.matchedIsin);
-    setConfirm(undefined);
+    invariant(confirm, 'confirm state must be set when handleConfirm is called')
+    invariant(onUnDismiss, 'onUnDismiss callback is required to un-dismiss similarities')
+    onUnDismiss(confirm.isin, confirm.matchedIsin)
+    setConfirm(undefined)
   }
 
   return (
     <>
       <div data-testid="dismissed-similarities-card" className="card">
         <div className="card-body">
-          <h2 className="card-title">{translate("section-dismissed-similarities")}</h2>
+          <h2 className="card-title">{translate('section-dismissed-similarities')}</h2>
           <ul className="list-inside list-disc">
             {asset.dismissedSimilarities.map(matchedIsin => {
-              const matched = allAssets.find(ast => ast.isin === matchedIsin);
-              const matchedName = matched?.name ?? matchedIsin;
+              const matched = allAssets.find(ast => ast.isin === matchedIsin)
+              const matchedName = matched?.name ?? matchedIsin
               return (
                 <li key={matchedIsin} data-testid={`dismissed-similarity-${matchedIsin.toLowerCase()}`} className="ml-1 text-sm">
                   {matchedName}
@@ -48,12 +48,12 @@ export function DismissedSimilaritiesSection({ asset, allAssets, onUnDismiss }: 
                     </button>
                   )}
                 </li>
-              );
+              )
             })}
           </ul>
         </div>
       </div>
       <UnDismissConfirmModal confirm={confirm} onClose={() => setConfirm(undefined)} onConfirm={handleConfirm} />
     </>
-  );
+  )
 }

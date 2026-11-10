@@ -1,506 +1,506 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import type { Asset } from "../schemas/asset.ts";
-import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
-import { fetchEtfData } from "../utils/fetch-etf-data.ts";
-import { fetchStockData } from "../utils/fetch-stock-data.ts";
-import { TranslationProvider } from "../utils/translations-provider.tsx";
-import { AssetEditPage } from "./edit.tsx";
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import type { Asset } from '../schemas/asset.ts'
+import { defaultAppData, useAppStore } from '../store/use-app-store.ts'
+import { fetchEtfData } from '../utils/fetch-etf-data.ts'
+import { fetchStockData } from '../utils/fetch-stock-data.ts'
+import { TranslationProvider } from '../utils/translations-provider.tsx'
+import { AssetEditPage } from './edit.tsx'
 
-const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>());
+const mockNavigate = vi.hoisted(() => vi.fn<() => Promise<void>>())
 
-vi.mock(import("@tanstack/react-router"), async () => {
-  const actual = await import("@tanstack/react-router");
-  return { ...actual, useNavigate: () => mockNavigate };
-});
+vi.mock(import('@tanstack/react-router'), async () => {
+  const actual = await import('@tanstack/react-router')
+  return { ...actual, useNavigate: () => mockNavigate }
+})
 
-vi.mock(import("../utils/fetch-etf-data.ts"));
-vi.mock(import("../utils/fetch-stock-data.ts"));
+vi.mock(import('../utils/fetch-etf-data.ts'))
+vi.mock(import('../utils/fetch-stock-data.ts'))
 
 function makeAsset(overrides: Partial<Asset> = {}): Asset {
   return {
     availableForPea: true,
     availableForPlan: false,
     availableOnBroker: true,
-    comments: "",
+    comments: '',
     dismissedSimilarities: [],
     fees: 0.2,
     geoAllocation: {},
     isAccumulating: true,
-    isin: "LU1234567890",
-    name: "Test ETF",
+    isin: 'LU1234567890',
+    name: 'Test ETF',
     performance1y: 10,
     performance3y: 30,
     performance5y: 50,
     price: 100,
-    provider: "Test Provider",
+    provider: 'Test Provider',
     riskReward1y: 1.5,
     riskReward3y: 1.8,
     riskReward5y: 1.6,
     sectorAllocation: {},
-    tickers: ["TST"],
+    tickers: ['TST'],
     ...overrides,
-  };
+  }
 }
 
-describe("AssetEditPage - not found", () => {
-  it("shows not found message for unknown ISIN", () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<AssetEditPage isin="XX0000000000" />, { wrapper: TranslationProvider });
-    expect(screen.getByTestId("empty-edit-asset-not-found")).toBeInTheDocument();
-  });
+describe('AssetEditPage - not found', () => {
+  it('shows not found message for unknown ISIN', () => {
+    expect.hasAssertions()
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined })
+    render(<AssetEditPage isin="XX0000000000" />, { wrapper: TranslationProvider })
+    expect(screen.getByTestId('empty-edit-asset-not-found')).toBeInTheDocument()
+  })
 
-  it("renders form after store loads asynchronously", async () => {
-    expect.hasAssertions();
-    const asset = makeAsset();
-    useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    expect(screen.getByTestId("empty-edit-asset-not-found")).toBeInTheDocument();
-    useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
+  it('renders form after store loads asynchronously', async () => {
+    expect.hasAssertions()
+    const asset = makeAsset()
+    useAppStore.setState({ data: defaultAppData, isLoading: true, loadError: undefined })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    expect(screen.getByTestId('empty-edit-asset-not-found')).toBeInTheDocument()
+    useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined })
     await waitFor(() => {
-      expect(screen.getByTestId("name")).toBeInTheDocument();
-    });
-  });
-});
+      expect(screen.getByTestId('name')).toBeInTheDocument()
+    })
+  })
+})
 
-describe("AssetEditPage - form", () => {
-  it("renders form fields with asset data", () => {
-    expect.hasAssertions();
-    const asset = makeAsset();
+describe('AssetEditPage - form', () => {
+  it('renders form fields with asset data', () => {
+    expect.hasAssertions()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    expect(screen.getByTestId("name")).toBeInTheDocument();
-    expect(screen.getByTestId("provider")).toBeInTheDocument();
-    expect(screen.getByTestId("tickers")).toBeInTheDocument();
-  });
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    expect(screen.getByTestId('name')).toBeInTheDocument()
+    expect(screen.getByTestId('provider')).toBeInTheDocument()
+    expect(screen.getByTestId('tickers')).toBeInTheDocument()
+  })
 
-  it("saves valid form and navigates to view page", async () => {
-    expect.hasAssertions();
-    const asset = makeAsset();
+  it('saves valid form and navigates to view page', async () => {
+    expect.hasAssertions()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
-    fireEvent.click(screen.getByTestId("save-button"));
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('name'), { target: { value: 'Updated ETF' } })
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByTestId("form-confirm-button"));
+      expect(screen.getByTestId('confirm-save-modal')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByTestId('form-confirm-button'))
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
-    });
-  });
+      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: '/assets/$isin' })
+    })
+  })
 
-  it("shows before/after diff rows in confirmation modal", async () => {
-    expect.hasAssertions();
-    const asset = makeAsset();
+  it('shows before/after diff rows in confirmation modal', async () => {
+    expect.hasAssertions()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
-    fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.4" } });
-    fireEvent.click(screen.getByTestId("is-accumulating"));
-    fireEvent.click(screen.getByTestId("save-button"));
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('name'), { target: { value: 'Updated ETF' } })
+    fireEvent.change(screen.getByTestId('fees'), { target: { value: '0.4' } })
+    fireEvent.click(screen.getByTestId('is-accumulating'))
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("confirm-save-diff-table")).toBeInTheDocument();
-    });
-    expect(screen.getByTestId("change-row-name")).toBeInTheDocument();
-    expect(screen.getByTestId("change-row-fees")).toBeInTheDocument();
-    expect(screen.getByTestId("change-row-accumulating")).toHaveTextContent("No");
-    expect(screen.getByTestId("change-row-accumulating")).toHaveTextContent("Yes");
-  });
+      expect(screen.getByTestId('confirm-save-diff-table')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('change-row-name')).toBeInTheDocument()
+    expect(screen.getByTestId('change-row-fees')).toBeInTheDocument()
+    expect(screen.getByTestId('change-row-accumulating')).toHaveTextContent('No')
+    expect(screen.getByTestId('change-row-accumulating')).toHaveTextContent('Yes')
+  })
 
-  it("resets a single changed field from the confirmation modal", async () => {
-    expect.hasAssertions();
-    const asset = makeAsset();
+  it('resets a single changed field from the confirmation modal', async () => {
+    expect.hasAssertions()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("name"), { target: { value: "Changed Name" } });
-    fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.4" } });
-    fireEvent.click(screen.getByTestId("save-button"));
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('name'), { target: { value: 'Changed Name' } })
+    fireEvent.change(screen.getByTestId('fees'), { target: { value: '0.4' } })
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByTestId("reset-row-name"));
-    expect(screen.queryByTestId("change-row-name")).not.toBeInTheDocument();
-    expect(screen.getByTestId("change-row-fees")).toBeInTheDocument();
-    fireEvent.click(screen.getByTestId("form-confirm-button"));
+      expect(screen.getByTestId('confirm-save-modal')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByTestId('reset-row-name'))
+    expect(screen.queryByTestId('change-row-name')).not.toBeInTheDocument()
+    expect(screen.getByTestId('change-row-fees')).toBeInTheDocument()
+    fireEvent.click(screen.getByTestId('form-confirm-button'))
     await waitFor(() => {
-      const [savedAsset] = useAppStore.getState().data.assets;
-      expect(savedAsset?.name).toBe(asset.name);
-      expect(savedAsset?.fees).toBe(0.4);
-    });
-  });
+      const [savedAsset] = useAppStore.getState().data.assets
+      expect(savedAsset?.name).toBe(asset.name)
+      expect(savedAsset?.fees).toBe(0.4)
+    })
+  })
 
-  it("saves the snapshot captured at modal open, not live form edits made behind the modal", async () => {
-    expect.hasAssertions();
-    mockNavigate.mockClear();
-    const asset = makeAsset();
+  it('saves the snapshot captured at modal open, not live form edits made behind the modal', async () => {
+    expect.hasAssertions()
+    mockNavigate.mockClear()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
-    fireEvent.click(screen.getByTestId("save-button"));
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('name'), { target: { value: 'Updated ETF' } })
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
-    });
+      expect(screen.getByTestId('confirm-save-modal')).toBeInTheDocument()
+    })
     // Edit the live form behind the modal — the snapshot (Updated ETF) is what gets saved
-    fireEvent.change(screen.getByTestId("name"), { target: { value: "" } });
-    fireEvent.click(screen.getByTestId("form-confirm-button"));
+    fireEvent.change(screen.getByTestId('name'), { target: { value: '' } })
+    fireEvent.click(screen.getByTestId('form-confirm-button'))
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
-    });
-    expect(screen.queryByTestId("confirm-save-modal")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("name-error")).not.toBeInTheDocument();
-  });
+      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: '/assets/$isin' })
+    })
+    expect(screen.queryByTestId('confirm-save-modal')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('name-error')).not.toBeInTheDocument()
+  })
 
-  it("closes confirmation modal when cancel is clicked", async () => {
-    expect.hasAssertions();
-    mockNavigate.mockClear();
-    const asset = makeAsset();
+  it('closes confirmation modal when cancel is clicked', async () => {
+    expect.hasAssertions()
+    mockNavigate.mockClear()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
-    fireEvent.click(screen.getByTestId("save-button"));
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('name'), { target: { value: 'Updated ETF' } })
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByTestId("form-cancel-button"));
+      expect(screen.getByTestId('confirm-save-modal')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByTestId('form-cancel-button'))
     await waitFor(() => {
-      expect(screen.queryByTestId("confirm-save-modal")).not.toBeInTheDocument();
-    });
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
+      expect(screen.queryByTestId('confirm-save-modal')).not.toBeInTheDocument()
+    })
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
 
-  it("disables save button when there are no changes", () => {
-    expect.hasAssertions();
-    const asset = makeAsset();
+  it('disables save button when there are no changes', () => {
+    expect.hasAssertions()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    expect(screen.getByTestId("save-button")).toBeDisabled();
-  });
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    expect(screen.getByTestId('save-button')).toBeDisabled()
+  })
 
-  it("enables save button after a form change", () => {
-    expect.hasAssertions();
-    const asset = makeAsset();
+  it('enables save button after a form change', () => {
+    expect.hasAssertions()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("name"), { target: { value: "Updated ETF" } });
-    expect(screen.getByTestId("save-button")).not.toBeDisabled();
-  });
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('name'), { target: { value: 'Updated ETF' } })
+    expect(screen.getByTestId('save-button')).not.toBeDisabled()
+  })
 
-  it("renders dismissed similarities section when the asset has dismissed entries", () => {
-    expect.hasAssertions();
-    const otherIsin = "FR0000000001";
-    const other = makeAsset({ isin: otherIsin, name: "Other Fund" });
-    const asset = makeAsset({ dismissedSimilarities: [otherIsin] });
+  it('renders dismissed similarities section when the asset has dismissed entries', () => {
+    expect.hasAssertions()
+    const otherIsin = 'FR0000000001'
+    const other = makeAsset({ isin: otherIsin, name: 'Other Fund' })
+    const asset = makeAsset({ dismissedSimilarities: [otherIsin] })
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset, other] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    expect(screen.getByTestId("dismissed-similarities-card")).toHaveTextContent("Other Fund");
-  });
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    expect(screen.getByTestId('dismissed-similarities-card')).toHaveTextContent('Other Fund')
+  })
 
-  it("reset button restores original values and closes the modal", async () => {
-    expect.hasAssertions();
-    mockNavigate.mockClear();
-    const asset = makeAsset();
+  it('reset button restores original values and closes the modal', async () => {
+    expect.hasAssertions()
+    mockNavigate.mockClear()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("name"), { target: { value: "Changed Name" } });
-    fireEvent.click(screen.getByTestId("save-button"));
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('name'), { target: { value: 'Changed Name' } })
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByTestId("form-reset-button"));
+      expect(screen.getByTestId('confirm-save-modal')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByTestId('form-reset-button'))
     await waitFor(() => {
-      expect(screen.queryByTestId("confirm-save-modal")).not.toBeInTheDocument();
-    });
-    expect(screen.getByTestId("name")).toHaveValue(asset.name);
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
+      expect(screen.queryByTestId('confirm-save-modal')).not.toBeInTheDocument()
+    })
+    expect(screen.getByTestId('name')).toHaveValue(asset.name)
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
 
-  it("updates asset in store on save", async () => {
-    expect.hasAssertions();
-    const asset = makeAsset();
+  it('updates asset in store on save', async () => {
+    expect.hasAssertions()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    const nameInput = screen.getByTestId("name");
-    fireEvent.change(nameInput, { target: { value: "Renamed ETF" } });
-    fireEvent.click(screen.getByTestId("save-button"));
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    const nameInput = screen.getByTestId('name')
+    fireEvent.change(nameInput, { target: { value: 'Renamed ETF' } })
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByTestId("form-confirm-button"));
+      expect(screen.getByTestId('confirm-save-modal')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByTestId('form-confirm-button'))
     await waitFor(() => {
-      expect(useAppStore.getState().data.assets[0]?.name).toBe("Renamed ETF");
-    });
-  });
+      expect(useAppStore.getState().data.assets[0]?.name).toBe('Renamed ETF')
+    })
+  })
 
-  it("cancel button navigates back to view page", () => {
-    expect.hasAssertions();
-    const asset = makeAsset();
+  it('cancel button navigates back to view page', () => {
+    expect.hasAssertions()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.click(screen.getByTestId("cancel-button"));
-    expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
-  });
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.click(screen.getByTestId('cancel-button'))
+    expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: '/assets/$isin' })
+  })
 
-  it("blocks save and shows error when fees is negative, clears error on correction", async () => {
-    expect.hasAssertions();
-    mockNavigate.mockClear();
-    const asset = makeAsset();
+  it('blocks save and shows error when fees is negative, clears error on correction', async () => {
+    expect.hasAssertions()
+    mockNavigate.mockClear()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("fees"), { target: { value: "-1" } });
-    fireEvent.click(screen.getByTestId("save-button"));
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('fees'), { target: { value: '-1' } })
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(mockNavigate).not.toHaveBeenCalled();
-    });
-    fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.5" } });
-    fireEvent.click(screen.getByTestId("save-button"));
+      expect(mockNavigate).not.toHaveBeenCalled()
+    })
+    fireEvent.change(screen.getByTestId('fees'), { target: { value: '0.5' } })
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByTestId("form-confirm-button"));
+      expect(screen.getByTestId('confirm-save-modal')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByTestId('form-confirm-button'))
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
-    });
-  });
+      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: '/assets/$isin' })
+    })
+  })
 
-  it("fires onChange on all form field types", () => {
-    expect.hasAssertions();
-    const asset = makeAsset();
+  it('fires onChange on all form field types', () => {
+    expect.hasAssertions()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("fees"), { target: { value: "0.3" } });
-    fireEvent.change(screen.getByTestId("price"), { target: { value: "110" } });
-    fireEvent.change(screen.getByTestId("performance-1-y"), { target: { value: "11" } });
-    fireEvent.change(screen.getByTestId("performance-3-y"), { target: { value: "31" } });
-    fireEvent.change(screen.getByTestId("performance-5-y"), { target: { value: "51" } });
-    fireEvent.change(screen.getByTestId("risk-reward-5-y"), { target: { value: "1.7" } });
-    fireEvent.change(screen.getByTestId("risk-reward-1-y"), { target: { value: "1.6" } });
-    fireEvent.change(screen.getByTestId("risk-reward-3-y"), { target: { value: "1.9" } });
-    fireEvent.change(screen.getByTestId("is-accumulating"), { target: { checked: false } });
-    fireEvent.change(screen.getByTestId("available-on-broker"), { target: { checked: false } });
-    fireEvent.change(screen.getByTestId("available-for-plan"), { target: { checked: true } });
-    fireEvent.change(screen.getByTestId("geo-allocation-us"), { target: { value: "60" } });
-    fireEvent.change(screen.getByTestId("sector-allocation-technology"), { target: { value: "50" } });
-    fireEvent.change(screen.getByTestId("provider"), { target: { value: "New Provider" } });
-    fireEvent.change(screen.getByTestId("tickers"), { target: { value: "TST, ABC" } });
-    fireEvent.change(screen.getByTestId("comments"), { target: { value: "Updated comment" } });
-    expect(screen.getByTestId("fees")).toHaveValue(0.3);
-  });
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('fees'), { target: { value: '0.3' } })
+    fireEvent.change(screen.getByTestId('price'), { target: { value: '110' } })
+    fireEvent.change(screen.getByTestId('performance-1-y'), { target: { value: '11' } })
+    fireEvent.change(screen.getByTestId('performance-3-y'), { target: { value: '31' } })
+    fireEvent.change(screen.getByTestId('performance-5-y'), { target: { value: '51' } })
+    fireEvent.change(screen.getByTestId('risk-reward-5-y'), { target: { value: '1.7' } })
+    fireEvent.change(screen.getByTestId('risk-reward-1-y'), { target: { value: '1.6' } })
+    fireEvent.change(screen.getByTestId('risk-reward-3-y'), { target: { value: '1.9' } })
+    fireEvent.change(screen.getByTestId('is-accumulating'), { target: { checked: false } })
+    fireEvent.change(screen.getByTestId('available-on-broker'), { target: { checked: false } })
+    fireEvent.change(screen.getByTestId('available-for-plan'), { target: { checked: true } })
+    fireEvent.change(screen.getByTestId('geo-allocation-us'), { target: { value: '60' } })
+    fireEvent.change(screen.getByTestId('sector-allocation-technology'), { target: { value: '50' } })
+    fireEvent.change(screen.getByTestId('provider'), { target: { value: 'New Provider' } })
+    fireEvent.change(screen.getByTestId('tickers'), { target: { value: 'TST, ABC' } })
+    fireEvent.change(screen.getByTestId('comments'), { target: { value: 'Updated comment' } })
+    expect(screen.getByTestId('fees')).toHaveValue(0.3)
+  })
 
-  it("clicking checkboxes calls patch for each flag field", () => {
-    expect.hasAssertions();
-    const asset = makeAsset({ availableForPea: false, availableForPlan: false, availableOnBroker: false, isAccumulating: false });
+  it('clicking checkboxes calls patch for each flag field', () => {
+    expect.hasAssertions()
+    const asset = makeAsset({ availableForPea: false, availableForPlan: false, availableOnBroker: false, isAccumulating: false })
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.click(screen.getByTestId("is-accumulating"));
-    fireEvent.click(screen.getByTestId("available-on-broker"));
-    fireEvent.click(screen.getByTestId("available-for-plan"));
-    fireEvent.click(screen.getByTestId("available-for-pea"));
-    expect(screen.getByTestId("is-accumulating")).toBeChecked();
-    expect(screen.getByTestId("available-on-broker")).toBeChecked();
-    expect(screen.getByTestId("available-for-plan")).toBeChecked();
-    expect(screen.getByTestId("available-for-pea")).toBeChecked();
-  });
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.click(screen.getByTestId('is-accumulating'))
+    fireEvent.click(screen.getByTestId('available-on-broker'))
+    fireEvent.click(screen.getByTestId('available-for-plan'))
+    fireEvent.click(screen.getByTestId('available-for-pea'))
+    expect(screen.getByTestId('is-accumulating')).toBeChecked()
+    expect(screen.getByTestId('available-on-broker')).toBeChecked()
+    expect(screen.getByTestId('available-for-plan')).toBeChecked()
+    expect(screen.getByTestId('available-for-pea')).toBeChecked()
+  })
 
-  it("shows name validation error when saving with empty name", async () => {
-    expect.hasAssertions();
-    mockNavigate.mockClear();
-    const asset = makeAsset();
+  it('shows name validation error when saving with empty name', async () => {
+    expect.hasAssertions()
+    mockNavigate.mockClear()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("name"), { target: { value: "" } });
-    fireEvent.click(screen.getByTestId("save-button"));
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('name'), { target: { value: '' } })
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("name-error")).toBeInTheDocument();
-    });
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
+      expect(screen.getByTestId('name-error')).toBeInTheDocument()
+    })
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
 
-  it("shows isin validation error when saving with empty isin, clears error on typing", async () => {
-    expect.hasAssertions();
-    mockNavigate.mockClear();
-    const asset = makeAsset();
+  it('shows isin validation error when saving with empty isin, clears error on typing', async () => {
+    expect.hasAssertions()
+    mockNavigate.mockClear()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("isin"), { target: { value: "" } });
-    fireEvent.click(screen.getByTestId("save-button"));
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('isin'), { target: { value: '' } })
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("isin-error")).toBeInTheDocument();
-    });
-    fireEvent.change(screen.getByTestId("isin"), { target: { value: "IE00B4L5Y983" } });
-    expect(screen.queryByTestId("isin-error")).not.toBeInTheDocument();
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
+      expect(screen.getByTestId('isin-error')).toBeInTheDocument()
+    })
+    fireEvent.change(screen.getByTestId('isin'), { target: { value: 'IE00B4L5Y983' } })
+    expect(screen.queryByTestId('isin-error')).not.toBeInTheDocument()
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
 
-  it("saves geo allocation from percentage inputs and stores as decimals", async () => {
-    expect.hasAssertions();
-    const asset = makeAsset();
+  it('saves geo allocation from percentage inputs and stores as decimals', async () => {
+    expect.hasAssertions()
+    const asset = makeAsset()
     useAppStore.setState({
       data: { ...defaultAppData, assets: [asset] },
       isLoading: false,
       loadError: undefined,
-    });
-    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-    fireEvent.change(screen.getByTestId("geo-allocation-us"), { target: { value: "60" } });
-    fireEvent.change(screen.getByTestId("geo-allocation-france"), { target: { value: "40" } });
-    fireEvent.click(screen.getByTestId("save-button"));
+    })
+    render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+    fireEvent.change(screen.getByTestId('geo-allocation-us'), { target: { value: '60' } })
+    fireEvent.change(screen.getByTestId('geo-allocation-france'), { target: { value: '40' } })
+    fireEvent.click(screen.getByTestId('save-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByTestId("form-confirm-button"));
+      expect(screen.getByTestId('confirm-save-modal')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByTestId('form-confirm-button'))
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: "/assets/$isin" });
-    });
-    expect(useAppStore.getState().data.assets[0]?.geoAllocation).toStrictEqual({ france: 0.4, us: 0.6 });
-  });
-});
+      expect(mockNavigate).toHaveBeenCalledWith({ params: { isin: asset.isin }, replace: true, to: '/assets/$isin' })
+    })
+    expect(useAppStore.getState().data.assets[0]?.geoAllocation).toStrictEqual({ france: 0.4, us: 0.6 })
+  })
+})
 
 function setup() {
-  vi.clearAllMocks();
-  mockNavigate.mockClear();
-  const asset = makeAsset();
-  useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined });
-  render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider });
-  return asset;
+  vi.clearAllMocks()
+  mockNavigate.mockClear()
+  const asset = makeAsset()
+  useAppStore.setState({ data: { ...defaultAppData, assets: [asset] }, isLoading: false, loadError: undefined })
+  render(<AssetEditPage isin={asset.isin} />, { wrapper: TranslationProvider })
+  return asset
 }
 
-describe("AssetEditPage - fetch", () => {
-  it("shows editable isin input and an enabled fetch button", () => {
-    expect.hasAssertions();
-    setup();
-    expect(screen.getByTestId("isin")).toBeInTheDocument();
-    expect(screen.getByTestId("isin")).not.toHaveAttribute("readonly");
-    expect(screen.getByTestId("fetch-etf-button")).not.toBeDisabled();
-    fireEvent.change(screen.getByTestId("isin"), { target: { value: "XX9999999999" } });
-    expect(screen.getByTestId("isin")).toHaveValue("XX9999999999");
-  });
+describe('AssetEditPage - fetch', () => {
+  it('shows editable isin input and an enabled fetch button', () => {
+    expect.hasAssertions()
+    setup()
+    expect(screen.getByTestId('isin')).toBeInTheDocument()
+    expect(screen.getByTestId('isin')).not.toHaveAttribute('readonly')
+    expect(screen.getByTestId('fetch-etf-button')).not.toBeDisabled()
+    fireEvent.change(screen.getByTestId('isin'), { target: { value: 'XX9999999999' } })
+    expect(screen.getByTestId('isin')).toHaveValue('XX9999999999')
+  })
 
-  it("prefills form fields after a successful fetch", async () => {
-    expect.hasAssertions();
+  it('prefills form fields after a successful fetch', async () => {
+    expect.hasAssertions()
     vi.mocked(fetchEtfData).mockResolvedValue({
-      fees: "0.07",
+      fees: '0.07',
       geoAllocation: {},
       isAccumulating: true,
-      name: "iShares Core S&P 500",
-      performance1y: "26.14",
-      performance3y: "66.54",
-      performance5y: "87.45",
+      name: 'iShares Core S&P 500',
+      performance1y: '26.14',
+      performance3y: '66.54',
+      performance5y: '87.45',
       price: undefined,
-      provider: "iShares",
-      riskReward1y: "2.08",
-      riskReward3y: "1.19",
-      riskReward5y: "0.77",
+      provider: 'iShares',
+      riskReward1y: '2.08',
+      riskReward3y: '1.19',
+      riskReward5y: '0.77',
       sectorAllocation: {},
-      tickers: "SXR8",
-    });
-    setup();
-    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+      tickers: 'SXR8',
+    })
+    setup()
+    fireEvent.click(screen.getByTestId('fetch-etf-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("name")).toHaveValue("iShares Core S&P 500");
-    });
-    expect(fetchEtfData).toHaveBeenCalledWith("LU1234567890");
-    expect(screen.getByTestId("provider")).toHaveValue("iShares");
-  });
+      expect(screen.getByTestId('name')).toHaveValue('iShares Core S&P 500')
+    })
+    expect(fetchEtfData).toHaveBeenCalledWith('LU1234567890')
+    expect(screen.getByTestId('provider')).toHaveValue('iShares')
+  })
 
-  it("uses stock fetch for short identifiers", async () => {
-    expect.hasAssertions();
+  it('uses stock fetch for short identifiers', async () => {
+    expect.hasAssertions()
     vi.mocked(fetchStockData).mockResolvedValue({
       fees: undefined,
       geoAllocation: {},
       isAccumulating: undefined,
-      name: "Microsoft",
-      performance1y: "-4.5",
-      performance3y: "37.7",
-      performance5y: "71.4",
-      price: "352",
-      provider: "NASDAQ",
-      riskReward1y: "-0.3",
-      riskReward3y: "0.37",
-      riskReward5y: "0.34",
+      name: 'Microsoft',
+      performance1y: '-4.5',
+      performance3y: '37.7',
+      performance5y: '71.4',
+      price: '352',
+      provider: 'NASDAQ',
+      riskReward1y: '-0.3',
+      riskReward3y: '0.37',
+      riskReward5y: '0.34',
       sectorAllocation: {},
-      tickers: "MSFT",
-    });
-    setup();
-    fireEvent.change(screen.getByTestId("isin"), { target: { value: "MSFT" } });
-    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+      tickers: 'MSFT',
+    })
+    setup()
+    fireEvent.change(screen.getByTestId('isin'), { target: { value: 'MSFT' } })
+    fireEvent.click(screen.getByTestId('fetch-etf-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("name")).toHaveValue("Microsoft");
-    });
-    expect(fetchStockData).toHaveBeenCalledWith("MSFT");
-    expect(fetchEtfData).not.toHaveBeenCalled();
-    expect(screen.getByTestId("provider")).toHaveValue("NASDAQ");
-  });
+      expect(screen.getByTestId('name')).toHaveValue('Microsoft')
+    })
+    expect(fetchStockData).toHaveBeenCalledWith('MSFT')
+    expect(fetchEtfData).not.toHaveBeenCalled()
+    expect(screen.getByTestId('provider')).toHaveValue('NASDAQ')
+  })
 
-  it("shows spinner while fetching then hides it on completion", async () => {
-    expect.hasAssertions();
+  it('shows spinner while fetching then hides it on completion', async () => {
+    expect.hasAssertions()
     vi.mocked(fetchEtfData).mockResolvedValue({
       fees: undefined,
       geoAllocation: {},
@@ -516,37 +516,37 @@ describe("AssetEditPage - fetch", () => {
       riskReward5y: undefined,
       sectorAllocation: {},
       tickers: undefined,
-    });
-    setup();
-    fireEvent.click(screen.getByTestId("fetch-etf-button"));
-    expect(screen.getByTestId("fetch-spinner")).toBeInTheDocument();
+    })
+    setup()
+    fireEvent.click(screen.getByTestId('fetch-etf-button'))
+    expect(screen.getByTestId('fetch-spinner')).toBeInTheDocument()
     await waitFor(() => {
-      expect(screen.queryByTestId("fetch-spinner")).not.toBeInTheDocument();
-    });
-  });
+      expect(screen.queryByTestId('fetch-spinner')).not.toBeInTheDocument()
+    })
+  })
 
-  it("shows fetch error when fetchEtfData throws an Error", async () => {
-    expect.hasAssertions();
-    vi.mocked(fetchEtfData).mockRejectedValue(new Error("Network error"));
-    setup();
-    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+  it('shows fetch error when fetchEtfData throws an Error', async () => {
+    expect.hasAssertions()
+    vi.mocked(fetchEtfData).mockRejectedValue(new Error('Network error'))
+    setup()
+    fireEvent.click(screen.getByTestId('fetch-etf-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("fetch-error")).toHaveTextContent("Network error");
-    });
-  });
+      expect(screen.getByTestId('fetch-error')).toHaveTextContent('Network error')
+    })
+  })
 
-  it("shows generic fetch error when a non-Error is thrown", async () => {
-    expect.hasAssertions();
-    vi.mocked(fetchEtfData).mockRejectedValue("oops");
-    setup();
-    fireEvent.click(screen.getByTestId("fetch-etf-button"));
+  it('shows generic fetch error when a non-Error is thrown', async () => {
+    expect.hasAssertions()
+    vi.mocked(fetchEtfData).mockRejectedValue('oops')
+    setup()
+    fireEvent.click(screen.getByTestId('fetch-etf-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("fetch-error")).toHaveTextContent("Failed to fetch ETF data");
-    });
-  });
+      expect(screen.getByTestId('fetch-error')).toHaveTextContent('Failed to fetch ETF data')
+    })
+  })
 
-  it("disables fetch-etf-button while a fetch is in progress", () => {
-    expect.hasAssertions();
+  it('disables fetch-etf-button while a fetch is in progress', () => {
+    expect.hasAssertions()
     vi.mocked(fetchEtfData).mockResolvedValue({
       fees: undefined,
       geoAllocation: {},
@@ -562,9 +562,9 @@ describe("AssetEditPage - fetch", () => {
       riskReward5y: undefined,
       sectorAllocation: {},
       tickers: undefined,
-    });
-    setup();
-    fireEvent.click(screen.getByTestId("fetch-etf-button"));
-    expect(screen.getByTestId("fetch-etf-button")).toBeDisabled();
-  });
-});
+    })
+    setup()
+    fireEvent.click(screen.getByTestId('fetch-etf-button'))
+    expect(screen.getByTestId('fetch-etf-button')).toBeDisabled()
+  })
+})

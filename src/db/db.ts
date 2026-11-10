@@ -1,36 +1,36 @@
-import { Dexie, type Table } from "dexie";
-import type { AppData } from "../schemas/app-data.ts";
+import { Dexie, type Table } from 'dexie'
+import type { AppData } from '../schemas/app-data.ts'
 
 export type AppDataRecord = {
-  data: AppData;
-  id: number;
-};
+  data: AppData
+  id: number
+}
 
-const dbVersion = 2;
+const dbVersion = 2
 
 class AppDataDb extends Dexie {
-  public appdata!: Table<AppDataRecord>;
+  public appdata!: Table<AppDataRecord>
 
   public constructor() {
-    super("invest-app");
-    this.version(1).stores({ appdata: "id" });
+    super('invest-app')
+    this.version(1).stores({ appdata: 'id' })
     this.version(dbVersion)
-      .stores({ appdata: "id" })
+      .stores({ appdata: 'id' })
       /* v8 ignore start */
       .upgrade(tx =>
         tx
-          .table("appdata")
+          .table('appdata')
           .toCollection()
           .modify(record => {
-            const raw = record.data as Record<string, unknown>;
-            if ("isins" in raw && !("assets" in raw)) {
-              raw.assets = raw.isins;
-              delete raw.isins;
+            const raw = record.data as Record<string, unknown>
+            if ('isins' in raw && !('assets' in raw)) {
+              raw.assets = raw.isins
+              delete raw.isins
             }
           }),
-      );
+      )
     /* v8 ignore stop */
   }
 }
 
-export const db = new AppDataDb();
+export const db = new AppDataDb()

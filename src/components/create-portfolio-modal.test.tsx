@@ -1,89 +1,89 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { invariant } from "es-toolkit";
-import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
-import { TranslationProvider } from "../utils/translations-provider.tsx";
-import { CreatePortfolioModal } from "./create-portfolio-modal.tsx";
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { invariant } from 'es-toolkit'
+import { defaultAppData, useAppStore } from '../store/use-app-store.ts'
+import { TranslationProvider } from '../utils/translations-provider.tsx'
+import { CreatePortfolioModal } from './create-portfolio-modal.tsx'
 
-const mockNavigate = vi.fn<() => Promise<void>>();
+const mockNavigate = vi.fn<() => Promise<void>>()
 
-vi.mock(import("@tanstack/react-router"), async () => {
-  const actual = await import("@tanstack/react-router");
-  return { ...actual, useNavigate: () => mockNavigate };
-});
+vi.mock(import('@tanstack/react-router'), async () => {
+  const actual = await import('@tanstack/react-router')
+  return { ...actual, useNavigate: () => mockNavigate }
+})
 
-describe("CreatePortfolioModal", () => {
-  it("renders name and broker fields", () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />, { wrapper: TranslationProvider });
-    expect(screen.getByTestId("portfolio-name")).toBeInTheDocument();
-    expect(screen.getByTestId("portfolio-broker")).toBeInTheDocument();
-  });
+describe('CreatePortfolioModal', () => {
+  it('renders name and broker fields', () => {
+    expect.hasAssertions()
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined })
+    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />, { wrapper: TranslationProvider })
+    expect(screen.getByTestId('portfolio-name')).toBeInTheDocument()
+    expect(screen.getByTestId('portfolio-broker')).toBeInTheDocument()
+  })
 
-  it("shows validation error when submitting with empty name", async () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />, { wrapper: TranslationProvider });
-    fireEvent.click(screen.getByTestId("form-confirm-button"));
+  it('shows validation error when submitting with empty name', async () => {
+    expect.hasAssertions()
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined })
+    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />, { wrapper: TranslationProvider })
+    fireEvent.click(screen.getByTestId('form-confirm-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("portfolio-name-error")).toHaveTextContent(/\S/u);
-    });
-  });
+      expect(screen.getByTestId('portfolio-name-error')).toHaveTextContent(/\S/u)
+    })
+  })
 
-  it("shows validation error when submitting with empty broker", async () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />, { wrapper: TranslationProvider });
-    await userEvent.type(screen.getByTestId("portfolio-name"), "My Fund");
-    fireEvent.click(screen.getByTestId("form-confirm-button"));
+  it('shows validation error when submitting with empty broker', async () => {
+    expect.hasAssertions()
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined })
+    render(<CreatePortfolioModal onClose={vi.fn<() => void>()} />, { wrapper: TranslationProvider })
+    await userEvent.type(screen.getByTestId('portfolio-name'), 'My Fund')
+    fireEvent.click(screen.getByTestId('form-confirm-button'))
     await waitFor(() => {
-      expect(screen.getByTestId("portfolio-broker-error")).toHaveTextContent(/\S/u);
-    });
-  });
+      expect(screen.getByTestId('portfolio-broker-error')).toHaveTextContent(/\S/u)
+    })
+  })
 
-  it("calls onClose when Cancel is clicked", () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    const onClose = vi.fn<() => void>();
-    render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider });
-    fireEvent.click(screen.getByTestId("form-cancel-button"));
-    expect(onClose).toHaveBeenCalledOnce();
-  });
+  it('calls onClose when Cancel is clicked', () => {
+    expect.hasAssertions()
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined })
+    const onClose = vi.fn<() => void>()
+    render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider })
+    fireEvent.click(screen.getByTestId('form-cancel-button'))
+    expect(onClose).toHaveBeenCalledOnce()
+  })
 
-  it("calls onClose when X button is clicked", () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    const onClose = vi.fn<() => void>();
-    render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider });
-    fireEvent.click(screen.getByTestId("modal-close-button"));
-    expect(onClose).toHaveBeenCalledOnce();
-  });
+  it('calls onClose when X button is clicked', () => {
+    expect.hasAssertions()
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined })
+    const onClose = vi.fn<() => void>()
+    render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider })
+    fireEvent.click(screen.getByTestId('modal-close-button'))
+    expect(onClose).toHaveBeenCalledOnce()
+  })
 
-  it("calls onClose when backdrop is clicked", () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    const onClose = vi.fn<() => void>();
-    const { container } = render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider });
-    const backdrop = container.querySelector(".modal-backdrop");
-    expect(backdrop).not.toBeNull();
-    invariant(backdrop, "Expected backdrop element to exist");
-    fireEvent.click(backdrop);
-    expect(onClose).toHaveBeenCalledOnce();
-  });
+  it('calls onClose when backdrop is clicked', () => {
+    expect.hasAssertions()
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined })
+    const onClose = vi.fn<() => void>()
+    const { container } = render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider })
+    const backdrop = container.querySelector('.modal-backdrop')
+    expect(backdrop).not.toBeNull()
+    invariant(backdrop, 'Expected backdrop element to exist')
+    fireEvent.click(backdrop)
+    expect(onClose).toHaveBeenCalledOnce()
+  })
 
-  it("submitting valid form adds portfolio and navigates", async () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    const onClose = vi.fn<() => void>();
-    render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider });
-    await userEvent.type(screen.getByTestId("portfolio-name"), "My Fund");
-    await userEvent.type(screen.getByTestId("portfolio-broker"), "Degiro");
-    fireEvent.click(screen.getByTestId("form-confirm-button"));
-    expect(useAppStore.getState().data.portfolios).toHaveLength(1);
-    expect(useAppStore.getState().data.portfolios[0]?.name).toBe("My Fund");
-    expect(useAppStore.getState().data.portfolios[0]?.broker).toBe("Degiro");
-    expect(onClose).toHaveBeenCalledOnce();
-    expect(mockNavigate).toHaveBeenCalledWith(expect.objectContaining({ to: "/portfolios/$id" }));
-  });
-});
+  it('submitting valid form adds portfolio and navigates', async () => {
+    expect.hasAssertions()
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined })
+    const onClose = vi.fn<() => void>()
+    render(<CreatePortfolioModal onClose={onClose} />, { wrapper: TranslationProvider })
+    await userEvent.type(screen.getByTestId('portfolio-name'), 'My Fund')
+    await userEvent.type(screen.getByTestId('portfolio-broker'), 'Degiro')
+    fireEvent.click(screen.getByTestId('form-confirm-button'))
+    expect(useAppStore.getState().data.portfolios).toHaveLength(1)
+    expect(useAppStore.getState().data.portfolios[0]?.name).toBe('My Fund')
+    expect(useAppStore.getState().data.portfolios[0]?.broker).toBe('Degiro')
+    expect(onClose).toHaveBeenCalledOnce()
+    expect(mockNavigate).toHaveBeenCalledWith(expect.objectContaining({ to: '/portfolios/$id' }))
+  })
+})

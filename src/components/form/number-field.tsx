@@ -1,19 +1,19 @@
-import { kebabCase } from "es-toolkit";
-import { cn } from "../../utils/browser-styles.ts";
+import { kebabCase } from 'es-toolkit'
+import { cn } from '../../utils/browser-styles.ts'
 
 export type NumberFieldProps = {
-  isHorizontal?: boolean;
-  label: string;
-  name: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  suffix?: string;
-  value: string;
-};
+  isHorizontal?: boolean
+  label: string
+  name: string
+  onChange: (value: string) => void
+  placeholder?: string
+  suffix?: string
+  value: string
+}
 
 export function NumberField({ isHorizontal, label, name, onChange, placeholder, suffix, value }: NumberFieldProps) {
   return (
-    <div className={cn("form-control", { "flex items-center justify-between gap-2": isHorizontal })} data-testid={kebabCase(`number-field-${name}`)}>
+    <div className={cn('form-control', { 'flex items-center justify-between gap-2': isHorizontal })} data-testid={kebabCase(`number-field-${name}`)}>
       <label className={cn({ label: !isHorizontal })} htmlFor={name}>
         {label}
       </label>
@@ -23,7 +23,7 @@ export function NumberField({ isHorizontal, label, name, onChange, placeholder, 
           data-testid={kebabCase(name)}
           type="number"
           step="any"
-          className={cn("input-bordered input input-sm", { "pr-8": suffix }, { "w-18 text-center": isHorizontal })}
+          className={cn('input-bordered input input-sm', { 'pr-8': suffix }, { 'w-18 text-center': isHorizontal })}
           placeholder={placeholder}
           value={value}
           onChange={event => onChange(event.target.value)}
@@ -35,5 +35,5 @@ export function NumberField({ isHorizontal, label, name, onChange, placeholder, 
         )}
       </div>
     </div>
-  );
+  )
 }

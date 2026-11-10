@@ -1,43 +1,43 @@
-import { kebabCase } from "es-toolkit";
-import { TriangleAlertIcon } from "lucide-react";
-import { ModalActions } from "../../components/modal-actions";
-import { ModalHeader } from "../../components/modal-header";
-import { cn } from "../../utils/browser-styles.ts";
-import { useTranslation, type Translate } from "../../utils/translations.ts";
-import { computeTrend } from "../../utils/trend.ts";
-import type { DiffRow } from "./form-diff.ts";
+import { kebabCase } from 'es-toolkit'
+import { TriangleAlertIcon } from 'lucide-react'
+import { ModalActions } from '../../components/modal-actions'
+import { ModalHeader } from '../../components/modal-header'
+import { cn } from '../../utils/browser-styles.ts'
+import { useTranslation, type Translate } from '../../utils/translations.ts'
+import { computeTrend } from '../../utils/trend.ts'
+import type { DiffRow } from './form-diff.ts'
 
 type Props = {
-  diffRows: DiffRow[];
-  onClose: () => void;
-  onConfirm: () => void;
-  onReset: () => void;
-  onResetRow?: (row: DiffRow) => void;
-};
+  diffRows: DiffRow[]
+  onClose: () => void
+  onConfirm: () => void
+  onReset: () => void
+  onResetRow?: (row: DiffRow) => void
+}
 
 function parseNumericDiffValue(value: string): number | undefined {
-  const trimmed = value.trim();
-  if (trimmed === "-" || trimmed === "") return undefined;
-  if (/[a-z]/iu.test(trimmed)) return undefined;
-  const numericPart = trimmed.replaceAll(",", ".").replaceAll(/[^\d.+-]/gu, "");
-  if (numericPart === "" || numericPart === "+" || numericPart === "-" || numericPart === "." || numericPart === "+." || numericPart === "-.") return undefined;
-  const parsed = Number(numericPart);
-  return Number.isFinite(parsed) ? parsed : undefined;
+  const trimmed = value.trim()
+  if (trimmed === '-' || trimmed === '') return undefined
+  if (/[a-z]/iu.test(trimmed)) return undefined
+  const numericPart = trimmed.replaceAll(',', '.').replaceAll(/[^\d.+-]/gu, '')
+  if (numericPart === '' || numericPart === '+' || numericPart === '-' || numericPart === '.' || numericPart === '+.' || numericPart === '-.') return undefined
+  const parsed = Number(numericPart)
+  return Number.isFinite(parsed) ? parsed : undefined
 }
 
 function renderAfterCell(row: DiffRow) {
-  const before = parseNumericDiffValue(row.before);
-  const after = parseNumericDiffValue(row.after);
-  if (before === undefined || after === undefined) return row.after;
-  const { Icon, color, message, showWarning, trend } = computeTrend(before, after);
+  const before = parseNumericDiffValue(row.before)
+  const after = parseNumericDiffValue(row.after)
+  if (before === undefined || after === undefined) return row.after
+  const { Icon, color, message, showWarning, trend } = computeTrend(before, after)
   return (
     <span className="inline-flex items-center gap-1">
-      <span className={cn({ "opacity-30": trend === "almost-equal" })}>{row.after}</span>
+      <span className={cn({ 'opacity-30': trend === 'almost-equal' })}>{row.after}</span>
       <Icon aria-label={message} color={color} size={16} data-testid={`after-trend-${kebabCase(row.field)}`} />
       {/* oxlint-disable-next-line react/forbid-component-props */}
       {showWarning && <TriangleAlertIcon className="animate-pulse" color="var(--color-warning)" size={16} data-testid={`after-trend-warning-${kebabCase(row.field)}`} aria-label="Warning: large change" />}
     </span>
-  );
+  )
 }
 
 function renderDiffRowsTable(diffRows: DiffRow[], translate: Translate, onResetRow?: (row: DiffRow) => void) {
@@ -46,10 +46,10 @@ function renderDiffRowsTable(diffRows: DiffRow[], translate: Translate, onResetR
       <table className="table table-zebra table-sm" data-testid="confirm-save-diff-table">
         <thead>
           <tr>
-            <th>{translate("table-field")}</th>
-            <th>{translate("table-before")}</th>
-            <th>{translate("table-after")}</th>
-            <th>{translate("table-actions")}</th>
+            <th>{translate('table-field')}</th>
+            <th>{translate('table-before')}</th>
+            <th>{translate('table-after')}</th>
+            <th>{translate('table-actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -65,7 +65,7 @@ function renderDiffRowsTable(diffRows: DiffRow[], translate: Translate, onResetR
                   className="btn h-auto min-h-0 btn-link p-0 opacity-0 transition-opacity btn-xs group-hover:opacity-100 focus-visible:opacity-100"
                   onClick={() => onResetRow?.(row)}
                 >
-                  {translate("action-reset")}
+                  {translate('action-reset')}
                 </button>
               </td>
             </tr>
@@ -73,19 +73,19 @@ function renderDiffRowsTable(diffRows: DiffRow[], translate: Translate, onResetR
         </tbody>
       </table>
     </div>
-  );
+  )
 }
 
 function renderNoChangesNotice(translate: Translate) {
   return (
     <div className="mt-4 alert alert-outline alert-info" data-testid="confirm-save-no-changes">
-      <span>{translate("status-no-changes")}</span>
+      <span>{translate('status-no-changes')}</span>
     </div>
-  );
+  )
 }
 
 export function SaveModal({ diffRows, onClose, onConfirm, onReset, onResetRow }: Props) {
-  const { translate } = useTranslation();
+  const { translate } = useTranslation()
   return (
     <dialog className="modal modal-open" aria-modal="true" data-testid="confirm-save-modal">
       <div className="modal-box max-w-3xl">
@@ -95,5 +95,5 @@ export function SaveModal({ diffRows, onClose, onConfirm, onReset, onResetRow }:
       </div>
       <div className="modal-backdrop" onClick={onClose} />
     </dialog>
-  );
+  )
 }

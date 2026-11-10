@@ -1,18 +1,18 @@
-import type { Asset } from "../../schemas/asset.ts";
-import { formatNumber, formatPercent, formatPrice } from "../../utils/format-numbers.ts";
-import { useTranslation } from "../../utils/translations.ts";
-import { FieldRow } from "./field-row.tsx";
+import type { Asset } from '../../schemas/asset.ts'
+import { formatNumber, formatPercent, formatPrice } from '../../utils/format-numbers.ts'
+import { useTranslation } from '../../utils/translations.ts'
+import { FieldRow } from './field-row.tsx'
 
 type Props = {
-  asset: Asset;
-};
+  asset: Asset
+}
 
 export function ViewFinancialSection({ asset }: Props) {
-  const { translate } = useTranslation();
+  const { translate } = useTranslation()
   return (
     <div className="card">
       <div className="card-body">
-        <h2 className="card-title">{translate("section-financial")}</h2>
+        <h2 className="card-title">{translate('section-financial')}</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FieldRow label="Fees" value={formatPercent(asset.fees)} name="fees" />
           <FieldRow label="Price" value={formatPrice(asset.price)} name="price" />
@@ -31,5 +31,5 @@ export function ViewFinancialSection({ asset }: Props) {
         </div>
       </div>
     </div>
-  );
+  )
 }

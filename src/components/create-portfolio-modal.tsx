@@ -1,51 +1,51 @@
-import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "react-hot-toast";
-import { PortfolioSchema } from "../schemas/portfolio.ts";
-import { useAppStore } from "../store/use-app-store.ts";
-import { FormControl } from "./form/control.tsx";
-import { ModalActions } from "./modal-actions.tsx";
-import { ModalHeader } from "./modal-header.tsx";
+import { useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
+import { toast } from 'react-hot-toast'
+import { PortfolioSchema } from '../schemas/portfolio.ts'
+import { useAppStore } from '../store/use-app-store.ts'
+import { FormControl } from './form/control.tsx'
+import { ModalActions } from './modal-actions.tsx'
+import { ModalHeader } from './modal-header.tsx'
 
 function useCreatePortfolioForm(onClose: () => void) {
-  const addPortfolio = useAppStore(state => state.addPortfolio);
-  const navigate = useNavigate();
-  const [broker, setBroker] = useState("");
-  const [brokerError, setBrokerError] = useState<string | undefined>(undefined);
-  const [name, setName] = useState("");
-  const [nameError, setNameError] = useState<string | undefined>(undefined);
+  const addPortfolio = useAppStore(state => state.addPortfolio)
+  const navigate = useNavigate()
+  const [broker, setBroker] = useState('')
+  const [brokerError, setBrokerError] = useState<string | undefined>(undefined)
+  const [name, setName] = useState('')
+  const [nameError, setNameError] = useState<string | undefined>(undefined)
 
   function handleSubmit(event: React.SyntheticEvent) {
-    event.preventDefault();
-    setNameError(undefined);
-    setBrokerError(undefined);
-    const nameTrimmed = name.trim();
+    event.preventDefault()
+    setNameError(undefined)
+    setBrokerError(undefined)
+    const nameTrimmed = name.trim()
     if (!nameTrimmed) {
-      setNameError("Name is required.");
-      return;
+      setNameError('Name is required.')
+      return
     }
-    const brokerTrimmed = broker.trim();
+    const brokerTrimmed = broker.trim()
     if (!brokerTrimmed) {
-      setBrokerError("Broker is required.");
-      return;
+      setBrokerError('Broker is required.')
+      return
     }
     const portfolio = PortfolioSchema.parse({
       broker: brokerTrimmed,
       entries: [],
       id: crypto.randomUUID(),
       name: nameTrimmed,
-    });
-    addPortfolio(portfolio);
-    toast.success("Portfolio created");
-    onClose();
-    void navigate({ params: { id: portfolio.id }, to: "/portfolios/$id" });
+    })
+    addPortfolio(portfolio)
+    toast.success('Portfolio created')
+    onClose()
+    void navigate({ params: { id: portfolio.id }, to: '/portfolios/$id' })
   }
 
-  return { broker, brokerError, handleSubmit, name, nameError, setBroker, setName };
+  return { broker, brokerError, handleSubmit, name, nameError, setBroker, setName }
 }
 
 export function CreatePortfolioModal({ onClose }: { onClose: () => void }) {
-  const { broker, brokerError, handleSubmit, name, nameError, setBroker, setName } = useCreatePortfolioForm(onClose);
+  const { broker, brokerError, handleSubmit, name, nameError, setBroker, setName } = useCreatePortfolioForm(onClose)
   return (
     <dialog className="modal modal-open" aria-modal="true">
       <div className="modal-box">
@@ -58,5 +58,5 @@ export function CreatePortfolioModal({ onClose }: { onClose: () => void }) {
       </div>
       <div className="modal-backdrop" onClick={onClose} />
     </dialog>
-  );
+  )
 }

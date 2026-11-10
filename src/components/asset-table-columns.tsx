@@ -1,36 +1,36 @@
 // oxlint-disable max-lines
-import { DotIcon, Trash2 } from "lucide-react";
-import type { ReactNode } from "react";
-import { computeScore, type Asset } from "../schemas/asset.ts";
-import type { PortfolioEntry } from "../schemas/portfolio.ts";
-import { computeMaxSimilarity } from "../utils/asset-similarity.ts";
-import { cn } from "../utils/browser-styles.ts";
-import { maxPercentage } from "../utils/constants.ts";
-import { computeDataScore, dataScoreWarnThreshold } from "../utils/data-score.ts";
-import { formatDate, formatNumber, formatPercent, formatPrice } from "../utils/format-numbers.ts";
-import { computeTrend } from "../utils/trend.ts";
-import { AnimatedLink } from "./animations/link.tsx";
-import type { AssetColumnDef } from "./asset-table-features.ts";
-import { scoreMissingValue } from "./asset-table-utils.ts";
-import { SimilarityCell } from "./similarity-cell.tsx";
-import { TargetAmountReadCell } from "./target-amount-read-cell.tsx";
+import { DotIcon, Trash2 } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { computeScore, type Asset } from '../schemas/asset.ts'
+import type { PortfolioEntry } from '../schemas/portfolio.ts'
+import { computeMaxSimilarity } from '../utils/asset-similarity.ts'
+import { cn } from '../utils/browser-styles.ts'
+import { maxPercentage } from '../utils/constants.ts'
+import { computeDataScore, dataScoreWarnThreshold } from '../utils/data-score.ts'
+import { formatDate, formatNumber, formatPercent, formatPrice } from '../utils/format-numbers.ts'
+import { computeTrend } from '../utils/trend.ts'
+import { AnimatedLink } from './animations/link.tsx'
+import type { AssetColumnDef } from './asset-table-features.ts'
+import { scoreMissingValue } from './asset-table-utils.ts'
+import { SimilarityCell } from './similarity-cell.tsx'
+import { TargetAmountReadCell } from './target-amount-read-cell.tsx'
 
 function booleanCell(isin: string, field: string, value: boolean) {
   return (
-    <span data-testid={`bool-${field}-${isin.toLowerCase()}`} aria-label={value ? "Yes" : "No"} className={cn("badge", { "bg-error/20": !value, "bg-success/20": value })}>
-      {value ? "Yes" : "No"}
+    <span data-testid={`bool-${field}-${isin.toLowerCase()}`} aria-label={value ? 'Yes' : 'No'} className={cn('badge', { 'bg-error/20': !value, 'bg-success/20': value })}>
+      {value ? 'Yes' : 'No'}
     </span>
-  );
+  )
 }
 
 type NumberInputOpts = {
-  ariaLabel: string;
-  className: string;
-  dataTestid: string;
-  onBlur: (value: number) => void;
-  step?: number;
-  value: number;
-};
+  ariaLabel: string
+  className: string
+  dataTestid: string
+  onBlur: (value: number) => void
+  step?: number
+  value: number
+}
 
 function makeNumberInput({ ariaLabel, className, dataTestid, onBlur, step = 0.1, value }: NumberInputOpts) {
   return (
@@ -45,29 +45,29 @@ function makeNumberInput({ ariaLabel, className, dataTestid, onBlur, step = 0.1,
       aria-label={ariaLabel}
       onClick={event => event.stopPropagation()}
       onBlur={event => {
-        const amount = Math.max(0, Number(event.target.value) || 0);
-        if (amount !== value) onBlur(amount);
+        const amount = Math.max(0, Number(event.target.value) || 0)
+        if (amount !== value) onBlur(amount)
       }}
     />
-  );
+  )
 }
 
 function computePercentage(value: number, totalValue: number | undefined): number | undefined {
-  if (totalValue === undefined) return undefined;
-  if (totalValue <= 0) return value === 0 ? 0 : undefined;
-  return (value / totalValue) * maxPercentage;
+  if (totalValue === undefined) return undefined
+  if (totalValue <= 0) return value === 0 ? 0 : undefined
+  return (value / totalValue) * maxPercentage
 }
 
 function computeAmountFromPercentage(percent: number, price: number | undefined, totalValue: number | undefined): number {
-  if (price === undefined || price <= 0) return 0;
-  if (totalValue === undefined || totalValue <= 0) return 0;
-  return ((percent / maxPercentage) * totalValue) / price;
+  if (price === undefined || price <= 0) return 0
+  if (totalValue === undefined || totalValue <= 0) return 0
+  return ((percent / maxPercentage) * totalValue) / price
 }
 
 export function makeSelectColumn(): AssetColumnDef {
   return {
     cell: ({ row, table }) => {
-      const { meta } = table.options;
+      const { meta } = table.options
       return (
         <input
           type="checkbox"
@@ -77,48 +77,48 @@ export function makeSelectColumn(): AssetColumnDef {
           onChange={() => meta?.onToggleSelect?.(row.original.isin)}
           onClick={event => event.stopPropagation()}
         />
-      );
+      )
     },
     enableHiding: false,
     enableSorting: false,
-    header: "",
-    id: "select",
-  };
+    header: '',
+    id: 'select',
+  }
 }
 
 export function makeValueColumn(amountMap: Map<string, number> | undefined): AssetColumnDef {
   return {
     accessorFn: row => (amountMap?.get(row.isin) ?? 0) * (row.price ?? 0),
     cell: ({ getValue, row }) => <span data-testid={`value-${row.original.isin.toLowerCase()}`}>{`${formatNumber(getValue<number>())} €`}</span>,
-    header: "Value",
-    id: "value",
-    meta: { center: true, title: "Value : amount * price in €" },
-  };
+    header: 'Value',
+    id: 'value',
+    meta: { center: true, title: 'Value : amount * price in €' },
+  }
 }
 
 export function makeAmountColumn(amountMap: Map<string, number> | undefined): AssetColumnDef {
   return {
     accessorFn: row => amountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
-      const { meta } = table.options;
-      const { isin } = row.original;
-      const value = meta?.amountMap?.get(isin) ?? 0;
-      const { price } = row.original;
-      const amountPercentage = computePercentage(value * (price ?? 0), meta?.totalValue);
-      const amountPercentageLabel = amountPercentage === undefined ? "—" : `${Math.round(amountPercentage)}%`;
+      const { meta } = table.options
+      const { isin } = row.original
+      const value = meta?.amountMap?.get(isin) ?? 0
+      const { price } = row.original
+      const amountPercentage = computePercentage(value * (price ?? 0), meta?.totalValue)
+      const amountPercentageLabel = amountPercentage === undefined ? '—' : `${Math.round(amountPercentage)}%`
       if (!meta?.isEditing)
         return (
-          <span className={cn("cell-centered", { "text-warning": value === 0 })} data-testid={`amount-${isin.toLowerCase()}`}>
-            <span data-testid={`amount-value-${isin.toLowerCase()}`}>{value === 0 ? "—" : value}</span>
+          <span className={cn('cell-centered', { 'text-warning': value === 0 })} data-testid={`amount-${isin.toLowerCase()}`}>
+            <span data-testid={`amount-value-${isin.toLowerCase()}`}>{value === 0 ? '—' : value}</span>
             <DotIcon size={12} aria-hidden="true" />
             <span data-testid={`amount-percent-${isin.toLowerCase()}`}>{amountPercentageLabel}</span>
           </span>
-        );
+        )
       return (
         <span className="cell-centered" data-testid={`amount-${isin.toLowerCase()}`}>
           {makeNumberInput({
             ariaLabel: `Amount for ${row.original.name}`,
-            className: cn("input w-14 text-center input-xs", { "bg-warning/10 input-warning": value === 0 }),
+            className: cn('input w-14 text-center input-xs', { 'bg-warning/10 input-warning': value === 0 }),
             dataTestid: `amount-input-${isin.toLowerCase()}`,
             onBlur: amount => meta?.onAmountChange?.(isin, amount),
             value,
@@ -126,21 +126,21 @@ export function makeAmountColumn(amountMap: Map<string, number> | undefined): As
           <DotIcon size={12} data-testid={`amount-percent-dot-${isin.toLowerCase()}`} aria-hidden="true" />
           <span data-testid={`amount-percent-${isin.toLowerCase()}`}>{amountPercentageLabel}</span>
         </span>
-      );
+      )
     },
-    header: "Amount",
-    id: "amount",
-    meta: { center: true, title: "Amount of units held" },
-  };
+    header: 'Amount',
+    id: 'amount',
+    meta: { center: true, title: 'Amount of units held' },
+  }
 }
 
 export function makePriceEditColumn(): AssetColumnDef {
   return {
-    accessorKey: "price",
+    accessorKey: 'price',
     cell: ({ row, table }) => {
-      const { meta } = table.options;
-      const { isin } = row.original;
-      const value = row.original.price;
+      const { meta } = table.options
+      const { isin } = row.original
+      const value = row.original.price
       return (
         <input
           type="number"
@@ -153,26 +153,26 @@ export function makePriceEditColumn(): AssetColumnDef {
           aria-label={`Price for ${row.original.name}`}
           onClick={event => event.stopPropagation()}
           onBlur={event => {
-            const price = Math.max(0, Number(event.target.value) || 0);
-            if (price !== value) meta?.onPriceChange?.(isin, price);
+            const price = Math.max(0, Number(event.target.value) || 0)
+            if (price !== value) meta?.onPriceChange?.(isin, price)
           }}
         />
-      );
+      )
     },
-    header: "Price",
-    id: "price",
-    meta: { center: true, title: "Price of one asset in €" },
-  };
+    header: 'Price',
+    id: 'price',
+    meta: { center: true, title: 'Price of one asset in €' },
+  }
 }
 
 export function makePortfolioPriceColumn(): AssetColumnDef {
   return {
-    accessorKey: "price",
+    accessorKey: 'price',
     cell: ({ row, table }) => {
-      const { meta } = table.options;
-      const { isin } = row.original;
-      const value = row.original.price;
-      if (!meta?.isEditing) return <span data-testid={`price-${isin.toLowerCase()}`}>{formatPrice(value)}</span>;
+      const { meta } = table.options
+      const { isin } = row.original
+      const value = row.original.price
+      if (!meta?.isEditing) return <span data-testid={`price-${isin.toLowerCase()}`}>{formatPrice(value)}</span>
       return (
         <input
           type="number"
@@ -185,31 +185,31 @@ export function makePortfolioPriceColumn(): AssetColumnDef {
           aria-label={`Price for ${row.original.name}`}
           onClick={event => event.stopPropagation()}
           onBlur={event => {
-            const price = Math.max(0, Number(event.target.value) || 0);
-            if (price !== value) meta?.onPriceChange?.(isin, price);
+            const price = Math.max(0, Number(event.target.value) || 0)
+            if (price !== value) meta?.onPriceChange?.(isin, price)
           }}
         />
-      );
+      )
     },
-    header: "Price",
-    id: "price",
-    meta: { center: true, title: "Price of one asset in €" },
-  };
+    header: 'Price',
+    id: 'price',
+    meta: { center: true, title: 'Price of one asset in €' },
+  }
 }
 
 export function makeNoteColumn(noteMap?: Map<string, string>): AssetColumnDef {
   return {
-    accessorFn: row => noteMap?.get(row.isin) ?? "",
+    accessorFn: row => noteMap?.get(row.isin) ?? '',
     cell: ({ row, table }) => {
-      const { meta } = table.options;
-      const { isin } = row.original;
-      const value = meta?.noteMap?.get(isin) ?? "";
+      const { meta } = table.options
+      const { isin } = row.original
+      const value = meta?.noteMap?.get(isin) ?? ''
       if (!meta?.isEditing)
         return (
           <span data-testid={`note-${isin.toLowerCase()}`} className="-ml-2">
-            {value || "—"}
+            {value || '—'}
           </span>
-        );
+        )
       return (
         <input
           type="text"
@@ -221,199 +221,199 @@ export function makeNoteColumn(noteMap?: Map<string, string>): AssetColumnDef {
           placeholder="Note…"
           onClick={event => event.stopPropagation()}
           onBlur={event => {
-            const note = event.target.value.trim();
-            if (note !== value) meta?.onNoteChange?.(isin, note);
+            const note = event.target.value.trim()
+            if (note !== value) meta?.onNoteChange?.(isin, note)
           }}
         />
-      );
+      )
     },
-    header: "Note",
-    id: "note",
-    meta: { title: "Note for this position" },
-  };
+    header: 'Note',
+    id: 'note',
+    meta: { title: 'Note for this position' },
+  }
 }
 
 export const columns: AssetColumnDef[] = [
   {
     accessorFn: row => computeScore(row) ?? scoreMissingValue,
     cell: ({ getValue }) => formatNumber(getValue<number>()),
-    header: "Score",
-    id: "score",
+    header: 'Score',
+    id: 'score',
   },
   {
-    accessorKey: "provider",
-    header: "Provider",
+    accessorKey: 'provider',
+    header: 'Provider',
   },
   {
-    accessorKey: "isin",
+    accessorKey: 'isin',
     cell: ({ getValue }) => (
       <span className="font-mono text-xs" data-testid={`isin-${getValue<string>().toLowerCase()}`}>
         {getValue<string>()}
       </span>
     ),
-    header: "ISIN",
+    header: 'ISIN',
   },
   {
-    accessorKey: "tickers",
+    accessorKey: 'tickers',
     cell: ({ getValue, row }) => (
       <span className="text-xs whitespace-nowrap" data-testid={`tickers-${row.original.isin.toLowerCase()}`}>
-        {getValue<string[]>().join(", ")}
+        {getValue<string[]>().join(', ')}
       </span>
     ),
-    header: "Tickers",
+    header: 'Tickers',
     sortFn: (rowA, rowB) => {
-      const tickersA = rowA.original.tickers.join(", ");
-      const tickersB = rowB.original.tickers.join(", ");
-      return tickersA.localeCompare(tickersB);
+      const tickersA = rowA.original.tickers.join(', ')
+      const tickersB = rowB.original.tickers.join(', ')
+      return tickersA.localeCompare(tickersB)
     },
   },
   {
-    accessorKey: "name",
+    accessorKey: 'name',
     cell: ({ getValue, row, table }) => {
-      const { meta } = table.options;
-      const name = getValue<string>();
-      const { isin } = row.original;
+      const { meta } = table.options
+      const name = getValue<string>()
+      const { isin } = row.original
       if (meta?.onToggleSelect)
         return (
           <span className="block max-w-xs truncate" data-testid={`name-${isin.toLowerCase()}`} title={name}>
             {name}
           </span>
-        );
+        )
       return (
         <AnimatedLink data-testid={`name-${isin.toLowerCase()}`} to={`/assets/${isin}`}>
           {name}
         </AnimatedLink>
-      );
+      )
     },
-    header: "Name",
+    header: 'Name',
   },
   {
-    accessorKey: "comments",
+    accessorKey: 'comments',
     cell: ({ getValue, row }) => (
       <span className="block max-w-xs truncate" data-testid={`comments-${row.original.isin.toLowerCase()}`} title={getValue<string>()}>
-        {getValue<string>() || "—"}
+        {getValue<string>() || '—'}
       </span>
     ),
-    header: "Comments",
+    header: 'Comments',
   },
   {
-    accessorKey: "isAccumulating",
-    cell: ({ getValue, row }) => booleanCell(row.original.isin, "is-accumulating", getValue<boolean>()),
-    header: "Acc",
-    meta: { title: "Accumulating" },
+    accessorKey: 'isAccumulating',
+    cell: ({ getValue, row }) => booleanCell(row.original.isin, 'is-accumulating', getValue<boolean>()),
+    header: 'Acc',
+    meta: { title: 'Accumulating' },
   },
   {
-    accessorKey: "availableOnBroker",
-    cell: ({ getValue, row }) => booleanCell(row.original.isin, "available-on-broker", getValue<boolean>()),
-    header: "Broker",
-    meta: { title: "Broker availability" },
+    accessorKey: 'availableOnBroker',
+    cell: ({ getValue, row }) => booleanCell(row.original.isin, 'available-on-broker', getValue<boolean>()),
+    header: 'Broker',
+    meta: { title: 'Broker availability' },
   },
   {
-    accessorKey: "availableForPlan",
-    cell: ({ getValue, row }) => booleanCell(row.original.isin, "available-for-plan", getValue<boolean>()),
-    header: "Plan",
-    meta: { title: "Plan compatibility" },
+    accessorKey: 'availableForPlan',
+    cell: ({ getValue, row }) => booleanCell(row.original.isin, 'available-for-plan', getValue<boolean>()),
+    header: 'Plan',
+    meta: { title: 'Plan compatibility' },
   },
   {
-    accessorKey: "availableForPea",
-    cell: ({ getValue, row }) => booleanCell(row.original.isin, "available-for-pea", getValue<boolean>()),
-    header: "PEA",
-    meta: { title: "PEA eligibility" },
+    accessorKey: 'availableForPea',
+    cell: ({ getValue, row }) => booleanCell(row.original.isin, 'available-for-pea', getValue<boolean>()),
+    header: 'PEA',
+    meta: { title: 'PEA eligibility' },
   },
   {
-    accessorKey: "fees",
+    accessorKey: 'fees',
     cell: ({ getValue }) => formatPercent(getValue<number>()),
-    header: "Fees",
-    meta: { center: true, title: "Fees in %" },
+    header: 'Fees',
+    meta: { center: true, title: 'Fees in %' },
   },
   {
-    accessorKey: "performance1y",
+    accessorKey: 'performance1y',
     cell: ({ getValue, row }) => <span data-testid={`performance1y-${row.original.isin.toLowerCase()}`}>{formatNumber(getValue<number | undefined>())}</span>,
-    header: "P1y",
-    meta: { center: true, title: "Performance over 1 year" },
+    header: 'P1y',
+    meta: { center: true, title: 'Performance over 1 year' },
   },
   {
-    accessorKey: "performance3y",
+    accessorKey: 'performance3y',
     cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
-    header: "P3y",
-    meta: { center: true, title: "Performance over 3 years" },
+    header: 'P3y',
+    meta: { center: true, title: 'Performance over 3 years' },
   },
   {
-    accessorKey: "performance5y",
+    accessorKey: 'performance5y',
     cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
-    header: "P5y",
-    meta: { center: true, title: "Performance over 5 years" },
+    header: 'P5y',
+    meta: { center: true, title: 'Performance over 5 years' },
   },
   {
-    accessorKey: "riskReward1y",
+    accessorKey: 'riskReward1y',
     cell: ({ getValue, row }) => <span data-testid={`risk-reward1y-${row.original.isin.toLowerCase()}`}>{formatNumber(getValue<number | undefined>())}</span>,
-    header: "RR1y",
-    meta: { center: true, title: "Risk/Reward over 1 year" },
+    header: 'RR1y',
+    meta: { center: true, title: 'Risk/Reward over 1 year' },
   },
   {
-    accessorKey: "riskReward3y",
+    accessorKey: 'riskReward3y',
     cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
-    header: "RR3y",
-    meta: { center: true, title: "Risk/Reward over 3 years" },
+    header: 'RR3y',
+    meta: { center: true, title: 'Risk/Reward over 3 years' },
   },
   {
-    accessorKey: "riskReward5y",
+    accessorKey: 'riskReward5y',
     cell: ({ getValue }) => formatNumber(getValue<number | undefined>()),
-    header: "RR5y",
-    meta: { center: true, title: "Risk/Reward over 5 years" },
+    header: 'RR5y',
+    meta: { center: true, title: 'Risk/Reward over 5 years' },
   },
   {
-    accessorKey: "price",
+    accessorKey: 'price',
     cell: ({ getValue }) => formatPrice(getValue<number | undefined>()),
-    header: "Price",
-    id: "price",
-    meta: { center: true, title: "Price of one asset in €" },
+    header: 'Price',
+    id: 'price',
+    meta: { center: true, title: 'Price of one asset in €' },
   },
   {
-    accessorKey: "updatedAt",
+    accessorKey: 'updatedAt',
     cell: ({ getValue, row }) => <span data-testid={`updated-at-${row.original.isin.toLowerCase()}`}>{formatDate(getValue<string | undefined>())}</span>,
-    header: "Updated",
-    meta: { center: true, title: "Asset last updated" },
+    header: 'Updated',
+    meta: { center: true, title: 'Asset last updated' },
   },
-];
+]
 
 export function makeDataScoreColumn(amountMap?: Map<string, number>, amountUpdatedAtMap?: Map<string, string>): AssetColumnDef {
   return {
     accessorFn: row => {
-      if (amountMap === undefined && amountUpdatedAtMap === undefined) return computeDataScore(row);
+      if (amountMap === undefined && amountUpdatedAtMap === undefined) return computeDataScore(row)
       const entry: PortfolioEntry = {
         amount: amountMap?.get(row.isin) ?? 0,
         amountUpdatedAt: amountUpdatedAtMap?.get(row.isin),
         inPEA: false,
         isin: row.isin,
-        notes: "",
+        notes: '',
         targetAmount: 0,
-      };
-      return computeDataScore(row, entry);
+      }
+      return computeDataScore(row, entry)
     },
     cell: ({ getValue, row }) => {
-      const score = getValue<number>();
-      let dotClass = "bg-error";
-      if (score === maxPercentage) dotClass = "bg-success";
-      else if (score >= dataScoreWarnThreshold) dotClass = "bg-warning";
+      const score = getValue<number>()
+      let dotClass = 'bg-error'
+      if (score === maxPercentage) dotClass = 'bg-success'
+      else if (score >= dataScoreWarnThreshold) dotClass = 'bg-warning'
       return (
         <span className="flex items-center gap-1.5" data-testid={`data-score-${row.original.isin.toLowerCase()}`}>
-          <span className={cn("score-dot", dotClass)} />
+          <span className={cn('score-dot', dotClass)} />
           <span className="w-8 text-center">{`${score}%`}</span>
         </span>
-      );
+      )
     },
-    header: "Data",
-    id: "data-score",
-    meta: { title: "Data score" },
-  };
+    header: 'Data',
+    id: 'data-score',
+    meta: { title: 'Data score' },
+  }
 }
 
 function makeTargetTrendIcon(isin: string, targetAmount: number, amount: number) {
-  const normalizedIsin = isin.toLowerCase();
-  if (Number.isNaN(targetAmount)) return undefined;
-  const { Icon, trend, color, message } = computeTrend(amount, targetAmount);
-  return <Icon color={color} size={18} data-testid={`target-trend-${trend}-${normalizedIsin}`} aria-label={message} />;
+  const normalizedIsin = isin.toLowerCase()
+  if (Number.isNaN(targetAmount)) return undefined
+  const { Icon, trend, color, message } = computeTrend(amount, targetAmount)
+  return <Icon color={color} size={18} data-testid={`target-trend-${trend}-${normalizedIsin}`} aria-label={message} />
 }
 
 function renderTargetAmountEditCell({ amountInput, percentInput, trendIcon }: { amountInput: ReactNode; percentInput: ReactNode; trendIcon: ReactNode }) {
@@ -423,61 +423,61 @@ function renderTargetAmountEditCell({ amountInput, percentInput, trendIcon }: { 
       {trendIcon}
       {percentInput}
     </span>
-  );
+  )
 }
 
 export function makeTargetAmountColumn(targetAmountMap: Map<string, number> | undefined): AssetColumnDef {
   return {
     accessorFn: row => targetAmountMap?.get(row.isin) ?? 0,
     cell: ({ row, table }) => {
-      const { meta } = table.options;
-      const { isin, price } = row.original;
-      const value = meta?.targetAmountMap?.get(isin);
-      const amount = meta?.amountMap?.get(isin) ?? 0;
-      const targetAmountValue = value ?? 0;
-      const targetPositionValue = targetAmountValue * (price ?? 0);
-      const targetAmountDelta = Math.max(targetAmountValue - amount, 0);
-      const targetInvestment = value === undefined || price === undefined ? undefined : targetAmountDelta * price;
-      const targetPercentage = value === undefined ? undefined : computePercentage(targetPositionValue, meta?.targetTotalValue);
-      const targetPercentageLabel = targetPercentage === undefined ? "—" : `${Math.round(targetPercentage)}%`;
-      const trendIcon = value === undefined ? undefined : makeTargetTrendIcon(isin, value, amount);
-      if (!meta?.isEditing) return <TargetAmountReadCell amount={amount} amountPercentageLabel={targetPercentageLabel} isin={isin} targetAmount={value} targetInvestment={targetInvestment} trendIcon={trendIcon} />;
+      const { meta } = table.options
+      const { isin, price } = row.original
+      const value = meta?.targetAmountMap?.get(isin)
+      const amount = meta?.amountMap?.get(isin) ?? 0
+      const targetAmountValue = value ?? 0
+      const targetPositionValue = targetAmountValue * (price ?? 0)
+      const targetAmountDelta = Math.max(targetAmountValue - amount, 0)
+      const targetInvestment = value === undefined || price === undefined ? undefined : targetAmountDelta * price
+      const targetPercentage = value === undefined ? undefined : computePercentage(targetPositionValue, meta?.targetTotalValue)
+      const targetPercentageLabel = targetPercentage === undefined ? '—' : `${Math.round(targetPercentage)}%`
+      const trendIcon = value === undefined ? undefined : makeTargetTrendIcon(isin, value, amount)
+      if (!meta?.isEditing) return <TargetAmountReadCell amount={amount} amountPercentageLabel={targetPercentageLabel} isin={isin} targetAmount={value} targetInvestment={targetInvestment} trendIcon={trendIcon} />
       const amountInput = makeNumberInput({
         ariaLabel: `Target amount for ${row.original.name}`,
-        className: "input input-xs w-14 text-center",
+        className: 'input input-xs w-14 text-center',
         dataTestid: `target-amount-input-${isin.toLowerCase()}`,
         onBlur: targetAmount => meta?.onTargetAmountChange?.(isin, targetAmount),
         step: 1,
         value: targetAmountValue,
-      });
+      })
       const percentInput = makeNumberInput({
         ariaLabel: `Target percentage for ${row.original.name}`,
-        className: "input input-xs w-16 text-center",
+        className: 'input input-xs w-16 text-center',
         dataTestid: `target-percent-input-${isin.toLowerCase()}`,
         onBlur: percent => {
-          const roundedPercent = Math.round(percent);
-          const targetAmount = Math.round(computeAmountFromPercentage(roundedPercent, price, meta?.targetTotalValue));
-          meta?.onTargetAmountChange?.(isin, targetAmount);
+          const roundedPercent = Math.round(percent)
+          const targetAmount = Math.round(computeAmountFromPercentage(roundedPercent, price, meta?.targetTotalValue))
+          meta?.onTargetAmountChange?.(isin, targetAmount)
         },
         step: 1,
         value: Math.round(targetPercentage ?? 0),
-      });
-      return renderTargetAmountEditCell({ amountInput, percentInput, trendIcon });
+      })
+      return renderTargetAmountEditCell({ amountInput, percentInput, trendIcon })
     },
-    header: "Target",
-    id: "target-amount",
-    meta: { center: true, title: "Target amount of units" },
-  };
+    header: 'Target',
+    id: 'target-amount',
+    meta: { center: true, title: 'Target amount of units' },
+  }
 }
 
 export function makeAmountUpdatedAtColumn(amountUpdatedAtMap: Map<string, string> | undefined): AssetColumnDef {
   return makeUpdatedAtColumn({
     dateMap: amountUpdatedAtMap,
-    header: "Amt. updated",
-    id: "amount-updated-at",
-    testIdPrefix: "amount-updated-at",
-    title: "Amount last updated",
-  });
+    header: 'Amt. updated',
+    id: 'amount-updated-at',
+    testIdPrefix: 'amount-updated-at',
+    title: 'Amount last updated',
+  })
 }
 
 function makeUpdatedAtColumn({ dateMap, header, id, testIdPrefix, title }: { dateMap: Map<string, string> | undefined; header: string; id: string; testIdPrefix: string; title: string }): AssetColumnDef {
@@ -491,29 +491,29 @@ function makeUpdatedAtColumn({ dateMap, header, id, testIdPrefix, title }: { dat
     header,
     id,
     meta: { center: true, title },
-  };
+  }
 }
 
 export function makeTargetAmountUpdatedAtColumn(targetAmountUpdatedAtMap: Map<string, string> | undefined): AssetColumnDef {
   return makeUpdatedAtColumn({
     dateMap: targetAmountUpdatedAtMap,
-    header: "Tgt. updated",
-    id: "target-amount-updated-at",
-    testIdPrefix: "target-amount-updated-at",
-    title: "Target amount last updated",
-  });
+    header: 'Tgt. updated',
+    id: 'target-amount-updated-at',
+    testIdPrefix: 'target-amount-updated-at',
+    title: 'Target amount last updated',
+  })
 }
 
 export function makeSimilarityColumn(assets: Asset[], onDismiss?: (isin: string, matchedIsin: string) => void): AssetColumnDef {
-  const resultsMap = new Map(assets.map(asset => [asset.isin, computeMaxSimilarity(asset, assets, asset.dismissedSimilarities)]));
+  const resultsMap = new Map(assets.map(asset => [asset.isin, computeMaxSimilarity(asset, assets, asset.dismissedSimilarities)]))
   return {
     accessorFn: row => resultsMap.get(row.isin)?.score,
     cell: ({ row }) => <SimilarityCell asset={row.original} assets={assets} onDismiss={onDismiss} result={resultsMap.get(row.original.isin)} />,
-    header: "Similarity",
-    id: "similarity",
-    meta: { title: "Similarity geo/sector" },
-    sortUndefined: "last",
-  };
+    header: 'Similarity',
+    id: 'similarity',
+    meta: { title: 'Similarity geo/sector' },
+    sortUndefined: 'last',
+  }
 }
 
 export function makeRemoveColumn(onRemove: (isin: string) => void): AssetColumnDef {
@@ -525,7 +525,7 @@ export function makeRemoveColumn(onRemove: (isin: string) => void): AssetColumnD
     ),
     enableHiding: false,
     enableSorting: false,
-    header: "",
-    id: "remove",
-  };
+    header: '',
+    id: 'remove',
+  }
 }

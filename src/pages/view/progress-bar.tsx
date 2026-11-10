@@ -1,33 +1,33 @@
-import { kebabCase } from "es-toolkit";
-import { cn } from "../../utils/browser-styles";
-import { formatPercent } from "../../utils/format-numbers";
+import { kebabCase } from 'es-toolkit'
+import { cn } from '../../utils/browser-styles'
+import { formatPercent } from '../../utils/format-numbers'
 
-const errorUntil = 40;
-const warningUntil = 70;
-const errorAfter = 100;
+const errorUntil = 40
+const warningUntil = 70
+const errorAfter = 100
 
 export function ProgressBar({ name, total }: { name: string; total: number }) {
   return (
     <div className="mb-2 flex items-center gap-4">
       <progress
-        className={cn("progress w-full", {
-          "progress-error": total < errorUntil || total > errorAfter,
-          "progress-success": total > warningUntil && total <= errorAfter,
-          "progress-warning": total >= errorUntil && total <= warningUntil,
+        className={cn('progress w-full', {
+          'progress-error': total < errorUntil || total > errorAfter,
+          'progress-success': total > warningUntil && total <= errorAfter,
+          'progress-warning': total >= errorUntil && total <= warningUntil,
         })}
         value={total}
         max="100"
       />
       <span
-        className={cn("flex font-medium whitespace-nowrap", {
-          "text-error": total < errorUntil || total > errorAfter,
-          "text-success": total > warningUntil && total <= errorAfter,
-          "text-warning": total >= errorUntil && total <= warningUntil,
+        className={cn('flex font-medium whitespace-nowrap', {
+          'text-error': total < errorUntil || total > errorAfter,
+          'text-success': total > warningUntil && total <= errorAfter,
+          'text-warning': total >= errorUntil && total <= warningUntil,
         })}
         data-testid={kebabCase(`progress-bar-${name}`)}
       >
         {formatPercent(total)}
       </span>
     </div>
-  );
+  )
 }

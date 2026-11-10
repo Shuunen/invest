@@ -1,91 +1,91 @@
-import { invariant } from "es-toolkit";
-import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
-import type { AppData } from "../schemas/app-data.ts";
-import { maxIsins, type Asset } from "../schemas/asset.ts";
-import { maxPortfolios, type Portfolio, type PortfolioEntry } from "../schemas/portfolio.ts";
-import { SettingsSchema, type Settings } from "../schemas/settings.ts";
-import type { Theme } from "../utils/theme.ts";
+import { invariant } from 'es-toolkit'
+import { create } from 'zustand'
+import { subscribeWithSelector } from 'zustand/middleware'
+import type { AppData } from '../schemas/app-data.ts'
+import { maxIsins, type Asset } from '../schemas/asset.ts'
+import { maxPortfolios, type Portfolio, type PortfolioEntry } from '../schemas/portfolio.ts'
+import { SettingsSchema, type Settings } from '../schemas/settings.ts'
+import type { Theme } from '../utils/theme.ts'
 
-const defaultSettings: Settings = SettingsSchema.parse({});
+const defaultSettings: Settings = SettingsSchema.parse({})
 
 function incrementEditCount(settings: Settings): Settings {
-  return { ...settings, editCount: settings.editCount + 1 };
+  return { ...settings, editCount: settings.editCount + 1 }
 }
 
 function patchPortfolioEntryAmount(portfolios: Portfolio[], { amount, isin, portfolioId }: { amount: number; isin: string; portfolioId: string }): Portfolio[] {
-  const now = new Date().toISOString();
-  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, amount, amountUpdatedAt: now } : entry)) } : portfolio));
+  const now = new Date().toISOString()
+  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, amount, amountUpdatedAt: now } : entry)) } : portfolio))
 }
 
 function patchPortfolioEntryNote(portfolios: Portfolio[], { isin, note, portfolioId }: { isin: string; note: string; portfolioId: string }): Portfolio[] {
-  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, notes: note } : entry)) } : portfolio));
+  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, notes: note } : entry)) } : portfolio))
 }
 
 function patchPortfolioEntryTargetAmount(portfolios: Portfolio[], { isin, portfolioId, targetAmount }: { isin: string; portfolioId: string; targetAmount: number }): Portfolio[] {
-  const now = new Date().toISOString();
-  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, targetAmount, targetAmountUpdatedAt: now } : entry)) } : portfolio));
+  const now = new Date().toISOString()
+  return portfolios.map(portfolio => (portfolio.id === portfolioId ? { ...portfolio, entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, targetAmount, targetAmountUpdatedAt: now } : entry)) } : portfolio))
 }
 
 export const defaultAppData: AppData = {
   assets: [],
   portfolios: [],
   settings: defaultSettings,
-};
+}
 
 type AppStore = {
-  addAsset: (asset: Asset) => void;
-  addPortfolio: (portfolio: Portfolio) => void;
-  data: AppData;
-  deletePortfolio: (id: string) => void;
-  dismissSimilarity: (isin: string, matchedIsin: string) => void;
-  isLoading: boolean;
-  loadData: (data: AppData) => void;
-  loadError: Error | undefined;
-  setColumnOrder: (order: string[]) => void;
-  setColumnVisibility: (cv: Record<string, boolean>) => void;
-  setEditCount: (count: number) => void;
-  setLastExportedAt: (date: string) => void;
-  setLoadError: (error: Error) => void;
-  setLocale: (locale: Settings["locale"]) => void;
-  setPortfolioAssets: (portfolioId: string, entries: PortfolioEntry[]) => void;
-  setPresetFilters: (filters: Pick<Settings, "onlyPea" | "scoreAbove50" | "withRr5y">) => void;
-  setSort: (sort: Settings["sort"]) => void;
-  unDismissSimilarity: (isin: string, matchedIsin: string) => void;
-  updateAsset: (isin: string, asset: Asset) => void;
-  updateAssetPrice: (isin: string, price: number) => void;
-  updatePortfolio: (id: string, patch: Partial<Pick<Portfolio, "name" | "broker">>) => void;
-  updatePortfolioEntryAmount: (portfolioId: string, isin: string, amount: number) => void;
-  updatePortfolioEntryNote: (portfolioId: string, isin: string, note: string) => void;
-  setTheme: (theme: Theme) => void;
-  updatePortfolioEntryTargetAmount: (portfolioId: string, isin: string, targetAmount: number) => void;
-};
+  addAsset: (asset: Asset) => void
+  addPortfolio: (portfolio: Portfolio) => void
+  data: AppData
+  deletePortfolio: (id: string) => void
+  dismissSimilarity: (isin: string, matchedIsin: string) => void
+  isLoading: boolean
+  loadData: (data: AppData) => void
+  loadError: Error | undefined
+  setColumnOrder: (order: string[]) => void
+  setColumnVisibility: (cv: Record<string, boolean>) => void
+  setEditCount: (count: number) => void
+  setLastExportedAt: (date: string) => void
+  setLoadError: (error: Error) => void
+  setLocale: (locale: Settings['locale']) => void
+  setPortfolioAssets: (portfolioId: string, entries: PortfolioEntry[]) => void
+  setPresetFilters: (filters: Pick<Settings, 'onlyPea' | 'scoreAbove50' | 'withRr5y'>) => void
+  setSort: (sort: Settings['sort']) => void
+  unDismissSimilarity: (isin: string, matchedIsin: string) => void
+  updateAsset: (isin: string, asset: Asset) => void
+  updateAssetPrice: (isin: string, price: number) => void
+  updatePortfolio: (id: string, patch: Partial<Pick<Portfolio, 'name' | 'broker'>>) => void
+  updatePortfolioEntryAmount: (portfolioId: string, isin: string, amount: number) => void
+  updatePortfolioEntryNote: (portfolioId: string, isin: string, note: string) => void
+  setTheme: (theme: Theme) => void
+  updatePortfolioEntryTargetAmount: (portfolioId: string, isin: string, targetAmount: number) => void
+}
 
 export const useAppStore = create<AppStore>()(
   // oxlint-disable-next-line max-lines-per-function
   subscribeWithSelector(set => ({
     addAsset: asset =>
       set(state => {
-        if (state.data.assets.length >= maxIsins) return state;
-        if (state.data.assets.some(existing => existing.isin === asset.isin)) return state;
+        if (state.data.assets.length >= maxIsins) return state
+        if (state.data.assets.some(existing => existing.isin === asset.isin)) return state
         return {
           data: {
             ...state.data,
             assets: [...state.data.assets, { ...asset, updatedAt: new Date().toISOString() }],
             settings: incrementEditCount(state.data.settings),
           },
-        };
+        }
       }),
     addPortfolio: portfolio =>
       set(state => {
-        if (state.data.portfolios.length >= maxPortfolios) return state;
+        if (state.data.portfolios.length >= maxPortfolios) return state
         return {
           data: {
             ...state.data,
             portfolios: [...state.data.portfolios, portfolio],
             settings: incrementEditCount(state.data.settings),
           },
-        };
+        }
       }),
     data: defaultAppData,
     deletePortfolio: id =>
@@ -136,7 +136,7 @@ export const useAppStore = create<AppStore>()(
       })),
     setPortfolioAssets: (portfolioId, entries) =>
       set(state => {
-        const now = new Date().toISOString();
+        const now = new Date().toISOString()
         return {
           data: {
             ...state.data,
@@ -154,7 +154,7 @@ export const useAppStore = create<AppStore>()(
             ),
             settings: incrementEditCount(state.data.settings),
           },
-        };
+        }
       }),
     setPresetFilters: filters =>
       set(state => ({
@@ -178,23 +178,23 @@ export const useAppStore = create<AppStore>()(
       })),
     updateAsset: (isin, asset) =>
       set(state => {
-        if (!state.data.assets.some(data => data.isin === isin)) return state;
-        const newIsin = asset.isin;
+        if (!state.data.assets.some(data => data.isin === isin)) return state
+        const newIsin = asset.isin
         const portfolios =
           isin === newIsin
             ? state.data.portfolios
             : state.data.portfolios.map(portfolio => ({
                 ...portfolio,
                 entries: portfolio.entries.map(entry => (entry.isin === isin ? { ...entry, isin: newIsin } : entry)),
-              }));
+              }))
         const assets =
           isin === newIsin
             ? state.data.assets.map(data => (data.isin === isin ? { ...asset, updatedAt: new Date().toISOString() } : data))
             : state.data.assets.map(data => {
-                if (data.isin === isin) return { ...asset, updatedAt: new Date().toISOString() };
-                if (!data.dismissedSimilarities.includes(isin)) return data;
-                return { ...data, dismissedSimilarities: data.dismissedSimilarities.map(dismissed => (dismissed === isin ? newIsin : dismissed)) };
-              });
+                if (data.isin === isin) return { ...asset, updatedAt: new Date().toISOString() }
+                if (!data.dismissedSimilarities.includes(isin)) return data
+                return { ...data, dismissedSimilarities: data.dismissedSimilarities.map(dismissed => (dismissed === isin ? newIsin : dismissed)) }
+              })
         return {
           data: {
             ...state.data,
@@ -202,19 +202,19 @@ export const useAppStore = create<AppStore>()(
             portfolios,
             settings: incrementEditCount(state.data.settings),
           },
-        };
+        }
       }),
     updateAssetPrice: (isin, price) =>
       set(state => {
-        const asset = state.data.assets.find(en => en.isin === isin);
-        invariant(asset, `Asset ${isin} not found`);
+        const asset = state.data.assets.find(en => en.isin === isin)
+        invariant(asset, `Asset ${isin} not found`)
         return {
           data: {
             ...state.data,
             assets: state.data.assets.map(data => (data.isin === isin ? { ...asset, price, updatedAt: new Date().toISOString() } : data)),
             settings: incrementEditCount(state.data.settings),
           },
-        };
+        }
       }),
     updatePortfolio: (id, patch) =>
       set(state => ({
@@ -249,4 +249,4 @@ export const useAppStore = create<AppStore>()(
         },
       })),
   })),
-);
+)

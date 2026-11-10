@@ -1,31 +1,31 @@
-import type { Row } from "@tanstack/react-table";
-import { computeScore, type Asset } from "../schemas/asset.ts";
-import type { AssetTableFeatures } from "./asset-table-features.ts";
+import type { Row } from '@tanstack/react-table'
+import { computeScore, type Asset } from '../schemas/asset.ts'
+import type { AssetTableFeatures } from './asset-table-features.ts'
 
-const minRowsForFormatting = 3;
-const quintileHighThreshold = 0.8;
-const quintileLowThreshold = 0.2;
-export const scoreMissingValue = -100;
-const feeGoodThreshold = 0.2;
-const feeBadThreshold = 0.45;
+const minRowsForFormatting = 3
+const quintileHighThreshold = 0.8
+const quintileLowThreshold = 0.2
+export const scoreMissingValue = -100
+const feeGoodThreshold = 0.2
+const feeBadThreshold = 0.45
 
 function feeThresholdClass(value: number | undefined): string | undefined {
-  if (value === undefined) return undefined;
-  if (value <= feeGoodThreshold) return "bg-success/20";
-  if (value >= feeBadThreshold) return "bg-error/20";
-  return undefined;
+  if (value === undefined) return undefined
+  if (value <= feeGoodThreshold) return 'bg-success/20'
+  if (value >= feeBadThreshold) return 'bg-error/20'
+  return undefined
 }
 
-export function getAriaSortValue(sorted: "asc" | "desc" | false): "ascending" | "descending" | "none" {
-  if (sorted === "asc") return "ascending";
-  if (sorted === "desc") return "descending";
-  return "none";
+export function getAriaSortValue(sorted: 'asc' | 'desc' | false): 'ascending' | 'descending' | 'none' {
+  if (sorted === 'asc') return 'ascending'
+  if (sorted === 'desc') return 'descending'
+  return 'none'
 }
 
 export function getScoreDotClass(qClass: string | undefined): string {
-  if (qClass?.includes("success")) return "bg-success";
-  if (qClass?.includes("error")) return "bg-error";
-  return "bg-warning";
+  if (qClass?.includes('success')) return 'bg-success'
+  if (qClass?.includes('error')) return 'bg-error'
+  return 'bg-warning'
 }
 
 export const defaultColumnVisibility: Record<string, boolean> = {
@@ -38,31 +38,31 @@ export const defaultColumnVisibility: Record<string, boolean> = {
   riskReward1y: false,
   tickers: false,
   updatedAt: false,
-};
+}
 
-const numericColIds = ["fees", "performance1y", "performance3y", "performance5y", "riskReward1y", "riskReward3y", "riskReward5y", "score"];
+const numericColIds = ['fees', 'performance1y', 'performance3y', 'performance5y', 'riskReward1y', 'riskReward3y', 'riskReward5y', 'score']
 
 // Private: O(log n) quintile lookup using a pre-sorted defined-values array.
 function quintileClassFromSorted(value: number | undefined, sortedDefined: number[]): string | undefined {
-  if (value === undefined) return undefined;
-  if (sortedDefined.length < minRowsForFormatting) return undefined;
-  const below = sortedDefined.filter(val => val < value).length;
-  const pct = below / sortedDefined.length;
-  if (pct >= quintileHighThreshold) return "bg-success/20";
-  if (pct < quintileLowThreshold) return "bg-error/20";
-  return undefined;
+  if (value === undefined) return undefined
+  if (sortedDefined.length < minRowsForFormatting) return undefined
+  const below = sortedDefined.filter(val => val < value).length
+  const pct = below / sortedDefined.length
+  if (pct >= quintileHighThreshold) return 'bg-success/20'
+  if (pct < quintileLowThreshold) return 'bg-error/20'
+  return undefined
 }
 
 export function computeQuintileClasses(rows: Row<AssetTableFeatures, Asset>[]): Map<string, Map<string, string | undefined>> {
   // Pre-compute scores once per row to avoid redundant calls in the score column
-  const scoreCache = new Map(rows.map(row => [row.id, computeScore(row.original)]));
+  const scoreCache = new Map(rows.map(row => [row.id, computeScore(row.original)]))
   return new Map(
     numericColIds.map(colId => {
-      const allValues = rows.map((row): number | undefined => (colId === "score" ? scoreCache.get(row.id) : (row.original[colId as keyof Asset] as number | undefined)));
+      const allValues = rows.map((row): number | undefined => (colId === 'score' ? scoreCache.get(row.id) : (row.original[colId as keyof Asset] as number | undefined)))
       // Pre-filter undefined values once per column so quintileClassFromSorted can skip that work per-row
-      const definedValues = allValues.filter((val): val is number => val !== undefined);
-      const rowClassMap = colId === "fees" ? new Map(rows.map((row, rowIdx) => [row.id, feeThresholdClass(allValues[rowIdx])])) : new Map(rows.map((row, rowIdx) => [row.id, quintileClassFromSorted(allValues[rowIdx], definedValues)]));
-      return [colId, rowClassMap];
+      const definedValues = allValues.filter((val): val is number => val !== undefined)
+      const rowClassMap = colId === 'fees' ? new Map(rows.map((row, rowIdx) => [row.id, feeThresholdClass(allValues[rowIdx])])) : new Map(rows.map((row, rowIdx) => [row.id, quintileClassFromSorted(allValues[rowIdx], definedValues)]))
+      return [colId, rowClassMap]
     }),
-  );
+  )
 }

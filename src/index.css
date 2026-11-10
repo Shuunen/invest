@@ -1,10 +1,10 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 @plugin "daisyui/index.js" {
   logs: false;
   themes: business, dark, dim, dracula, forest, bumblebee, caramellatte, cupcake, light, winter;
 }
 
-[data-theme="bumblebee"] {
+[data-theme='bumblebee'] {
   --color-accent: var(--color-orange-300);
   --color-base-200: var(--color-orange-50);
   --color-base-content: var(--color-stone-700);
@@ -13,18 +13,18 @@
   --color-warning: var(--color-orange-400);
 }
 
-[data-theme="caramellatte"] {
+[data-theme='caramellatte'] {
   --color-primary: var(--color-orange-700);
   --color-warning: var(--color-yellow-600);
 }
 
-[data-theme="winter"] {
+[data-theme='winter'] {
   --color-accent: var(--color-blue-400);
   --color-info: var(--color-blue-400);
   --color-warning: var(--color-yellow-500);
 }
 
-[data-theme="light"] {
+[data-theme='light'] {
   --color-accent: var(--color-sky-600);
   --color-error: var(--color-rose-400);
   --color-success: var(--color-emerald-500);

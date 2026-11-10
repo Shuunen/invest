@@ -1,60 +1,60 @@
-import { useNavigate } from "@tanstack/react-router";
-import { invariant } from "es-toolkit";
-import { useMemo, useState } from "react";
-import { toast } from "react-hot-toast";
-import { Empty } from "../components/empty.tsx";
-import type { Asset } from "../schemas/asset.ts";
-import { useAppStore } from "../store/use-app-store.ts";
-import { AssetForm } from "./edit/asset-form.tsx";
-import { DismissedSimilaritiesSection } from "./edit/dismissed-similarities.tsx";
-import { buildDiffRows, type DiffRow } from "./edit/form-diff.ts";
-import { buildAssetFromForm, emptyFormState, toFormState, type FormState } from "./edit/form-state.ts";
-import { IsinFetchRow } from "./edit/isin-fetch-row.tsx";
-import { SaveModal } from "./edit/save-modal.tsx";
-import { useEtfFetch } from "./edit/use-etf-fetch.ts";
+import { useNavigate } from '@tanstack/react-router'
+import { invariant } from 'es-toolkit'
+import { useMemo, useState } from 'react'
+import { toast } from 'react-hot-toast'
+import { Empty } from '../components/empty.tsx'
+import type { Asset } from '../schemas/asset.ts'
+import { useAppStore } from '../store/use-app-store.ts'
+import { AssetForm } from './edit/asset-form.tsx'
+import { DismissedSimilaritiesSection } from './edit/dismissed-similarities.tsx'
+import { buildDiffRows, type DiffRow } from './edit/form-diff.ts'
+import { buildAssetFromForm, emptyFormState, toFormState, type FormState } from './edit/form-state.ts'
+import { IsinFetchRow } from './edit/isin-fetch-row.tsx'
+import { SaveModal } from './edit/save-modal.tsx'
+import { useEtfFetch } from './edit/use-etf-fetch.ts'
 
 type ConfirmAssetSaveParams = {
-  asset: Asset | undefined;
-  form: FormState | undefined;
-  navigate: ReturnType<typeof useNavigate>;
-  onReset: () => void;
-  onValidationError: (errors: Record<string, string>) => void;
-  originalIsin: string;
-  updateAsset: (isin: string, asset: Asset) => void;
-};
+  asset: Asset | undefined
+  form: FormState | undefined
+  navigate: ReturnType<typeof useNavigate>
+  onReset: () => void
+  onValidationError: (errors: Record<string, string>) => void
+  originalIsin: string
+  updateAsset: (isin: string, asset: Asset) => void
+}
 
 function useConfirmAssetSave({ asset, form, navigate, onReset, onValidationError, originalIsin, updateAsset }: ConfirmAssetSaveParams) {
-  const [diffRows, setDiffRows] = useState<DiffRow[]>([]);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [initialSnapshotForm, setInitialSnapshotForm] = useState<FormState | undefined>();
-  const [snapshotForm, setSnapshotForm] = useState<FormState | undefined>();
+  const [diffRows, setDiffRows] = useState<DiffRow[]>([])
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [initialSnapshotForm, setInitialSnapshotForm] = useState<FormState | undefined>()
+  const [snapshotForm, setSnapshotForm] = useState<FormState | undefined>()
   function openConfirm() {
-    invariant(form, "Expected form to be defined");
-    invariant(asset, "Expected asset to be defined");
-    const result = buildAssetFromForm(form);
-    if ("errors" in result) return onValidationError(result.errors);
-    const initialForm = toFormState(asset);
-    setInitialSnapshotForm(initialForm);
-    setSnapshotForm(form);
-    setDiffRows(buildDiffRows(initialForm, form));
-    setIsConfirmOpen(true);
+    invariant(form, 'Expected form to be defined')
+    invariant(asset, 'Expected asset to be defined')
+    const result = buildAssetFromForm(form)
+    if ('errors' in result) return onValidationError(result.errors)
+    const initialForm = toFormState(asset)
+    setInitialSnapshotForm(initialForm)
+    setSnapshotForm(form)
+    setDiffRows(buildDiffRows(initialForm, form))
+    setIsConfirmOpen(true)
   }
   function resetDiffRow(diffRow: DiffRow) {
     setSnapshotForm(prevSnapshot => {
-      invariant(prevSnapshot, "Expected snapshot form to be defined before row reset");
-      invariant(initialSnapshotForm, "Expected initial snapshot form to be defined before row reset");
-      const nextSnapshot = diffRow.reset(prevSnapshot, initialSnapshotForm);
-      setDiffRows(buildDiffRows(initialSnapshotForm, nextSnapshot));
-      return nextSnapshot;
-    });
+      invariant(prevSnapshot, 'Expected snapshot form to be defined before row reset')
+      invariant(initialSnapshotForm, 'Expected initial snapshot form to be defined before row reset')
+      const nextSnapshot = diffRow.reset(prevSnapshot, initialSnapshotForm)
+      setDiffRows(buildDiffRows(initialSnapshotForm, nextSnapshot))
+      return nextSnapshot
+    })
   }
   function confirmSave() {
-    invariant(snapshotForm, "Expected snapshot form to be defined");
-    const result = buildAssetFromForm(snapshotForm) as { data: Asset };
-    setIsConfirmOpen(false);
-    updateAsset(originalIsin, result.data);
-    toast.success("Asset saved");
-    void navigate({ params: { isin: snapshotForm.isin }, replace: true, to: "/assets/$isin" });
+    invariant(snapshotForm, 'Expected snapshot form to be defined')
+    const result = buildAssetFromForm(snapshotForm) as { data: Asset }
+    setIsConfirmOpen(false)
+    updateAsset(originalIsin, result.data)
+    toast.success('Asset saved')
+    void navigate({ params: { isin: snapshotForm.isin }, replace: true, to: '/assets/$isin' })
   }
   return {
     closeConfirm: () => setIsConfirmOpen(false),
@@ -63,39 +63,39 @@ function useConfirmAssetSave({ asset, form, navigate, onReset, onValidationError
     isConfirmOpen,
     openConfirm,
     resetAndClose: () => {
-      onReset();
-      setIsConfirmOpen(false);
+      onReset()
+      setIsConfirmOpen(false)
     },
     resetDiffRow,
-  };
+  }
 }
 
 function useAssetEditForm(originalIsin: string) {
-  const navigate = useNavigate();
-  const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === originalIsin));
-  const updateAsset = useAppStore(state => state.updateAsset);
+  const navigate = useNavigate()
+  const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === originalIsin))
+  const updateAsset = useAppStore(state => state.updateAsset)
 
-  const [form, setForm] = useState<FormState | undefined>(asset ? toFormState(asset) : undefined);
+  const [form, setForm] = useState<FormState | undefined>(asset ? toFormState(asset) : undefined)
   // when we reload the page on the edit page, the asset is undefined at first, but then it is loaded from the store, so we need to update the form state when the asset is loaded
-  if (!form && asset) setForm(toFormState(asset));
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  if (!form && asset) setForm(toFormState(asset))
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   function patch<Key extends keyof FormState>(key: Key, value: FormState[Key]) {
     setForm(prev => {
-      invariant(prev, "Expected form to be defined when patching");
-      return { ...prev, [key]: value };
-    });
-    setErrors(prev => Object.fromEntries(Object.entries(prev).filter(([errKey]) => errKey !== key)));
+      invariant(prev, 'Expected form to be defined when patching')
+      return { ...prev, [key]: value }
+    })
+    setErrors(prev => Object.fromEntries(Object.entries(prev).filter(([errKey]) => errKey !== key)))
   }
 
   function resetForm() {
-    invariant(asset, "Expected asset to be defined when resetting");
-    setForm(toFormState(asset));
-    setErrors({});
+    invariant(asset, 'Expected asset to be defined when resetting')
+    setForm(toFormState(asset))
+    setErrors({})
   }
 
-  const { fetchError, handleFetch, isFetching } = useEtfFetch((form ?? emptyFormState).isin, patch, form ?? emptyFormState);
-  const hasChanges = useMemo(() => (asset && form ? buildDiffRows(toFormState(asset), form).length > 0 : false), [asset, form]);
+  const { fetchError, handleFetch, isFetching } = useEtfFetch((form ?? emptyFormState).isin, patch, form ?? emptyFormState)
+  const hasChanges = useMemo(() => (asset && form ? buildDiffRows(toFormState(asset), form).length > 0 : false), [asset, form])
   const { closeConfirm, confirmSave, diffRows, isConfirmOpen, openConfirm, resetAndClose, resetDiffRow } = useConfirmAssetSave({
     asset,
     form,
@@ -104,29 +104,29 @@ function useAssetEditForm(originalIsin: string) {
     onValidationError: setErrors,
     originalIsin,
     updateAsset,
-  });
+  })
 
-  return { closeConfirm, confirmSave, diffRows, errors, fetchError, form, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, patch, resetAndClose, resetDiffRow };
+  return { closeConfirm, confirmSave, diffRows, errors, fetchError, form, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, patch, resetAndClose, resetDiffRow }
 }
 
-type Props = { isin: string };
+type Props = { isin: string }
 
 export function AssetEditPage({ isin: originalIsin }: Props) {
-  const navigate = useNavigate();
-  const { closeConfirm, confirmSave, diffRows, form, errors, fetchError, patch, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, resetAndClose, resetDiffRow } = useAssetEditForm(originalIsin);
-  const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === originalIsin));
-  const allAssets = useAppStore(state => state.data.assets);
-  const unDismissSimilarity = useAppStore(state => state.unDismissSimilarity);
+  const navigate = useNavigate()
+  const { closeConfirm, confirmSave, diffRows, form, errors, fetchError, patch, handleFetch, hasChanges, isConfirmOpen, isFetching, openConfirm, resetAndClose, resetDiffRow } = useAssetEditForm(originalIsin)
+  const asset = useAppStore(state => state.data.assets.find(ast => ast.isin === originalIsin))
+  const allAssets = useAppStore(state => state.data.assets)
+  const unDismissSimilarity = useAppStore(state => state.unDismissSimilarity)
 
-  if (!form) return <Empty name="edit-asset-not-found" description={`Asset not found : ${originalIsin}`} title="Not found" />;
+  if (!form) return <Empty name="edit-asset-not-found" description={`Asset not found : ${originalIsin}`} title="Not found" />
 
-  const goBack = () => void navigate({ params: { isin: originalIsin }, replace: true, to: "/assets/$isin" });
+  const goBack = () => void navigate({ params: { isin: originalIsin }, replace: true, to: '/assets/$isin' })
 
   return (
     <>
       <AssetForm
         title="Edit asset"
-        isinDisplay={<IsinFetchRow isin={form.isin} isFetching={isFetching} fetchError={fetchError} isinError={errors.isin} onFetch={() => void handleFetch()} onIsinChange={value => patch("isin", value)} />}
+        isinDisplay={<IsinFetchRow isin={form.isin} isFetching={isFetching} fetchError={fetchError} isinError={errors.isin} onFetch={() => void handleFetch()} onIsinChange={value => patch('isin', value)} />}
         errors={errors}
         form={form}
         onCancel={goBack}
@@ -141,5 +141,5 @@ export function AssetEditPage({ isin: originalIsin }: Props) {
       )}
       {isConfirmOpen && <SaveModal diffRows={diffRows} onClose={closeConfirm} onConfirm={confirmSave} onReset={resetAndClose} onResetRow={resetDiffRow} />}
     </>
-  );
+  )
 }

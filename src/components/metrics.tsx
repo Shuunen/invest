@@ -1,9 +1,9 @@
-import { Fragment } from "react";
-import { Metric, type MetricItem } from "./metric.tsx";
+import { Fragment } from 'react'
+import { Metric, type MetricItem } from './metric.tsx'
 
 type Props = {
-  items: MetricItem[];
-};
+  items: MetricItem[]
+}
 
 export function Metrics({ items }: Props) {
   return (
@@ -15,5 +15,5 @@ export function Metrics({ items }: Props) {
         </Fragment>
       ))}
     </div>
-  );
+  )
 }

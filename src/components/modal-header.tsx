@@ -1,18 +1,18 @@
-import { XIcon } from "lucide-react";
-import { cn } from "../utils/browser-styles";
+import { XIcon } from 'lucide-react'
+import { cn } from '../utils/browser-styles'
 
 type ModalHeaderProps = {
-  title: string;
-  subtitle?: string;
-  onClose: () => void;
-  type?: "default" | "error";
-};
+  title: string
+  subtitle?: string
+  onClose: () => void
+  type?: 'default' | 'error'
+}
 
-export function ModalHeader({ title, subtitle, onClose, type = "default" }: ModalHeaderProps) {
+export function ModalHeader({ title, subtitle, onClose, type = 'default' }: ModalHeaderProps) {
   return (
     <div
-      className={cn("mb-4 flex justify-between", {
-        "text-error": type === "error",
+      className={cn('mb-4 flex justify-between', {
+        'text-error': type === 'error',
       })}
     >
       <div className="grid gap-2">
@@ -25,5 +25,5 @@ export function ModalHeader({ title, subtitle, onClose, type = "default" }: Moda
         <XIcon size={16} />
       </button>
     </div>
-  );
+  )
 }

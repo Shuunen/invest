@@ -1,246 +1,246 @@
-import type { Country, Sector } from "../schemas/asset.ts";
+import type { Country, Sector } from '../schemas/asset.ts'
 
 export type EtfPrefillData = {
-  fees: string | undefined;
-  geoAllocation: Partial<Record<Country, number>>;
-  isAccumulating: boolean | undefined;
-  name: string | undefined;
-  price: string | undefined;
-  performance1y: string | undefined;
-  performance3y: string | undefined;
-  performance5y: string | undefined;
-  provider: string | undefined;
-  riskReward1y: string | undefined;
-  riskReward3y: string | undefined;
-  riskReward5y: string | undefined;
-  sectorAllocation: Partial<Record<Sector, number>>;
-  tickers: string | undefined;
-};
+  fees: string | undefined
+  geoAllocation: Partial<Record<Country, number>>
+  isAccumulating: boolean | undefined
+  name: string | undefined
+  price: string | undefined
+  performance1y: string | undefined
+  performance3y: string | undefined
+  performance5y: string | undefined
+  provider: string | undefined
+  riskReward1y: string | undefined
+  riskReward3y: string | undefined
+  riskReward5y: string | undefined
+  sectorAllocation: Partial<Record<Sector, number>>
+  tickers: string | undefined
+}
 
 const geoNameToKey: Record<string, Country> = {
-  Australia: "australia",
-  Austria: "austria",
-  Belgium: "belgium",
-  Brazil: "brazil",
-  Canada: "canada",
-  China: "china",
-  Denmark: "denmark",
-  Finland: "finland",
-  France: "france",
-  Germany: "germany",
-  "Hong Kong": "hongKong",
-  India: "india",
-  Indonesia: "indonesia",
-  Ireland: "ireland",
-  Israel: "israel",
-  Italy: "italy",
-  Japan: "japan",
-  Luxembourg: "luxembourg",
-  Malaysia: "malaysia",
-  Netherlands: "netherlands",
-  Norway: "norway",
-  Poland: "poland",
-  "Saudi Arabia": "saudiArabia",
-  "South Korea": "southKorea",
-  Spain: "spain",
-  Sweden: "sweden",
-  Switzerland: "switzerland",
-  Taiwan: "taiwan",
-  Thailand: "thailand",
-  "United Kingdom": "uk",
-  "United States": "us",
-};
+  Australia: 'australia',
+  Austria: 'austria',
+  Belgium: 'belgium',
+  Brazil: 'brazil',
+  Canada: 'canada',
+  China: 'china',
+  Denmark: 'denmark',
+  Finland: 'finland',
+  France: 'france',
+  Germany: 'germany',
+  'Hong Kong': 'hongKong',
+  India: 'india',
+  Indonesia: 'indonesia',
+  Ireland: 'ireland',
+  Israel: 'israel',
+  Italy: 'italy',
+  Japan: 'japan',
+  Luxembourg: 'luxembourg',
+  Malaysia: 'malaysia',
+  Netherlands: 'netherlands',
+  Norway: 'norway',
+  Poland: 'poland',
+  'Saudi Arabia': 'saudiArabia',
+  'South Korea': 'southKorea',
+  Spain: 'spain',
+  Sweden: 'sweden',
+  Switzerland: 'switzerland',
+  Taiwan: 'taiwan',
+  Thailand: 'thailand',
+  'United Kingdom': 'uk',
+  'United States': 'us',
+}
 
 const sectorNameToKey: Record<string, Sector> = {
-  "Basic Materials": "materials",
-  "Communication Services": "communicationServices",
-  "Consumer Discretionary": "consumerDiscretionary",
-  "Consumer Staples": "consumerStaples",
-  Energy: "energy",
-  Financials: "financials",
-  "Health Care": "healthcare",
-  Healthcare: "healthcare",
-  Industrials: "industrials",
-  Materials: "materials",
-  "Real Estate": "realEstate",
-  Technology: "technology",
-  Telecommunication: "communicationServices",
-  Utilities: "utilities",
-};
+  'Basic Materials': 'materials',
+  'Communication Services': 'communicationServices',
+  'Consumer Discretionary': 'consumerDiscretionary',
+  'Consumer Staples': 'consumerStaples',
+  Energy: 'energy',
+  Financials: 'financials',
+  'Health Care': 'healthcare',
+  Healthcare: 'healthcare',
+  Industrials: 'industrials',
+  Materials: 'materials',
+  'Real Estate': 'realEstate',
+  Technology: 'technology',
+  Telecommunication: 'communicationServices',
+  Utilities: 'utilities',
+}
 
-const providerWordsToStrip = [" ETF"];
+const providerWordsToStrip = [' ETF']
 
 export function cleanProviderName(provider: string | undefined): string | undefined {
-  if (provider === undefined) return undefined;
-  let cleaned = provider;
-  for (const word of providerWordsToStrip) cleaned = cleaned.replaceAll(word, "");
-  cleaned = cleaned.replaceAll(/\s+/gu, " ").trim();
-  return cleaned || undefined;
+  if (provider === undefined) return undefined
+  let cleaned = provider
+  for (const word of providerWordsToStrip) cleaned = cleaned.replaceAll(word, '')
+  cleaned = cleaned.replaceAll(/\s+/gu, ' ').trim()
+  return cleaned || undefined
 }
 
 export function cleanAssetName(name: string | undefined, provider: string | undefined): string | undefined {
-  if (name === undefined) return undefined;
-  if (provider === undefined) return name;
-  const [firstWord] = provider.split(/\s+/u);
-  if (!firstWord) return name;
-  const cleaned = name.replaceAll(provider.trim(), "").replaceAll(firstWord, "").replaceAll(/\s+/gu, " ").trim();
-  return cleaned || undefined;
+  if (name === undefined) return undefined
+  if (provider === undefined) return name
+  const [firstWord] = provider.split(/\s+/u)
+  if (!firstWord) return name
+  const cleaned = name.replaceAll(provider.trim(), '').replaceAll(firstWord, '').replaceAll(/\s+/gu, ' ').trim()
+  return cleaned || undefined
 }
 
 function getTestIdText(doc: Document, testId: string): string | undefined {
-  const text = doc.querySelector(`[data-testid="${testId}"]`)?.textContent?.replaceAll(/\s+/gu, " ").trim();
-  return text !== "" && text !== undefined ? text : undefined;
+  const text = doc.querySelector(`[data-testid="${testId}"]`)?.textContent?.replaceAll(/\s+/gu, ' ').trim()
+  return text !== '' && text !== undefined ? text : undefined
 }
 
-type AllocationOptions<Key extends string> = { keyMap: Record<string, Key>; nameTestId: string; pctTestId: string; rowTestId: string };
+type AllocationOptions<Key extends string> = { keyMap: Record<string, Key>; nameTestId: string; pctTestId: string; rowTestId: string }
 
 function parseAllocation<Key extends string>(doc: Document, { rowTestId, nameTestId, pctTestId, keyMap }: AllocationOptions<Key>): Partial<Record<Key, number>> {
-  const rows = doc.querySelectorAll(`[data-testid="${rowTestId}"]`);
-  const result: Partial<Record<Key, number>> = {};
+  const rows = doc.querySelectorAll(`[data-testid="${rowTestId}"]`)
+  const result: Partial<Record<Key, number>> = {}
   for (const row of rows) {
-    const name = row.querySelector(`[data-testid="${nameTestId}"]`)?.textContent?.trim();
-    const pctText = row.querySelector(`[data-testid="${pctTestId}"]`)?.textContent?.trim();
-    if (!name || !pctText) continue;
-    const mappedKey = keyMap[name];
-    if (mappedKey === undefined) continue;
-    const num = Number(pctText.replace("%", "").replace(",", "."));
-    if (!Number.isNaN(num)) result[mappedKey] = num;
+    const name = row.querySelector(`[data-testid="${nameTestId}"]`)?.textContent?.trim()
+    const pctText = row.querySelector(`[data-testid="${pctTestId}"]`)?.textContent?.trim()
+    if (!name || !pctText) continue
+    const mappedKey = keyMap[name]
+    if (mappedKey === undefined) continue
+    const num = Number(pctText.replace('%', '').replace(',', '.'))
+    if (!Number.isNaN(num)) result[mappedKey] = num
   }
-  return result;
+  return result
 }
 
 function getRiskTableValue(doc: Document, label: string): string | undefined {
-  const panel = doc.querySelector(`[data-testid="etf-risk_table_panel"]`);
-  if (!panel) return undefined;
-  const labelCell = Array.from(panel.querySelectorAll("td.vallabel")).find(cell => cell.textContent?.trim() === label);
-  const value = (labelCell?.nextElementSibling as HTMLElement | null)?.textContent?.trim();
-  if (value === "" || value === undefined) return undefined;
-  const num = Number(value.replace(",", "."));
-  return Number.isNaN(num) ? undefined : String(num);
+  const panel = doc.querySelector(`[data-testid="etf-risk_table_panel"]`)
+  if (!panel) return undefined
+  const labelCell = Array.from(panel.querySelectorAll('td.vallabel')).find(cell => cell.textContent?.trim() === label)
+  const value = (labelCell?.nextElementSibling as HTMLElement | null)?.textContent?.trim()
+  if (value === '' || value === undefined) return undefined
+  const num = Number(value.replace(',', '.'))
+  return Number.isNaN(num) ? undefined : String(num)
 }
 
 function parsePercentValue(raw: string | undefined): string | undefined {
-  if (raw === undefined) return undefined;
+  if (raw === undefined) return undefined
   // oxlint-disable-next-line unicorn/prefer-number-coercion -- raw can have trailing text after the number (e.g. "0.07% p.a."); parseFloat ignores it, Number() would yield NaN
-  const num = Number.parseFloat(raw.replace(",", "."));
-  return Number.isNaN(num) ? undefined : String(num);
+  const num = Number.parseFloat(raw.replace(',', '.'))
+  return Number.isNaN(num) ? undefined : String(num)
 }
 
 function parseQuotePrice(payload: unknown): string | undefined {
-  if (typeof payload !== "object" || payload === null) return undefined;
-  const { latestQuote } = payload as { latestQuote?: unknown };
-  if (typeof latestQuote !== "object" || latestQuote === null) return undefined;
-  const { raw } = latestQuote as { raw?: unknown };
-  if (typeof raw !== "number") return undefined;
-  return String(raw);
+  if (typeof payload !== 'object' || payload === null) return undefined
+  const { latestQuote } = payload as { latestQuote?: unknown }
+  if (typeof latestQuote !== 'object' || latestQuote === null) return undefined
+  const { raw } = latestQuote as { raw?: unknown }
+  if (typeof raw !== 'number') return undefined
+  return String(raw)
 }
 
 async function fetchExpandedSectors(proxyBase: string, sectorsPath: string, wicketHeaders: Record<string, string>): Promise<Partial<Record<Sector, number>> | undefined> {
-  const response = await fetch(`${proxyBase}${sectorsPath}&_=${Date.now()}`, { headers: wicketHeaders });
-  if (!response.ok) return undefined;
-  const xml = await response.text();
-  const expandedSectors = parseSectorsFromAjaxXml(xml);
-  return Object.keys(expandedSectors).length > 0 ? expandedSectors : undefined;
+  const response = await fetch(`${proxyBase}${sectorsPath}&_=${Date.now()}`, { headers: wicketHeaders })
+  if (!response.ok) return undefined
+  const xml = await response.text()
+  const expandedSectors = parseSectorsFromAjaxXml(xml)
+  return Object.keys(expandedSectors).length > 0 ? expandedSectors : undefined
 }
 
 async function fetchExpandedCountries(proxyBase: string, countriesPath: string, wicketHeaders: Record<string, string>): Promise<Partial<Record<Country, number>> | undefined> {
-  const response = await fetch(`${proxyBase}${countriesPath}&_=${Date.now()}`, { headers: wicketHeaders });
-  if (!response.ok) return undefined;
-  const xml = await response.text();
-  const expandedCountries = parseCountriesFromAjaxXml(xml);
-  return Object.keys(expandedCountries).length > 0 ? expandedCountries : undefined;
+  const response = await fetch(`${proxyBase}${countriesPath}&_=${Date.now()}`, { headers: wicketHeaders })
+  if (!response.ok) return undefined
+  const xml = await response.text()
+  const expandedCountries = parseCountriesFromAjaxXml(xml)
+  return Object.keys(expandedCountries).length > 0 ? expandedCountries : undefined
 }
 
 async function fetchQuotePrice(proxyBase: string, quotePath: string): Promise<string | undefined> {
-  const response = await fetch(`${proxyBase}${quotePath}`);
-  if (!response.ok) return undefined;
-  const quote = (await response.json()) as unknown;
-  return parseQuotePrice(quote);
+  const response = await fetch(`${proxyBase}${quotePath}`)
+  if (!response.ok) return undefined
+  const quote = (await response.json()) as unknown
+  return parseQuotePrice(quote)
 }
 
 export function parseSectorsFromAjaxXml(xml: string): Partial<Record<Sector, number>> {
-  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(?<cdata>.*?)\]\]>/gsu)];
+  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(?<cdata>.*?)\]\]>/gsu)]
   for (const match of cdataMatches) {
-    const [, html] = match;
-    if (!html?.includes('data-testid="etf-holdings_sectors_table"')) continue;
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    return parseAllocation(doc, { keyMap: sectorNameToKey, nameTestId: "tl_etf-holdings_sectors_value_name", pctTestId: "tl_etf-holdings_sectors_value_percentage", rowTestId: "etf-holdings_sectors_row" });
+    const [, html] = match
+    if (!html?.includes('data-testid="etf-holdings_sectors_table"')) continue
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+    return parseAllocation(doc, { keyMap: sectorNameToKey, nameTestId: 'tl_etf-holdings_sectors_value_name', pctTestId: 'tl_etf-holdings_sectors_value_percentage', rowTestId: 'etf-holdings_sectors_row' })
   }
-  return {};
+  return {}
 }
 
 export function parseCountriesFromAjaxXml(xml: string): Partial<Record<Country, number>> {
-  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(?<cdata>.*?)\]\]>/gsu)];
+  const cdataMatches = [...xml.matchAll(/<!\[CDATA\[(?<cdata>.*?)\]\]>/gsu)]
   for (const match of cdataMatches) {
-    const [, html] = match;
-    if (!html?.includes('data-testid="etf-holdings_countries_table"')) continue;
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    return parseAllocation(doc, { keyMap: geoNameToKey, nameTestId: "tl_etf-holdings_countries_value_name", pctTestId: "tl_etf-holdings_countries_value_percentage", rowTestId: "etf-holdings_countries_row" });
+    const [, html] = match
+    if (!html?.includes('data-testid="etf-holdings_countries_table"')) continue
+    const doc = new DOMParser().parseFromString(html, 'text/html')
+    return parseAllocation(doc, { keyMap: geoNameToKey, nameTestId: 'tl_etf-holdings_countries_value_name', pctTestId: 'tl_etf-holdings_countries_value_percentage', rowTestId: 'etf-holdings_countries_row' })
   }
-  return {};
+  return {}
 }
 
 export function parseEtfHtml(html: string): EtfPrefillData {
-  const doc = new DOMParser().parseFromString(html, "text/html");
+  const doc = new DOMParser().parseFromString(html, 'text/html')
 
-  const rawDistribution = getTestIdText(doc, "tl_etf-basics_value_distribution-policy");
-  const provider = cleanProviderName(getTestIdText(doc, "tl_etf-basics_value_fund-provider"));
-  const rawName = getTestIdText(doc, "etf-profile-header_etf-name");
+  const rawDistribution = getTestIdText(doc, 'tl_etf-basics_value_distribution-policy')
+  const provider = cleanProviderName(getTestIdText(doc, 'tl_etf-basics_value_fund-provider'))
+  const rawName = getTestIdText(doc, 'etf-profile-header_etf-name')
 
   return {
-    fees: parsePercentValue(getTestIdText(doc, "etf-profile-header_ter-value")),
-    geoAllocation: parseAllocation(doc, { keyMap: geoNameToKey, nameTestId: "tl_etf-holdings_countries_value_name", pctTestId: "tl_etf-holdings_countries_value_percentage", rowTestId: "etf-holdings_countries_row" }),
-    isAccumulating: rawDistribution === undefined ? undefined : rawDistribution.toLowerCase().includes("accum"),
+    fees: parsePercentValue(getTestIdText(doc, 'etf-profile-header_ter-value')),
+    geoAllocation: parseAllocation(doc, { keyMap: geoNameToKey, nameTestId: 'tl_etf-holdings_countries_value_name', pctTestId: 'tl_etf-holdings_countries_value_percentage', rowTestId: 'etf-holdings_countries_row' }),
+    isAccumulating: rawDistribution === undefined ? undefined : rawDistribution.toLowerCase().includes('accum'),
     name: cleanAssetName(rawName, provider),
-    performance1y: parsePercentValue(getTestIdText(doc, "etf-returns-section_1year-return")),
-    performance3y: parsePercentValue(getTestIdText(doc, "etf-returns-section_3year-return")),
-    performance5y: parsePercentValue(getTestIdText(doc, "etf-returns-section_5year-return")),
+    performance1y: parsePercentValue(getTestIdText(doc, 'etf-returns-section_1year-return')),
+    performance3y: parsePercentValue(getTestIdText(doc, 'etf-returns-section_3year-return')),
+    performance5y: parsePercentValue(getTestIdText(doc, 'etf-returns-section_5year-return')),
     price: undefined,
     provider,
-    riskReward1y: getRiskTableValue(doc, "Return per risk 1 year"),
-    riskReward3y: getRiskTableValue(doc, "Return per risk 3 years"),
-    riskReward5y: getRiskTableValue(doc, "Return per risk 5 years"),
-    sectorAllocation: parseAllocation(doc, { keyMap: sectorNameToKey, nameTestId: "tl_etf-holdings_sectors_value_name", pctTestId: "tl_etf-holdings_sectors_value_percentage", rowTestId: "etf-holdings_sectors_row" }),
-    tickers: getTestIdText(doc, "etf-profile-header_identifier-value-ticker"),
-  };
+    riskReward1y: getRiskTableValue(doc, 'Return per risk 1 year'),
+    riskReward3y: getRiskTableValue(doc, 'Return per risk 3 years'),
+    riskReward5y: getRiskTableValue(doc, 'Return per risk 5 years'),
+    sectorAllocation: parseAllocation(doc, { keyMap: sectorNameToKey, nameTestId: 'tl_etf-holdings_sectors_value_name', pctTestId: 'tl_etf-holdings_sectors_value_percentage', rowTestId: 'etf-holdings_sectors_row' }),
+    tickers: getTestIdText(doc, 'etf-profile-header_identifier-value-ticker'),
+  }
 }
 
 // The page-specific Wicket paths are embedded in JS snippets and change every session —
 // extract them from the HTML rather than relying on hardcoded page IDs.
 function resolveWicketPath(text: string, keyword: string, fallback: string): string {
-  const pattern = new RegExp(`"u":"(\\/en\\/etf-profile\\.html\\?[^"]*${keyword}[^"]*)"`, "u");
-  return pattern.exec(text)?.[1] ?? fallback;
+  const pattern = new RegExp(`"u":"(\\/en\\/etf-profile\\.html\\?[^"]*${keyword}[^"]*)"`, 'u')
+  return pattern.exec(text)?.[1] ?? fallback
 }
 
 export async function fetchEtfData(isin: string): Promise<EtfPrefillData> {
-  const encodedIsin = encodeURIComponent(isin);
-  const proxyBase = "http://localhost:8010/proxy"; // port must match port constant in src/bin/proxy.ts
-  const response = await fetch(`${proxyBase}/en/etf-profile.html?isin=${encodedIsin}`);
-  if (!response.ok) throw new Error(`HTTP error ${String(response.status)}`);
-  const text = await response.text();
-  const result = parseEtfHtml(text);
+  const encodedIsin = encodeURIComponent(isin)
+  const proxyBase = 'http://localhost:8010/proxy' // port must match port constant in src/bin/proxy.ts
+  const response = await fetch(`${proxyBase}/en/etf-profile.html?isin=${encodedIsin}`)
+  if (!response.ok) throw new Error(`HTTP error ${String(response.status)}`)
+  const text = await response.text()
+  const result = parseEtfHtml(text)
 
-  const sectorsPath = resolveWicketPath(text, "loadMoreSectors", `/en/etf-profile.html?6-1.0-holdingsSection-sectors-loadMoreSectors&isin=${encodedIsin}&_wicket=1`);
+  const sectorsPath = resolveWicketPath(text, 'loadMoreSectors', `/en/etf-profile.html?6-1.0-holdingsSection-sectors-loadMoreSectors&isin=${encodedIsin}&_wicket=1`)
 
-  const countriesPath = resolveWicketPath(text, "loadMoreCountries", `/en/etf-profile.html?6-1.0-holdingsSection-countries-loadMoreCountries&isin=${encodedIsin}&_wicket=1`);
-  const quotePath = `/api/etfs/${encodedIsin}/quote?currency=EUR&locale=en`;
+  const countriesPath = resolveWicketPath(text, 'loadMoreCountries', `/en/etf-profile.html?6-1.0-holdingsSection-countries-loadMoreCountries&isin=${encodedIsin}&_wicket=1`)
+  const quotePath = `/api/etfs/${encodedIsin}/quote?currency=EUR&locale=en`
 
   const wicketHeaders = {
-    Accept: "application/xml, text/xml, */*; q=0.01",
-    "wicket-ajax": "true",
-    "wicket-ajax-baseurl": `en/etf-profile.html?isin=${encodedIsin}`,
-    "x-requested-with": "XMLHttpRequest",
-  };
+    Accept: 'application/xml, text/xml, */*; q=0.01',
+    'wicket-ajax': 'true',
+    'wicket-ajax-baseurl': `en/etf-profile.html?isin=${encodedIsin}`,
+    'x-requested-with': 'XMLHttpRequest',
+  }
 
   const [expandedSectors, expandedCountries, quotePrice] = await Promise.all([
     fetchExpandedSectors(proxyBase, sectorsPath, wicketHeaders),
     fetchExpandedCountries(proxyBase, countriesPath, wicketHeaders),
     fetchQuotePrice(proxyBase, quotePath),
-  ]);
+  ])
 
-  if (expandedSectors !== undefined) result.sectorAllocation = expandedSectors;
-  if (expandedCountries !== undefined) result.geoAllocation = expandedCountries;
-  if (quotePrice !== undefined) result.price = quotePrice;
+  if (expandedSectors !== undefined) result.sectorAllocation = expandedSectors
+  if (expandedCountries !== undefined) result.geoAllocation = expandedCountries
+  if (quotePrice !== undefined) result.price = quotePrice
 
-  return result;
+  return result
 }

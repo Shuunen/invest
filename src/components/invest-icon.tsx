@@ -8,5 +8,5 @@ export function InvestIcon({ size = 24 }: { size?: number }) {
       <path d="M4 18v3" />
       <path d="M8 14v7" />
     </svg>
-  );
+  )
 }

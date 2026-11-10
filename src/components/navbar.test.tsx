@@ -1,76 +1,76 @@
-import { render, screen } from "@testing-library/react";
-import type { AppData } from "../schemas/app-data.ts";
-import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
-import { TranslationProvider } from "../utils/translations-provider.tsx";
-import { Navbar } from "./navbar.tsx";
+import { render, screen } from '@testing-library/react'
+import type { AppData } from '../schemas/app-data.ts'
+import { defaultAppData, useAppStore } from '../store/use-app-store.ts'
+import { TranslationProvider } from '../utils/translations-provider.tsx'
+import { Navbar } from './navbar.tsx'
 
 const mockLink = vi.hoisted(
   () =>
     ({ children }: { children: React.ReactNode }): React.ReactElement =>
       children as React.ReactElement,
-);
+)
 
-vi.mock(import("@tanstack/react-router"), async () => {
-  const actual = await import("@tanstack/react-router");
-  return { ...actual, Link: mockLink as unknown as typeof actual.Link };
-});
+vi.mock(import('@tanstack/react-router'), async () => {
+  const actual = await import('@tanstack/react-router')
+  return { ...actual, Link: mockLink as unknown as typeof actual.Link }
+})
 
 function renderNavbar(onCreatePortfolio = vi.fn<() => void>()) {
-  return render(<Navbar onCreatePortfolio={onCreatePortfolio} />, { wrapper: TranslationProvider });
+  return render(<Navbar onCreatePortfolio={onCreatePortfolio} />, { wrapper: TranslationProvider })
 }
 
-describe("Navbar", () => {
-  it("renders navigation links", () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
-    renderNavbar();
+describe('Navbar', () => {
+  it('renders navigation links', () => {
+    expect.hasAssertions()
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined })
+    renderNavbar()
 
-    expect(screen.getByTestId("navbar-link-assets")).toHaveTextContent("Assets");
-    expect(screen.getByTestId("navbar-link-about")).toHaveTextContent("About");
-  });
+    expect(screen.getByTestId('navbar-link-assets')).toHaveTextContent('Assets')
+    expect(screen.getByTestId('navbar-link-about')).toHaveTextContent('About')
+  })
 
-  it("renders portfolio links", () => {
-    expect.hasAssertions();
+  it('renders portfolio links', () => {
+    expect.hasAssertions()
     const testData: AppData = {
       ...defaultAppData,
       portfolios: [
-        { ...defaultAppData.portfolios[0], id: "1", name: "Test Portfolio" },
-        { ...defaultAppData.portfolios[0], id: "2", name: "Another Portfolio" },
+        { ...defaultAppData.portfolios[0], id: '1', name: 'Test Portfolio' },
+        { ...defaultAppData.portfolios[0], id: '2', name: 'Another Portfolio' },
       ],
-    };
+    }
 
     useAppStore.setState({
       data: testData,
       isLoading: false,
       loadError: undefined,
-    });
+    })
 
-    renderNavbar();
+    renderNavbar()
 
-    expect(screen.getByTestId("navbar-link-1")).toHaveTextContent("Test Portfolio");
-    expect(screen.getByTestId("navbar-link-2")).toHaveTextContent("Another Portfolio");
-  });
+    expect(screen.getByTestId('navbar-link-1')).toHaveTextContent('Test Portfolio')
+    expect(screen.getByTestId('navbar-link-2')).toHaveTextContent('Another Portfolio')
+  })
 
-  it("calls onCreatePortfolio when button is clicked", () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+  it('calls onCreatePortfolio when button is clicked', () => {
+    expect.hasAssertions()
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined })
 
-    const onCreatePortfolio = vi.fn<() => void>();
-    renderNavbar(onCreatePortfolio);
+    const onCreatePortfolio = vi.fn<() => void>()
+    renderNavbar(onCreatePortfolio)
 
-    const button = screen.getByTestId("navbar-create-portfolio");
-    button.click();
+    const button = screen.getByTestId('navbar-create-portfolio')
+    button.click()
 
-    expect(onCreatePortfolio).toHaveBeenCalledOnce();
-  });
+    expect(onCreatePortfolio).toHaveBeenCalledOnce()
+  })
 
-  it("renders logo link", () => {
-    expect.hasAssertions();
-    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined });
+  it('renders logo link', () => {
+    expect.hasAssertions()
+    useAppStore.setState({ data: defaultAppData, isLoading: false, loadError: undefined })
 
-    renderNavbar();
+    renderNavbar()
 
-    const logo = screen.getByTestId("logo");
-    expect(logo).toHaveTextContent("Invest");
-  });
-});
+    const logo = screen.getByTestId('logo')
+    expect(logo).toHaveTextContent('Invest')
+  })
+})

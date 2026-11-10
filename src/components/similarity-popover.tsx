@@ -1,22 +1,22 @@
-import { X } from "lucide-react";
-import { useTranslation } from "../utils/translations.ts";
+import { X } from 'lucide-react'
+import { useTranslation } from '../utils/translations.ts'
 
 type Props = {
-  isin: string;
-  matchedIsin: string;
-  matchedName: string;
-  onDismiss: ((isin: string, matchedIsin: string) => void) | undefined;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
-  pct: string;
-};
+  isin: string
+  matchedIsin: string
+  matchedName: string
+  onDismiss: ((isin: string, matchedIsin: string) => void) | undefined
+  onMouseEnter: () => void
+  onMouseLeave: () => void
+  pct: string
+}
 
 export function SimilarityPopover({ isin, matchedIsin, matchedName, onDismiss, onMouseEnter, onMouseLeave, pct }: Props) {
-  const { translate } = useTranslation();
+  const { translate } = useTranslation()
   return (
     <span data-testid={`similarity-popover-${isin.toLowerCase()}`} className="popover-content top-1/2 right-full mr-2 -translate-y-1/2" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <span className="text-sm">
-        {pct} {translate("similarity-similar-to")} <strong>{matchedName}</strong>
+        {pct} {translate('similarity-similar-to')} <strong>{matchedName}</strong>
       </span>
       {onDismiss && (
         <button
@@ -31,5 +31,5 @@ export function SimilarityPopover({ isin, matchedIsin, matchedName, onDismiss, o
         </button>
       )}
     </span>
-  );
+  )
 }

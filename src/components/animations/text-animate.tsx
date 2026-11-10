@@ -1,72 +1,72 @@
 // oxlint-disable react/forbid-component-props, id-length, unicorn/no-nested-ternary, no-duplicate-imports, max-lines-per-function
-import type { MotionProps, Variants } from "framer-motion";
-import { AnimatePresence, motion, stagger, useInView } from "framer-motion";
-import { useRef } from "react";
-import { cn } from "../../utils/browser-styles";
+import type { MotionProps, Variants } from 'framer-motion'
+import { AnimatePresence, motion, stagger, useInView } from 'framer-motion'
+import { useRef } from 'react'
+import { cn } from '../../utils/browser-styles'
 
 // Source : https://www.componentry.fun/docs/components/text-animate
 
-const exitStaggerSeconds = 0.05;
-const showStaggerSeconds = 0.1;
+const exitStaggerSeconds = 0.05
+const showStaggerSeconds = 0.1
 
-type MotionTag = "div" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "p" | "span";
+type MotionTag = 'div' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'p' | 'span'
 
-type AnimationType = "fadeIn" | "blurIn" | "blurInUp" | "blurInDown" | "slideUp" | "slideDown" | "slideLeft" | "slideRight" | "scaleUp" | "scaleDown";
+type AnimationType = 'fadeIn' | 'blurIn' | 'blurInUp' | 'blurInDown' | 'slideUp' | 'slideDown' | 'slideLeft' | 'slideRight' | 'scaleUp' | 'scaleDown'
 
 type TextAnimateProps = {
   /**
    * The text to animate
    */
-  children: string;
+  children: string
   /**
    * The class name for the wrapper element
    */
-  className?: string;
+  className?: string
   /**
    * The class name for the segmented elements (words or characters)
    */
-  segmentClassName?: string;
+  segmentClassName?: string
   /**
    * The base component to use for the wrapper
    */
-  as?: MotionTag;
+  as?: MotionTag
   /**
    * The base delay for the animation
    */
-  delay?: number;
+  delay?: number
   /**
    * The duration of the animation per item
    */
-  duration?: number;
+  duration?: number
   /**
    * The type of animation to perform
    */
-  animation?: AnimationType;
+  animation?: AnimationType
   /**
    * How to split the text
    */
-  by?: "text" | "word" | "character";
+  by?: 'text' | 'word' | 'character'
   /**
    * Whether to start the animation when the element comes into view
    */
-  startOnView?: boolean;
+  startOnView?: boolean
   /**
    * Whether to run the animation only once
    */
-  once?: boolean;
-} & MotionProps;
+  once?: boolean
+} & MotionProps
 
-export function TextAnimate({ children, delay = 0, duration = 0.3, className, segmentClassName, as: Component = "p", startOnView = true, once = true, by = "word", animation = "fadeIn", ...props }: TextAnimateProps) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once });
+export function TextAnimate({ children, delay = 0, duration = 0.3, className, segmentClassName, as: Component = 'p', startOnView = true, once = true, by = 'word', animation = 'fadeIn', ...props }: TextAnimateProps) {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once })
 
-  const segments = by === "character" ? children.split("") : by === "word" ? children.split(" ") : [children];
+  const segments = by === 'character' ? children.split('') : by === 'word' ? children.split(' ') : [children]
 
   const containerVariants: Variants = {
     exit: {
       opacity: 0,
       transition: {
-        delayChildren: stagger(exitStaggerSeconds, { from: "last" }),
+        delayChildren: stagger(exitStaggerSeconds, { from: 'last' }),
       },
     },
     hidden: { opacity: 0 },
@@ -76,30 +76,30 @@ export function TextAnimate({ children, delay = 0, duration = 0.3, className, se
         delayChildren: stagger(showStaggerSeconds, { startDelay: delay }),
       },
     },
-  };
+  }
 
   const itemVariants: Record<AnimationType, Variants> = {
     blurIn: {
-      hidden: { filter: "blur(10px)", opacity: 0 },
+      hidden: { filter: 'blur(10px)', opacity: 0 },
       show: {
-        filter: "blur(0px)",
+        filter: 'blur(0px)',
         opacity: 1,
         transition: { duration },
       },
     },
     blurInDown: {
-      hidden: { filter: "blur(10px)", opacity: 0, y: -20 },
+      hidden: { filter: 'blur(10px)', opacity: 0, y: -20 },
       show: {
-        filter: "blur(0px)",
+        filter: 'blur(0px)',
         opacity: 1,
         transition: { duration },
         y: 0,
       },
     },
     blurInUp: {
-      hidden: { filter: "blur(10px)", opacity: 0, y: 20 },
+      hidden: { filter: 'blur(10px)', opacity: 0, y: 20 },
       show: {
-        filter: "blur(0px)",
+        filter: 'blur(0px)',
         opacity: 1,
         transition: { duration },
         y: 0,
@@ -160,23 +160,23 @@ export function TextAnimate({ children, delay = 0, duration = 0.3, className, se
         y: 0,
       },
     },
-  };
+  }
 
-  const finalVariants = itemVariants[animation];
+  const finalVariants = itemVariants[animation]
 
   // Use the 'as' prop to dynamically render the motion component
-  const MotionComponent = motion[Component];
+  const MotionComponent = motion[Component]
 
   return (
     <AnimatePresence mode="popLayout">
-      <MotionComponent ref={ref} className={cn("whitespace-pre-wrap", className)} initial="hidden" animate={startOnView ? (isInView ? "show" : "hidden") : "show"} exit="exit" variants={containerVariants} {...props}>
+      <MotionComponent ref={ref} className={cn('whitespace-pre-wrap', className)} initial="hidden" animate={startOnView ? (isInView ? 'show' : 'hidden') : 'show'} exit="exit" variants={containerVariants} {...props}>
         {segments.map((segment, i) => (
-          <motion.span key={`${by}-${i}-${segment}`} className={cn("inline-block", segmentClassName)} variants={finalVariants}>
+          <motion.span key={`${by}-${i}-${segment}`} className={cn('inline-block', segmentClassName)} variants={finalVariants}>
             {segment}
-            {by === "word" && i < segments.length - 1 && <span className="inline-block">{"\u00A0"}</span>}
+            {by === 'word' && i < segments.length - 1 && <span className="inline-block">{'\u00A0'}</span>}
           </motion.span>
         ))}
       </MotionComponent>
     </AnimatePresence>
-  );
+  )
 }

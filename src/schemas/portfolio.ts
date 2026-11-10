@@ -1,6 +1,6 @@
-import { z } from "zod/v4";
+import { z } from 'zod/v4'
 
-export const maxPortfolios = 50;
+export const maxPortfolios = 50
 
 export const PortfolioEntrySchema = z.object({
   /** Number of units/shares currently held. Total position value = amount × asset.price. */
@@ -12,7 +12,7 @@ export const PortfolioEntrySchema = z.object({
   /** References an asset in the assets list by ISIN. */
   isin: z.string().min(1),
   /** Free-text note on the position. */
-  notes: z.string().default(""),
+  notes: z.string().default(''),
   /**
    * Target number of units/shares the user intends to hold.
    * - targetAmount > amount → user plans to buy (targetAmount − amount) more units
@@ -22,19 +22,19 @@ export const PortfolioEntrySchema = z.object({
   targetAmount: z.number().nonnegative(),
   /** ISO 8601 datetime of when targetAmount was last set. */
   targetAmountUpdatedAt: z.iso.datetime().optional(),
-});
+})
 
-export type PortfolioEntry = z.infer<typeof PortfolioEntrySchema>;
+export type PortfolioEntry = z.infer<typeof PortfolioEntrySchema>
 
 export const PortfolioSchema = z.object({
   /** Name of the broker where this portfolio is held. */
-  broker: z.string().min(1, "Broker is required"),
+  broker: z.string().min(1, 'Broker is required'),
   /** List of positions held in this portfolio. */
   entries: z.array(PortfolioEntrySchema).default([]),
   /** Unique identifier for the portfolio (UUID v4). */
   id: z.uuid(),
   /** Display name of the portfolio. */
-  name: z.string().min(1, "Name is required"),
-});
+  name: z.string().min(1, 'Name is required'),
+})
 
-export type Portfolio = z.infer<typeof PortfolioSchema>;
+export type Portfolio = z.infer<typeof PortfolioSchema>

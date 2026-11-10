@@ -7,14 +7,14 @@
  */
 export function jsonParse<Type>(jsonString: string): Type | undefined {
   try {
-    return JSON.parse(jsonString) as Type;
+    return JSON.parse(jsonString) as Type
   } catch (error) {
-    console.error("Failed to parse JSON :", error);
-    return undefined;
+    console.error('Failed to parse JSON :', error)
+    return undefined
   }
 }
 
-const nbSpaces = 2;
+const nbSpaces = 2
 
 /**
  * Safely stringifies a JavaScript object into a JSON string. If stringification fails, it logs the error and returns undefined.
@@ -23,9 +23,9 @@ const nbSpaces = 2;
  */
 export function jsonStringify(data: unknown): string | undefined {
   try {
-    return JSON.stringify(data, undefined, nbSpaces);
+    return JSON.stringify(data, undefined, nbSpaces)
   } catch (error) {
-    console.error("Failed to stringify JSON :", error);
-    return undefined;
+    console.error('Failed to stringify JSON :', error)
+    return undefined
   }
 }

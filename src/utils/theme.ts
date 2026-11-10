@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect } from 'react'
 
 // abyss     // weird colors and contrast
 // aqua      // wtf so blue dabedee dabada
@@ -11,7 +11,7 @@ import { useEffect } from "react";
 // retro     // weird colors
 // sunset    // not horrible but lacks contrast
 // synthwave // too much lol
-export const darkThemes = ["business", "dark", "dim", "dracula", "forest"] as const;
+export const darkThemes = ['business', 'dark', 'dim', 'dracula', 'forest'] as const
 
 // acid      // too much contrast
 // cmyk      // weird colors, success is purple ?!
@@ -27,27 +27,27 @@ export const darkThemes = ["business", "dark", "dim", "dracula", "forest"] as co
 // silk      // dim version of Cupcake
 // valentine // weird colors and contrast
 // wireframe // sad
-export const lightThemes = ["bumblebee", "caramellatte", "cupcake", "light", "winter"] as const;
+export const lightThemes = ['bumblebee', 'caramellatte', 'cupcake', 'light', 'winter'] as const
 
-export const themes = [...darkThemes, ...lightThemes] as const;
+export const themes = [...darkThemes, ...lightThemes] as const
 
-export type Theme = (typeof themes)[number];
+export type Theme = (typeof themes)[number]
 
 export function useThemeColorSync(theme: string) {
   useEffect(() => {
     const id = setTimeout(() => {
-      document.documentElement.dataset.theme = theme;
+      document.documentElement.dataset.theme = theme
       const meta =
         document.querySelector<HTMLMetaElement>("meta[name='theme-color']") ??
         (() => {
-          const element = document.createElement("meta");
-          element.name = "theme-color";
-          document.head.append(element);
-          return element;
-        })();
-      const color = globalThis.getComputedStyle(document.documentElement).getPropertyValue("--color-base-200").trim();
-      meta.content = color;
-    }, 1);
-    return () => clearTimeout(id);
-  }, [theme]);
+          const element = document.createElement('meta')
+          element.name = 'theme-color'
+          document.head.append(element)
+          return element
+        })()
+      const color = globalThis.getComputedStyle(document.documentElement).getPropertyValue('--color-base-200').trim()
+      meta.content = color
+    }, 1)
+    return () => clearTimeout(id)
+  }, [theme])
 }

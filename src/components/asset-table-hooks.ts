@@ -1,23 +1,23 @@
-import { useTable, type SortingState } from "@tanstack/react-table";
-import type { Asset } from "../schemas/asset.ts";
-import { assetTableFeatures, type AssetColumnDef, type AssetTableMeta } from "./asset-table-features.ts";
+import { useTable, type SortingState } from '@tanstack/react-table'
+import type { Asset } from '../schemas/asset.ts'
+import { assetTableFeatures, type AssetColumnDef, type AssetTableMeta } from './asset-table-features.ts'
 
 export function matchesFilter(asset: Asset, lower: string): boolean {
-  if (asset.isin.toLowerCase().includes(lower)) return true;
-  if (asset.name.toLowerCase().includes(lower)) return true;
-  if (asset.provider.toLowerCase().includes(lower)) return true;
-  return asset.tickers.some(ticker => ticker.toLowerCase().includes(lower));
+  if (asset.isin.toLowerCase().includes(lower)) return true
+  if (asset.name.toLowerCase().includes(lower)) return true
+  if (asset.provider.toLowerCase().includes(lower)) return true
+  return asset.tickers.some(ticker => ticker.toLowerCase().includes(lower))
 }
 
 type UseTableInstanceOptions = {
-  columns: AssetColumnDef[];
-  filteredAssets: Asset[];
-  meta?: AssetTableMeta;
-  resolvedVisibility: Record<string, boolean>;
-  setColumnVisibility: (vis: Record<string, boolean>) => void;
-  setSort: (sort: { column: string; direction: "asc" | "desc" }) => void;
-  sorting: SortingState;
-};
+  columns: AssetColumnDef[]
+  filteredAssets: Asset[]
+  meta?: AssetTableMeta
+  resolvedVisibility: Record<string, boolean>
+  setColumnVisibility: (vis: Record<string, boolean>) => void
+  setSort: (sort: { column: string; direction: 'asc' | 'desc' }) => void
+  sorting: SortingState
+}
 
 export function useTableInstance({ columns, filteredAssets, meta, resolvedVisibility, setColumnVisibility, setSort, sorting }: UseTableInstanceOptions) {
   return useTable({
@@ -28,21 +28,21 @@ export function useTableInstance({ columns, filteredAssets, meta, resolvedVisibi
     meta,
     onColumnVisibilityChange: updater => {
       /* v8 ignore next -- TanStack Table always passes a function updater; direct value path is defensive */
-      const next = typeof updater === "function" ? updater(resolvedVisibility) : updater;
-      setColumnVisibility(next);
+      const next = typeof updater === 'function' ? updater(resolvedVisibility) : updater
+      setColumnVisibility(next)
     },
     onSortingChange: updater => {
       /* v8 ignore next -- TanStack Table always passes a function updater; direct value path is defensive */
-      const next = typeof updater === "function" ? updater(sorting) : updater;
+      const next = typeof updater === 'function' ? updater(sorting) : updater
       if (next.length > 0) {
-        const [{ id, desc }] = next;
-        setSort({ column: id, direction: desc ? "desc" : "asc" });
-        return;
+        const [{ id, desc }] = next
+        setSort({ column: id, direction: desc ? 'desc' : 'asc' })
+        return
       }
       /* v8 ignore next -- sorting is always a 1-element array; "score" fallback is unreachable */
-      setSort({ column: sorting[0]?.id ?? "score", direction: "asc" });
+      setSort({ column: sorting[0]?.id ?? 'score', direction: 'asc' })
     },
     sortDescFirst: false,
     state: { columnVisibility: resolvedVisibility, sorting },
-  });
+  })
 }

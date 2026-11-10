@@ -1,103 +1,103 @@
-import { jsonParse } from "../utils/json.ts";
-import { themes } from "../utils/theme.ts";
-import { SettingsSchema } from "./settings.ts";
+import { jsonParse } from '../utils/json.ts'
+import { themes } from '../utils/theme.ts'
+import { SettingsSchema } from './settings.ts'
 
-describe("SettingsSchema", () => {
-  it("coerces null lastExportedAt to undefined", () => {
-    expect.hasAssertions();
+describe('SettingsSchema', () => {
+  it('coerces null lastExportedAt to undefined', () => {
+    expect.hasAssertions()
     // JSON payloads use null for absent values; the schema must coerce to undefined
-    const result = SettingsSchema.parse(jsonParse('{"lastExportedAt":null}'));
-    expect(result.lastExportedAt).toBeUndefined();
-  });
-});
+    const result = SettingsSchema.parse(jsonParse('{"lastExportedAt":null}'))
+    expect(result.lastExportedAt).toBeUndefined()
+  })
+})
 
-describe("SettingsSchema: datetime and range validation", () => {
-  it("accepts a valid ISO datetime for lastExportedAt", () => {
-    expect.hasAssertions();
-    const result = SettingsSchema.parse({ lastExportedAt: "2024-01-15T12:00:00.000Z" });
-    expect(result.lastExportedAt).toBe("2024-01-15T12:00:00.000Z");
-  });
+describe('SettingsSchema: datetime and range validation', () => {
+  it('accepts a valid ISO datetime for lastExportedAt', () => {
+    expect.hasAssertions()
+    const result = SettingsSchema.parse({ lastExportedAt: '2024-01-15T12:00:00.000Z' })
+    expect(result.lastExportedAt).toBe('2024-01-15T12:00:00.000Z')
+  })
 
-  it("rejects similarityThreshold below 0", () => {
-    expect.hasAssertions();
-    const result = SettingsSchema.safeParse({ similarityThreshold: -0.1 });
-    expect(result.success).toBe(false);
-  });
+  it('rejects similarityThreshold below 0', () => {
+    expect.hasAssertions()
+    const result = SettingsSchema.safeParse({ similarityThreshold: -0.1 })
+    expect(result.success).toBe(false)
+  })
 
-  it("rejects similarityThreshold above 1", () => {
-    expect.hasAssertions();
-    const result = SettingsSchema.safeParse({ similarityThreshold: 1.1 });
-    expect(result.success).toBe(false);
-  });
+  it('rejects similarityThreshold above 1', () => {
+    expect.hasAssertions()
+    const result = SettingsSchema.safeParse({ similarityThreshold: 1.1 })
+    expect(result.success).toBe(false)
+  })
 
-  it("rejects negative editCount", () => {
-    expect.hasAssertions();
-    const result = SettingsSchema.safeParse({ editCount: -1 });
-    expect(result.success).toBe(false);
-  });
+  it('rejects negative editCount', () => {
+    expect.hasAssertions()
+    const result = SettingsSchema.safeParse({ editCount: -1 })
+    expect(result.success).toBe(false)
+  })
 
-  it("rejects invalid sort direction", () => {
-    expect.hasAssertions();
-    const result = SettingsSchema.safeParse({ sort: { column: "name", direction: "up" } });
-    expect(result.success).toBe(false);
-  });
-});
+  it('rejects invalid sort direction', () => {
+    expect.hasAssertions()
+    const result = SettingsSchema.safeParse({ sort: { column: 'name', direction: 'up' } })
+    expect(result.success).toBe(false)
+  })
+})
 
-describe("SettingsSchema: default values", () => {
-  it("applies scalar defaults when no fields supplied", () => {
-    expect.hasAssertions();
-    const result = SettingsSchema.parse({});
-    expect(result.theme).toBe("light");
-    expect(result.locale).toBe("en");
-    expect(result.editCount).toBe(0);
-    expect(result.similarityThreshold).toBe(0.85);
-  });
+describe('SettingsSchema: default values', () => {
+  it('applies scalar defaults when no fields supplied', () => {
+    expect.hasAssertions()
+    const result = SettingsSchema.parse({})
+    expect(result.theme).toBe('light')
+    expect(result.locale).toBe('en')
+    expect(result.editCount).toBe(0)
+    expect(result.similarityThreshold).toBe(0.85)
+  })
 
-  it("applies collection defaults when no fields supplied", () => {
-    expect.hasAssertions();
-    const result = SettingsSchema.parse({});
-    expect(result.columnOrder).toStrictEqual([]);
-    expect(result.columnVisibility).toStrictEqual({});
-    expect(result.sort).toStrictEqual({ column: "score", direction: "desc" });
-  });
+  it('applies collection defaults when no fields supplied', () => {
+    expect.hasAssertions()
+    const result = SettingsSchema.parse({})
+    expect(result.columnOrder).toStrictEqual([])
+    expect(result.columnVisibility).toStrictEqual({})
+    expect(result.sort).toStrictEqual({ column: 'score', direction: 'desc' })
+  })
 
-  it("defaults quick filter flags to false when no fields supplied", () => {
-    expect.hasAssertions();
-    const result = SettingsSchema.parse({});
-    expect(result.onlyPea).toBe(false);
-    expect(result.scoreAbove50).toBe(false);
-    expect(result.withRr5y).toBe(false);
-  });
+  it('defaults quick filter flags to false when no fields supplied', () => {
+    expect.hasAssertions()
+    const result = SettingsSchema.parse({})
+    expect(result.onlyPea).toBe(false)
+    expect(result.scoreAbove50).toBe(false)
+    expect(result.withRr5y).toBe(false)
+  })
 
-  it("accepts explicit quick filter flag values", () => {
-    expect.hasAssertions();
-    const result = SettingsSchema.parse({ onlyPea: true, scoreAbove50: true, withRr5y: true });
-    expect(result.onlyPea).toBe(true);
-    expect(result.scoreAbove50).toBe(true);
-    expect(result.withRr5y).toBe(true);
-  });
-});
+  it('accepts explicit quick filter flag values', () => {
+    expect.hasAssertions()
+    const result = SettingsSchema.parse({ onlyPea: true, scoreAbove50: true, withRr5y: true })
+    expect(result.onlyPea).toBe(true)
+    expect(result.scoreAbove50).toBe(true)
+    expect(result.withRr5y).toBe(true)
+  })
+})
 
-describe("SettingsSchema: theme enum", () => {
-  it("accepts all valid themes", () => {
-    expect.hasAssertions();
+describe('SettingsSchema: theme enum', () => {
+  it('accepts all valid themes', () => {
+    expect.hasAssertions()
     for (const themeName of themes) {
-      const result = SettingsSchema.safeParse({ theme: themeName });
-      expect(result.success).toBe(true);
+      const result = SettingsSchema.safeParse({ theme: themeName })
+      expect(result.success).toBe(true)
     }
-  });
-});
+  })
+})
 
-describe("SettingsSchema: locale enum", () => {
-  it("accepts en and fr", () => {
-    expect.hasAssertions();
-    expect(SettingsSchema.parse({ locale: "en" }).locale).toBe("en");
-    expect(SettingsSchema.parse({ locale: "fr" }).locale).toBe("fr");
-  });
+describe('SettingsSchema: locale enum', () => {
+  it('accepts en and fr', () => {
+    expect.hasAssertions()
+    expect(SettingsSchema.parse({ locale: 'en' }).locale).toBe('en')
+    expect(SettingsSchema.parse({ locale: 'fr' }).locale).toBe('fr')
+  })
 
-  it("falls back to en for invalid locale", () => {
-    expect.hasAssertions();
-    const result = SettingsSchema.parse({ locale: "de" });
-    expect(result.locale).toBe("en");
-  });
-});
+  it('falls back to en for invalid locale', () => {
+    expect.hasAssertions()
+    const result = SettingsSchema.parse({ locale: 'de' })
+    expect(result.locale).toBe('en')
+  })
+})

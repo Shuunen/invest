@@ -1,13 +1,13 @@
-import { EyeIcon } from "lucide-react";
-import { cn } from "../utils/browser-styles.ts";
-import type { Translate } from "../utils/translations.ts";
-import type { AssetTableInstance } from "./asset-table-features.ts";
+import { EyeIcon } from 'lucide-react'
+import { cn } from '../utils/browser-styles.ts'
+import type { Translate } from '../utils/translations.ts'
+import type { AssetTableInstance } from './asset-table-features.ts'
 
 export function renderColumnFilter(table: AssetTableInstance, visibleLeafCount: number, translate: Translate) {
   return (
     <div className="dropdown dropdown-end">
       <button type="button" tabIndex={0} className="btn btn-sm">
-        {translate("action-columns")} <EyeIcon size={16} />
+        {translate('action-columns')} <EyeIcon size={16} />
       </button>
       <div tabIndex={0} className="dropdown-content w-lg">
         <div className="grid grid-cols-2 gap-x-4">
@@ -30,32 +30,32 @@ export function renderColumnFilter(table: AssetTableInstance, visibleLeafCount: 
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export type PresetFilters = {
-  onlyPea: boolean;
-  scoreAbove50: boolean;
-  setOnlyPea: (value: boolean) => void;
-  setScoreAbove50: (value: boolean) => void;
-  setWithRr5y: (value: boolean) => void;
-  withRr5y: boolean;
-};
+  onlyPea: boolean
+  scoreAbove50: boolean
+  setOnlyPea: (value: boolean) => void
+  setScoreAbove50: (value: boolean) => void
+  setWithRr5y: (value: boolean) => void
+  withRr5y: boolean
+}
 
 export function renderPresetFilters({ onlyPea, scoreAbove50, setOnlyPea, setScoreAbove50, setWithRr5y, withRr5y }: PresetFilters, translate: Translate) {
   return (
     <div className="flex gap-2">
-      <button type="button" data-testid="filter-only-pea" className={cn("btn btn-sm", { "btn-active": onlyPea })} onClick={() => setOnlyPea(!onlyPea)}>
-        {translate("filter-only-pea")}
+      <button type="button" data-testid="filter-only-pea" className={cn('btn btn-sm', { 'btn-active': onlyPea })} onClick={() => setOnlyPea(!onlyPea)}>
+        {translate('filter-only-pea')}
       </button>
-      <button type="button" data-testid="filter-with-rr5y" className={cn("btn btn-sm", { "btn-active": withRr5y })} onClick={() => setWithRr5y(!withRr5y)}>
-        {translate("filter-with-rr5y")}
+      <button type="button" data-testid="filter-with-rr5y" className={cn('btn btn-sm', { 'btn-active': withRr5y })} onClick={() => setWithRr5y(!withRr5y)}>
+        {translate('filter-with-rr5y')}
       </button>
-      <button type="button" data-testid="filter-score-above-50" className={cn("btn btn-sm", { "btn-active": scoreAbove50 })} onClick={() => setScoreAbove50(!scoreAbove50)}>
-        {translate("filter-score-above-50")}
+      <button type="button" data-testid="filter-score-above-50" className={cn('btn btn-sm', { 'btn-active': scoreAbove50 })} onClick={() => setScoreAbove50(!scoreAbove50)}>
+        {translate('filter-score-above-50')}
       </button>
     </div>
-  );
+  )
 }
 
 export function renderSearchFilter(filterText: string, setFilterText: (value: string) => void) {
@@ -67,8 +67,8 @@ export function renderSearchFilter(filterText: string, setFilterText: (value: st
       placeholder="Search ISIN, name, tickers…"
       value={filterText}
       onChange={event => {
-        setFilterText(event.target.value);
+        setFilterText(event.target.value)
       }}
     />
-  );
+  )
 }

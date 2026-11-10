@@ -1,13 +1,13 @@
-import { kebabCase } from "es-toolkit";
+import { kebabCase } from 'es-toolkit'
 
 export type TextFieldProps = {
-  label: string;
-  name: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  readOnly?: boolean;
-  value: string;
-};
+  label: string
+  name: string
+  onChange: (value: string) => void
+  placeholder?: string
+  readOnly?: boolean
+  value: string
+}
 
 export function TextField({ label, name, onChange, placeholder, readOnly, value }: TextFieldProps) {
   return (
@@ -17,5 +17,5 @@ export function TextField({ label, name, onChange, placeholder, readOnly, value 
       </label>
       <input id={name} data-testid={kebabCase(name)} type="text" className="input-bordered input w-full input-sm" placeholder={placeholder} readOnly={readOnly} value={value} onChange={event => onChange(event.target.value)} />
     </div>
-  );
+  )
 }

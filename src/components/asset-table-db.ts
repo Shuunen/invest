@@ -1,44 +1,44 @@
-import { useEffect } from "react";
-import sampleJson from "../../data/sample.json";
-import { db } from "../db/db.ts";
-import { AppDataSchema, type AppData } from "../schemas/app-data.ts";
-import { defaultAppData, useAppStore } from "../store/use-app-store.ts";
+import { useEffect } from 'react'
+import sampleJson from '../../data/sample.json'
+import { db } from '../db/db.ts'
+import { AppDataSchema, type AppData } from '../schemas/app-data.ts'
+import { defaultAppData, useAppStore } from '../store/use-app-store.ts'
 
-const debounceMs = 300;
-const seedResult = AppDataSchema.safeParse(sampleJson);
+const debounceMs = 300
+const seedResult = AppDataSchema.safeParse(sampleJson)
 /* v8 ignore next -- sample.json is always valid; the false branch is unreachable */
-const seedData: AppData = seedResult.success ? seedResult.data : { ...defaultAppData };
+const seedData: AppData = seedResult.success ? seedResult.data : { ...defaultAppData }
 
 export function useHydration(retryKey: number) {
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false
     if (useAppStore.getState().isLoading) {
       const load = async () => {
         try {
-          const record = await db.appdata.get(1);
-          if (cancelled) return;
-          const raw = record?.data ?? seedData;
-          useAppStore.getState().loadData(AppDataSchema.parse(raw));
+          const record = await db.appdata.get(1)
+          if (cancelled) return
+          const raw = record?.data ?? seedData
+          useAppStore.getState().loadData(AppDataSchema.parse(raw))
         } catch (error: unknown) {
           /* v8 ignore next 2 -- cancelled=true on unmount-during-error and non-Error throws are defensive */
           if (!cancelled) {
-            const err = error instanceof Error ? error : new Error(String(error));
-            useAppStore.getState().setLoadError(err);
+            const err = error instanceof Error ? error : new Error(String(error))
+            useAppStore.getState().setLoadError(err)
           }
         }
-      };
-      void load();
+      }
+      void load()
     }
     return () => {
-      cancelled = true;
-    };
+      cancelled = true
+    }
     // oxlint-disable-next-line react/exhaustive-effect-dependencies -- retryKey is an intentional re-run trigger for the Retry button
-  }, [retryKey]);
+  }, [retryKey])
 }
 
 async function saveToDexie(data: AppData) {
   try {
-    await db.appdata.put({ data, id: 1 });
+    await db.appdata.put({ data, id: 1 })
   } catch {
     // Silently ignore: write failure is non-critical (in-memory state stays correct)
   }
@@ -46,19 +46,19 @@ async function saveToDexie(data: AppData) {
 
 export function useDexieSync() {
   useEffect(() => {
-    let writeTimer: ReturnType<typeof setTimeout> | undefined = undefined;
+    let writeTimer: ReturnType<typeof setTimeout> | undefined = undefined
     const unsubscribe = useAppStore.subscribe(
       state => state.data,
       newData => {
-        clearTimeout(writeTimer);
+        clearTimeout(writeTimer)
         writeTimer = setTimeout(() => {
-          void saveToDexie(newData);
-        }, debounceMs);
+          void saveToDexie(newData)
+        }, debounceMs)
       },
-    );
+    )
     return () => {
-      unsubscribe();
-      clearTimeout(writeTimer);
-    };
-  }, []);
+      unsubscribe()
+      clearTimeout(writeTimer)
+    }
+  }, [])
 }

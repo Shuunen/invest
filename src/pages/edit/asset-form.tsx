@@ -1,33 +1,33 @@
-import { ArrowLeft } from "lucide-react";
-import { useTranslation } from "../../utils/translations.ts";
-import { AllocationsSection } from "./allocations.tsx";
-import { FinancialSection } from "./financials.tsx";
-import type { FormState, PatchFn } from "./form-state.ts";
-import { GeneralSection } from "./general.tsx";
+import { ArrowLeft } from 'lucide-react'
+import { useTranslation } from '../../utils/translations.ts'
+import { AllocationsSection } from './allocations.tsx'
+import { FinancialSection } from './financials.tsx'
+import type { FormState, PatchFn } from './form-state.ts'
+import { GeneralSection } from './general.tsx'
 
 type Props = {
-  disableSave?: boolean;
-  errors: Record<string, string>;
-  form: FormState;
+  disableSave?: boolean
+  errors: Record<string, string>
+  form: FormState
   /** Rendered below the title — use a plain text node for edit (shows ISIN) or a form field for create. */
-  isinDisplay?: React.ReactNode;
-  onCancel: () => void;
-  onSave: () => void;
-  patch: PatchFn;
-  title: string;
-};
+  isinDisplay?: React.ReactNode
+  onCancel: () => void
+  onSave: () => void
+  patch: PatchFn
+  title: string
+}
 
 export function AssetForm({ disableSave = false, errors, form, isinDisplay, onCancel, onSave, patch, title }: Props) {
-  const { translate } = useTranslation();
+  const { translate } = useTranslation()
   return (
     <div className="max-w-8xl mx-auto mt-6">
       <div className="mb-6 flex items-center justify-between">
         <button type="button" data-testid="cancel-button" className="btn btn-soft" onClick={onCancel}>
           <ArrowLeft size={16} />
-          {translate("action-cancel")}
+          {translate('action-cancel')}
         </button>
         <button type="button" data-testid="save-button" className="btn btn-primary" onClick={onSave} disabled={disableSave}>
-          {translate("action-save")}
+          {translate('action-save')}
         </button>
       </div>
       <div className="mb-6">
@@ -40,5 +40,5 @@ export function AssetForm({ disableSave = false, errors, form, isinDisplay, onCa
         <AllocationsSection form={form} patch={patch} />
       </div>
     </div>
-  );
+  )
 }

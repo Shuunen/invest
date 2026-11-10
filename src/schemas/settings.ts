@@ -1,12 +1,12 @@
-import { z, type ZodType } from "zod/v4";
-import { themes } from "../utils/theme.ts";
-import { defaultLocale, locales } from "../utils/translations.ts";
+import { z, type ZodType } from 'zod/v4'
+import { themes } from '../utils/theme.ts'
+import { defaultLocale, locales } from '../utils/translations.ts'
 
 function fallback<Type>(value: Type): ZodType<Type> {
-  return z.unknown().transform(() => value);
+  return z.unknown().transform(() => value)
 }
 
-const defaultSimilarityThreshold = 0.85;
+const defaultSimilarityThreshold = 0.85
 
 export const SettingsSchema = z.object({
   /** Ordered list of column IDs as displayed in the assets table. */
@@ -32,13 +32,13 @@ export const SettingsSchema = z.object({
   sort: z
     .object({
       column: z.string(),
-      direction: z.enum(["asc", "desc"]),
+      direction: z.enum(['asc', 'desc']),
     })
-    .default({ column: "score", direction: "desc" }),
+    .default({ column: 'score', direction: 'desc' }),
   /** UI theme. */
-  theme: z.enum(themes).prefault("light").or(fallback("light")),
+  theme: z.enum(themes).prefault('light').or(fallback('light')),
   /** Quick filter: show only assets with a 5-year risk/reward value. */
   withRr5y: z.boolean().default(false),
-});
+})
 
-export type Settings = z.infer<typeof SettingsSchema>;
+export type Settings = z.infer<typeof SettingsSchema>

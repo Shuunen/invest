@@ -1,75 +1,75 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { TranslationProvider } from "../../utils/translations-provider.tsx";
-import type { DiffRow } from "./form-diff.ts";
-import { SaveModal } from "./save-modal.tsx";
+import { fireEvent, render, screen } from '@testing-library/react'
+import { TranslationProvider } from '../../utils/translations-provider.tsx'
+import type { DiffRow } from './form-diff.ts'
+import { SaveModal } from './save-modal.tsx'
 
-const noDiffRows: DiffRow[] = [];
-const noopReset: DiffRow["reset"] = currentForm => currentForm;
+const noDiffRows: DiffRow[] = []
+const noopReset: DiffRow['reset'] = currentForm => currentForm
 
-describe("SaveModal", () => {
-  it("shows no-changes notice when diffRows is empty", () => {
-    expect.hasAssertions();
-    const onClose = vi.fn<() => void>();
-    const onConfirm = vi.fn<() => void>();
-    const onReset = vi.fn<() => void>();
-    render(<SaveModal diffRows={noDiffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider });
-    expect(screen.getByTestId("confirm-save-modal")).toBeInTheDocument();
-    expect(screen.getByTestId("confirm-save-no-changes")).toBeInTheDocument();
-  });
+describe('SaveModal', () => {
+  it('shows no-changes notice when diffRows is empty', () => {
+    expect.hasAssertions()
+    const onClose = vi.fn<() => void>()
+    const onConfirm = vi.fn<() => void>()
+    const onReset = vi.fn<() => void>()
+    render(<SaveModal diffRows={noDiffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider })
+    expect(screen.getByTestId('confirm-save-modal')).toBeInTheDocument()
+    expect(screen.getByTestId('confirm-save-no-changes')).toBeInTheDocument()
+  })
 
-  it("shows after-column trend indicators for numeric rows", () => {
-    expect.hasAssertions();
-    const onClose = vi.fn<() => void>();
-    const onConfirm = vi.fn<() => void>();
-    const onReset = vi.fn<() => void>();
+  it('shows after-column trend indicators for numeric rows', () => {
+    expect.hasAssertions()
+    const onClose = vi.fn<() => void>()
+    const onConfirm = vi.fn<() => void>()
+    const onReset = vi.fn<() => void>()
     const diffRows: DiffRow[] = [
-      { after: "0.4", before: "0.2", field: "Fees (%)", reset: noopReset },
-      { after: "No", before: "Yes", field: "Accumulating", reset: noopReset },
-    ];
-    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider });
-    expect(screen.getByTestId("after-trend-fees")).toBeInTheDocument();
-    expect(screen.queryByTestId("after-trend-accumulating")).not.toBeInTheDocument();
-  });
+      { after: '0.4', before: '0.2', field: 'Fees (%)', reset: noopReset },
+      { after: 'No', before: 'Yes', field: 'Accumulating', reset: noopReset },
+    ]
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider })
+    expect(screen.getByTestId('after-trend-fees')).toBeInTheDocument()
+    expect(screen.queryByTestId('after-trend-accumulating')).not.toBeInTheDocument()
+  })
 
-  it("does not render a trend indicator when a numeric value is malformed", () => {
-    expect.hasAssertions();
-    const onClose = vi.fn<() => void>();
-    const onConfirm = vi.fn<() => void>();
-    const onReset = vi.fn<() => void>();
-    const diffRows: DiffRow[] = [{ after: "2", before: "1.2.3", field: "Price (EUR)", reset: noopReset }];
-    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider });
-    expect(screen.queryByTestId("after-trend-price-eur")).not.toBeInTheDocument();
-  });
+  it('does not render a trend indicator when a numeric value is malformed', () => {
+    expect.hasAssertions()
+    const onClose = vi.fn<() => void>()
+    const onConfirm = vi.fn<() => void>()
+    const onReset = vi.fn<() => void>()
+    const diffRows: DiffRow[] = [{ after: '2', before: '1.2.3', field: 'Price (EUR)', reset: noopReset }]
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider })
+    expect(screen.queryByTestId('after-trend-price-eur')).not.toBeInTheDocument()
+  })
 
-  it("does not render a trend indicator when a value strips to a non-parseable placeholder", () => {
-    expect.hasAssertions();
-    const onClose = vi.fn<() => void>();
-    const onConfirm = vi.fn<() => void>();
-    const onReset = vi.fn<() => void>();
-    const diffRows: DiffRow[] = [{ after: "2", before: "+.", field: "Price (EUR)", reset: noopReset }];
-    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider });
-    expect(screen.queryByTestId("after-trend-price-eur")).not.toBeInTheDocument();
-  });
+  it('does not render a trend indicator when a value strips to a non-parseable placeholder', () => {
+    expect.hasAssertions()
+    const onClose = vi.fn<() => void>()
+    const onConfirm = vi.fn<() => void>()
+    const onReset = vi.fn<() => void>()
+    const diffRows: DiffRow[] = [{ after: '2', before: '+.', field: 'Price (EUR)', reset: noopReset }]
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider })
+    expect(screen.queryByTestId('after-trend-price-eur')).not.toBeInTheDocument()
+  })
 
-  it("does not render a trend indicator for text values containing letters", () => {
-    expect.hasAssertions();
-    const onClose = vi.fn<() => void>();
-    const onConfirm = vi.fn<() => void>();
-    const onReset = vi.fn<() => void>();
-    const diffRows: DiffRow[] = [{ after: "IWFV,IS3S", before: "IS3S", field: "Tickers", reset: noopReset }];
-    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider });
-    expect(screen.queryByTestId("after-trend-tickers")).not.toBeInTheDocument();
-  });
+  it('does not render a trend indicator for text values containing letters', () => {
+    expect.hasAssertions()
+    const onClose = vi.fn<() => void>()
+    const onConfirm = vi.fn<() => void>()
+    const onReset = vi.fn<() => void>()
+    const diffRows: DiffRow[] = [{ after: 'IWFV,IS3S', before: 'IS3S', field: 'Tickers', reset: noopReset }]
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} />, { wrapper: TranslationProvider })
+    expect(screen.queryByTestId('after-trend-tickers')).not.toBeInTheDocument()
+  })
 
-  it("calls row reset callback when a row reset button is clicked", () => {
-    expect.hasAssertions();
-    const onClose = vi.fn<() => void>();
-    const onConfirm = vi.fn<() => void>();
-    const onReset = vi.fn<() => void>();
-    const onResetRow = vi.fn<(row: DiffRow) => void>();
-    const diffRows: DiffRow[] = [{ after: "Updated ETF", before: "Test ETF", field: "Name", reset: noopReset }];
-    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} onResetRow={onResetRow} />, { wrapper: TranslationProvider });
-    fireEvent.click(screen.getByTestId("reset-row-name"));
-    expect(onResetRow).toHaveBeenCalledWith(diffRows[0]);
-  });
-});
+  it('calls row reset callback when a row reset button is clicked', () => {
+    expect.hasAssertions()
+    const onClose = vi.fn<() => void>()
+    const onConfirm = vi.fn<() => void>()
+    const onReset = vi.fn<() => void>()
+    const onResetRow = vi.fn<(row: DiffRow) => void>()
+    const diffRows: DiffRow[] = [{ after: 'Updated ETF', before: 'Test ETF', field: 'Name', reset: noopReset }]
+    render(<SaveModal diffRows={diffRows} onClose={onClose} onConfirm={onConfirm} onReset={onReset} onResetRow={onResetRow} />, { wrapper: TranslationProvider })
+    fireEvent.click(screen.getByTestId('reset-row-name'))
+    expect(onResetRow).toHaveBeenCalledWith(diffRows[0])
+  })
+})
