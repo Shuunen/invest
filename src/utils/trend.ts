@@ -4,7 +4,7 @@ const almostEqualThreshold = 0.02
 const significantChangeThreshold = 0.1
 const suspiciousChangeThreshold = 0.2
 
-export type Trend = 'almost-equal' | 'decreased-a-bit' | 'decreased-a-lot' | 'increased-a-bit' | 'increased-a-lot' | 'decreased-to-zero'
+type Trend = 'almost-equal' | 'decreased-a-bit' | 'decreased-a-lot' | 'increased-a-bit' | 'increased-a-lot' | 'decreased-to-zero'
 
 export type TrendResult = {
   Icon: LucideIcon
