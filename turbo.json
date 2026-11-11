@@ -1,24 +1,25 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "tasks": {
-    "lint:install": {
-      "inputs": ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
-    },
     "build:tsc": {
       "dependsOn": ["lint:install"]
     },
     "build:vite": {
-      "dependsOn": ["build:tsc"],
+      "dependsOn": ["build:tsc", "lint:install"],
       "outputs": ["dist/**"]
     },
-    "lint:types": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint:fallow": {
       "dependsOn": ["lint:install"]
     },
     "lint:format": {
       "dependsOn": ["lint:install"]
     },
-    "lint:fallow": {
-      "dependsOn": ["lint:install"]
+    "lint:install": {
+      "inputs": ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
     },
     "lint:issues": {
       "dependsOn": ["lint:install"]
@@ -27,20 +28,11 @@
       "dependsOn": ["lint:install"]
     },
     "lint:repo": {
-      "dependsOn": ["build:vite"],
+      "dependsOn": ["build:vite", "lint:install", "build:tsc"],
       "inputs": ["$TURBO_DEFAULT$", "dist/**"]
     },
-    "test:unit": {
-      "dependsOn": ["lint:install"],
-      "outputs": ["coverage/**"]
-    },
-    "test:e2e": {
-      "dependsOn": ["lint:install"],
-      "outputs": ["playwright-report/**", "test-results/**"]
-    },
-    "dev": {
-      "cache": false,
-      "persistent": true
+    "lint:types": {
+      "dependsOn": ["lint:install"]
     },
     "start:proxy": {
       "cache": false,
@@ -49,6 +41,14 @@
     "start:vite": {
       "cache": false,
       "persistent": true
+    },
+    "test:e2e": {
+      "dependsOn": ["lint:install"],
+      "outputs": ["playwright-report/**", "test-results/**"]
+    },
+    "test:unit": {
+      "dependsOn": ["lint:install"],
+      "outputs": ["coverage/**"]
     }
   }
 }
