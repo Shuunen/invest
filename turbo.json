@@ -1,33 +1,41 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
-  "globalDependencies": ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"],
   "tasks": {
+    "lint:install": {
+      "inputs": ["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"]
+    },
     "build:tsc": {
-      "inputs": ["src/**", "tsconfig*.json"]
+      "dependsOn": ["lint:install"]
     },
     "build:vite": {
       "dependsOn": ["build:tsc"],
-      "inputs": ["src/**", "index.html", "public/**", "tsconfig*.json", "vite.config.ts"],
       "outputs": ["dist/**"]
     },
     "lint:types": {
-      "inputs": ["src/**/*.{ts,tsx}", "tsconfig*.json"]
+      "dependsOn": ["lint:install"]
     },
     "lint:format": {
-      "inputs": ["src/**", "e2e/**", ".github/**", ".oxfmtrc.jsonc", "*.{ts,js,json,md,yaml,yml}"]
+      "dependsOn": ["lint:install"]
     },
     "lint:fallow": {
-      "inputs": ["src/**", ".fallow-baselines/**", ".fallowrc.json"]
+      "dependsOn": ["lint:install"]
     },
     "lint:issues": {
-      "inputs": ["src/**/*.{ts,tsx}", "e2e/**/*.ts", ".oxlintrc.json", "tsconfig*.json"]
+      "dependsOn": ["lint:install"]
+    },
+    "lint:knip": {
+      "dependsOn": ["lint:install"]
+    },
+    "lint:repo": {
+      "dependsOn": ["build:vite"],
+      "inputs": ["$TURBO_DEFAULT$", "dist/**"]
     },
     "test:unit": {
-      "inputs": ["src/**/*.{ts,tsx}", "vite.config.ts"],
+      "dependsOn": ["lint:install"],
       "outputs": ["coverage/**"]
     },
     "test:e2e": {
-      "inputs": ["e2e/**", "playwright.config.ts", "src/**"],
+      "dependsOn": ["lint:install"],
       "outputs": ["playwright-report/**", "test-results/**"]
     },
     "dev": {
