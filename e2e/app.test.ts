@@ -14,6 +14,8 @@ async function importSampleData(page: Page) {
   await page.getByRole('button', { name: 'Import data' }).click()
   const fileChooser = await fileChooserPromise
   await fileChooser.setFiles('data/sample.json')
+  // the import is async, leaving the page before it ends drops the data
+  await expect(page.getByText('Data imported')).toBeVisible()
 }
 
 async function expectPortfolioAssetsVisible(page: Page) {
@@ -23,11 +25,6 @@ async function expectPortfolioAssetsVisible(page: Page) {
   await expect(page.getByRole('cell', { exact: true, name: first })).toBeVisible()
   await expect(page.getByRole('cell', { exact: true, name: second })).toBeVisible()
 }
-
-test.beforeEach(async ({ page }) => {
-  await page.goto('/')
-  await page.evaluate(() => indexedDB.deleteDatabase('invest-app'))
-})
 
 test('page loads without uncaught errors', async ({ page }) => {
   const pageErrors: Error[] = []
