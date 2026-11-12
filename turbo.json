@@ -43,7 +43,7 @@
       "persistent": true
     },
     "test:e2e": {
-      "dependsOn": ["lint:install"],
+      "dependsOn": ["build:vite", "lint:install"],
       "outputs": ["playwright-report/**", "test-results/**"]
     },
     "test:unit": {

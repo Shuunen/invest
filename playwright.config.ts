@@ -6,9 +6,11 @@ export default defineConfig({
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], channel: 'chromium-headless-shell' } }],
   reporter: './e2e/summary-reporter.ts',
   testDir: './e2e',
-  use: { baseURL: 'http://localhost:5273' },
+  // the service worker of the PWA would intercept the requests of every test
+  use: { baseURL: 'http://localhost:5273', serviceWorkers: 'block' },
   webServer: {
-    command: 'pnpm run start:vite --port 5273 --strictPort',
+    // the built app, bundled and served as static files, is much lighter than the unbundled dev server for 8 browsers
+    command: 'pnpm run preview --port 5273 --strictPort',
     reuseExistingServer: !process.env.CI,
     url: 'http://localhost:5273',
   },
