@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Replace the VS Code oxc settings with a colour scheme to tell this project window apart
+- Move `tailwindcss` to the dev dependencies
 
 ## [0.13.0] - 2026-08-10
 
