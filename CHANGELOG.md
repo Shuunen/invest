@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Replace the VS Code oxc settings with a colour scheme to tell this project window apart
 - Move `tailwindcss` to the dev dependencies
+- Keep the semver ranges of the dependencies when Renovate updates them
 
 ## [0.13.0] - 2026-08-10
 
