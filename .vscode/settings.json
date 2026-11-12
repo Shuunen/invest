@@ -1,12 +1,8 @@
 {
-  "[markdown]": {
-    "editor.defaultFormatter": "oxc.oxc-vscode"
-  },
   "cSpell.words": ["autoplan", "dexie", "Dexie", "financials", "gstack", "indexeddb", "isins", "misalign", "prefault", "tsgo"],
-  "editor.defaultFormatter": "oxc.oxc-vscode",
-  "editor.formatOnSave": true,
-  "js/ts.experimental.useTsgo": true,
-  "oxc.fixKind": "all",
-  "oxc.typeAware": true,
-  "oxc.unusedDisableDirectives": "deny"
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#4B124E",
+    "titleBar.activeBackground": "#6B1A70",
+    "titleBar.activeForeground": "#FDF7FD"
+  }
 }

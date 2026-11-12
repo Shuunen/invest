@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- Replace the VS Code oxc settings with a colour scheme to tell this project window apart
+
 ## [0.13.0] - 2026-08-10
 
 ### Added in 0.13.0
