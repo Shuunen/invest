@@ -4,7 +4,7 @@
   "bracketSameLine": false,
   "bracketSpacing": true,
   "endOfLine": "lf",
-  "ignorePatterns": ["**/.git", "**/assets/public/assets", "**/out-tsc", "**/routeTree.gen.ts", "**/storybook-static", "**/test-output", "**/playwright-report", "**/types/**/*.d.ts", "**/.storybook/tw.css"],
+  "ignorePatterns": ["**/.git", "**/assets/public/assets", "**/out-tsc", "**/routeTree.gen.ts", "**/storybook-static", "**/test-output", "**/types/**/*.d.ts", "**/.storybook/tw.css"],
   "objectWrap": "preserve",
   "printWidth": 240,
   "quoteProps": "as-needed",

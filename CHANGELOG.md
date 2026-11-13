@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - Make the e2e tests wait for the data import to end and drop a redundant page load before each test
 - Drop the redundant `run_install` option from the CI
 - Use the dot reporter for the unit tests
+- Ignore the Playwright report in git instead of in the formatter
 
 ## [0.13.0] - 2026-08-10
 
