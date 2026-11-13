@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Keep the semver ranges of the dependencies when Renovate updates them
 - Serve the e2e tests from the built app instead of the dev server, so they stop timing out when the other checks load the CPU
 - Make the e2e tests wait for the data import to end and drop a redundant page load before each test
+- Drop the redundant `run_install` option from the CI
 
 ## [0.13.0] - 2026-08-10
 
