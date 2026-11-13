@@ -84,7 +84,7 @@ export default defineConfig({
     exclude: ['e2e/**', 'node_modules/**'],
     globals: true,
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
-    reporters: ['minimal'],
+    reporters: ['dot'],
     restoreMocks: true,
     setupFiles: ['./src/test/setup.ts'],
     silent: true,

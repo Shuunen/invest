@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Serve the e2e tests from the built app instead of the dev server, so they stop timing out when the other checks load the CPU
 - Make the e2e tests wait for the data import to end and drop a redundant page load before each test
 - Drop the redundant `run_install` option from the CI
+- Use the dot reporter for the unit tests
 
 ## [0.13.0] - 2026-08-10
 
