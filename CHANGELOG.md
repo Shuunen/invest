@@ -16,6 +16,10 @@ All notable changes to this project will be documented in this file.
 - Ignore the Playwright report in git instead of in the formatter
 - Drop the redundant `onlyBuiltDependencies` from the pnpm workspace
 
+### Fixed
+
+- Link the web app manifest from the page so the app can be installed
+
 ## [0.13.0] - 2026-08-10
 
 ### Added in 0.13.0
