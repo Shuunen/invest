@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Add a description to the page
+
+### Fixed
+
+- Redirect every path to the app on Netlify so a reload does not 404
+
 ### Changed
 
 - Replace the VS Code oxc settings with a colour scheme to tell this project window apart
