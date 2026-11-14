@@ -23,6 +23,7 @@ All notable changes to this project will be documented in this file.
 - Use the dot reporter for the unit tests
 - Ignore the Playwright report in git instead of in the formatter
 - Drop the redundant `onlyBuiltDependencies` from the pnpm workspace
+- Align the web manifest colors and the VS Code window colors on the theme color
 
 ### Fixed
 

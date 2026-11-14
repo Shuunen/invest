@@ -1,8 +1,17 @@
 {
   "cSpell.words": ["autoplan", "dexie", "Dexie", "financials", "gstack", "indexeddb", "isins", "misalign", "prefault", "tsgo"],
   "workbench.colorCustomizations": {
-    "activityBar.background": "#4B124E",
-    "titleBar.activeBackground": "#6B1A70",
-    "titleBar.activeForeground": "#FDF7FD"
+    "activityBar.background": "#003556",
+    "activityBar.foreground": "#f9fafb",
+    "activityBarBadge.background": "#0069a8",
+    "activityBarBadge.foreground": "#f9fafb",
+    "statusBar.background": "#003556",
+    "statusBar.foreground": "#f9fafbcc",
+    "statusBar.inactiveBackground": "#002238",
+    "tab.activeBorderTop": "#0069a8",
+    "titleBar.activeBackground": "#0069a8",
+    "titleBar.activeForeground": "#f9fafb",
+    "titleBar.inactiveBackground": "#003556",
+    "titleBar.inactiveForeground": "#f9fafbaa"
   }
 }
