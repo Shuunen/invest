@@ -27,24 +27,8 @@ export default defineConfig({
     react(),
     // oxlint-disable-next-line new-cap
     VitePWA({
-      manifest: {
-        background_color: '#ffffff',
-        description: 'Offline-first, local-persistence investment portfolio manager',
-        display: 'standalone',
-        icons: [
-          { sizes: '64x64', src: '/pwa-64x64.png', type: 'image/png' },
-          { sizes: '192x192', src: '/pwa-192x192.png', type: 'image/png' },
-          { sizes: '512x512', src: '/pwa-512x512.png', type: 'image/png' },
-          { purpose: 'maskable', sizes: '512x512', src: '/maskable-icon-512x512.png', type: 'image/png' },
-        ],
-        id: '/',
-        name: 'Invest - Your Portfolio Tracker',
-        orientation: 'portrait-primary',
-        scope: '/',
-        short_name: 'Invest',
-        start_url: '/',
-        theme_color: '#0069a8',
-      },
+      // the manifest is public/manifest.webmanifest, linked from index.html
+      manifest: false,
       registerType: 'autoUpdate',
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],

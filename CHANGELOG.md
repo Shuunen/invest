@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Redirect every path to the app on Netlify so a reload does not 404
+- Link the web app manifest from the page so the app can be installed
 
 ### Changed
 
@@ -25,10 +26,7 @@ All notable changes to this project will be documented in this file.
 - Ignore the Playwright report in git instead of in the formatter
 - Drop the redundant `onlyBuiltDependencies` from the pnpm workspace
 - Align the web manifest colors and the VS Code window colors on the theme color
-
-### Fixed
-
-- Link the web app manifest from the page so the app can be installed
+- Keep a single web app manifest, the PWA plugin no longer generates a second one
 
 ## [0.13.0] - 2026-08-10
 
