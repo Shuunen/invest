@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Generate the app icons from the logo with `build:assets`
 - Replace the VS Code oxc settings with a colour scheme to tell this project window apart
 - Move `tailwindcss` to the dev dependencies
 - Keep the semver ranges of the dependencies when Renovate updates them
