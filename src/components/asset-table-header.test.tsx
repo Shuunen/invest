@@ -19,7 +19,7 @@ describe('renderSearchFilter', () => {
   it('reflects current filter value', () => {
     expect.hasAssertions()
     render(renderSearchFilter('IWDA', noop))
-    const input = screen.getByTestId('input-filter') as HTMLInputElement
+    const input = screen.getByTestId<HTMLInputElement>('input-filter')
     expect(input.value).toBe('IWDA')
   })
 })
